@@ -4,6 +4,60 @@ using System.Linq;
 using UnityEngine;
 using Transidious;
 
+[System.Serializable]
+public struct SerializableVector3
+{
+    public float x, y, z;
+
+    public SerializableVector3(Vector3 vec)
+    {
+        this.x = vec.x;
+        this.y = vec.y;
+        this.z = vec.z;
+    }
+
+    public Vector3 ToVector()
+    {
+        return new Vector3(x, y, z);
+    }
+}
+
+[System.Serializable]
+public struct SerializableVector2
+{
+    public float x, y;
+
+    public SerializableVector2(Vector2 vec)
+    {
+        this.x = vec.x;
+        this.y = vec.y;
+    }
+
+    public Vector2 ToVector()
+    {
+        return new Vector2(x, y);
+    }
+}
+
+[System.Serializable]
+public struct SerializableColor
+{
+    public float r, g, b, a;
+
+    public SerializableColor(Color c)
+    {
+        this.r = c.r;
+        this.g = c.g;
+        this.b = c.b;
+        this.a = c.a;
+    }
+
+    public Color ToColor()
+    {
+        return new Color(r, g, b, a);
+    }
+}
+
 public enum CardinalDirection
 {
     North, South, West, East
@@ -54,9 +108,17 @@ public struct PathSegment
         CubicBezier,
     }
 
-    public readonly Kind kind;
+    [System.Serializable]
+    public struct SerializablePathSegment
+    {
+        public Kind kind;
+        public SerializableVector3 p0, p1, p2, p3;
+        public float length;
+    }
+
+    public Kind kind;
     public Vector3 p0, p1, p2, p3;
-    public readonly float length;
+    public float length;
 
     public float Angle
     {
@@ -129,10 +191,44 @@ public struct PathSegment
         this.p3 = end;
         this.length = Transidious.Math.cubicBezierLength(begin, cp1, cp2, end);
     }
+
+    public SerializablePathSegment Serialize()
+    {
+        return new SerializablePathSegment
+        {
+            kind = kind,
+            p0 = new SerializableVector3(p0),
+            p1 = new SerializableVector3(p1),
+            p2 = new SerializableVector3(p2),
+            p3 = new SerializableVector3(p3),
+            length = length
+        };
+    }
+
+    public static PathSegment Deserialize(SerializablePathSegment seg)
+    {
+        return new PathSegment
+        {
+            kind = seg.kind,
+            p0 = seg.p0.ToVector(),
+            p1 = seg.p1.ToVector(),
+            p2 = seg.p2.ToVector(),
+            p3 = seg.p3.ToVector(),
+            length = seg.length
+        };
+    }
 }
 
 public class Path
 {
+    [System.Serializable]
+    public struct SerializedPath
+    {
+        public List<PathSegment.SerializablePathSegment> segments;
+        public float length;
+        public float width;
+    }
+
     public readonly List<PathSegment> segments;
     public readonly float length;
     public float width = 0.05f;
@@ -140,6 +236,13 @@ public class Path
     public Path(Path path) : this(new List<PathSegment>(path.segments))
     {
 
+    }
+
+    public Path(List<PathSegment> segments, float length, float width)
+    {
+        this.segments = segments;
+        this.length = length;
+        this.width = width;
     }
 
     public Path(List<PathSegment> segments)
@@ -180,9 +283,18 @@ public class Path
         get { return segments.Last().p3; }
     }
 
-    public Mesh CreateMesh()
+    public Mesh CreateMesh(float z = 0f)
     {
-        var vertices = new List<Vector3>();
+        var positions = new List<Vector3>();
+        foreach (PathSegment seg in segments)
+        {
+            positions.Add(seg.p0);
+        }
+
+        positions.Add(segments.Last().p3);
+        return MeshBuilder.CreateSmoothLine(positions, width, 10, z);
+
+        /*
         var triangles = new List<int>();
         var normals = new List<Vector3>();
         var uv = new List<Vector2>();
@@ -200,6 +312,11 @@ public class Path
                     Vector3 tr = seg.p0 + width * normal;
                     Vector3 br = seg.p0 - width * normal;
 
+                    bl.z = z;
+                    tl.z = z;
+                    tr.z = z;
+                    br.z = z;
+
                     MeshBuilder.AddQuad(vertices, triangles, normals,
                                         uv, bl, tr, br, tl);
 
@@ -215,7 +332,7 @@ public class Path
             triangles = triangles.ToArray(),
             normals = normals.ToArray(),
             uv = uv.ToArray(),
-        };
+        };*/
     }
 
     public Mesh CreateJoints()
@@ -347,5 +464,30 @@ public class Path
 
         segments.Add(newEnd);
         segments[segments.Count - 2] = last;
+    }
+
+    public SerializedPath Serialize()
+    {
+        return new SerializedPath
+        {
+            segments = segments.Select(s => s.Serialize()).ToList(),
+            length = length,
+            width = width,
+        };
+    }
+
+    public static Path Deserialize(SerializedPath path)
+    {
+        if (path.segments == null)
+        {
+            return null;
+        }
+
+        return new Path
+        (
+            path.segments.Select(PathSegment.Deserialize).ToList(),
+            path.length,
+            path.width
+        );
     }
 }

@@ -16,15 +16,30 @@ public class InputController : MonoBehaviour
         PanLeft,
     }
 
+    public enum RenderingDistance
+    {
+        Near,
+        Far,
+        VeryFar,
+        Farthest,
+    }
+
     public Map map;
+    public RenderingDistance renderingDistance = RenderingDistance.Near;
 
     float aspectRatio = 0.0f;
     float windowWidth = 0.0f;
     float windowHeight = 0.0f;
 
+    public float maxX = 0f;
+    public float maxY = 0f;
+
+    public float minX = float.PositiveInfinity;
+    public float minY = float.PositiveInfinity;
+
     Dictionary<ControlType, Tuple<KeyCode, KeyCode>> keyBindings;
-    float minFov = 1.0f;
-    float maxFov = 50.0f;
+    float minZoom = 0.1f;
+    float maxZoom = 20.0f;
     float zoomSensitivity = 5.0f;
 
     float panSensitivityX = 0.5f;
@@ -32,9 +47,16 @@ public class InputController : MonoBehaviour
 
     public float lineWidth;
     public float stopWidth;
+    public float boundaryWidth;
 
     public Shader circleShader;
     public Shader defaultShader;
+
+    static readonly float farThreshold = 0.65f;
+    static readonly float veryFarThreshold = 2f;
+    static readonly float farthestThreshold = 7f;
+
+    new public Camera camera;
 
     public bool renderBackRoutes = false;
 
@@ -50,36 +72,151 @@ public class InputController : MonoBehaviour
 
     void UpdateStopWidth()
     {
-        stopWidth = 0.2f;
+        stopWidth = 0.07f;
     }
 
     void UpdateLineWidth()
     {
-        lineWidth = 0.175f * stopWidth;
+        switch (renderingDistance)
+        {
+            case RenderingDistance.VeryFar:
+            case RenderingDistance.Farthest:
+                lineWidth = 0.005f;
+                break;
+            case RenderingDistance.Far:
+                lineWidth = 0.006f;
+                break;
+            case RenderingDistance.Near:
+                lineWidth = 0.01f;
+                break;
+            default:
+                throw new System.ArgumentException(string.Format("Illegal enum value {0}", renderingDistance));
+        }
+    }
+
+    void UpdateBoundaryWidth()
+    {
+        switch (renderingDistance)
+        {
+            case RenderingDistance.VeryFar:
+            case RenderingDistance.Farthest:
+                boundaryWidth = 0.04f;
+                break;
+            case RenderingDistance.Far:
+                boundaryWidth = 0.02f;
+                break;
+            case RenderingDistance.Near:
+                boundaryWidth = 0.01f;
+                break;
+            default:
+                throw new System.ArgumentException(string.Format("Illegal enum value {0}", renderingDistance));
+        }
+
+        boundaryWidth = 0.02f;
+    }
+
+    void ZoomOrthoCamera(Vector3 zoomTowards, float amount)
+    {
+        // Calculate how much we will have to move towards the zoomTowards position
+        float multiplier = (1.0f / camera.orthographicSize * amount);
+
+        // Move camera
+        camera.transform.position += (zoomTowards - camera.transform.position) * multiplier;
+
+        // Zoom camera
+        camera.orthographicSize -= amount;
+
+        // Limit zoom
+        camera.orthographicSize = Mathf.Clamp(camera.orthographicSize, minZoom, maxZoom);
+
+        UpdateRenderingDistance();
+    }
+
+    float GetMouseZoom()
+    {
+        return Input.GetAxis("Mouse ScrollWheel");
+    }
+
+    float GetPinchZoom()
+    {
+        if (Input.touchCount != 2)
+        {
+            return 0f;
+        }
+
+        // Store both touches.
+        Touch touchZero = Input.GetTouch(0);
+        Touch touchOne = Input.GetTouch(1);
+
+        // Find the position in the previous frame of each touch.
+        Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
+        Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
+
+        // Find the magnitude of the vector (the distance) between the touches in each frame.
+        float prevTouchDeltaMag = (touchZeroPrevPos - touchOnePrevPos).magnitude;
+        float touchDeltaMag = (touchZero.position - touchOne.position).magnitude;
+
+        // Find the difference in the distances between each frame.
+        return prevTouchDeltaMag - touchDeltaMag;
     }
 
     // Update the zoom based on mouse wheel input.
     void UpdateZoom()
     {
-        float fov = Camera.main.orthographicSize;
-        fov += Input.GetAxis("Mouse ScrollWheel") * zoomSensitivity;
-        fov = Mathf.Clamp(fov, minFov, maxFov);
-
-        if (!fov.Equals(Camera.main.orthographicSize))
+        float input;
+        switch (Application.platform)
         {
-            Camera.main.orthographicSize = fov;
+            case RuntimePlatform.IPhonePlayer:
+            case RuntimePlatform.Android:
+                input = GetPinchZoom();
+                break;
+            default:
+                input = GetMouseZoom();
+                break;
+        }
 
-            UpdateStopWidth();
-            UpdateLineWidth();
+        if (input.Equals(0f))
+        {
+            return;
+        }
 
-            map.UpdateScale();
+        ZoomOrthoCamera(Camera.main.ScreenToWorldPoint(Input.mousePosition), input * zoomSensitivity);
+
+        panSensitivityX = camera.orthographicSize * 0.1f;
+        panSensitivityY = camera.orthographicSize * 0.1f;
+
+        zoomSensitivity = camera.orthographicSize * 0.5f;
+
+        UpdateStopWidth();
+        UpdateLineWidth();
+        UpdateBoundaryWidth();
+
+        map.UpdateScale();
+    }
+
+    void UpdateRenderingDistance()
+    {
+        float orthoSize = camera.orthographicSize;
+        if (orthoSize <= farThreshold)
+        {
+            renderingDistance = RenderingDistance.Near;
+        }
+        else if (orthoSize <= veryFarThreshold)
+        {
+            renderingDistance = RenderingDistance.Far;
+        }
+        else if (orthoSize <= farthestThreshold)
+        {
+            renderingDistance = RenderingDistance.VeryFar;
+        }
+        else
+        {
+            renderingDistance = RenderingDistance.Farthest;
         }
     }
 
-    // Update the camera position.
-    void UpdatePosition()
+    Vector3 GetNewDesktopPosition(Vector3 position)
     {
-        Vector3 position = Camera.main.transform.position;
         if (IsPressed(ControlType.PanUp))
         {
             position.y += panSensitivityY;
@@ -97,7 +234,44 @@ public class InputController : MonoBehaviour
             position.x -= panSensitivityX;
         }
 
-        Camera.main.transform.position = position;
+        return position;
+    }
+
+    Vector3 GetNewMobilePosition(Vector3 position)
+    {
+        if (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began && Input.GetTouch(0).tapCount == 2)
+        {
+            camera.orthographicSize = 5f;
+            camera.transform.position = map.startingCameraPos;
+        }
+        else if (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Moved)
+        {
+            Vector2 touchDeltaPosition = Input.GetTouch(0).deltaPosition;
+            position.x *= -touchDeltaPosition.x * panSensitivityX;
+            position.y *= -touchDeltaPosition.y * panSensitivityY;
+        }
+
+        return position;
+    }
+
+    // Update the camera position.
+    void UpdatePosition()
+    {
+        Vector3 position = Camera.main.transform.position;
+        switch (Application.platform)
+        {
+            case RuntimePlatform.IPhonePlayer:
+            case RuntimePlatform.Android:
+                position = GetNewMobilePosition(position);
+                break;
+            default:
+                position = GetNewDesktopPosition(position);
+                break;
+        }
+
+        camera.transform.position = new Vector3(Mathf.Clamp(position.x, minX, maxX),
+                                                Mathf.Clamp(position.y, minY, maxY),
+                                                camera.transform.position.z);
     }
 
     void InitKeybindings()
@@ -115,13 +289,16 @@ public class InputController : MonoBehaviour
     {
         InitKeybindings();
 
-        aspectRatio = Camera.main.aspect;
-        windowWidth = Camera.main.pixelRect.width;
-        windowHeight = Camera.main.pixelRect.height;
+        camera = Camera.main;
+        aspectRatio = camera.aspect;
+        windowWidth = camera.pixelRect.width;
+        windowHeight = camera.pixelRect.height;
+
+        UpdateRenderingDistance();
 
         UpdateStopWidth();
         UpdateLineWidth();
-        map.UpdateScale();
+        UpdateBoundaryWidth();
 
         if (aspectRatio > 1.0f)
         {
@@ -147,5 +324,14 @@ public class InputController : MonoBehaviour
     {
         UpdateZoom();
         UpdatePosition();
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawSphere(new Vector3(minX, minY), 1f);
+        Gizmos.DrawSphere(new Vector3(maxX, minY), 1f);
+        Gizmos.DrawSphere(new Vector3(minX, maxY), 1f);
+        Gizmos.DrawSphere(new Vector3(maxX, maxY), 1f);
     }
 }

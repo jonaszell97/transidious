@@ -4,7 +4,24 @@ using Transidious;
 
 public class Route : MonoBehaviour
 {
+    [System.Serializable]
+    public struct SerializedRoute
+    {
+        public int id;
+        public int lineID;
+        public Path.SerializedPath path;
+        public Path.SerializedPath originalPath;
+
+        public int beginStopID;
+        public int endStopID;
+
+        public float totalTravelTime;
+        public bool isBackRoute;
+    }
+
+    public int id;
     public Line line;
+
     public Path path;
     public Path originalPath;
 
@@ -17,11 +34,8 @@ public class Route : MonoBehaviour
     public float totalTravelTime;
     public bool isBackRoute = false;
 
-    public GameObject jointPrefab;
-
-    private MeshFilter meshFilter;
-    private Renderer m_Renderer;
-    private GameObject joinObject;
+    MeshFilter meshFilter;
+    Renderer m_Renderer;
 
     public void Initialize(Line line, Stop beginStop, Stop endStop, Path path, bool isBackRoute = false)
     {
@@ -35,7 +49,6 @@ public class Route : MonoBehaviour
         this.transform.SetParent(line.transform);
         this.isBackRoute = isBackRoute;
         this.name = "(" + line.name + ") " + beginStop.name + " -> " + endStop.name;
-        this.joinObject = null;
         this.originalPath = path;
 
         UpdatePath();
@@ -49,8 +62,6 @@ public class Route : MonoBehaviour
         {
             this.totalTravelTime = previousRoute.totalTravelTime + this.TravelTime;
         }
-
-        line.map.RegisterRoute(this);
     }
 
     public float TravelTime
@@ -94,16 +105,15 @@ public class Route : MonoBehaviour
         else
         {
             path = new Path(originalPath);
+            update = true;
 
             if (path.Start != beginLoc)
             {
                 path.AdjustStart(beginLoc, false, false);
-                update = true;
             }
             if (path.End != endLoc)
             {
                 path.AdjustEnd(endLoc, false, false);
-                update = true;
             }
         }
 
@@ -113,7 +123,7 @@ public class Route : MonoBehaviour
             return;
         }
 
-        if (beginStop.appearance == Stop.Appearance.LargeRect)
+        if (beginStop.appearance == Stop.Appearance.LargeRect && beginSlot != null)
         {
             float factor = 0.1f;
 
@@ -135,7 +145,7 @@ public class Route : MonoBehaviour
             path.RemoveStartAngle(Math.DirectionVector(dir) * factor);
             update = true;
         }
-        if (endStop.appearance == Stop.Appearance.LargeRect)
+        if (endStop.appearance == Stop.Appearance.LargeRect && endSlot != null)
         {
             float factor = 0.1f;
 
@@ -151,7 +161,7 @@ public class Route : MonoBehaviour
                 spaceBetweenLines = (endStop.spacePerSlotVertical - line.map.input.lineWidth * 2f);
             }
 
-            factor += beginSlot.assignment.parallelPositionOutbound
+            factor += endSlot.assignment.parallelPositionOutbound
                 * Mathf.Sqrt(2 * spaceBetweenLines * spaceBetweenLines);
 
             path.RemoveEndAngle(Math.DirectionVector(dir) * -factor);
@@ -185,39 +195,9 @@ public class Route : MonoBehaviour
         meshFilter.mesh = path.CreateMesh();
         m_Renderer.material.color = line.color;
 
-        // Check if we need smooth joints between segments.
-        if (path.segments.Count > 1)
-        {
-            if (joinObject == null)
-            {
-                joinObject = Instantiate(jointPrefab);
-                joinObject.transform.SetParent(this.transform);
-                joinObject.transform.position = new Vector3(0, 0, 0.1f);
-            }
-
-            var joinMeshFilter = joinObject.GetComponent<MeshFilter>();
-            var joinRenderer = joinObject.GetComponent<MeshRenderer>();
-
-            joinMeshFilter.mesh = path.CreateJoints();
-            joinRenderer.material = new Material(m_Renderer.material)
-            {
-                shader = line.map.input.circleShader
-            };
-
-            joinRenderer.material.SetColor("_Color", line.color);
-            joinRenderer.material.SetColor("_InnerColor", line.color);
-            joinRenderer.material.SetFloat("_Radius", path.width * 2);
-            joinRenderer.material.SetFloat("_Thickness", 1.0f);
-            joinRenderer.material.SetFloat("_Dropoff", 0.5f);
-
-            joinRenderer.sortingOrder = m_Renderer.sortingOrder;
-            joinRenderer.sortingLayerID = m_Renderer.sortingLayerID;
-        }
-        else if (joinObject != null)
-        {
-            Destroy(joinObject);
-            joinObject = null;
-        }
+        transform.position = new Vector3(transform.position.x,
+                                         transform.position.y,
+                                         Map.Layer(MapLayer.TransitLines));
     }
 
     public void UpdateScale()
@@ -233,6 +213,34 @@ public class Route : MonoBehaviour
     {
         meshFilter = GetComponent<MeshFilter>();
         m_Renderer = GetComponent<Renderer>();
+    }
+
+    public SerializedRoute Serialize()
+    {
+        return new SerializedRoute
+        {
+            id = id,
+            lineID = line.id,
+
+            path = path.Serialize(),
+            originalPath = originalPath.Serialize(),
+
+            beginStopID = beginStop.id,
+            endStopID = endStop.id,
+
+            totalTravelTime = totalTravelTime,
+            isBackRoute = isBackRoute
+        };
+    }
+
+    public void Deserialize(SerializedRoute route, Map map)
+    {
+        id = route.id;
+        Initialize(map.transitLineIDMap[route.lineID], map.transitStopIDMap[route.beginStopID],
+                   map.transitStopIDMap[route.endStopID],
+                   Path.Deserialize(route.path), route.isBackRoute);
+
+        originalPath = Path.Deserialize(route.originalPath);
     }
 
     // Use this for initialization

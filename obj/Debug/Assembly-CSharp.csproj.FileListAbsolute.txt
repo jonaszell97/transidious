@@ -358,7 +358,3 @@
 /Users/Jonas/Transidious/obj/Debug/Assembly-CSharp.pdb
 /Users/Jonas/Transidious/Temp/bin/Debug/OsmSharp.dll
 /Users/Jonas/Transidious/Temp/bin/Debug/protobuf-net.dll
-/Users/Jonas/Transidious/Temp/bin/Debug/TouchScript.dll
-/Users/Jonas/Transidious/Temp/bin/Debug/UtyDepend.dll
-/Users/Jonas/Transidious/Temp/bin/Debug/UtyMap.Unity.dll
-/Users/Jonas/Transidious/Temp/bin/Debug/UtyRx.dll

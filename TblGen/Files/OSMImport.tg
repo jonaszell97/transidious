@@ -1,0 +1,313 @@
+
+class Tag<let key: string, let value: string>
+class NotTag<key: string, value: string> : Tag<key, value>
+
+enum GeoType {
+    Way, Relation, Node
+}
+
+enum TransitLineType {
+    Bus, Tram, Subway, STrain, RegionalTrain, LongDistanceTrain, Ferry
+}
+
+class TransitLineInfo<let type: TransitLineType, let tags: list<Tag> >
+class TransitStopInfo<let tags: list<Tag> >
+
+enum StreetType {
+    Primary,
+    Secondary,
+    Tertiary,
+    Residential,
+    Path,
+    River,
+}
+
+class StreetInfo<let type: StreetType,
+                 let tags: list<Tag>,
+                 let litTag: string = "lit",
+                 let onewayTag: string = "oneway",
+                 let maxspeedTag: string = "maxspeed">
+
+class BoundaryInfo<let name: string, let tags: list<Tag>, let wayTags: list<Tag> >
+
+class RiverInfo<let relationTags: list<Tag>, let wayTags: list<Tag> >
+
+enum NatureType {
+    Park,
+    Lake,
+    Green,
+    SportsPitch,
+    Allotment,
+    Cemetery,
+    FootpathArea,
+    Beach,
+    Forest,
+    Parking,
+}
+
+class NaturalFeatureInfo<let type: NatureType, let tags: list<Tag>, let geoTypes: list<GeoType> >
+
+enum BuildingType {
+    Residential,
+    University,
+    ElementarySchool,
+    HighSchool,
+    Hospital
+}
+
+class BuildingInfo<let type: BuildingType, let tags: list<Tag>, let geoTypes: list<GeoType> >
+
+class Area {
+    let nodeFile: string
+    let boundary: BoundaryInfo
+    let streets: list<StreetInfo>
+
+    let transitStops: list<TransitStopInfo>
+    let transitLines: list<TransitLineInfo>
+
+    let rivers: list<RiverInfo>
+    let nature: list<NaturalFeatureInfo>
+
+    let buildings: list<BuildingInfo>
+}
+
+class DefaultArea : Area
+{
+    override nodeFile = ""
+    override boundary = BoundaryInfo<"", [], []>
+
+    override streets = [
+        StreetInfo<.Residential, [
+            Tag<"highway", "residential">
+        ]>,
+        StreetInfo<.Primary, [
+            Tag<"highway", "primary">
+        ]>,
+        StreetInfo<.Primary, [
+            Tag<"highway", "primary_link">
+        ]>,
+        StreetInfo<.Secondary, [
+            Tag<"highway", "secondary">
+        ]>,
+        StreetInfo<.Secondary, [
+            Tag<"highway", "secondary_link">
+        ]>,
+        StreetInfo<.Tertiary, [
+            Tag<"highway", "tertiary">
+        ]>,
+        StreetInfo<.River, [
+            Tag<"waterway", "river">
+        ]>,
+    ]
+
+    override transitStops = [
+        TransitStopInfo<[
+            Tag<"railway", "stop">,
+        ]>,
+        TransitStopInfo<[
+            Tag<"railway", "stop_exit_only">,
+        ]>,
+        TransitStopInfo<[
+            Tag<"railway", "tram_stop">
+        ]>,
+        TransitStopInfo<[
+            Tag<"railway", "tram_stop_exit_only">,
+        ]>
+    ]
+
+    override transitLines = [
+        TransitLineInfo<.Tram, [
+            Tag<"type", "route">,
+            Tag<"route", "tram">
+        ]>,
+        TransitLineInfo<.Tram, [
+            Tag<"type", "route">,
+            Tag<"route", "light_rail">
+        ]>,
+        TransitLineInfo<.Subway, [
+            Tag<"type", "route">,
+            Tag<"route", "subway">
+        ]>,
+        TransitLineInfo<.STrain, [
+            Tag<"type", "route">,
+            Tag<"route", "train">,
+            Tag<"line", "light_rail">
+        ]>,
+        TransitLineInfo<.RegionalTrain, [
+            Tag<"type", "route">,
+            Tag<"route", "train">,
+            Tag<"service", "regional">
+        ]>
+    ]
+
+    override rivers = [
+        RiverInfo<[
+            Tag<"type", "waterway">,
+            Tag<"waterway", "river">
+        ], [
+            Tag<"waterway", "river">
+        ]>
+    ]
+
+    override nature = [
+        NaturalFeatureInfo<.Park, [
+            Tag<"leisure", "park">
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Green, [
+            Tag<"landuse", "village_green">
+        ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Green, [
+            Tag<"landuse", "grass">
+        ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Green, [
+            Tag<"leisure", "sports_centre">
+        ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Green, [
+            Tag<"landuse", "recreation_ground">
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Allotment, [
+            Tag<"landuse", "allotments">
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Cemetery, [
+            Tag<"landuse", "cemetery">
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.SportsPitch, [
+            Tag<"leisure", "pitch">
+        ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.SportsPitch, [
+            Tag<"leisure", "track">
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Lake, [
+            Tag<"natural", "water">,
+            Tag<"water", "lake">
+        ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Lake, [
+            Tag<"natural", "water">,
+            Tag<"water", "pond">
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.FootpathArea, [
+            Tag<"high.Way", "footpath">,
+            Tag<"area", "yes">,
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Forest, [
+            Tag<"landuse", "forest">,
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Beach, [
+            Tag<"natural", "beach">,
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Parking, [
+            Tag<"amenity", "parking">,
+        ], [.Way, .Relation]>,
+    ]
+
+    override buildings = [
+        BuildingInfo<.Residential, [
+            Tag<"building", "residential">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Residential, [
+            Tag<"building", "yes">
+        ], [.Way, .Relation]>,
+
+        BuildingInfo<.University, [
+            Tag<"building", "university">
+        ], [.Way, .Relation]>,
+
+        BuildingInfo<.Hospital, [
+            Tag<"building", "hospital">
+        ], [.Way, .Relation]>,
+
+        BuildingInfo<.HighSchool, [
+            Tag<"building", "school">
+        ], [.Way, .Relation]>
+    ]
+}
+
+def Default : DefaultArea
+
+def Berlin : DefaultArea {
+    boundary = BoundaryInfo<"Berlin", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "4">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "4">
+    ]>
+}
+
+def Charlottenburg : DefaultArea {
+    nodeFile = "CharlottenburgWilmersdorf"
+
+    boundary = BoundaryInfo<"Charlottenburg", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "10">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "10">
+    ]>
+}
+
+def CharlottenburgWilmersdorf : DefaultArea {
+    nodeFile = "Berlin"
+
+    boundary = BoundaryInfo<"Charlottenburg-Wilmersdorf", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "9">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "9">
+    ]>
+}
+
+def Mitte : DefaultArea {
+    nodeFile = "Berlin"
+
+    boundary = BoundaryInfo<"Mitte", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "9">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "9">
+    ]>
+}
+
+def Spandau : DefaultArea {
+    nodeFile = "Berlin"
+
+    boundary = BoundaryInfo<"Spandau", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "9">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "9">
+    ]>
+}
+
+def Saarbruecken : DefaultArea {
+    boundary = BoundaryInfo<"Saarbrücken", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}
+
+def Andorra : DefaultArea {
+    boundary = BoundaryInfo<"Andorra", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "2">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"border_type", "nation">,
+        Tag<"admin_level", "2">
+    ]>
+}

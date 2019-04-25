@@ -46,9 +46,34 @@ MonoBehaviour:
   input: {fileID: 0}
   width: 0
   height: 0
+  startingCameraPos: {x: 0, y: 0, z: 0}
+  minX: 0
+  maxX: 0
+  minY: 0
+  maxY: 0
+  boundaryBackgroundObj: {fileID: 0}
+  boundaryOutlineObj: {fileID: 0}
+  boundarymaskObj: {fileID: 0}
   transitStops: []
   transitRoutes: []
   transitLines: []
-  stopPrefab: {fileID: 0}
-  linePrefab: {fileID: 0}
+  canvas: {fileID: 0}
+  streetMesh: {fileID: 0}
+  buildingMesh: {fileID: 0}
+  natureMesh: {fileID: 0}
+  meshPrefab: {fileID: 4920824567467125320, guid: a8a8aebbab21c4fd5b304e5c60fe714b,
+    type: 3}
+  stopPrefab: {fileID: 7249201573953522384, guid: fe99f6853c2564cf485ed2ac9d495b51,
+    type: 3}
+  linePrefab: {fileID: 3422979665455224838, guid: b5c7ce4f0e19e42faa33be07436c00af,
+    type: 3}
+  routePrefab: {fileID: 5385331838536828253, guid: 1bef0fa22cec944bf8dc1065e50fc04f,
+    type: 3}
+  textPrefab: {fileID: 422271516409478062, guid: 63afb29d639f74af497a92a4533b4135,
+    type: 3}
+  screenshotMakerPrefab: {fileID: 8826896525106204825, guid: e58bf724d0755419b81e7bf24e2b0811,
+    type: 3}
+  unlitMaterial: {fileID: 0}
   done: 0
+  saveOnExit: 1
+  saveScene: 1

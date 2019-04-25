@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,13 +7,14 @@ using Transidious;
 
 public class Stop : MonoBehaviour
 {
-    internal class LineIntersectionInfo
+    [System.Serializable]
+    public class LineIntersectionInfo
     {
         /// The inbound angle of the intersection.
-        internal float inboundAngle = float.NaN;
+        public float inboundAngle = float.NaN;
 
         /// The outbound angle of the intersection.
-        internal float outboundAngle = float.NaN;
+        public float outboundAngle = float.NaN;
     }
 
     /// Data type used to store info about the lines that serve this stop.
@@ -32,6 +34,28 @@ public class Stop : MonoBehaviour
 
         /// Intersection info about the line.
         internal LineIntersectionInfo intersectionInfo = new LineIntersectionInfo();
+    }
+
+    [System.Serializable]
+    public struct SerializableLineData
+    {
+        public int lineID;
+        public int incomingRouteFromDepotID;
+        public int incomingRouteToDepotID;
+        public int outgoingRouteFromDepotID;
+        public int outgoingRouteToDepotID;
+        public LineIntersectionInfo intersectionInfo;
+    }
+
+    [System.Serializable]
+    public struct SerializedStop
+    {
+        public string name;
+        public SerializableVector3 position;
+        public int id;
+        public List<int> outgoingRouteIDs;
+        public List<int> routeIDs;
+        public List<SerializableLineData> lineDataSerial;
     }
 
     /// Describes the appearance of a stop depending on how many lines intersect
@@ -74,6 +98,7 @@ public class Stop : MonoBehaviour
 
         public bool inbound;
         public int preferredSlot = -1;
+        public bool downward = false;
 
         public int parallelPositionInbound = 0;
         public int parallelPositionOutbound = 0;
@@ -228,27 +253,32 @@ public class Stop : MonoBehaviour
     public Map map;
     public Appearance appearance;
 
+    public int id;
+
     public List<Route> outgoingRoutes;
     public List<Route> routes;
     public Dictionary<Line, LineData> lineData;
 
-    private int width = 1;
-    private int height = 1;
+    int width = 1;
+    int height = 1;
     public bool wasModified = true;
 
-    private List<PendingSlotAssignment> slotsToAssign;
+    List<PendingSlotAssignment> slotsToAssign;
     Dictionary<Stop, ParallelRouteInfo> parallelRoutes;
-    private Slot[,] slots;
+    Slot[,] slots;
+
     public float spacePerSlotVertical;
     public float spacePerSlotHorizontal;
 
     public GameObject spritePrefab;
-    private GameObject spriteObject;
-    private SpriteRenderer spriteRenderer;
 
-    private Sprite circleSprite;
-    private Sprite smallRectSprite;
-    private Sprite largeRectSprite;
+    GameObject spriteObject;
+    SpriteRenderer spriteRenderer;
+
+    Sprite circleSprite;
+    Sprite smallRectSprite;
+    Sprite largeRectSprite;
+    Vector3 direction;
 
     public Vector2 location
     {
@@ -271,6 +301,10 @@ public class Stop : MonoBehaviour
         this.circleSprite = Resources.Load("Sprites/stop_ring", typeof(Sprite)) as Sprite;
         this.smallRectSprite = Resources.Load("Sprites/stop_small_rect", typeof(Sprite)) as Sprite;
         this.largeRectSprite = Resources.Load("Sprites/stop_large_rect", typeof(Sprite)) as Sprite;
+
+        transform.position = new Vector3(transform.position.x,
+                                         transform.position.y,
+                                         Map.Layer(MapLayer.TransitStops));
     }
 
     /// \return The incoming route from the direction of the line's depot stop.
@@ -368,28 +402,57 @@ public class Stop : MonoBehaviour
 
     public Vector3 GetSlotLocation(Route route, Slot slot)
     {
+        if (height == 1 && width == 1)
+        {
+            return transform.position;
+        }
+
         Vector3 loc = transform.position;
-        float halfHeight = spriteRenderer.size.y * 0.5f - map.input.lineWidth;
-        float halfWidth = spriteRenderer.size.x * 0.5f - map.input.lineWidth;
+        float halfHeight = spriteRenderer.size.y * 0.5f;
+        float halfWidth = spriteRenderer.size.x * 0.5f;
         bool vertical = false;
 
         // Move to the correct side.
         switch (slot.direction)
         {
             case CardinalDirection.North:
+                if (width == 1)
+                {
+                    return new Vector3(transform.position.x,
+                                       transform.position.y + halfHeight);
+                }
+
                 loc.y += halfHeight;
                 loc.x -= halfWidth;
                 break;
             case CardinalDirection.South:
+                if (width == 1)
+                {
+                    return new Vector3(transform.position.x,
+                                       transform.position.y - halfHeight);
+                }
+
                 loc.y -= halfHeight;
                 loc.x -= halfWidth;
                 break;
             case CardinalDirection.East:
+                if (height == 1)
+                {
+                    return new Vector3(transform.position.x + halfWidth,
+                                       transform.position.y);
+                }
+
                 loc.x += halfWidth;
                 loc.y -= halfHeight;
                 vertical = true;
                 break;
             case CardinalDirection.West:
+                if (height == 1)
+                {
+                    return new Vector3(transform.position.x - halfWidth,
+                                       transform.position.y);
+                }
+
                 loc.x -= halfWidth;
                 loc.y -= halfHeight;
                 vertical = true;
@@ -403,14 +466,14 @@ public class Stop : MonoBehaviour
         if (vertical)
         {
             loc.y += halfStopWidth + (spacePerSlotVertical - map.input.lineWidth * 2f) * 0.5f
-                + (slot.number * (spacePerSlotVertical - map.input.lineWidth * 2f))
-                + (slot.number * (map.input.lineWidth * 2f));
+                    + (slot.number * (spacePerSlotVertical - map.input.lineWidth * 2f))
+                    + (slot.number * (map.input.lineWidth * 2f));
         }
         else
         {
             loc.x += halfStopWidth + (spacePerSlotHorizontal - map.input.lineWidth * 2f) * 0.5f
-                + (slot.number * (spacePerSlotHorizontal - map.input.lineWidth * 2f))
-                + (slot.number * (map.input.lineWidth * 2f));
+                    + (slot.number * (spacePerSlotHorizontal - map.input.lineWidth * 2f))
+                    + (slot.number * (map.input.lineWidth * 2f));
         }
 
         return loc;
@@ -431,6 +494,8 @@ public class Stop : MonoBehaviour
 
     void CreateSmallRectMesh(Color color, Vector3 direction)
     {
+        this.direction = direction;
+
         spriteRenderer.sprite = smallRectSprite;
         spriteRenderer.drawMode = SpriteDrawMode.Sliced;
         spriteRenderer.size = new Vector2(map.input.lineWidth * 5f, map.input.lineWidth * 2f);
@@ -440,6 +505,9 @@ public class Stop : MonoBehaviour
 
         spriteObject.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
         spriteObject.transform.rotation = quat;
+        spriteObject.transform.position = new Vector3(transform.position.x,
+                                                      transform.position.y,
+                                                      Map.Layer(MapLayer.TransitStops));
 
         appearance = Appearance.SmallRect;
     }
@@ -449,7 +517,7 @@ public class Stop : MonoBehaviour
         switch (stops)
         {
             case 0: case 1: return map.input.stopWidth;
-            default: return map.input.stopWidth + stops * (map.input.stopWidth / 2f);
+            default: return map.input.stopWidth + stops * (map.input.stopWidth * 0.5f);
         }
     }
 
@@ -462,7 +530,9 @@ public class Stop : MonoBehaviour
 
         spriteObject.transform.rotation = new Quaternion();
         spriteObject.transform.localScale = Vector3.one;
-        spriteObject.transform.position = transform.position;
+        spriteObject.transform.position = new Vector3(transform.position.x,
+                                                      transform.position.y,
+                                                      Map.Layer(MapLayer.TransitStops));
 
         if (width == 1 && height == 1)
         {
@@ -515,7 +585,7 @@ public class Stop : MonoBehaviour
             prevStop = outRoute?.beginStop;
         }
 
-        var dir = Math.ClassifyDirection(angle);
+        var dir = Transidious.Math.ClassifyDirection(angle);
         bool opposite = false;
 
         if (outRoute)
@@ -530,8 +600,8 @@ public class Stop : MonoBehaviour
                 outAngle = outRoute.originalPath.segments.Last().Angle;
             }
 
-            var outDir = Math.ClassifyDirection(outAngle);
-            opposite = outDir == dir || outDir == Math.Reverse(dir);
+            var outDir = Transidious.Math.ClassifyDirection(outAngle);
+            opposite = outDir == dir || outDir == Transidious.Math.Reverse(dir);
         }
 
         /*float thisCoord;
@@ -572,7 +642,7 @@ public class Stop : MonoBehaviour
                 ++top;
                 return new PendingSlotAssignment
                 {
-                    direction = inbound ? Math.Reverse(dir) : dir,
+                    direction = inbound ? Transidious.Math.Reverse(dir) : dir,
                     route = route,
                     outRoute = outRoute,
                     inbound = inbound,
@@ -583,7 +653,7 @@ public class Stop : MonoBehaviour
                 ++bottom;
                 return new PendingSlotAssignment
                 {
-                    direction = inbound ? Math.Reverse(dir) : dir,
+                    direction = inbound ? Transidious.Math.Reverse(dir) : dir,
                     route = route,
                     outRoute = outRoute,
                     inbound = inbound,
@@ -594,7 +664,7 @@ public class Stop : MonoBehaviour
                 ++right;
                 return new PendingSlotAssignment
                 {
-                    direction = inbound ? Math.Reverse(dir) : dir,
+                    direction = inbound ? Transidious.Math.Reverse(dir) : dir,
                     route = route,
                     outRoute = outRoute,
                     inbound = inbound,
@@ -605,7 +675,7 @@ public class Stop : MonoBehaviour
                 ++left;
                 return new PendingSlotAssignment
                 {
-                    direction = inbound ? Math.Reverse(dir) : dir,
+                    direction = inbound ? Transidious.Math.Reverse(dir) : dir,
                     route = route,
                     outRoute = outRoute,
                     inbound = inbound,
@@ -620,12 +690,25 @@ public class Stop : MonoBehaviour
     void UpdateSlotSizes()
     {
         float halfStopWidth = map.input.stopWidth / 2f;
+        if (height > 1)
+        {
+            float spaceForStopsY = spriteRenderer.size.y - map.input.stopWidth;
+            this.spacePerSlotVertical = spaceForStopsY / height;
+        }
+        else
+        {
+            this.spacePerSlotVertical = map.input.stopWidth;
+        }
 
-        float spaceForStopsY = spriteRenderer.size.y - 2 * halfStopWidth;
-        this.spacePerSlotVertical = spaceForStopsY / height;
-
-        float spaceForStopsX = spriteRenderer.size.x - 2 * halfStopWidth;
-        this.spacePerSlotHorizontal = spaceForStopsX / width;
+        if (width > 1)
+        {
+            float spaceForStopsX = spriteRenderer.size.x - map.input.stopWidth;
+            this.spacePerSlotHorizontal = spaceForStopsX / width;
+        }
+        else
+        {
+            this.spacePerSlotHorizontal = map.input.stopWidth;
+        }
     }
 
     void FindParallelRoutes()
@@ -645,14 +728,14 @@ public class Stop : MonoBehaviour
                 nextStop = route.endStop;
 
                 float angle = route.originalPath.segments.First().Angle;
-                dir = Math.ClassifyDirection(angle);
+                dir = Transidious.Math.ClassifyDirection(angle);
             }
             else
             {
                 nextStop = route.beginStop;
 
                 float angle = route.originalPath.segments.Last().Angle;
-                dir = Math.Reverse(Math.ClassifyDirection(angle));
+                dir = Transidious.Math.Reverse(Transidious.Math.ClassifyDirection(angle));
             }
 
             float thisCoord;
@@ -669,7 +752,16 @@ public class Stop : MonoBehaviour
             }
 
             int cmp1 = thisCoord.CompareTo(nextCoord);
-            var downward = cmp1 > 0;
+            bool downward;
+
+            if (dir.IsHorizontal())
+            {
+                downward = cmp1 > 0;
+            }
+            else
+            {
+                downward = cmp1 < 0;
+            }
 
             if (parallelRoutes.TryGetValue(nextStop, out ParallelRouteInfo info))
             {
@@ -704,12 +796,12 @@ public class Stop : MonoBehaviour
                 if (this == route.endStop)
                 {
                     nextStopOnLine = route.beginStop;
-                    dir = Math.Reverse(Math.ClassifyDirection(route.originalPath.EndAngle));
+                    dir = Transidious.Math.Reverse(Transidious.Math.ClassifyDirection(route.originalPath.EndAngle));
                 }
                 else
                 {
                     nextStopOnLine = route.endStop;
-                    dir = Math.ClassifyDirection(route.originalPath.BeginAngle);
+                    dir = Transidious.Math.ClassifyDirection(route.originalPath.BeginAngle);
                 }
 
                 if (dir != info.dir)
@@ -779,6 +871,11 @@ public class Stop : MonoBehaviour
                                                    ref right, ref left);
                 }
 
+                if (name == "S Storkower Straße")
+                {
+                   // Debug.Break();
+                }
+
                 if (single)
                 {
                     assignment.preferredSlot = 1;
@@ -788,7 +885,17 @@ public class Stop : MonoBehaviour
                     assignment.preferredSlot = -i - routeSet.Value.linesAbove;
                 }
 
-                if (routeSet.Value.downward)
+                bool downward;
+                if (assignment.horizontal)
+                {
+                    downward = routeSet.Value.downward;
+                }
+                else
+                {
+                    downward = !routeSet.Value.downward;
+                }
+
+                if (downward)
                 {
                     if (assignment.inbound)
                     {
@@ -800,6 +907,8 @@ public class Stop : MonoBehaviour
                         assignment.parallelPositionOutbound = i;
                         assignment.parallelPositionInbound = count - i - 1;
                     }
+
+                    assignment.downward = true;
                 }
                 else
                 {
@@ -813,6 +922,8 @@ public class Stop : MonoBehaviour
                         assignment.parallelPositionOutbound = count - i - 1;
                         assignment.parallelPositionInbound = i;
                     }
+
+                    assignment.downward = false;
                 }
 
                 slotsToAssign.Add(assignment);
@@ -835,6 +946,11 @@ public class Stop : MonoBehaviour
             else
             {
                 assignment.preferredSlot += (assignment.horizontal ? height : width) - 1;
+            }
+
+            if (assignment.preferredSlot<-1)
+            {
+                //Debug.Break();
             }
         }
     }
@@ -866,10 +982,10 @@ public class Stop : MonoBehaviour
             };
 
             slots[(int)a.direction, preferredSlot] = a.Slot;
-            Debug.Log("[" + name + "] assigned slot " + a.direction.ToString()
+            /*Debug.Log("[" + name + "] assigned slot " + a.direction.ToString()
                       + preferredSlot + " to " + a.route.name
                       + " based on " + reason.ToString()
-                      + " (priority: " + priority + ")");
+                      + " (priority: " + priority + ")");*/
 
             routesToUpdate.Add(a.route);
             worklist.Add(a.EndStop);
@@ -896,11 +1012,11 @@ public class Stop : MonoBehaviour
             return false;
         }
 
-        Debug.Log("[" + name + "] reassigned slot " + a.direction.ToString()
+        /*Debug.Log("[" + name + "] reassigned slot " + a.direction.ToString()
                       + preferredSlot + " to " + a.route.name
                       + " based on " + reason.ToString()
                       + " (previous priority: " + slot.priority
-                      + ", new priority: " + priority + ")");
+                      + ", new priority: " + priority + ")");*/
 
         // Override a lower priority assignment.
         slotsToAssign.Add(slot.assignment);
@@ -1023,11 +1139,12 @@ public class Stop : MonoBehaviour
             return -1;
         }
 
+        var outDir = outgoingSlot.assignment.direction;
         switch (a.direction)
         {
             case CardinalDirection.South:
             case CardinalDirection.North:
-                switch (outgoingSlot.assignment.direction)
+                switch (outDir)
                 {
                     case CardinalDirection.North:
                     case CardinalDirection.South:
@@ -1040,7 +1157,7 @@ public class Stop : MonoBehaviour
                 break;
             case CardinalDirection.East:
             case CardinalDirection.West:
-                switch (outgoingSlot.assignment.direction)
+                switch (outDir)
                 {
                     case CardinalDirection.East:
                     case CardinalDirection.West:
@@ -1059,8 +1176,10 @@ public class Stop : MonoBehaviour
     void UpdateSlotAssignments(HashSet<Stop> worklist,
                                HashSet<Route> routesToUpdate)
     {
+        var originalCount = slotsToAssign.Count;
         for (int i = 0; i < slotsToAssign.Count; ++i)
         {
+            var isRetry = i >= originalCount;
             PendingSlotAssignment a = slotsToAssign[i];
 
             Stop nextStop = a.EndStop;
@@ -1091,7 +1210,7 @@ public class Stop : MonoBehaviour
 
             // If the route leaves in the opposite direction and has
             // an assigned slot, that takes precedence.
-            if (a.outRoute != null)
+            /*if (a.outRoute != null)
             {
                 Slot otherSlot = a.OutSlot;
                 if (otherSlot != null)
@@ -1105,17 +1224,29 @@ public class Stop : MonoBehaviour
 
                     if (preferredSlot != -1)
                     {
+                        if (!isRetry && !IsUsable(a, preferredSlot, priority))
+                        {
+                            slotsToAssign.Add(a);
+                            continue;
+                        }
+
                         AssignNextAvailableSlot(worklist, routesToUpdate,
                                                 a, preferredSlot, priority, order,
                                                 AssignmentReason.OutgoingSlot);
                         continue;
                     }
                 }
-            }
+            }*/
 
             // Check if there is a preferred slot for this route.
             if (a.preferredSlot != -1)
             {
+                if (!isRetry && !IsUsable(a, a.preferredSlot, 3))
+                {
+                    slotsToAssign.Add(a);
+                    continue;
+                }
+
                 AssignNextAvailableSlot(worklist, routesToUpdate,
                                         a, a.preferredSlot, 3,
                                         AssignmentTryOrder.Decreasing,
@@ -1180,7 +1311,11 @@ public class Stop : MonoBehaviour
             var inboundRoute = data.incomingRouteFromDepot;
             var outboundRoute = data.outgoingRouteFromDepot;
 
-            if (inboundRoute == null)
+            if (inboundRoute == null && outboundRoute == null)
+            {
+                return;
+            }
+            else if (inboundRoute == null)
             {
                 CreateSmallRectMesh(line.color, GetPerpendicularVector(outboundRoute.path.segments.First().Direction));
                 return;
@@ -1234,7 +1369,7 @@ public class Stop : MonoBehaviour
 
                 next.UpdateSlotAssignments(worklist, routesToUpdate);
 
-                if (i++ > 500)
+                if (i++ > 1500)
                 {
                     throw new System.Exception("infinite loop");
                 }
@@ -1250,10 +1385,64 @@ public class Stop : MonoBehaviour
     public void UpdateScale()
     {
         UpdateSlotSizes();
+
+        if (appearance == Appearance.SmallRect)
+        {
+            spriteRenderer.size = new Vector2(map.input.lineWidth * 5f, map.input.lineWidth * 2f);
+            spriteObject.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
+            spriteObject.transform.position = new Vector3(spriteObject.transform.position.x,
+                                                          spriteObject.transform.position.y,
+                                                          Map.Layer(MapLayer.TransitStops));
+        }
+    }
+
+    public SerializedStop Serialize()
+    {
+        return new SerializedStop
+        {
+            id = id,
+            name = name,
+            position = new SerializableVector3(transform.position),
+
+            routeIDs = routes.Select(r => r.id).ToList(),
+            outgoingRouteIDs = outgoingRoutes.Select(r => r.id).ToList(),
+            lineDataSerial = lineData.Select(d => new SerializableLineData
+                {
+                    lineID = d.Key.id,
+                    outgoingRouteFromDepotID = d.Value.outgoingRouteFromDepot?.id ?? 0,
+                    outgoingRouteToDepotID = d.Value.outgoingRouteToDepot?.id ?? 0,
+                    incomingRouteToDepotID = d.Value.incomingRouteToDepot?.id ?? 0,
+                    incomingRouteFromDepotID = d.Value.incomingRouteFromDepot?.id ?? 0,
+                    intersectionInfo = d.Value.intersectionInfo
+                }).ToList()
+        };
+    }
+
+    public void Deserialize(SerializedStop stop, Map map)
+    {
+        id = stop.id;
+
+        foreach (var data in stop.lineDataSerial)
+        {
+            lineData.Add(map.transitLineIDMap[data.lineID], new LineData
+            {
+                incomingRouteFromDepot = map.transitRouteIDMap[data.incomingRouteFromDepotID],
+                incomingRouteToDepot = map.transitRouteIDMap[data.incomingRouteToDepotID],
+                outgoingRouteFromDepot = map.transitRouteIDMap[data.outgoingRouteFromDepotID],
+                outgoingRouteToDepot = map.transitRouteIDMap[data.outgoingRouteToDepotID],
+                intersectionInfo = data.intersectionInfo
+            });
+        }
+
+        routes = stop.routeIDs.Select(id => map.transitRouteIDMap[id]).ToList();
+        outgoingRoutes = stop.outgoingRouteIDs.Select(id => map.transitRouteIDMap[id]).ToList();
+
+        wasModified = true;
     }
 
     void Awake()
     {
+        this.spritePrefab = Resources.Load("Prefabs/SpritePrefab") as GameObject;
         Initialize();
     }
 

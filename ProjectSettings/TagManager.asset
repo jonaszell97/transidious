@@ -41,9 +41,21 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Stops
-    uniqueID: 2319043169
+  - name: Background
+    uniqueID: 323073753
+    locked: 0
+  - name: Rivers
+    uniqueID: 440701547
+    locked: 0
+  - name: Streets
+    uniqueID: 243332891
     locked: 0
   - name: Lines
     uniqueID: 1580198503
+    locked: 0
+  - name: Stops
+    uniqueID: 2319043169
+    locked: 0
+  - name: Foreground
+    uniqueID: 1871406219
     locked: 0

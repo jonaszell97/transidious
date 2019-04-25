@@ -30,7 +30,23 @@ public class Line : MonoBehaviour
         Ferry,
     }
 
+    [System.Serializable]
+    public struct SerializedLine
+    {
+        public string name;
+        public int id;
+
+        public TransitType type;
+        public SerializableColor color;
+
+        public int depotID;
+        public List<int> stopIDs;
+        public List<int> routeIDs;
+    }
+
+    public int id;
     public Map map;
+
     public TransitType type;
     public Color color;
     public bool wasModified = true;
@@ -39,8 +55,9 @@ public class Line : MonoBehaviour
     public List<Stop> stops;
     public List<Route> routes;
 
-    private MeshFilter meshFilter;
-    private Renderer m_Renderer;
+    MeshFilter meshFilter;
+    Renderer m_Renderer;
+
     public GameObject routePrefab;
 
     /// \return The average travel speed of vehicles on this line, in km/h.
@@ -70,7 +87,9 @@ public class Line : MonoBehaviour
         GameObject routeObject = Instantiate(routePrefab);
         Route route = routeObject.GetComponent<Route>();
         route.Initialize(this, begin, end, path, isBackRoute);
+
         routes.Add(route);
+        map.RegisterRoute(route);
 
         begin.AddOutgoingRoute(route);
         end.AddIncomingRoute(route);
@@ -82,6 +101,8 @@ public class Line : MonoBehaviour
             backRoute.Initialize(this, end, begin, route.path, true);
 
             routes.Add(backRoute);
+            map.RegisterRoute(backRoute);
+
             end.AddOutgoingRoute(backRoute);
             begin.AddIncomingRoute(backRoute);
         }
@@ -108,17 +129,45 @@ public class Line : MonoBehaviour
         wasModified = false;
     }
 
+    public SerializedLine Serialize()
+    {
+        return new SerializedLine
+        {
+            id = id,
+            name = name,
+
+            type = type,
+            color = new SerializableColor(color),
+
+            depotID = depot?.id ?? 0,
+            stopIDs = stops.Select(s => s.id).ToList(),
+            routeIDs = routes.Select(r => r.id).ToList(),
+        };
+    }
+
+    public void Deserialize(SerializedLine line, Map map)
+    {
+        this.map = map;
+        stops = line.stopIDs.Select(id => map.transitStopIDMap[id]).ToList();
+        routes = line.routeIDs.Select(id => map.transitRouteIDMap[id]).ToList();
+        depot = map.transitStopIDMap[line.depotID];
+
+        wasModified = true;
+    }
+
     void Awake()
     {
         routePrefab = Resources.Load("Prefabs/Route") as GameObject;
         meshFilter = GetComponent<MeshFilter>();
         m_Renderer = GetComponent<Renderer>();
+        routes = new List<Route>();
+        stops = new List<Stop>();
     }
 
     // Use this for initialization
     void Start()
     {
-        map.RegisterLine(this);
+
     }
 
     // Update is called once per frame

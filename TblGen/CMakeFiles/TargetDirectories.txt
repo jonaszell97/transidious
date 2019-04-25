@@ -1,0 +1,4 @@
+/Users/Jonas/Transidious/TblGen/CMakeFiles/rebuild_cache.dir
+/Users/Jonas/Transidious/TblGen/CMakeFiles/edit_cache.dir
+/Users/Jonas/Transidious/TblGen/CMakeFiles/transidious-tblgens.dir
+/Users/Jonas/Transidious/TblGen/CMakeFiles/intrinsics_gen.dir

@@ -49,6 +49,11 @@ namespace Transidious
             return degrees / (180f / Mathf.PI);
         }
 
+        public static float PointAngle(Vector3 p0, Vector3 p3)
+        {
+            return Math.toDegrees((float)System.Math.Atan2(p3.y - p0.y, p3.x - p0.x));
+        }
+
         public static float Angle(Vector2 v1, Vector2 v2)
         {
             return toDegrees(Mathf.Atan2(v1.x*v2.y - v1.y*v2.x, v1.x*v2.x + v1.y*v2.y));
