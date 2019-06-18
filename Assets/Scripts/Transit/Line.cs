@@ -3,176 +3,179 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Line : MonoBehaviour
+namespace Transidious
 {
-    /// Represents the different public transit systems.
-    public enum TransitType
+    public class Line : MonoBehaviour
     {
-        /// A bus line.
-        Bus,
+        /// Represents the different public transit systems.
+        public enum TransitType
+        {
+            /// A bus line.
+            Bus,
 
-        /// A tram line.
-        Tram,
+            /// A tram line.
+            Tram,
 
-        /// A subway line.
-        Subway,
+            /// A subway line.
+            Subway,
 
-        /// An S-Train line.
-        STrain,
+            /// An S-Train line.
+            STrain,
 
-        /// A regional train line.
-        RegionalTrain,
+            /// A regional train line.
+            RegionalTrain,
 
-        /// A long-distance train line.
-        LongDistanceTrain,
+            /// A long-distance train line.
+            LongDistanceTrain,
 
-        /// A ferry line.
-        Ferry,
-    }
+            /// A ferry line.
+            Ferry,
+        }
 
-    [System.Serializable]
-    public struct SerializedLine
-    {
-        public string name;
+        [System.Serializable]
+        public struct SerializedLine
+        {
+            public string name;
+            public int id;
+
+            public TransitType type;
+            public SerializableColor color;
+
+            public int depotID;
+            public List<int> stopIDs;
+            public List<int> routeIDs;
+        }
+
         public int id;
+        public Map map;
 
         public TransitType type;
-        public SerializableColor color;
+        public Color color;
+        public bool wasModified = true;
 
-        public int depotID;
-        public List<int> stopIDs;
-        public List<int> routeIDs;
-    }
+        public Stop depot;
+        public List<Stop> stops;
+        public List<Route> routes;
 
-    public int id;
-    public Map map;
+        MeshFilter meshFilter;
+        Renderer m_Renderer;
 
-    public TransitType type;
-    public Color color;
-    public bool wasModified = true;
+        public GameObject routePrefab;
 
-    public Stop depot;
-    public List<Stop> stops;
-    public List<Route> routes;
-
-    MeshFilter meshFilter;
-    Renderer m_Renderer;
-
-    public GameObject routePrefab;
-
-    /// \return The average travel speed of vehicles on this line, in km/h.
-    public float AverageSpeed
-    {
-        get
+        /// \return The average travel speed of vehicles on this line, in km/h.
+        public float AverageSpeed
         {
-            switch (type)
+            get
             {
-                case TransitType.Bus: return 30.0f;
-                case TransitType.Tram: return 30.0f;
-                case TransitType.Subway: return 50.0f;
-                case TransitType.STrain: return 60.0f;
-                case TransitType.RegionalTrain: return 80.0f;
-                case TransitType.LongDistanceTrain: return 120.0f;
-                case TransitType.Ferry: return 10.0f;
-                default:
-                    Debug.LogError("Unknown transit type!");
-                    return 50.0f;
+                switch (type)
+                {
+                    case TransitType.Bus: return 30.0f;
+                    case TransitType.Tram: return 30.0f;
+                    case TransitType.Subway: return 50.0f;
+                    case TransitType.STrain: return 60.0f;
+                    case TransitType.RegionalTrain: return 80.0f;
+                    case TransitType.LongDistanceTrain: return 120.0f;
+                    case TransitType.Ferry: return 10.0f;
+                    default:
+                        Debug.LogError("Unknown transit type!");
+                        return 50.0f;
+                }
             }
         }
-    }
 
-    /// Add a stop to the end of this line.
-    public Route AddRoute(Stop begin, Stop end, Path path, bool oneWay, bool isBackRoute)
-    {
-        GameObject routeObject = Instantiate(routePrefab);
-        Route route = routeObject.GetComponent<Route>();
-        route.Initialize(this, begin, end, path, isBackRoute);
-
-        routes.Add(route);
-        map.RegisterRoute(route);
-
-        begin.AddOutgoingRoute(route);
-        end.AddIncomingRoute(route);
-
-        if (!oneWay)
+        /// Add a stop to the end of this line.
+        public Route AddRoute(Stop begin, Stop end, List<Vector3> positions, bool oneWay, bool isBackRoute)
         {
-            GameObject backRouteObject = Instantiate(routePrefab);
-            Route backRoute = backRouteObject.GetComponent<Route>();
-            backRoute.Initialize(this, end, begin, route.path, true);
+            GameObject routeObject = Instantiate(routePrefab);
+            Route route = routeObject.GetComponent<Route>();
+            route.Initialize(this, begin, end, positions, isBackRoute);
 
-            routes.Add(backRoute);
-            map.RegisterRoute(backRoute);
+            routes.Add(route);
+            map.RegisterRoute(route);
 
-            end.AddOutgoingRoute(backRoute);
-            begin.AddIncomingRoute(backRoute);
+            begin.AddOutgoingRoute(route);
+            end.AddIncomingRoute(route);
+
+            if (!oneWay)
+            {
+                GameObject backRouteObject = Instantiate(routePrefab);
+                Route backRoute = backRouteObject.GetComponent<Route>();
+                backRoute.Initialize(this, end, begin, positions, true);
+
+                routes.Add(backRoute);
+                map.RegisterRoute(backRoute);
+
+                end.AddOutgoingRoute(backRoute);
+                begin.AddIncomingRoute(backRoute);
+            }
+
+            begin.wasModified = true;
+            end.wasModified = true;
+            this.wasModified = true;
+
+            return route;
         }
 
-        begin.wasModified = true;
-        end.wasModified = true;
-        this.wasModified = true;
-
-        return route;
-    }
-
-    public void UpdateMesh()
-    {
-        if (!wasModified)
+        public void UpdateMesh()
         {
-            return;
+            if (!wasModified)
+            {
+                return;
+            }
+
+            foreach (var route in routes)
+            {
+                route.UpdatePath();
+            }
+
+            wasModified = false;
         }
 
-        foreach (var route in routes)
+        public SerializedLine Serialize()
         {
-            route.UpdatePath();
+            return new SerializedLine
+            {
+                id = id,
+                name = name,
+
+                type = type,
+                color = new SerializableColor(color),
+
+                depotID = depot?.id ?? 0,
+                stopIDs = stops.Select(s => s.id).ToList(),
+                routeIDs = routes.Select(r => r.id).ToList(),
+            };
         }
 
-        wasModified = false;
-    }
-
-    public SerializedLine Serialize()
-    {
-        return new SerializedLine
+        public void Deserialize(SerializedLine line, Map map)
         {
-            id = id,
-            name = name,
+            this.map = map;
+            stops = line.stopIDs.Select(id => map.transitStopIDMap[id]).ToList();
+            routes = line.routeIDs.Select(id => map.transitRouteIDMap[id]).ToList();
+            depot = map.transitStopIDMap[line.depotID];
 
-            type = type,
-            color = new SerializableColor(color),
+            wasModified = true;
+        }
 
-            depotID = depot?.id ?? 0,
-            stopIDs = stops.Select(s => s.id).ToList(),
-            routeIDs = routes.Select(r => r.id).ToList(),
-        };
-    }
+        void Awake()
+        {
+            routePrefab = Resources.Load("Prefabs/Route") as GameObject;
+            meshFilter = GetComponent<MeshFilter>();
+            m_Renderer = GetComponent<Renderer>();
+            routes = new List<Route>();
+            stops = new List<Stop>();
+        }
 
-    public void Deserialize(SerializedLine line, Map map)
-    {
-        this.map = map;
-        stops = line.stopIDs.Select(id => map.transitStopIDMap[id]).ToList();
-        routes = line.routeIDs.Select(id => map.transitRouteIDMap[id]).ToList();
-        depot = map.transitStopIDMap[line.depotID];
+        // Use this for initialization
+        void Start()
+        {
 
-        wasModified = true;
-    }
+        }
 
-    void Awake()
-    {
-        routePrefab = Resources.Load("Prefabs/Route") as GameObject;
-        meshFilter = GetComponent<MeshFilter>();
-        m_Renderer = GetComponent<Renderer>();
-        routes = new List<Route>();
-        stops = new List<Stop>();
-    }
+        // Update is called once per frame
+        void Update()
+        {
 
-    // Use this for initialization
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        }
     }
 }

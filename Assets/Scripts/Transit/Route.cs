@@ -1,257 +1,315 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Transidious;
+using Transidious.PathPlanning;
 
-public class Route : MonoBehaviour
+namespace Transidious
 {
-    [System.Serializable]
-    public struct SerializedRoute
+    public class Route : MonoBehaviour, IRoute
     {
-        public int id;
-        public int lineID;
-        public Path.SerializedPath path;
-        public Path.SerializedPath originalPath;
+        [System.Serializable]
+        public struct SerializedRoute
+        {
+            public int id;
+            public int lineID;
+            public SerializableVector3[] positions;
+            public Path.SerializedPath path;
+            public Path.SerializedPath originalPath;
 
-        public int beginStopID;
-        public int endStopID;
+            public int beginStopID;
+            public int endStopID;
+
+            public float totalTravelTime;
+            public bool isBackRoute;
+        }
+
+        public int id;
+        public Line line;
+
+        public List<Vector3> positions;
+        public Path path;
+        public Path originalPath;
+
+        public Stop beginStop;
+        public Stop.Slot beginSlot;
+
+        public Stop endStop;
+        public Stop.Slot endSlot;
 
         public float totalTravelTime;
-        public bool isBackRoute;
-    }
+        public bool isBackRoute = false;
 
-    public int id;
-    public Line line;
+        public Mesh mesh;
+        MeshFilter meshFilter;
+        Renderer m_Renderer;
 
-    public Path path;
-    public Path originalPath;
-
-    public Stop beginStop;
-    public Stop.Slot beginSlot;
-
-    public Stop endStop;
-    public Stop.Slot endSlot;
-
-    public float totalTravelTime;
-    public bool isBackRoute = false;
-
-    MeshFilter meshFilter;
-    Renderer m_Renderer;
-
-    public void Initialize(Line line, Stop beginStop, Stop endStop, Path path, bool isBackRoute = false)
-    {
-        this.line = line;
-        this.path = path;
-        this.beginStop = beginStop;
-        this.beginSlot = null;
-        this.endStop = endStop;
-        this.endSlot = null;
-        this.transform.position = new Vector3(0, 0, 0);
-        this.transform.SetParent(line.transform);
-        this.isBackRoute = isBackRoute;
-        this.name = "(" + line.name + ") " + beginStop.name + " -> " + endStop.name;
-        this.originalPath = path;
-
-        UpdatePath();
-
-        Route previousRoute = beginStop.GetIncomingRouteFromDepot(line);
-        if (previousRoute == null)
+        public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector3> positions, bool isBackRoute = false)
         {
-            this.totalTravelTime = this.TravelTime;
-        }
-        else
-        {
-            this.totalTravelTime = previousRoute.totalTravelTime + this.TravelTime;
-        }
-    }
+            this.line = line;
+            this.positions = positions;
+            this.beginStop = beginStop;
+            this.beginSlot = null;
+            this.endStop = endStop;
+            this.endSlot = null;
+            this.transform.position = new Vector3(0, 0, 0);
+            this.transform.SetParent(line.transform);
+            this.isBackRoute = isBackRoute;
+            this.name = "(" + line.name + ") " + beginStop.name + " -> " + endStop.name;
+            this.originalPath = path;
 
-    public float TravelTime
-    {
-        get
-        {
-            return path.length / line.AverageSpeed;
-        }
-    }
+            UpdatePath();
 
-    public void UpdatePath()
-    {
-        bool update = false;
-        Vector3 beginLoc;
-        Vector3 endLoc;
-
-        if (beginSlot == null)
-        {
-            beginLoc = beginStop.location;
-        }
-        else
-        {
-            beginLoc = beginStop.GetSlotLocation(this, beginSlot);
-        }
-
-        if (endSlot == null)
-        {
-            endLoc = endStop.location;
-        }
-        else
-        {
-            endLoc = endStop.GetSlotLocation(this, endSlot);
-        }
-
-        if (path == null)
-        {
-            path = new Path(beginLoc, endLoc);
-            originalPath = new Path(path);
-            update = true;
-        }
-        else
-        {
-            path = new Path(originalPath);
-            update = true;
-
-            if (path.Start != beginLoc)
+            Route previousRoute = beginStop.GetIncomingRouteFromDepot(line);
+            if (previousRoute == null)
             {
-                path.AdjustStart(beginLoc, false, false);
-            }
-            if (path.End != endLoc)
-            {
-                path.AdjustEnd(endLoc, false, false);
-            }
-        }
-
-        if (isBackRoute && !line.map.input.renderBackRoutes)
-        {
-            meshFilter.mesh = new Mesh();
-            return;
-        }
-
-        if (beginStop.appearance == Stop.Appearance.LargeRect && beginSlot != null)
-        {
-            float factor = 0.1f;
-
-            var dir = Math.ClassifyDirection(originalPath.BeginAngle);
-            float spaceBetweenLines;
-
-            if (dir == CardinalDirection.North || dir == CardinalDirection.South)
-            {
-                spaceBetweenLines = (beginStop.spacePerSlotHorizontal - line.map.input.lineWidth * 2f);
+                this.totalTravelTime = this.TravelTime;
             }
             else
             {
-                spaceBetweenLines = (beginStop.spacePerSlotVertical- line.map.input.lineWidth * 2f);
+                this.totalTravelTime = previousRoute.totalTravelTime + this.TravelTime;
             }
-
-            factor += beginSlot.assignment.parallelPositionInbound
-                * Mathf.Sqrt(2 * spaceBetweenLines * spaceBetweenLines);
-
-            path.RemoveStartAngle(Math.DirectionVector(dir) * factor);
-            update = true;
         }
-        if (endStop.appearance == Stop.Appearance.LargeRect && endSlot != null)
+
+        public float TravelTime
         {
-            float factor = 0.1f;
-
-            var dir = Math.ClassifyDirection(originalPath.EndAngle);
-            float spaceBetweenLines;
-
-            if (dir == CardinalDirection.North || dir == CardinalDirection.South)
+            get
             {
-                spaceBetweenLines = (endStop.spacePerSlotHorizontal - line.map.input.lineWidth * 2f);
+                return 0f; // path.length / line.AverageSpeed;
+            }
+        }
+
+        public IStop Begin
+        {
+            get
+            {
+                return beginStop;
+            }
+        }
+
+        public IStop End
+        {
+            get
+            {
+                return endStop;
+            }
+        }
+
+        public bool OneWay
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public float AverageSpeed
+        {
+            get
+            {
+                return line.AverageSpeed;
+            }
+        }
+
+        public int AssociatedID
+        {
+            get
+            {
+                return line.id;
+            }
+        }
+
+        public DateTime NextDeparture(DateTime after)
+        {
+            return after;
+        }
+
+        public void UpdatePath()
+        {
+            if (positions == null)
+                return;
+
+            mesh = MeshBuilder.CreateSmoothLine(positions, line.map.input.lineWidth);
+            UpdateMesh();
+        }
+
+        public void UpdatePathStylized()
+        {
+            bool update = false;
+            Vector3 beginLoc;
+            Vector3 endLoc;
+
+            if (beginSlot == null)
+            {
+                beginLoc = beginStop.location;
             }
             else
             {
-                spaceBetweenLines = (endStop.spacePerSlotVertical - line.map.input.lineWidth * 2f);
+                beginLoc = beginStop.GetSlotLocation(this, beginSlot);
             }
 
-            factor += endSlot.assignment.parallelPositionOutbound
-                * Mathf.Sqrt(2 * spaceBetweenLines * spaceBetweenLines);
-
-            path.RemoveEndAngle(Math.DirectionVector(dir) * -factor);
-            update = true;
-        }
-
-        if (update)
-        {
-            path.width = line.map.input.lineWidth;
-            UpdateMesh();
-
-            // Some stops might need to be updated.
-            if (beginStop.appearance == Stop.Appearance.SmallRect)
+            if (endSlot == null)
             {
-                beginStop.UpdateMesh(true);
+                endLoc = endStop.location;
             }
-            if (endStop.appearance == Stop.Appearance.SmallRect)
+            else
             {
-                endStop.UpdateMesh(true);
+                endLoc = endStop.GetSlotLocation(this, endSlot);
+            }
+
+            if (path == null)
+            {
+                path = new Path(beginLoc, endLoc);
+                originalPath = new Path(path);
+                update = true;
+            }
+            else
+            {
+                path = new Path(originalPath);
+                update = true;
+
+                if (path.Start != beginLoc)
+                {
+                    path.AdjustStart(beginLoc, false, false);
+                }
+                if (path.End != endLoc)
+                {
+                    path.AdjustEnd(endLoc, false, false);
+                }
+            }
+
+            if (isBackRoute && !line.map.input.renderBackRoutes)
+            {
+                meshFilter.mesh = new Mesh();
+                return;
+            }
+
+            if (beginStop.appearance == Stop.Appearance.LargeRect && beginSlot != null)
+            {
+                float factor = 0.1f;
+
+                var dir = Math.ClassifyDirection(originalPath.BeginAngle);
+                float spaceBetweenLines;
+
+                if (dir == CardinalDirection.North || dir == CardinalDirection.South)
+                {
+                    spaceBetweenLines = (beginStop.spacePerSlotHorizontal - line.map.input.lineWidth * 2f);
+                }
+                else
+                {
+                    spaceBetweenLines = (beginStop.spacePerSlotVertical - line.map.input.lineWidth * 2f);
+                }
+
+                factor += beginSlot.assignment.parallelPositionInbound
+                    * Mathf.Sqrt(2 * spaceBetweenLines * spaceBetweenLines);
+
+                path.RemoveStartAngle(Math.DirectionVector(dir) * factor);
+                update = true;
+            }
+            if (endStop.appearance == Stop.Appearance.LargeRect && endSlot != null)
+            {
+                float factor = 0.1f;
+
+                var dir = Math.ClassifyDirection(originalPath.EndAngle);
+                float spaceBetweenLines;
+
+                if (dir == CardinalDirection.North || dir == CardinalDirection.South)
+                {
+                    spaceBetweenLines = (endStop.spacePerSlotHorizontal - line.map.input.lineWidth * 2f);
+                }
+                else
+                {
+                    spaceBetweenLines = (endStop.spacePerSlotVertical - line.map.input.lineWidth * 2f);
+                }
+
+                factor += endSlot.assignment.parallelPositionOutbound
+                    * Mathf.Sqrt(2 * spaceBetweenLines * spaceBetweenLines);
+
+                path.RemoveEndAngle(Math.DirectionVector(dir) * -factor);
+                update = true;
+            }
+
+            if (update)
+            {
+                path.width = line.map.input.lineWidth;
+                UpdateMesh();
+
+                // Some stops might need to be updated.
+                if (beginStop.appearance == Stop.Appearance.SmallRect)
+                {
+                    beginStop.UpdateMesh(true);
+                }
+                if (endStop.appearance == Stop.Appearance.SmallRect)
+                {
+                    endStop.UpdateMesh(true);
+                }
             }
         }
-    }
 
-    void UpdateMesh()
-    {
-        if (isBackRoute && !line.map.input.renderBackRoutes)
+        void UpdateMesh()
         {
-            return;
+            if (isBackRoute && !line.map.input.renderBackRoutes)
+            {
+                return;
+            }
+
+            meshFilter.mesh = mesh;
+            m_Renderer.material = line.map.input.controller.GetUnlitMaterial(line.color);
+            transform.position = new Vector3(transform.position.x,
+                                             transform.position.y,
+                                             Map.Layer(MapLayer.TransitLines));
         }
 
-        meshFilter.mesh = path.CreateMesh();
-        m_Renderer.material.color = line.color;
-
-        transform.position = new Vector3(transform.position.x,
-                                         transform.position.y,
-                                         Map.Layer(MapLayer.TransitLines));
-    }
-
-    public void UpdateScale()
-    {
-        if (!path.width.Equals(line.map.input.lineWidth))
+        public void UpdateScale()
         {
-            path.width = line.map.input.lineWidth;
-            UpdateMesh();
+
         }
-    }
 
-    void Awake()
-    {
-        meshFilter = GetComponent<MeshFilter>();
-        m_Renderer = GetComponent<Renderer>();
-    }
-
-    public SerializedRoute Serialize()
-    {
-        return new SerializedRoute
+        void Awake()
         {
-            id = id,
-            lineID = line.id,
+            meshFilter = GetComponent<MeshFilter>();
+            m_Renderer = GetComponent<Renderer>();
+        }
 
-            path = path.Serialize(),
-            originalPath = originalPath.Serialize(),
+        public SerializedRoute Serialize()
+        {
+            return new SerializedRoute
+            {
+                id = id,
+                lineID = line.id,
 
-            beginStopID = beginStop.id,
-            endStopID = endStop.id,
+                positions = positions?.Select(v => new SerializableVector3(v)).ToArray() ?? null,
 
-            totalTravelTime = totalTravelTime,
-            isBackRoute = isBackRoute
-        };
-    }
+                beginStopID = beginStop.id,
+                endStopID = endStop.id,
 
-    public void Deserialize(SerializedRoute route, Map map)
-    {
-        id = route.id;
-        Initialize(map.transitLineIDMap[route.lineID], map.transitStopIDMap[route.beginStopID],
-                   map.transitStopIDMap[route.endStopID],
-                   Path.Deserialize(route.path), route.isBackRoute);
+                totalTravelTime = totalTravelTime,
+                isBackRoute = isBackRoute
+            };
+        }
 
-        originalPath = Path.Deserialize(route.originalPath);
-    }
+        public void Deserialize(SerializedRoute route, Map map)
+        {
+            id = route.id;
+            Initialize(map.transitLineIDMap[route.lineID], map.transitStopIDMap[route.beginStopID],
+                       map.transitStopIDMap[route.endStopID],
+                       route.positions?.Select(v => v.ToVector()).ToList() ?? null,
+                       route.isBackRoute);
 
-    // Use this for initialization
-    void Start()
-    {
+            originalPath = Path.Deserialize(route.originalPath);
+        }
 
-    }
+        // Use this for initialization
+        void Start()
+        {
 
-    // Update is called once per frame
-    void Update()
-    {
+        }
 
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
     }
 }

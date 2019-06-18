@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg920"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="car2.svg">
+  <defs
+     id="defs914" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#cdcdcd"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="282.85715"
+     inkscape:cy="655.8122"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1280"
+     inkscape:window-height="707"
+     inkscape:window-x="0"
+     inkscape:window-y="1"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false" />
+  <metadata
+     id="metadata917">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#1a1a1a;stroke-width:5.83850956;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 162.85742 267.94922 C 153.75599 267.94922 146.42773 275.27552 146.42773 284.37695 L 146.42773 307.23438 C 146.42773 308.59618 146.61045 309.91007 146.91992 311.17383 L 141.42773 311.17383 L 141.42773 328.98438 C 141.19148 328.96652 140.95583 328.94727 140.71484 328.94727 C 135.57056 328.94727 131.42773 333.09009 131.42773 338.23438 L 131.42773 375.37695 C 131.42773 380.52124 135.57056 384.66211 140.71484 384.66211 C 140.95582 384.66211 141.19148 384.64481 141.42773 384.62695 L 141.42773 536.03125 C 141.19148 536.0134 140.95582 535.99609 140.71484 535.99609 C 135.57056 535.99609 131.42773 540.13696 131.42773 545.28125 L 131.42773 582.42383 C 131.42773 587.56811 135.57056 591.71094 140.71484 591.71094 C 140.95583 591.71094 141.19148 591.69168 141.42773 591.67383 L 141.42773 596.74609 C 141.19148 596.72824 140.95582 596.71094 140.71484 596.71094 C 135.57056 596.71094 131.42773 600.85181 131.42773 605.99609 L 131.42773 643.13867 C 131.42773 648.28296 135.57056 652.42383 140.71484 652.42383 C 140.95582 652.42383 141.19148 652.40652 141.42773 652.38867 L 141.42773 671.71094 L 150 671.71094 L 150 681.35352 C 150 684.32137 152.38956 686.71094 155.35742 686.71094 C 158.32528 686.71094 160.71484 684.32137 160.71484 681.35352 L 160.71484 671.71094 L 162.14258 671.71094 L 162.14258 681.35352 C 162.14258 684.32137 164.53214 686.71094 167.5 686.71094 C 170.46786 686.71094 172.85742 684.32137 172.85742 681.35352 L 172.85742 671.71094 L 274.28516 671.71094 L 274.28516 652.38867 C 279.09235 652.02542 282.85742 648.04198 282.85742 643.13867 L 282.85742 605.99609 C 282.85742 601.09278 279.09235 597.10935 274.28516 596.74609 L 274.28516 591.67383 C 279.09234 591.31056 282.85742 587.32713 282.85742 582.42383 L 282.85742 545.28125 C 282.85742 540.37794 279.09235 536.3945 274.28516 536.03125 L 274.28516 384.62695 C 279.09235 384.2637 282.85742 380.28027 282.85742 375.37695 L 282.85742 338.23438 C 282.85742 333.33107 279.09234 329.34764 274.28516 328.98438 L 274.28516 311.17383 L 268.79297 311.17383 C 269.10249 309.90999 269.28516 308.59628 269.28516 307.23438 L 269.28516 284.37695 C 269.28516 275.27552 261.95885 267.94922 252.85742 267.94922 L 162.85742 267.94922 z "
+       transform="scale(0.26458333)"
+       id="rect821" />
+  </g>
+</svg>

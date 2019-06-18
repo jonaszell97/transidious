@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="ui_citizien.svg"
+   inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/ui_button.png"
+   inkscape:export-xdpi="96.647194"
+   inkscape:export-ydpi="96.647194">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#6d6767"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="363.66935"
+     inkscape:cy="681.21831"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1280"
+     inkscape:window-height="707"
+     inkscape:window-x="0"
+     inkscape:window-y="1"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="opacity:0.8;fill:#fffdfd;fill-opacity:1;stroke:#000000;stroke-width:4.80000006;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 146.86719 253.94922 C 128.81661 253.94922 114.28516 268.48067 114.28516 286.53125 L 114.28516 554.22266 C 114.28516 572.27323 128.81661 586.80469 146.86719 586.80469 L 155.61719 586.80469 L 173.50977 609.33594 L 191.40234 586.80469 L 601.70312 586.80469 C 619.7537 586.80469 634.28516 572.27323 634.28516 554.22266 L 634.28516 286.53125 C 634.28516 268.48067 619.7537 253.94922 601.70312 253.94922 L 146.86719 253.94922 z "
+       transform="scale(0.26458333)"
+       id="rect819" />
+    <rect
+       style="opacity:1;fill:#221e1e;fill-opacity:1;stroke:none;stroke-width:1.04636168;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect876"
+       width="137.37653"
+       height="1.27"
+       x="30.341351"
+       y="79.738609"
+       ry="0.63499999" />
+  </g>
+</svg>

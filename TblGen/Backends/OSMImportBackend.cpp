@@ -40,13 +40,24 @@ class OSMImportBackend
                OS << " && ";
 
             auto *tag = llvm::cast<RecordVal>(tagVal)->getRecord();
-            OS << "tags.Contains(\""
-               << llvm::cast<StringLiteral>(tag->getFieldValue("key"))->getVal()
-               << "\", \""
-               << llvm::cast<StringLiteral>(
-                      tag->getFieldValue("value"))
-                      ->getVal()
-               << "\")";
+            auto value = llvm::cast<StringLiteral>(
+                             tag->getFieldValue("value"))
+                             ->getVal();
+
+            if (value.empty())
+            {
+               OS
+                   << "tags.ContainsKey(\""
+                   << llvm::cast<StringLiteral>(tag->getFieldValue("key"))->getVal()
+                   << "\")";
+            }
+            else
+            {
+               OS
+                   << "tags.Contains(\""
+                   << llvm::cast<StringLiteral>(tag->getFieldValue("key"))->getVal()
+                   << "\", \"" << value << "\")";
+            }
          }
 
          OS << ") {\n";
@@ -103,6 +114,9 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
 
+namespace Transidious
+{
+
 public class OSMImportHelper {
     public enum Area {
 )__";
@@ -153,7 +167,7 @@ public class OSMImportHelper {
       {
          OS << R"__(
                string allNodesFileName;
-               allNodesFileName = "Assets/Resources/OSM/";
+               allNodesFileName = "Resources/OSM/";
                allNodesFileName += ")__" << allNodesFile << R"__(";
                allNodesFileName += ".osm.pbf";
 
@@ -283,6 +297,7 @@ public class OSMImportHelper {
 
    OS << R"__(
    }
+}
 }
 )__";
 }

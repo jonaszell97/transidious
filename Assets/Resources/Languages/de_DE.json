@@ -1,0 +1,30 @@
+{
+    "lang_id": "de_DE",
+    "language": "Deutsch",
+    "currency": {
+        "name": "Euro",
+        "symbol": "€",
+        "beforeNumber": false,
+        "valueInDollars": 1.12
+    },
+    "decimalSeparator": ",",
+    "thousandsSeparator": ".",
+    "items": [
+        {
+            "key": "ui_happiness",
+            "text": "Gemüt"
+        },
+        {
+            "key": "ui_happiness_happy",
+            "text": "Glücklich"
+        },
+        {
+            "key": "ui_happiness_med_happy",
+            "text": "Zufrieden"
+        },
+        {
+            "key": "ui_happiness_unhappy",
+            "text": "Unglücklich"
+        }
+    ]
+}

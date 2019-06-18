@@ -1,25 +1,28 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class NewMonoBehaviour : MonoBehaviour
+namespace Transidious
 {
-    public Map map;
-    public string saveName;
-
-    // Use this for initialization
-    void Start()
+    public class NewMonoBehaviour : MonoBehaviour
     {
+        public Map map;
+        public string saveName;
 
-    }
+        // Use this for initialization
+        void Start()
+        {
 
-    // Update is called once per frame
-    void Update()
-    {
+        }
 
-    }
+        // Update is called once per frame
+        void Update()
+        {
 
-    void OnDestroy()
-    {
-        map.SaveToFile(saveName);
+        }
+
+        void OnDestroy()
+        {
+            map.SaveToFile(saveName);
+        }
     }
 }

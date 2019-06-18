@@ -1,101 +1,173 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 
-public class Building
+namespace Transidious
 {
-    [System.Serializable]
-    public struct SerializableBuilding
+    public class Building
     {
-        public SerializableMesh mesh;
-        public int streetID;
-        public int number;
+        [System.Serializable]
+        public struct SerializableBuilding
+        {
+            public SerializableMesh mesh;
+            public int streetID;
+            public string number;
+            public string name;
+            public Type type;
+            public SerializableVector2 position;
+        }
+
+        public enum Type
+        {
+            Residential,
+            Shop,
+            Office,
+            ElementarySchool,
+            HighSchool,
+            University,
+            Hospital,
+
+            GroceryStore,
+        }
+
+        public Mesh mesh;
+        public StreetSegment street;
+        public string number;
 
         public string name;
         public Type type;
-    }
+        public int capacity;
+        public int occupants;
 
-    public enum Type
-    {
-        Residential,
-        ElementarySchool,
-        HighSchool,
-        University,
-        Hospital,
-    }
+        public Vector3 position;
 
-    public Mesh mesh;
-    public Street street;
-    public int number;
-
-    public string name;
-    public Type type;
-
-    public Building(Map map, Type type, Street street, int number, Mesh mesh, string name = "")
-    {
-        this.type = type;
-        this.street = street;
-        this.number = number;
-
-        if (name == string.Empty && street != null)
+        public Building(Map map, Type type, StreetSegment street, string numberStr,
+                        Mesh mesh, string name = "", Vector3? position = null)
         {
-            this.name = street.name + " " + number.ToString();
-        }
-        else
-        {
-            this.name = name;
-        }
+            this.type = type;
 
-        UpdateMesh(map, mesh);
-    }
+            if (position.HasValue)
+            {
+                this.position = position.Value;
+            }
+            else if (mesh != null)
+            {
+                UpdatePosition(mesh.vertices);
+            }
 
-    Color GetColor()
-    {
-        switch (type)
-        {
-            case Type.Residential:
-            case Type.ElementarySchool:
-            case Type.HighSchool:
-            case Type.University:
-            case Type.Hospital:
-                return new Color(223f/255f, 226f/255f, 231.8f/255f);
-            default:
-                throw new System.ArgumentException(string.Format("Illegal enum value {0}", type));
-        }
-    }
+            if (street == null)
+            {
+                var closest = map.GetClosestStreet(this.position);
+                if (closest != null)
+                {
+                    street = closest.seg;
+                }
+            }
 
-    public void UpdateMesh(Map map, Mesh mesh)
-    {
-        if (mesh == null)
-        {
-            return;
+            this.street = street;
+            this.number = numberStr;
+            this.occupants = 0;
+            this.capacity = GetDefaultCapacity(type);
+            this.number = numberStr;
+
+            if (string.IsNullOrEmpty(name) && street != null)
+            {
+                this.name = street.street.name;
+            }
+            else
+            {
+                this.name = name;
+            }
+
+            UpdateMesh(map, mesh);
         }
 
-        this.mesh = mesh;
-
-        float layer = 0f;
-        switch (type)
+        int GetDefaultCapacity(Type type)
         {
-            case Type.Residential:
-            case Type.ElementarySchool:
-            case Type.HighSchool:
-            case Type.University:
-            case Type.Hospital:
-                layer = Map.Layer(MapLayer.Buildings);
-                break;
+            switch (type)
+            {
+                case Type.Residential:
+                    return 100;
+                case Type.Office:
+                    return 30;
+                case Type.Shop:
+                case Type.GroceryStore:
+                    return 5;
+                case Type.ElementarySchool:
+                    return 250;
+                case Type.HighSchool:
+                    return 1000;
+                case Type.University:
+                    return 1000;
+                default:
+                    return 0;
+            }
         }
 
-        map.buildingMesh.AddMesh(GetColor(), mesh, layer);
-    }
-
-    public SerializableBuilding Serialize()
-    {
-        return new SerializableBuilding
+        void UpdatePosition(Vector3[] vertices)
         {
-            mesh = new SerializableMesh(mesh),
-            streetID = street?.id ?? 0,
-            number = number,
-            name = name,
-            type = type
-        };
+            float xSum = 0f;
+            float ySum = 0f;
+
+            foreach (var vert in vertices)
+            {
+                xSum += vert.x;
+                ySum += vert.y;
+            }
+
+            this.position = new Vector3(xSum / vertices.Length, ySum / vertices.Length, 0);
+        }
+
+        Color GetColor()
+        {
+            switch (type)
+            {
+                default:
+                    return new Color(223f / 255f, 226f / 255f, 231.8f / 255f);
+            }
+        }
+
+        public void UpdateMesh(Map map, Mesh mesh)
+        {
+            if (mesh == null)
+            {
+                return;
+            }
+
+            this.mesh = mesh;
+
+            float layer = 0f;
+            switch (type)
+            {
+                default:
+                    layer = Map.Layer(MapLayer.Buildings);
+                    break;
+            }
+
+            map.buildingMesh.AddMesh(GetColor(), mesh, layer);
+        }
+
+        public SerializableBuilding Serialize()
+        {
+            return new SerializableBuilding
+            {
+                mesh = new SerializableMesh(mesh),
+                streetID = street?.id ?? 0,
+                number = number,
+                name = name,
+                type = type,
+                position = new SerializableVector2(position),
+            };
+        }
+
+        public override string ToString()
+        {
+            if (!string.IsNullOrEmpty(number))
+            {
+                return name + " " + number;
+            }
+
+            return name;
+        }
     }
 }

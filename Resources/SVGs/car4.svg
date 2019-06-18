@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg920"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="car4.svg">
+  <defs
+     id="defs914" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#cdcdcd"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="225"
+     inkscape:cy="660.71428"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1280"
+     inkscape:window-height="707"
+     inkscape:window-x="0"
+     inkscape:window-y="1"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false" />
+  <metadata
+     id="metadata917">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#1a1a1a;stroke-width:4.65587091;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 185.26172 342.51953 C 168.22014 342.51953 154.40766 355.83621 153.61133 372.67383 C 150.7226 373.30587 148.57227 375.86541 148.57227 378.94922 L 148.57227 401.80469 C 148.57227 404.87443 150.70345 407.42364 153.57227 408.07031 L 153.57227 430.54102 C 150.7035 431.18772 148.57227 433.73498 148.57227 436.80469 L 148.57227 459.66211 C 148.57227 462.73186 150.70345 465.28106 153.57227 465.92773 L 153.57227 468.68555 C 153.57227 472.39239 156.55487 475.37695 160.26172 475.37695 L 162.16211 475.37695 C 162.15248 475.49517 162.14258 475.6138 162.14258 475.73438 C 162.14258 478.30652 164.37258 480.37695 167.14258 480.37695 C 169.91258 480.37695 172.14258 478.30652 172.14258 475.73438 C 172.14258 475.6138 172.13267 475.49517 172.12305 475.37695 L 251.16602 475.37695 C 254.87286 475.37695 257.85742 472.39239 257.85742 468.68555 L 257.85742 465.92773 C 260.7253 465.28038 262.85742 462.73119 262.85742 459.66211 L 262.85742 436.80469 C 262.85742 433.73564 260.72525 431.1884 257.85742 430.54102 L 257.85742 408.07031 C 260.7253 407.42296 262.85742 404.87377 262.85742 401.80469 L 262.85742 378.94922 C 262.85742 375.86607 260.70615 373.30657 257.81836 372.67383 C 257.02203 355.83621 243.20759 342.51953 226.16602 342.51953 L 185.26172 342.51953 z "
+       transform="scale(0.26458333)"
+       id="rect1441"
+       inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/car4.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+  </g>
+</svg>

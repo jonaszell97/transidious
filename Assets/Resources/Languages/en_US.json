@@ -1,0 +1,30 @@
+{
+    "lang_id": "en_US",
+    "language": "English",
+    "currency": {
+        "name": "US Dollar",
+        "symbol": "$",
+        "beforeNumber": true,
+        "valueInDollars": 1.0
+    },
+    "decimalSeparator": ".",
+    "thousandsSeparator": ",",
+    "items": [
+        {
+            "key": "ui_happiness",
+            "text": "Happiness"
+        },
+        {
+            "key": "ui_happiness_happy",
+            "text": "Happy"
+        },
+        {
+            "key": "ui_happiness_med_happy",
+            "text": "Content"
+        },
+        {
+            "key": "ui_happiness_unhappy",
+            "text": "Unhappy"
+        }
+    ]
+}

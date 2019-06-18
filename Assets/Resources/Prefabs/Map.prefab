@@ -44,6 +44,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   input: {fileID: 0}
+  tilesHeight: 0
+  tilesWidth: 0
   width: 0
   height: 0
   startingCameraPos: {x: 0, y: 0, z: 0}
@@ -54,6 +56,8 @@ MonoBehaviour:
   boundaryBackgroundObj: {fileID: 0}
   boundaryOutlineObj: {fileID: 0}
   boundarymaskObj: {fileID: 0}
+  streets: []
+  streetSegments: []
   transitStops: []
   transitRoutes: []
   transitLines: []
@@ -61,7 +65,13 @@ MonoBehaviour:
   streetMesh: {fileID: 0}
   buildingMesh: {fileID: 0}
   natureMesh: {fileID: 0}
+  multiMeshPrefab: {fileID: 61026142767662235, guid: f49e2519502aa4eb5b9f49aefff1410f,
+    type: 3}
   meshPrefab: {fileID: 4920824567467125320, guid: a8a8aebbab21c4fd5b304e5c60fe714b,
+    type: 3}
+  streetPrefab: {fileID: 6216374283189819706, guid: b2dd772e25ae64213b7cd2eace8a24a8,
+    type: 3}
+  streetSegmentPrefab: {fileID: 148497213348690520, guid: 767de93ca301b48e38ff6a2e63385aeb,
     type: 3}
   stopPrefab: {fileID: 7249201573953522384, guid: fe99f6853c2564cf485ed2ac9d495b51,
     type: 3}
@@ -73,7 +83,8 @@ MonoBehaviour:
     type: 3}
   screenshotMakerPrefab: {fileID: 8826896525106204825, guid: e58bf724d0755419b81e7bf24e2b0811,
     type: 3}
-  unlitMaterial: {fileID: 0}
+  renderTrafficLights: 1
+  renderStreetOrder: 0
   done: 0
   saveOnExit: 1
-  saveScene: 1
+  saveScene: 0

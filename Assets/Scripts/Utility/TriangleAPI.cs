@@ -374,6 +374,7 @@ namespace Transidious
                 process.Start();
 
                 process.WaitForExit();
+                process.Close();
             }
             catch (System.Exception e)
             {

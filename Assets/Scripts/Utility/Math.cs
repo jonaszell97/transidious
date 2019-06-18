@@ -7,7 +7,8 @@ namespace Transidious
     {
         private static void arcLengthUtil(Vector2 A, Vector2 B,
                                           Vector2 C, Vector2 D,
-                                          uint subdiv, ref float L) {
+                                          uint subdiv, ref float L)
+        {
             if (subdiv > 0)
             {
                 Vector2 a = A + (B - A) * 0.5f;
@@ -32,7 +33,8 @@ namespace Transidious
         }
 
         public static float cubicBezierLength(Vector2 p0, Vector2 p1,
-                                              Vector2 p2, Vector2 p3) {
+                                              Vector2 p2, Vector2 p3)
+        {
             float len = 0.0f;
             arcLengthUtil(p0, p1, p2, p3, 5, ref len);
 
@@ -56,7 +58,7 @@ namespace Transidious
 
         public static float Angle(Vector2 v1, Vector2 v2)
         {
-            return toDegrees(Mathf.Atan2(v1.x*v2.y - v1.y*v2.x, v1.x*v2.x + v1.y*v2.y));
+            return toDegrees(Mathf.Atan2(v1.x * v2.y - v1.y * v2.x, v1.x * v2.x + v1.y * v2.y));
         }
 
         public static CardinalDirection ClassifyDirection(float angle)
@@ -114,6 +116,127 @@ namespace Transidious
                 default:
                     throw new System.ArgumentException(string.Format("Illegal enum value {0}", dir));
             }
+        }
+
+        public static Vector3 NearestPointOnLine(Vector3 p0, Vector3 p1, Vector3 pnt)
+        {
+            return NearestPointOnLine(new Vector2(p0.x, p0.y),
+                                      new Vector2(p1.x, p1.y),
+                                      new Vector2(pnt.x, pnt.y));
+        }
+
+        public static Vector2 NearestPointOnLine(Vector2 p0, Vector2 p1, Vector2 pnt)
+        {
+            var dir = p1 - p0;
+            var lineDir = dir.normalized;
+
+            var v = pnt - p0;
+            var d = Vector2.Dot(v, lineDir);
+
+            if (d < 0)
+                return p0;
+
+            if (d > dir.magnitude)
+                return p1;
+
+            return p0 + lineDir * d;
+        }
+
+        public static float DistanceToLine(Vector3 p0, Vector3 p1, Vector3 pnt)
+        {
+            pnt.z = 0f;
+
+            var nearestPt = NearestPointOnLine(p0, p1, pnt);
+            return (nearestPt - pnt).magnitude;
+        }
+
+        public static float SqrDistanceToLine(Vector3 p0, Vector3 p1, Vector3 pnt)
+        {
+            pnt.z = 0f;
+
+            var nearestPt = NearestPointOnLine(p0, p1, pnt);
+            return (nearestPt - pnt).sqrMagnitude;
+        }
+
+        static float OuterProduct(Vector3 a, Vector3 b, Vector3 p)
+        {
+            return (p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x);
+        }
+
+        public enum PointPosition
+        {
+            Left, Right, OnLine
+        }
+
+        public static PointPosition GetPointPosition(Vector3 a, Vector3 b, Vector3 p)
+        {
+            var d = OuterProduct(a, b, p);
+            if (d.Equals(0f))
+                return PointPosition.OnLine;
+
+            var perp = Vector2.Perpendicular(new Vector3(b.x - a.x, b.y - a.y));
+            var leftPt = new Vector3(a.x + perp.x, a.y + perp.y);
+            var leftD = OuterProduct(a, b, leftPt);
+
+            if (d < 0f == leftD < 0f)
+            {
+                return PointPosition.Left;
+            }
+
+            return PointPosition.Right;
+        }
+
+        public static Vector3 GetMidPoint(Vector3 a, Vector3 b)
+        {
+            var diff = b - a;
+            var dist = diff.magnitude;
+
+            return a + (diff.normalized * .5f);
+        }
+
+        public static Vector2 GetIntersectionPoint(Vector2 A1, Vector2 A2, Vector2 B1, Vector2 B2,
+                                                   out bool found)
+        {
+            float tmp = (B2.x - B1.x) * (A2.y - A1.y) - (B2.y - B1.y) * (A2.x - A1.x);
+            if (tmp == 0)
+            {
+                found = false;
+                return Vector2.zero;
+            }
+
+            float mu = ((A1.x - B1.x) * (A2.y - A1.y) - (A1.y - B1.y) * (A2.x - A1.x)) / tmp;
+            found = true;
+
+            return new Vector2(
+                B1.x + (B2.x - B1.x) * mu,
+                B1.y + (B2.y - B1.y) * mu
+            );
+        }
+
+        public static float NormalizeAngle(float angle)
+        {
+            if (angle < 0f)
+            {
+                while (angle < 0f)
+                    angle += 180f;
+            }
+            else if (angle >= 180f)
+            {
+                while (angle >= 180f)
+                    angle -= 180f;
+            }
+
+            return angle;
+        }
+
+        public static bool EquivalentAngles(Vector2 A1, Vector2 A2, Vector2 B1, Vector2 B2,
+                                            float tolerance = 0f)
+        {
+            var angle1 = NormalizeAngle(PointAngle(A1, A2));
+            var angle2 = NormalizeAngle(PointAngle(B1, B2));
+
+            var angleDiff = Mathf.Abs(angle1 - angle2);
+            return angleDiff <= tolerance;
         }
     }
 }

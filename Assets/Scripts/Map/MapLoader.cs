@@ -1,19 +1,21 @@
 ﻿using UnityEngine;
 
-public class MapLoader : MonoBehaviour
+namespace Transidious
 {
-    public Map map;
-    public OSMImportHelper.Area area;
-
-    // Use this for initialization
-    void Start()
+    public class MapLoader
     {
-        map.LoadFromFile(area.ToString());
-    }
+        public Map map;
+        public OSMImportHelper.Area area;
 
-    // Update is called once per frame
-    void Update()
-    {
+        public MapLoader(Map map, OSMImportHelper.Area area)
+        {
+            this.map = map;
+            this.area = area;
+        }
 
+        public void ImportArea()
+        {
+            map.LoadFromFile(area.ToString());
+        }
     }
 }
