@@ -41,7 +41,7 @@ namespace Transidious
 
         public Mesh mesh;
 
-        public void UpdateMesh(Map map, Mesh mesh)
+        public void UpdateMesh(Mesh mesh, MultiMesh multiMesh)
         {
             this.mesh = mesh;
             /*meshFilter.mesh = mesh;
@@ -73,19 +73,22 @@ namespace Transidious
                     break;
             }
 
-            map.natureMesh.AddMesh(GetColor(), mesh, layer);
+            multiMesh.AddMesh(GetColor(), mesh, layer);
             /*transform.position = new Vector3(transform.position.x,
                                              transform.position.y,
                                              layer);*/
         }
 
-        public void Initialize(Map map, string name, Type type, Mesh mesh)
+        public void Initialize(string name, Type type,
+                               Mesh mesh = null, MultiMesh multiMesh = null)
         {
             this.name = name;
             this.type = type;
 
             if (mesh != null)
-                UpdateMesh(map, mesh);
+            {
+                UpdateMesh(mesh, multiMesh);
+            }
         }
 
         Color GetColor()

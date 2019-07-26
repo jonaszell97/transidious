@@ -44,6 +44,22 @@ namespace Transidious
 
         public GameObject[] renderingObjects;
 
+        private static GameObject prefab;
+
+        public static MultiMesh Create(string name, Transform parent = null)
+        {
+            if (prefab == null)
+            {
+                prefab = Resources.Load("Prefabs/MultiMesh") as GameObject;
+            }
+
+            var multiMesh = Instantiate(prefab);
+            multiMesh.name = name;
+            multiMesh.transform.SetParent(parent);
+
+            return multiMesh.GetComponent<MultiMesh>();
+        }
+
         public void AddStreetSegment(InputController.RenderingDistance renderingDistance,
                                      List<Vector3> positions,
                                      float width, float borderWidth,
@@ -244,7 +260,7 @@ namespace Transidious
                         var meshRenderer = obj.GetComponent<MeshRenderer>();
 
                         meshFilter.mesh = mesh;
-                        meshRenderer.material = map.input.controller.GetUnlitMaterial(entry.Key);
+                        meshRenderer.material = GameController.GetUnlitMaterial(entry.Key);
 
                         ++i;
                     }

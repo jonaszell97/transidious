@@ -332,7 +332,7 @@ void OSMImportBackend::EmitImportTransitLines(Record *area)
    llvm::raw_string_ostream REL(relation);
 
    REL << R"__(
-         Line.TransitType type;
+         TransitType type;
 )__";
 
    auto lines = llvm::cast<ListLiteral>(area->getFieldValue("transitLines"))
@@ -352,7 +352,7 @@ void OSMImportBackend::EmitImportTransitLines(Record *area)
                        ->getCase()->caseName;
 
       CheckTags(REL, tags, [&]() {
-         REL << "type = Line.TransitType." << type << ";";
+         REL << "type = TransitType." << type << ";";
       });
    }
 

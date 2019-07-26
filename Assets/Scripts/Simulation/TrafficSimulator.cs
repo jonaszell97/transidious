@@ -156,6 +156,26 @@ namespace Transidious
             this.computedIntersectionPaths = new Dictionary<StreetIntersection, Vector3[][][][]>();
         }
 
+        void Start()
+        {
+#if DEBUG
+            if (manualTrafficLightControl)
+            {
+                sim.game.input.RegisterEventListener(InputController.InputEvent.MouseDown, (MapObject obj) =>
+                {
+                    var seg = obj as StreetSegment;
+                    if (seg == null)
+                    {
+                        return;
+                    }
+
+                    seg.startTrafficLight?.Switch();
+                    seg.endTrafficLight?.Switch();
+                });
+            }
+#endif
+        }
+
         bool IsRightLane(StreetSegment seg, int lane)
         {
             if (seg.street.isOneWay)
@@ -202,6 +222,50 @@ namespace Transidious
             }
 
             return cars;
+        }
+
+        public List<Vector3> GetCompletePath(PathPlanningResult result)
+        {
+            var path = new List<Vector3>();
+
+            List<Vector3> positions;
+            StreetSegment segment = null;
+            bool backward;
+            int lane;
+            bool finalStep;
+
+            foreach (var step in result.steps)
+            {
+                StreetSegment nextSegment;
+                GetStepPath(step, out nextSegment, out backward, out finalStep, out lane, out positions);
+
+                if (segment != null && nextSegment != null)
+                {
+                    StreetIntersection nextIntersection;
+                    if (backward)
+                    {
+                        nextIntersection = nextSegment.endIntersection;
+                    }
+                    else
+                    {
+                        nextIntersection = nextSegment.startIntersection;
+                    }
+
+                    var intersectionPath = GetPath(nextIntersection, segment,
+                                                   nextSegment, lane);
+
+                    path.AddRange(intersectionPath);
+                }
+
+                if (positions != null)
+                {
+                    path.AddRange(positions);
+                }
+
+                segment = nextSegment;
+            }
+
+            return path;
         }
 
         public Vector3[] GetPath(StreetSegment seg, int lane)
@@ -685,15 +749,12 @@ namespace Transidious
             }
         }
 
-        void InitStep(Car car, PathPlanningResult result, int stepNo, float startingVelocity = 0f)
+        void GetStepPath(PathStep step, out StreetSegment segment,
+                         out bool backward, out bool finalStep,
+                         out int lane, out List<Vector3> positions)
         {
-            List<Vector3> positions;
-            StreetSegment segment;
-            bool backward;
-            int lane;
-            bool finalStep = false;
+            finalStep = false;
 
-            var step = result.steps[stepNo];
             if (step is DriveStep)
             {
                 var drive = step as DriveStep;
@@ -718,6 +779,11 @@ namespace Transidious
                 lane = GetDefaultLane(segment, backward);
 
                 var path = GetPath(segment, lane);
+                if (backward)
+                {
+                    path = path.Reverse().ToArray();
+                }
+
                 var minDist = float.PositiveInfinity;
                 var minIdx = 0;
                 var minPt = Vector3.zero;
@@ -761,7 +827,7 @@ namespace Transidious
                 positions = new List<Vector3>();
                 positions.Add(minPt);
 
-                for (int i = minIdx + 1; i <= maxIdx; ++i)
+                for (int i = minIdx; i <= maxIdx; ++i)
                 {
                     positions.Add(path[i]);
                 }
@@ -770,6 +836,24 @@ namespace Transidious
             }
             else
             {
+                segment = null;
+                backward = false;
+                positions = null;
+                lane = 0;
+            }
+        }
+
+        void InitStep(Car car, PathPlanningResult result, int stepNo, float startingVelocity = 0f)
+        {
+            List<Vector3> positions;
+            StreetSegment segment;
+            bool backward;
+            int lane;
+            bool finalStep = false;
+
+            var step = result.steps[stepNo];
+            if (!(step is DriveStep) && !(step is PartialDriveStep))
+            {
                 if (stepNo + 1 == result.steps.Count)
                 {
                     sim.DestroyCar(car);
@@ -777,6 +861,8 @@ namespace Transidious
 
                 return;
             }
+
+            GetStepPath(step, out segment, out backward, out finalStep, out lane, out positions);
 
             if (positions.Count == 0)
             {

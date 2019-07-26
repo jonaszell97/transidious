@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Transidious
 {
@@ -27,8 +28,23 @@ namespace Transidious
             Farthest,
         }
 
+        public enum InputEvent
+        {
+            MouseOver = 0,
+            MouseEnter,
+            MouseExit,
+            MouseDown,
+            _EventCount,
+        }
+
         public GameController controller;
         public RenderingDistance renderingDistance = RenderingDistance.Near;
+        public delegate void InputEventListener(MapObject mapObject);
+
+        Dictionary<int, InputEventListener>[] inputEventListeners;
+        int eventListenerCount;
+        HashSet<int> disabledListeners;
+
 
         float aspectRatio = 0.0f;
         float windowWidth = 0.0f;
@@ -41,8 +57,8 @@ namespace Transidious
         public float minY = float.PositiveInfinity;
 
         Dictionary<ControlType, Tuple<KeyCode, KeyCode>> keyBindings;
-        public float minZoom = 45f * Map.Meters;
-        public float maxZoom = 15000f * Map.Meters;
+        public static float minZoom = 45f * Map.Meters;
+        public static float maxZoom = 15000f * Map.Meters;
         float zoomSensitivity = 5.0f;
 
         static float panSensitivityX = 0.5f;
@@ -66,6 +82,29 @@ namespace Transidious
 
         public bool renderBackRoutes = false;
 
+        public Vector3 NativeCursorPosition
+        {
+            get
+            {
+                return Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            }
+        }
+
+        public Vector3 gameCursorPosition;
+
+        public Vector3 GameCursorPosition
+        {
+            get
+            {
+                if (Cursor.visible)
+                {
+                    return NativeCursorPosition;
+                }
+
+                return gameCursorPosition;
+            }
+        }
+
         public bool IsPressed(ControlType type)
         {
             if (keyBindings.TryGetValue(type, out Tuple<KeyCode, KeyCode> binding))
@@ -74,6 +113,35 @@ namespace Transidious
             }
 
             return false;
+        }
+
+        public int RegisterEventListener(InputEvent e, InputEventListener eventListener,
+                                         bool enabled = true)
+        {
+            var id = eventListenerCount++;
+            inputEventListeners[(int)e].Add(id, eventListener);
+
+            if (!enabled)
+            {
+                disabledListeners.Add(id);
+            }
+
+            return id;
+        }
+
+        public void RemoveEventListener(InputEvent e, int id)
+        {
+            inputEventListeners[(int)e].Remove(id);
+        }
+
+        public void DisableEventListener(int id)
+        {
+            disabledListeners.Add(id);
+        }
+
+        public void EnableEventListener(int id)
+        {
+            disabledListeners.Remove(id);
         }
 
         public bool IsPointerOverUIElement()
@@ -102,9 +170,77 @@ namespace Transidious
             }
         }
 
+        public void MouseOverMapObject(MapObject obj)
+        {
+            foreach (var listener in inputEventListeners[(int)InputEvent.MouseOver])
+            {
+                if (disabledListeners.Contains(listener.Key))
+                {
+                    continue;
+                }
+
+                listener.Value(obj);
+            }
+        }
+
+        public void MouseEnterMapObject(MapObject obj)
+        {
+            foreach (var listener in inputEventListeners[(int)InputEvent.MouseEnter])
+            {
+                if (disabledListeners.Contains(listener.Key))
+                {
+                    continue;
+                }
+
+                listener.Value(obj);
+            }
+        }
+
+        public void MouseExitMapObject(MapObject obj)
+        {
+            foreach (var listener in inputEventListeners[(int)InputEvent.MouseExit])
+            {
+                if (disabledListeners.Contains(listener.Key))
+                {
+                    continue;
+                }
+
+                listener.Value(obj);
+            }
+        }
+
+        public void MouseDownMapObject(MapObject obj)
+        {
+            if (IsPointerOverUIElement())
+            {
+                return;
+            }
+
+            foreach (var listener in inputEventListeners[(int)InputEvent.MouseDown])
+            {
+                if (disabledListeners.Contains(listener.Key))
+                {
+                    continue;
+                }
+
+                listener.Value(obj);
+            }
+        }
+
+        public float GetScreenSpaceFontSize(float worldSpaceSize)
+        {
+            var p1 = camera.ScreenToWorldPoint(new Vector3(worldSpaceSize, 0, 0));
+            return p1.x;
+        }
+
+        public float GetScreenSpaceFontScale()
+        {
+            return camera.orthographicSize / minZoom;
+        }
+
         void UpdateStopWidth()
         {
-            stopWidth = 70f * Map.Meters;
+            stopWidth = 10f;
         }
 
         void UpdateLineWidth()
@@ -113,13 +249,13 @@ namespace Transidious
             {
                 case RenderingDistance.VeryFar:
                 case RenderingDistance.Farthest:
-                    lineWidth = 5f * Map.Meters;
+                    lineWidth = 2.5f * Map.Meters;
                     break;
                 case RenderingDistance.Far:
-                    lineWidth = 6f * Map.Meters;
+                    lineWidth = 3f * Map.Meters;
                     break;
                 case RenderingDistance.Near:
-                    lineWidth = 10f * Map.Meters;
+                    lineWidth = 5f * Map.Meters;
                     break;
                 default:
                     throw new System.ArgumentException(string.Format("Illegal enum value {0}", renderingDistance));
@@ -453,7 +589,6 @@ namespace Transidious
             camera.orthographicSize = maxZoom;
         }
 
-
         public Vector3 WorldToUISpace(Canvas parentCanvas, Vector3 worldPos)
         {
             //Convert the world for screen point so that it can be used with ScreenPointToLocalPointInRectangle function
@@ -480,6 +615,16 @@ namespace Transidious
         void Awake()
         {
             InitKeybindings();
+
+            this.eventListenerCount = 0;
+            this.inputEventListeners = new Dictionary<int, InputEventListener>[
+                (int)InputEvent._EventCount];
+            this.disabledListeners = new HashSet<int>();
+
+            for (var i = 0; i < this.inputEventListeners.Length; ++i)
+            {
+                this.inputEventListeners[i] = new Dictionary<int, InputEventListener>();
+            }
 
             camera = Camera.main;
             aspectRatio = camera.aspect;

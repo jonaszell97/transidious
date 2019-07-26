@@ -39,7 +39,10 @@ namespace Transidious
             this.currentNode = 1;
 
             MoveNext();
-            UpdateRotation(0);
+
+            obj.transform.rotation = Quaternion.FromToRotation(Vector3.up,
+                                                               nextPosition - startPosition);
+            prevRotation = obj.transform.rotation;
         }
 
         void MoveNext()

@@ -328,7 +328,7 @@ namespace Transidious
             }
         }
 
-        public static void CreateSmoothLine(List<Vector3> positions,
+        public static void CreateSmoothLine(IReadOnlyList<Vector3> positions,
                                             float width,
                                             bool startCap,
                                             bool endCap,
@@ -336,10 +336,18 @@ namespace Transidious
                                             List<int> triangles,
                                             List<Vector2> uv,
                                             int cornerVertices = 5,
-                                            float z = 0f)
+                                            float z = 0f,
+                                            PolygonCollider2D collider = null,
+                                            float offset = 0f)
         {
             var normals = new List<Vector3>();
             var useZ = !z.Equals(0f);
+
+            Vector2[] colliderPath = null;
+            if (collider != null)
+            {
+                colliderPath = Enumerable.Repeat(Vector2.positiveInfinity, positions.Count * 2).ToArray();
+            }
 
             for (int i = 1; i < positions.Count; ++i)
             {
@@ -360,6 +368,39 @@ namespace Transidious
                 Vector3 tr = p0 + width * normal;
                 Vector3 br = p0 - width * normal;
 
+                if (!offset.Equals(0f))
+                {
+                    p0 += offset * normal;
+                    p1 += offset * normal;
+
+                    bl += offset * normal;
+                    tl += offset * normal;
+                    tr += offset * normal;
+                    br += offset * normal;
+                }
+
+                if (colliderPath != null)
+                {
+                    var angle = Math.Angle(Vector2.down, normal);
+                    if (!angle.Equals(0f))
+                    {
+                        // Add right side to forward path.
+                        colliderPath[i - 1] = br;
+
+                        // Add left side to backward path.
+                        colliderPath[colliderPath.Length - i] = tr;
+
+                        if (i == positions.Count - 1)
+                        {
+                            // Add right side to forward path.
+                            colliderPath[i] = bl;
+
+                            // Add left side to backward path.
+                            colliderPath[i + 1] = tl;
+                        }
+                    }
+                }
+
                 if (i == 1 && startCap)
                 {
                     AddCirclePart(vertices, triangles, uv, br, tr, width, p0,
@@ -375,18 +416,28 @@ namespace Transidious
                                   cornerVertices, z);
                 }
             }
+
+            if (collider != null)
+            {
+                collider.pathCount = 1;
+                collider.SetPath(0,
+                    colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray());
+            }
         }
 
-        public static Mesh CreateSmoothLine(List<Vector3> positions, float width,
+        public static Mesh CreateSmoothLine(IReadOnlyList<Vector3> positions, float width,
                                             int cornerVertices = 5, float z = 0f,
-                                            bool updateNormals = false)
+                                            bool updateNormals = false,
+                                            PolygonCollider2D collider = null,
+                                            bool startCap = true, bool endCap = true,
+                                            float offset = 0f)
         {
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             var uv = new List<Vector2>();
 
-            CreateSmoothLine(positions, width, true, true, vertices,
-                             triangles, uv, cornerVertices, z);
+            CreateSmoothLine(positions, width, startCap, endCap, vertices,
+                             triangles, uv, cornerVertices, z, collider, offset);
 
             var mesh = new Mesh
             {
@@ -782,6 +833,111 @@ namespace Transidious
             }
 
             mesh.triangles = triangles;
+        }
+
+        public static Mesh CombineMeshes(params Mesh[] meshes)
+        {
+            return CombineMeshes((IReadOnlyList<Mesh>)meshes);
+        }
+
+        public static Mesh CombineMeshes(IReadOnlyList<Mesh> meshes)
+        {
+            Mesh mesh = new Mesh();
+            CombineInstance[] combine = new CombineInstance[meshes.Count];
+
+            for (var i = 0; i < meshes.Count; ++i)
+            {
+                combine[i].mesh = meshes[i];
+                combine[i].transform = Matrix4x4.identity;
+            }
+
+            mesh.CombineMeshes(combine);
+            return mesh;
+        }
+
+        public static void MeshCollider(Mesh mesh, PolygonCollider2D polygonCollider)
+        {
+            // Get triangles and vertices from mesh
+            int[] triangles = mesh.triangles;
+            Vector3[] vertices = mesh.vertices;
+
+            // Get just the outer edges from the mesh's triangles (ignore or remove any shared edges)
+            Dictionary<string, KeyValuePair<int, int>> edges = new Dictionary<string, KeyValuePair<int, int>>();
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                for (int e = 0; e < 3; e++)
+                {
+                    int vert1 = triangles[i + e];
+                    int vert2 = triangles[i + e + 1 > i + 2 ? i : i + e + 1];
+                    string edge = Mathf.Min(vert1, vert2) + ":" + Mathf.Max(vert1, vert2);
+                    if (edges.ContainsKey(edge))
+                    {
+                        edges.Remove(edge);
+                    }
+                    else
+                    {
+                        edges.Add(edge, new KeyValuePair<int, int>(vert1, vert2));
+                    }
+                }
+            }
+
+            // Create edge lookup (Key is first vertex, Value is second vertex, of each edge)
+            Dictionary<int, int> lookup = new Dictionary<int, int>();
+            foreach (KeyValuePair<int, int> edge in edges.Values)
+            {
+                if (lookup.ContainsKey(edge.Key) == false)
+                {
+                    lookup.Add(edge.Key, edge.Value);
+                }
+            }
+
+            // Create empty polygon collider
+            polygonCollider.pathCount = 0;
+
+            // Loop through edge vertices in order
+            int startVert = 0;
+            int nextVert = startVert;
+            int highestVert = startVert;
+            List<Vector2> colliderPath = new List<Vector2>();
+            while (true)
+            {
+                // Add vertex to collider path
+                colliderPath.Add(vertices[nextVert]);
+
+                // Get next vertex
+                nextVert = lookup[nextVert];
+
+                // Store highest vertex (to know what shape to move to next)
+                if (nextVert > highestVert)
+                {
+                    highestVert = nextVert;
+                }
+
+                // Shape complete
+                if (nextVert == startVert)
+                {
+
+                    // Add path to polygon collider
+                    polygonCollider.pathCount++;
+                    polygonCollider.SetPath(polygonCollider.pathCount - 1, colliderPath.ToArray());
+                    colliderPath.Clear();
+
+                    // Go to next shape if one exists
+                    if (lookup.ContainsKey(highestVert + 1))
+                    {
+
+                        // Set starting and next vertices
+                        startVert = highestVert + 1;
+                        nextVert = startVert;
+
+                        // Continue to next loop
+                        continue;
+                    }
+
+                    // No more verts
+                    break;
+                }
+            }
         }
     }
 }

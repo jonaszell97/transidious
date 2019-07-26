@@ -26,15 +26,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
-     inkscape:cx="54.285714"
-     inkscape:cy="560"
+     inkscape:cx="168.57143"
+     inkscape:cy="674.28571"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1280"
      inkscape:window-height="707"
      inkscape:window-x="0"
-     inkscape:window-y="281"
+     inkscape:window-y="1"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata5">
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -54,8 +54,9 @@
      id="layer1">
     <g
        id="g821"
-       inkscape:export-xdpi="90"
-       inkscape:export-ydpi="90">
+       inkscape:export-xdpi="51.200001"
+       inkscape:export-ydpi="51.200001"
+       inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/stop_ring.png">
       <circle
          r="63.5"
          cy="131.44643"
@@ -63,11 +64,11 @@
          id="path815"
          style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.77006245;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
       <circle
-         style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.51719642;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.07468081;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="circle817"
          cx="103.56548"
          cy="131.44643"
-         r="54.42857" />
+         r="38.55357" />
     </g>
   </g>
 </svg>

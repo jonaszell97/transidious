@@ -1,59 +1,79 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
+using System;
 
 namespace Transidious
 {
     public class ScreenShotMaker : MonoBehaviour
     {
-        public GameObject target;
+        private static ScreenShotMaker _instance;
 
-        private RenderTexture renderTexture;
-        private Camera renderCamera;
-        private Vector4 bounds;
-
-        public void MakeScreenshots(Map map)
+        public static ScreenShotMaker Instance
         {
-            gameObject.AddComponent(typeof(Camera));
+            get
+            {
+                if (_instance == null)
+                {
+                    var prefab = Resources.Load("Prefabs/ScreenShotMaker") as GameObject;
+                    var obj = Instantiate(prefab);
 
-            renderCamera = GetComponent<Camera>();
+                    _instance = obj.GetComponent<ScreenShotMaker>();
+                }
+
+                return _instance;
+            }
+        }
+
+        [System.Serializable]
+        public struct ScreenShotInfo
+        {
+            public int xTiles;
+            public int yTiles;
+            public float tileSizeUnits;
+            public float tileSizePixels;
+        }
+
+        public ScreenShotInfo MakeScreenshot(Map map, int resolution = 2048)
+        {
+            float cameraDistance = Camera.main.transform.position.z;
+
+            Camera renderCamera = GetComponent<Camera>();
+            if (renderCamera == null)
+            {
+                renderCamera = gameObject.AddComponent<Camera>();
+            }
+
             renderCamera.enabled = true;
             renderCamera.cameraType = CameraType.Game;
             renderCamera.forceIntoRenderTexture = true;
             renderCamera.orthographic = true;
-            renderCamera.orthographicSize = .5f;
-            renderCamera.aspect = 1f;
+            renderCamera.orthographicSize = 500f;
+            renderCamera.aspect = 1.0f;
             renderCamera.targetDisplay = 2;
-            renderCamera.backgroundColor = Color.white;
+            renderCamera.backgroundColor = new Color(249f / 255f, 245f / 255f, 237f / 255f, 1);
+            // renderCamera.gameObject.AddComponent<MSAA
 
-            float cameraDistance = map.input.camera.transform.position.z;
-            int resolution = 2048;
+            // Account for border thickness.
+            var minX = map.minX - 100f;
+            var maxX = map.maxX + 100f;
+            var minY = map.minY - 100f;
+            var maxY = map.maxY + 100f;
 
-            bounds.w = map.input.minX + 4.5f;
-            bounds.x = map.input.maxX - 4.5f;
-            bounds.y = map.input.minY + 4.5f;
-            bounds.z = map.input.maxY - 4.5f;
+            int xRes = Mathf.RoundToInt(resolution * ((maxX - minX) / (renderCamera.aspect * renderCamera.orthographicSize * 2 * renderCamera.aspect)));
+            int yRes = Mathf.RoundToInt(resolution * ((maxY - minY) / (renderCamera.aspect * renderCamera.orthographicSize * 2 / renderCamera.aspect)));
 
-            float minX = map.input.minX + 4.5f;
-            float maxX = map.input.maxX - 4.5f;
-            float minY = map.input.minY + 4.5f;
-            float maxY = map.input.maxY - 4.5f;
+            float maxRes = 4096f;
+            int neededXTiles = (int)Mathf.Ceil((float)xRes / maxRes);
+            int neededYTiles = (int)Mathf.Ceil((float)yRes / maxRes);
 
-            float pixelWidth = renderCamera.WorldToScreenPoint(new Vector3(maxX, minY)).x
-                - renderCamera.WorldToScreenPoint(new Vector3(minX, minY)).x;
+            float xstep = (float)(maxX - minX) / neededXTiles;
+            float ystep = (float)(maxY - minY) / neededYTiles;
+            float step = Mathf.Max(xstep, ystep);
 
-            float pixelHeight = renderCamera.WorldToScreenPoint(new Vector3(maxX, maxY)).y
-                - renderCamera.WorldToScreenPoint(new Vector3(minX, minY)).y;
+            int textureSize = System.Math.Max(xRes / neededXTiles, yRes / neededYTiles);
 
-            int neededXTiles = (int)Mathf.Ceil(pixelWidth / (float)resolution);
-            int neededYTiles = (int)Mathf.Ceil(pixelHeight / (float)resolution);
-
-            renderTexture = new RenderTexture(resolution, resolution, 24);
+            var renderTexture = new RenderTexture(resolution, resolution, 24);
             renderCamera.targetTexture = renderTexture;
-
-            float xdiff = bounds.x - bounds.w;
-            float ydiff = bounds.z - bounds.y;
-            float xstep = xdiff / neededXTiles;
-            float ystep = ydiff / neededYTiles;
+            RenderTexture.active = renderTexture;
 
             var directory = "Assets/Resources/Maps/" + map.name;
             System.IO.Directory.CreateDirectory(directory);
@@ -68,83 +88,104 @@ namespace Transidious
             {
                 for (int y = 0; y < neededYTiles; ++y)
                 {
-                    Texture2D virtualPhoto = new Texture2D(resolution, resolution,
-                                                           TextureFormat.RGB24, false);
+                    Texture2D virtualPhoto = new Texture2D(
+                        textureSize, textureSize, TextureFormat.RGB24, false);
 
-                    RenderTexture.active = renderTexture;
+                    float currentX = minX + x * step;
+                    float currentY = minY + y * step;
+                    float currentMaxX = currentX + step;
+                    float currentMaxY = currentY + step;
 
-                    float initialXPos = bounds.w + x * xstep;
-                    float initialYPos = bounds.y + y * ystep;
-
-                    float finalXPos = initialXPos + xstep;
-                    float finalYPos = initialYPos + ystep;
-
-                    for (float i = initialXPos, xPos = 0; i < finalXPos; i += xstep, xPos++)
+                    for (float i = currentX, xPos = 0; i < currentMaxX; i += renderCamera.aspect * renderCamera.orthographicSize * 2, xPos++)
                     {
-                        for (float j = initialYPos, yPos = 0; j < finalYPos; j += ystep, yPos++)
+                        for (float j = currentY, yPos = 0; j < currentMaxY; j += renderCamera.aspect * renderCamera.orthographicSize * 2, yPos++)
                         {
                             gameObject.transform.position = new Vector3(i + renderCamera.aspect * renderCamera.orthographicSize, j + renderCamera.aspect * renderCamera.orthographicSize, cameraDistance);
 
                             renderCamera.Render();
-
                             virtualPhoto.ReadPixels(new Rect(0, 0, resolution, resolution), (int)xPos * resolution, (int)yPos * resolution);
                         }
                     }
 
-                    RenderTexture.active = null;
-
                     byte[] bytes = virtualPhoto.EncodeToPNG();
-                    System.IO.File.WriteAllBytes("Assets/Resources/Maps/" + map.name + "/" + x.ToString() + "_" + y.ToString() + ".png", bytes);
+                    System.IO.File.WriteAllBytes(directory + "/" + x + "_" + y + ".png", bytes);
+
+                    // Debug.Log(neededXTiles);
+                    // Debug.Log(neededYTiles);
+
+                    // throw new System.Exception();
                 }
             }
 
-            /*
-            int xRes = Mathf.RoundToInt(((bounds.x - bounds.w) / (renderCamera.aspect * renderCamera.orthographicSize * 2 * renderCamera.aspect)));
-            int yRes = Mathf.RoundToInt(((bounds.z - bounds.y) / (renderCamera.aspect * renderCamera.orthographicSize * 2 * renderCamera.aspect)));
+            RenderTexture.active = null;
+            renderCamera.targetTexture = null;
 
-            int neededXTiles = (int)Mathf.Ceil((float)xRes / (float)resolution);
-            int neededYTiles = (int)Mathf.Ceil((float)yRes / (float)resolution);
-
-            float xdiff = bounds.x - bounds.w;
-            float ydiff = bounds.z - bounds.y;
-            float xstep = xdiff / neededXTiles;
-            float ystep = ydiff / neededYTiles;
-
-            System.IO.Directory.CreateDirectory("Assets/Resources/Maps/" + map.name);
-
-            for (int x = 0; x < neededXTiles; ++x)
+            return new ScreenShotInfo
             {
-                for (int y = 0; y < neededYTiles; ++y)
+                xTiles = neededXTiles,
+                yTiles = neededYTiles,
+                tileSizePixels = textureSize,
+                tileSizeUnits = Mathf.Max((maxX - minX) / neededXTiles, (maxY - minY) / neededYTiles),
+            };
+        }
+
+        public void MakeScreenshotSingle(Map map, int resolution = 1028)
+        {
+            float cameraDistance = map.input.camera.transform.position.z;
+
+            Camera renderCamera = GetComponent<Camera>();
+            if (renderCamera == null)
+            {
+                renderCamera = gameObject.AddComponent<Camera>();
+            }
+
+            renderCamera.enabled = true;
+            renderCamera.cameraType = CameraType.Game;
+            renderCamera.forceIntoRenderTexture = true;
+            renderCamera.orthographic = true;
+            renderCamera.orthographicSize = 300f;
+            renderCamera.aspect = 1.0f;
+            renderCamera.targetDisplay = 2;
+
+            var renderTexture = new RenderTexture(resolution, resolution, 24);
+            renderCamera.targetTexture = renderTexture;
+
+            var minX = map.minX;
+            var maxX = map.maxX;
+            var minY = map.minY;
+            var maxY = map.maxY;
+
+            var directory = "Assets/Resources/Maps/" + map.name;
+            System.IO.Directory.CreateDirectory(directory);
+
+            var di = new System.IO.DirectoryInfo(directory);
+            foreach (var file in di.GetFiles())
+            {
+                file.Delete();
+            }
+
+            int xRes = Mathf.RoundToInt(resolution * ((maxX - minX) / (renderCamera.aspect * renderCamera.orthographicSize * 2 * renderCamera.aspect)));
+            int yRes = Mathf.RoundToInt(resolution * ((maxY - minY) / (renderCamera.aspect * renderCamera.orthographicSize * 2 / renderCamera.aspect)));
+
+            Texture2D virtualPhoto = new Texture2D(xRes, yRes, TextureFormat.RGB24, false);
+            RenderTexture.active = renderTexture;
+
+            for (float i = minX, xPos = 0; i < maxX; i += renderCamera.aspect * renderCamera.orthographicSize * 2, xPos++)
+            {
+                for (float j = minY, yPos = 0; j < maxY; j += renderCamera.aspect * renderCamera.orthographicSize * 2, yPos++)
                 {
-                    Texture2D virtualPhoto = new Texture2D(resolution, resolution,
-                                                           TextureFormat.RGB24, false);
+                    gameObject.transform.position = new Vector3(i + renderCamera.aspect * renderCamera.orthographicSize, j + renderCamera.aspect * renderCamera.orthographicSize, cameraDistance);
 
-                    RenderTexture.active = renderTexture;
-
-                    float initialXPos = bounds.w + x * xstep;
-                    float initialYPos = bounds.y + y * ystep;
-
-                    float finalXPos = initialXPos + xstep;
-                    float finalYPos = initialYPos + ystep;
-
-                    for (float i = initialXPos, xPos = 0; i < finalXPos; i += renderCamera.aspect * renderCamera.orthographicSize * 2, xPos++)
-                    {
-                        for (float j = initialYPos, yPos = 0; j < finalYPos; j += renderCamera.aspect * renderCamera.orthographicSize * 2, yPos++)
-                        {
-                            gameObject.transform.position = new Vector3(i + renderCamera.aspect * renderCamera.orthographicSize, j + renderCamera.aspect * renderCamera.orthographicSize, cameraDistance);
-
-                            renderCamera.Render();
-
-                            virtualPhoto.ReadPixels(new Rect(0, 0, resolution, resolution), (int)xPos * resolution, (int)yPos * resolution);
-                        }
-                    }
-
-                    RenderTexture.active = null;
-
-                    byte[] bytes = virtualPhoto.EncodeToPNG();
-                    System.IO.File.WriteAllBytes("Assets/Resources/Maps/" + map.name + "/" +  x.ToString() + "_" + y.ToString() + ".png", bytes);
+                    renderCamera.Render();
+                    virtualPhoto.ReadPixels(new Rect(0, 0, resolution, resolution), (int)xPos * resolution, (int)yPos * resolution);
                 }
-            }*/
+            }
+
+            RenderTexture.active = null;
+            renderCamera.targetTexture = null;
+
+            byte[] bytes = virtualPhoto.EncodeToPNG();
+            System.IO.File.WriteAllBytes("Assets/Resources/Maps/" + map.name + ".png", bytes);
         }
     }
 }

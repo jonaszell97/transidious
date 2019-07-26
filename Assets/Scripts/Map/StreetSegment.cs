@@ -158,6 +158,10 @@ namespace Transidious
         {
             get
             {
+                if (relativePositions == null)
+                {
+                    CalculateRelativePositions();
+                }
                 if (emptySlot != -1)
                 {
                     return intersectingStreets.Count + 1;
@@ -679,6 +683,7 @@ namespace Transidious
             public List<SerializableVector3> positions;
             public int startIntersectionID;
             public int endIntersectionID;
+            public bool hasTramTracks;
         }
 
         /// ID of the street segment.
@@ -707,6 +712,9 @@ namespace Transidious
         /// The length of this street segment.
         public float length;
 
+        /// Whether or not there are tram tracks on this street segment.
+        public bool hasTramTracks;
+
         /// The text label for this segments street name.
         public Transidious.Text streetName;
 
@@ -723,7 +731,7 @@ namespace Transidious
         GameObject streetMeshObj;
 
         /// Game object carrying the outline mesh.
-        GameObject outlineMeshObj;
+        public GameObject outlineMeshObj;
 
         class StreetSegmentMeshInfo
         {
@@ -733,7 +741,7 @@ namespace Transidious
 
         Dictionary<InputController.RenderingDistance, StreetSegmentMeshInfo> meshes;
 
-        public static readonly float laneWidth = 2.75f * Map.Meters;
+        public static readonly float laneWidth = 3f * Map.Meters;
 
         /// Distance of the stop line from the middle of the intersection.
         public float BeginStopLineDistance = 10f * Map.Meters;
@@ -743,12 +751,15 @@ namespace Transidious
 
         public void Initialize(Street street, int position, List<Vector3> positions,
                                StreetIntersection startIntersection,
-                               StreetIntersection endIntersection)
+                               StreetIntersection endIntersection,
+                               bool hasTramTracks = false)
         {
+            base.inputController = street.map.input;
             this.street = street;
             this.position = position;
             this.startIntersection = startIntersection;
             this.endIntersection = endIntersection;
+            this.hasTramTracks = hasTramTracks;
             this.meshes = new Dictionary<InputController.RenderingDistance, StreetSegmentMeshInfo>();
             this.cumulativeDistances = new List<float>();
 
@@ -839,6 +850,14 @@ namespace Transidious
             }
         }
 
+        public int LeftmostLane
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
         public int MirrorLane(int lane)
         {
             var lanes = street.lanes;
@@ -869,6 +888,38 @@ namespace Transidious
             {
                 return true;
             }
+        }
+
+        public Tuple<Vector3, Math.PointPosition> GetClosestPointAndPosition(Vector3 pos)
+        {
+            return GetClosestPointAndPosition(pos, positions);
+        }
+
+        public Tuple<Vector3, Math.PointPosition>
+        GetClosestPointAndPosition(Vector3 pos, IReadOnlyList<Vector3> positions)
+        {
+            var minDist = float.PositiveInfinity;
+            var minPt = Vector3.zero;
+            var minIdx = 0;
+
+            for (int i = 1; i < positions.Count; ++i)
+            {
+                var p0 = positions[i - 1];
+                var p1 = positions[i];
+
+                var closestPt = Math.NearestPointOnLine(p0, p1, pos);
+                var sqrDist = (closestPt - pos).sqrMagnitude;
+
+                if (sqrDist < minDist)
+                {
+                    minDist = sqrDist;
+                    minPt = closestPt;
+                    minIdx = i;
+                }
+            }
+
+            var pointPos = Math.GetPointPosition(positions[minIdx - 1], positions[minIdx], pos);
+            return new Tuple<Vector3, Math.PointPosition>(minPt, pointPos);
         }
 
         public int GetClosestPoint(Vector3 pos)
@@ -1370,24 +1421,24 @@ namespace Transidious
                 lineOutlineLayer = Map.Layer(MapLayer.StreetOutlines);
             }
 
-            if (street.map.input.combineStreetMeshes)
-            {
-                foreach (var dist in Enum.GetValues(typeof(InputController.RenderingDistance)))
-                {
-                    street.map.streetMesh.AddStreetSegment(
-                        (InputController.RenderingDistance)dist,
-                        positions,
-                        GetStreetWidth((InputController.RenderingDistance)dist),
-                        GetBorderWidth((InputController.RenderingDistance)dist),
-                        GetStreetColor((InputController.RenderingDistance)dist),
-                        GetBorderColor((InputController.RenderingDistance)dist),
-                        startIntersection.intersectingStreets.Count == 1,
-                        endIntersection.intersectingStreets.Count == 1,
-                        lineLayer, lineOutlineLayer);
-                }
+            // if (street.map.input.combineStreetMeshes)
+            // {
+            //     foreach (var dist in Enum.GetValues(typeof(InputController.RenderingDistance)))
+            //     {
+            //         street.map.streetMesh.AddStreetSegment(
+            //             (InputController.RenderingDistance)dist,
+            //             positions,
+            //             GetStreetWidth((InputController.RenderingDistance)dist),
+            //             GetBorderWidth((InputController.RenderingDistance)dist),
+            //             GetStreetColor((InputController.RenderingDistance)dist),
+            //             GetBorderColor((InputController.RenderingDistance)dist),
+            //             startIntersection.intersectingStreets.Count == 1,
+            //             endIntersection.intersectingStreets.Count == 1,
+            //             lineLayer, lineOutlineLayer);
+            //     }
 
-                return;
-            }
+            //     return;
+            // }
 
             foreach (var distVal in Enum.GetValues(typeof(InputController.RenderingDistance)))
             {
@@ -1401,17 +1452,136 @@ namespace Transidious
                 var width = GetStreetWidth(dist);
                 if (!width.Equals(0f))
                 {
-                    meshInfo.streetMesh = MeshBuilder.CreateSmoothLine(positions, width, 10, lineLayer);
+                    meshInfo.streetMesh = MeshBuilder.CreateSmoothLine(positions, width, 20, lineLayer);
                 }
 
                 var borderWidth = GetBorderWidth(dist);
                 if (!borderWidth.Equals(0f))
                 {
-                    meshInfo.outlineMesh = MeshBuilder.CreateSmoothLine(positions, width + borderWidth, 10, lineOutlineLayer);
+                    PolygonCollider2D collider = null;
+                    if (dist == InputController.RenderingDistance.Near)
+                    {
+                        collider = GetComponent<PolygonCollider2D>();
+                    }
+
+                    meshInfo.outlineMesh = MeshBuilder.CreateSmoothLine(
+                        positions, width + borderWidth, 20,
+                        lineOutlineLayer, false, collider);
                 }
             }
 
-            UpdateScale(street.map.input.renderingDistance);
+            UpdateScale(street.map.input?.renderingDistance ?? InputController.RenderingDistance.Near);
+        }
+
+        Tuple<Mesh, Mesh> GetTramTrackMesh(Vector3[] path, bool isRightLane)
+        {
+            var trackDistance = 1.2f;
+            var trackWidth = 0.15f;
+            var offset = (isRightLane ? -1f : +1f);
+
+            var meshRight = MeshBuilder.CreateSmoothLine(
+                path, trackWidth, 20,
+                Map.Layer(MapLayer.StreetMarkings),
+                false, null, false, false,
+                trackDistance * .5f + trackWidth * .5f + offset);
+
+            var meshLeft = MeshBuilder.CreateSmoothLine(path, trackWidth, 20,
+                Map.Layer(MapLayer.StreetMarkings),
+                false, null, false, false,
+                trackDistance * -.5f - trackWidth * .5f + offset);
+
+            return new Tuple<Mesh, Mesh>(meshRight, meshLeft);
+        }
+
+        void GetIntersectionMeshes(List<Mesh> trackMeshes)
+        {
+            if (startIntersection != null)
+            {
+                GetIntersectionMeshes(startIntersection, trackMeshes);
+            }
+            if (endIntersection != null)
+            {
+                GetIntersectionMeshes(endIntersection, trackMeshes);
+            }
+        }
+
+        void GetIntersectionMeshes(StreetIntersection intersection,
+                                   List<Mesh> trackMeshes)
+        {
+            var trafficSim = street.map.input.controller.sim.trafficSim;
+            foreach (var s in intersection.intersectingStreets)
+            {
+                if (s == this || !s.hasTramTracks)
+                {
+                    continue;
+                }
+                if (!(street.isOneWay && intersection == startIntersection)
+                && !(s.street.isOneWay && intersection == s.endIntersection))
+                {
+                    var rightLane = this.RightmostLane;
+                    var rightPath = trafficSim.GetPath(intersection, this, s, rightLane);
+                    var rightMeshes = GetTramTrackMesh(rightPath, true);
+
+                    trackMeshes.Add(rightMeshes.Item1);
+                    trackMeshes.Add(rightMeshes.Item2);
+                }
+
+                if (!(street.isOneWay && intersection == endIntersection)
+                && !(s.street.isOneWay && intersection == s.startIntersection))
+                {
+                    // Create tracks for left lane.
+                    var leftLane = this.LeftmostLane;
+                    var leftPath = trafficSim.GetPath(intersection, s, this, leftLane);
+                    var leftMeshes = GetTramTrackMesh(leftPath, true);
+
+                    s.UpdateTramTracks(leftMeshes.Item1, leftMeshes.Item2);
+                }
+            }
+        }
+
+        void CreateTramTrackMesh(StreetSegmentMeshInfo meshInfo)
+        {
+            var trafficSim = street.map.input.controller.sim.trafficSim;
+
+            // Create tracks for right lane.
+            var rightLane = this.RightmostLane;
+            var rightPath = trafficSim.GetPath(this, rightLane);
+            var rightMeshes = GetTramTrackMesh(rightPath, true);
+
+            var trackMeshes = new List<Mesh> { meshInfo.outlineMesh, rightMeshes.Item1,
+                rightMeshes.Item2 };
+
+            if (!street.isOneWay)
+            {
+                // Create tracks for left lane.
+                var leftLane = this.LeftmostLane;
+                var leftPath = trafficSim.GetPath(this, leftLane);
+                var leftMeshes = GetTramTrackMesh(leftPath, false);
+
+                trackMeshes.Add(leftMeshes.Item1);
+                trackMeshes.Add(leftMeshes.Item2);
+            }
+
+            // Create meshes for intersections.
+            GetIntersectionMeshes(trackMeshes);
+
+            meshInfo.outlineMesh = MeshBuilder.CombineMeshes(trackMeshes);
+            UpdateScale(inputController.renderingDistance);
+        }
+
+        void UpdateTramTracks(Mesh trackRight, Mesh trackLeft)
+        {
+            var meshInfo = this.meshes[InputController.RenderingDistance.Near];
+            meshInfo.outlineMesh = MeshBuilder.CombineMeshes(meshInfo.outlineMesh, trackRight,
+                                                             trackLeft);
+
+            UpdateScale(inputController.renderingDistance);
+        }
+
+        public void AddTramTracks()
+        {
+            this.hasTramTracks = true;
+            this.CreateTramTrackMesh(meshes[InputController.RenderingDistance.Near]);
         }
 
         public void UpdateMesh(List<Vector3> positions)
@@ -1621,23 +1791,29 @@ namespace Transidious
             var streetFilter = streetMeshObj.GetComponent<MeshFilter>();
 
             streetFilter.mesh = meshInfo.streetMesh;
-            streetRenderer.material = street.map.input.controller.GetUnlitMaterial(GetStreetColor(dist));
+            streetRenderer.material = GameController.GetUnlitMaterial(GetStreetColor(dist));
 
             var outlineRenderer = outlineMeshObj.GetComponent<MeshRenderer>();
             var outlineFilter = outlineMeshObj.GetComponent<MeshFilter>();
 
             outlineFilter.mesh = meshInfo.outlineMesh;
-            outlineRenderer.material = street.map.input.controller.GetUnlitMaterial(GetBorderColor(dist));
+            outlineRenderer.material = GameController.GetUnlitMaterial(GetBorderColor(dist));
 
-            var meshCollider = GetComponent<MeshCollider>();
-            meshCollider.sharedMesh = null;
-            meshCollider.sharedMesh = streetFilter.sharedMesh;
+            // var meshCollider = GetComponent<MeshCollider>();
+            // meshCollider.sharedMesh = null;
+            // meshCollider.sharedMesh = streetFilter.sharedMesh;
+
+            // if (streetFilter.sharedMesh != null)
+            // {
+            //     var polygonCollider = GetComponent<PolygonCollider2D>();
+            //     MeshBuilder.MeshCollider(streetFilter.sharedMesh, polygonCollider);
+            // }
         }
 
         public void UpdateColor(Color c)
         {
             var streetRenderer = streetMeshObj.GetComponent<MeshRenderer>();
-            streetRenderer.material = street.map.input.controller.GetUnlitMaterial(c);
+            streetRenderer.material = GameController.GetUnlitMaterial(c);
         }
 
         public void ResetColor(InputController.RenderingDistance dist)
@@ -1648,7 +1824,7 @@ namespace Transidious
         public void UpdateBorderColor(Color c)
         {
             var outlineRenderer = outlineMeshObj.GetComponent<MeshRenderer>();
-            outlineRenderer.material = street.map.input.controller.GetUnlitMaterial(c);
+            outlineRenderer.material = GameController.GetUnlitMaterial(c);
         }
 
         public void ResetBorderColor(InputController.RenderingDistance dist)
@@ -1658,11 +1834,16 @@ namespace Transidious
 
         public SerializedStreetSegment Serialize()
         {
+            if (hasTramTracks)
+            {
+                Debug.Log("henlo");
+            }
             return new SerializedStreetSegment
             {
                 positions = positions.Select(p => new SerializableVector3(p)).ToList(),
                 startIntersectionID = startIntersection?.id ?? 0,
                 endIntersectionID = endIntersection?.id ?? 0,
+                hasTramTracks = hasTramTracks,
             };
         }
 
@@ -1684,10 +1865,10 @@ namespace Transidious
             Destroy(this.streetName?.gameObject ?? null);
         }
 
-        void HighlightBorder()
+        public void HighlightBorder(bool bulldozing)
         {
             var game = street.map.input.controller;
-            if (game.Bulldozing)
+            if (bulldozing)
             {
                 UpdateBorderColor(game.bulldozeHighlightColor);
             }
@@ -1695,123 +1876,6 @@ namespace Transidious
             {
                 UpdateBorderColor(game.highlightColor);
             }
-        }
-
-        static readonly float endSnapThreshold = 5f * Map.Meters;
-
-        Vector3 GetClosestPointToCursor()
-        {
-            var cursorPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            var minDist = float.PositiveInfinity;
-            var minPt = Vector3.zero;
-
-            for (int i = 1; i < positions.Count; ++i)
-            {
-                var p0 = positions[i - 1];
-                var p1 = positions[i];
-
-                var closestPt = Math.NearestPointOnLine(p0, p1, cursorPos);
-                var sqrDist = (closestPt - cursorPos).sqrMagnitude;
-
-                if (sqrDist < minDist)
-                {
-                    minDist = sqrDist;
-                    minPt = closestPt;
-                }
-            }
-
-            var distanceFromStart = (positions.First() - minPt).magnitude;
-            if (distanceFromStart < endSnapThreshold)
-            {
-                return positions.First();
-            }
-
-            var distanceFromEnd = (positions.Last() - minPt).magnitude;
-            if (distanceFromEnd < endSnapThreshold)
-            {
-                return positions.Last();
-            }
-
-            return minPt;
-        }
-
-        void SnapMouseToPath()
-        {
-            Cursor.visible = false;
-
-            var closestPt = GetClosestPointToCursor();
-            var cursorObj = street.map.input.controller.CreateCursorSprite;
-            cursorObj.SetActive(true);
-
-            cursorObj.transform.position = new Vector3(closestPt.x, closestPt.y, Map.Layer(MapLayer.Cursor));
-            street.map.input.controller.mapEditor.hoveredStreetSegment = this;
-        }
-
-        void OnMouseOver()
-        {
-            var game = street.map.input.controller;
-            switch (game.editorMode)
-            {
-                case GameController.MapEditorMode.BulldozeMode:
-                    UpdateBorderColor(game.bulldozeHighlightColor);
-                    break;
-                case GameController.MapEditorMode.ViewMode:
-                    UpdateBorderColor(game.highlightColor);
-                    break;
-                case GameController.MapEditorMode.EditMode:
-                    SnapMouseToPath();
-                    break;
-            }
-        }
-
-        void OnMouseExit()
-        {
-            if (!highlighted && outlineMeshObj != null)
-            {
-                ResetBorderColor(street.map.input.renderingDistance);
-            }
-
-            Cursor.visible = true;
-
-            var game = street.map.input.controller;
-            if (game.Editing)
-            {
-                var cursorObj = street.map.input.controller.CreateCursorSprite;
-                cursorObj.SetActive(false);
-
-                game.mapEditor.hoveredStreetSegment = null;
-            }
-        }
-
-        void OnMouseDown()
-        {
-            if (street.map.input.IsPointerOverUIElement())
-            {
-                return;
-            }
-
-            if (street.map.input.controller.Bulldozing)
-            {
-                DeleteSegment();
-            }
-            else if (this.highlighted)
-            {
-                this.highlighted = false;
-                ResetBorderColor(street.map.input.renderingDistance);
-            }
-            else if (street.map.input.controller.Viewing)
-            {
-                this.highlighted = true;
-                HighlightBorder();
-            }
-
-#if DEBUG
-            if (street.map.input.controller.sim.trafficSim.manualTrafficLightControl)
-            {
-                startTrafficLight?.Switch();
-                endTrafficLight?.Switch();
-            }
-#endif
         }
     }
 }

@@ -205,17 +205,17 @@ namespace Transidious
                 if (driver.happiness < 50)
                 {
                     game.citizienUIHappinessSprite.sprite = game.happinessSprites[0];
-                    game.citizienUIHappinessText.text = Translator.Get("ui_happiness_unhappy");
+                    game.citizienUIHappinessText.text = Translator.Get("ui:happiness_unhappy");
                 }
                 else if (driver.happiness < 80)
                 {
                     game.citizienUIHappinessSprite.sprite = game.happinessSprites[1];
-                    game.citizienUIHappinessText.text = Translator.Get("ui_happiness_med_happy");
+                    game.citizienUIHappinessText.text = Translator.Get("ui:happiness_med_happy");
                 }
                 else
                 {
                     game.citizienUIHappinessSprite.sprite = game.happinessSprites[2];
-                    game.citizienUIHappinessText.text = Translator.Get("ui_happiness_happy");
+                    game.citizienUIHappinessText.text = Translator.Get("ui:happiness_happy");
                 }
 
                 UpdateUIPosition();

@@ -23,7 +23,6 @@ namespace Transidious
         {
             public string name;
             public Type type;
-
             public StreetSegment.SerializedStreetSegment[] segments;
             public bool lit;
             public bool oneway;
@@ -259,7 +258,7 @@ namespace Transidious
             if (seg.directionArrow == null)
             {
                 seg.directionArrow = map.input.controller.CreateSprite(
-                    map.input.controller.streetArrowSprite);
+                    GameController.streetArrowSprite);
 
                 seg.directionArrow.GetComponent<SpriteRenderer>().color = new Color(0.9f, 0.9f, 0.9f, 1f);
             }
@@ -278,7 +277,7 @@ namespace Transidious
                 return;
             }
 
-            var sprite = map.input.controller.streetArrowSprite;
+            var sprite = GameController.streetArrowSprite;
             var neededWidth = sprite.bounds.extents.y;
             var posAndAngle = GetPositionAndAngle(seg, neededWidth);
 
@@ -294,7 +293,7 @@ namespace Transidious
         {
             var txt = map.CreateText(Vector3.zero, name, new Color(0.3f, 0.3f, 0.3f, 1f));
             txt.textMesh.autoSizeTextContainer = true;
-            txt.textMesh.fontSize = segments.First().GetFontSize(map.input.maxZoom);
+            txt.textMesh.fontSize = segments.First().GetFontSize(InputController.maxZoom);
             txt.textMesh.alignment = TMPro.TextAlignmentOptions.Center;
             txt.textMesh.ForceMeshUpdate();
 
@@ -358,7 +357,8 @@ namespace Transidious
         public StreetSegment AddSegment(List<Vector3> path,
                                         StreetIntersection startIntersection,
                                         StreetIntersection endIntersection,
-                                        int atPosition = -1)
+                                        int atPosition = -1,
+                                        bool hasTramTracks = false)
         {
             var segObj = Instantiate(map.streetSegmentPrefab);
             segObj.transform.SetParent(this.transform);
@@ -382,7 +382,7 @@ namespace Transidious
                 segments.Insert(pos, seg);
             }
 
-            seg.Initialize(this, pos, path, startIntersection, endIntersection);
+            seg.Initialize(this, pos, path, startIntersection, endIntersection, hasTramTracks);
             map.RegisterSegment(seg);
 
             return seg;
@@ -453,7 +453,8 @@ namespace Transidious
             {
                 AddSegment(seg.positions.Select(v => v.ToVector()).ToList(),
                            map.streetIntersectionIDMap[seg.startIntersectionID],
-                           map.streetIntersectionIDMap[seg.endIntersectionID]);
+                           map.streetIntersectionIDMap[seg.endIntersectionID],
+                           -1, seg.hasTramTracks);
             }
 
             CalculateLength();

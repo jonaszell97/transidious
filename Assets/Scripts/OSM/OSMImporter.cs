@@ -1,24 +1,16 @@
 ﻿using OsmSharp;
-using OsmSharp.Streams;
 using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
 
 namespace Transidious
 {
-    public class OSMImporter
+    public class OSMImporter : MonoBehaviour
     {
-        public Map map;
-
         public class TransitLine
         {
-            internal Line.TransitType type;
+            internal TransitType type;
             internal Relation inbound;
             internal Relation outbound;
 
@@ -35,6 +27,7 @@ namespace Transidious
             }
         }
 
+        public Map map;
         public Dictionary<long, Node> nodes = new Dictionary<long, Node>();
         public List<Tuple<Way, Street.Type>> streets = new List<Tuple<Way, Street.Type>>();
 
@@ -68,10 +61,16 @@ namespace Transidious
         float cosCenterLat;
         static readonly float earthRadius = 6371000f * Map.Meters;
 
-        public OSMImporter(Map map, OSMImportHelper.Area area)
+        void Start()
         {
-            this.map = map;
-            this.area = area;
+            var mapPrefab = Resources.Load("Prefabs/Map") as GameObject;
+            var mapObj = Instantiate(mapPrefab);
+
+            map = mapObj.GetComponent<Map>();
+            map.name = this.area.ToString();
+
+            this.ImportArea();
+            Debug.Log("Done!");
         }
 
         Vector3 Project(Node node)
@@ -95,7 +94,6 @@ namespace Transidious
 
             FindMinLngAndLat();
 
-            map.name = areaName;
             cosCenterLat = Mathf.Cos(Math.toRadians((float)(minLat + (maxLat - minLat) * 0.5f)));
 
             minX = earthRadius * Math.toRadians((float)minLng) * cosCenterLat;
@@ -109,11 +107,14 @@ namespace Transidious
 
             LoadBoundary();
             // LoadTransitLines();
-            LoadStreets();
             LoadParks();
             LoadBuildings();
 
             map.DoFinalize();
+            SaveManager.SaveMapLayout(map);
+
+            LoadStreets();
+            SaveManager.SaveMapData(map);
         }
 
         void FindMinLngAndLat()
@@ -295,6 +296,13 @@ namespace Transidious
         Vector3[] boundaryPositions;
         void LoadBoundary()
         {
+            map.minX = 0;
+            map.minY = 0;
+
+            var maxValues = Project((float)maxLng, (float)maxLat);
+            map.maxX = maxValues.x;
+            map.maxY = maxValues.y;
+
             if (boundary != null)
             {
                 var positions = GetWayPositions(boundary, "outer", 0f);
@@ -307,26 +315,15 @@ namespace Transidious
             {
                 boundaryPositions = new Vector3[]
                 {
-                    new Vector3(minX, maxY),
-                    new Vector3(maxX, maxY),
-                    new Vector3(minX, minY),
-                    new Vector3(maxX, minY)
+                    new Vector3(map.minX, map.maxY),
+                    new Vector3(map.maxX, map.maxY),
+                    new Vector3(map.minX, map.minY),
+                    new Vector3(map.maxX, map.minY)
                 };
             }
 
             map.UpdateBoundary(boundaryPositions);
-        }
-
-        void OnDrawGizmosSelected()
-        {
-            if (boundaryPositions == null)
-                return;
-
-            for (int i = 0; i < boundaryPositions.Length; ++i)
-            {
-                Gizmos.color = new Color(255f, 0f, 0f);
-                Gizmos.DrawSphere(boundaryPositions[i], .1f);
-            }
+            map.boundaryOutlineObj.SetActive(false);
         }
 
         void LoadTransitLines()
@@ -361,7 +358,7 @@ namespace Transidious
                 }
                 else
                 {
-                    color = Map.defaultLineColors[Line.TransitType.Subway];
+                    color = Map.defaultLineColors[TransitType.Subway];
                 }
 
                 var l = map.CreateLine(linePair.Value.type, l1.Tags.GetValue("ref"), color).Finish();
@@ -702,7 +699,7 @@ namespace Transidious
                     }
 
                     street.CalculateLength();
-                    street.CreateTextMeshes();
+                    // street.CreateTextMeshes();
                 }
 
                 startingStreetCandidates.Clear();

@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="65.112354"
-     inkscape:cy="610.21027"
+     inkscape:cx="179.39807"
+     inkscape:cy="781.63884"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -56,12 +56,12 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="opacity:1;fill:#009fcc;fill-opacity:0.54954954;stroke:none;stroke-width:6.68999958;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#ffffff;fill-opacity:0.54954952;stroke:none;stroke-width:6.68999958;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="M 329.90625 210.2832 A 187.14284 187.14284 0 0 0 142.76172 397.42578 A 187.14284 187.14284 0 0 0 329.90625 584.56836 A 187.14284 187.14284 0 0 0 517.04883 397.42578 A 187.14284 187.14284 0 0 0 329.90625 210.2832 z M 329.90625 270.2832 A 127.14286 127.14286 0 0 1 457.04883 397.42578 A 127.14286 127.14286 0 0 1 329.90625 524.56836 A 127.14286 127.14286 0 0 1 202.76172 397.42578 A 127.14286 127.14286 0 0 1 329.90625 270.2832 z "
        transform="scale(0.26458333)"
        id="path815"
        inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/ui_create_street_cursor.png"
-       inkscape:export-xdpi="300"
-       inkscape:export-ydpi="300" />
+       inkscape:export-xdpi="32.830002"
+       inkscape:export-ydpi="32.830002" />
   </g>
 </svg>

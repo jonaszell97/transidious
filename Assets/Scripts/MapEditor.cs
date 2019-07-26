@@ -16,6 +16,9 @@ namespace Transidious
         /// The game controller.
         public GameController game;
 
+        /// The snap settings for map editing.
+        int? snapSettingsId;
+
         /// The map editing mode.
         EditingMode mode;
 
@@ -44,9 +47,50 @@ namespace Transidious
         /// The last mouse position we set the in-progress mesh to.
         Vector3 lastUsedMousePos;
 
+        public void Activate()
+        {
+            if (this.snapSettingsId == null)
+            {
+                this.snapSettingsId = game.snapController.AddStreetSnap(
+                    game.createStreetSprite,
+                    new Color(0f, .62f, .8f), // #009fcc8c
+                    new Vector3(.7f, .7f, .7f),
+                    true,
+                    false,
+                    false
+                );
+            }
+            else
+            {
+                game.snapController.EnableSnap(this.snapSettingsId.Value);
+            }
+        }
+
+        public void Deactivate()
+        {
+            game.snapController.DisableSnap(this.snapSettingsId.Value);
+        }
+
         void Awake()
         {
             mode = EditingMode.StreetCreation;
+        }
+
+        void Start()
+        {
+            game.input.RegisterEventListener(InputController.InputEvent.MouseDown, (MapObject obj) =>
+            {
+                if (game.editorMode != GameController.MapEditorMode.BulldozeMode)
+                {
+                    return;
+                }
+
+                var s = obj as StreetSegment;
+                if (s != null)
+                {
+                    s.DeleteSegment();
+                }
+            });
         }
 
         void Update()
@@ -95,7 +139,7 @@ namespace Transidious
                         new Vector3(0f, 0f, Map.Layer(MapLayer.Streets));
 
                     var meshRenderer = inProgressStreetObj.GetComponent<MeshRenderer>();
-                    meshRenderer.material = game.GetUnlitMaterial(
+                    meshRenderer.material = GameController.GetUnlitMaterial(
                         StreetSegment.GetStreetColor(streetType, game.input.renderingDistance));
 
                     inProgressStreetObjBorder = Instantiate(game.loadedMap.meshPrefab);
@@ -104,7 +148,7 @@ namespace Transidious
                         new Vector3(0f, 0f, Map.Layer(MapLayer.StreetOutlines));
 
                     var borderMeshRenderer = inProgressStreetObjBorder.GetComponent<MeshRenderer>();
-                    borderMeshRenderer.material = game.GetUnlitMaterial(
+                    borderMeshRenderer.material = GameController.GetUnlitMaterial(
                         StreetSegment.GetBorderColor(streetType, game.input.renderingDistance));
                 }
 

@@ -7,7 +7,7 @@ using Transidious.PathPlanning;
 
 namespace Transidious
 {
-    public class Route : MonoBehaviour, IRoute
+    public class Route : MapObject, IRoute
     {
         [System.Serializable]
         public struct SerializedRoute
@@ -47,6 +47,7 @@ namespace Transidious
 
         public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector3> positions, bool isBackRoute = false)
         {
+            base.inputController = line.map.input;
             this.line = line;
             this.positions = positions;
             this.beginStop = beginStop;
@@ -125,13 +126,47 @@ namespace Transidious
             return after;
         }
 
+        public ColorGradient Gradient
+        {
+            get
+            {
+                var gradient = this.gameObject.GetComponent<ColorGradient>();
+                if (gradient != null)
+                {
+                    return gradient;
+                }
+
+                gradient = this.gameObject.AddComponent<ColorGradient>();
+                gradient.Initialize(line.map.input.controller);
+
+                return gradient;
+            }
+        }
+
         public void UpdatePath()
         {
             if (positions == null)
+            {
+                return;
+            }
+
+            var collider = this.GetComponent<PolygonCollider2D>();
+            mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 10, 0, false, collider);
+
+            UpdateMesh();
+        }
+
+        void OnDrawGizmosSelected()
+        {
+            var collider = this.GetComponent<PolygonCollider2D>();
+            if (collider.pathCount == 0)
                 return;
 
-            mesh = MeshBuilder.CreateSmoothLine(positions, line.map.input.lineWidth);
-            UpdateMesh();
+            Gizmos.color = Color.red;
+            foreach (var pos in GetComponent<PolygonCollider2D>().GetPath(0))
+            {
+                Gizmos.DrawSphere(pos, 1f);
+            }
         }
 
         public void UpdatePathStylized()
@@ -255,7 +290,7 @@ namespace Transidious
             }
 
             meshFilter.mesh = mesh;
-            m_Renderer.material = line.map.input.controller.GetUnlitMaterial(line.color);
+            m_Renderer.material = GameController.GetUnlitMaterial(line.color);
             transform.position = new Vector3(transform.position.x,
                                              transform.position.y,
                                              Map.Layer(MapLayer.TransitLines));

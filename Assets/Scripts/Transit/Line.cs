@@ -5,32 +5,30 @@ using System.Collections.Generic;
 
 namespace Transidious
 {
+    /// Represents the different public transit systems.
+    public enum TransitType
+    {
+        /// A bus line.
+        Bus = 0,
+
+        /// A tram line.
+        Tram,
+
+        /// A subway line.
+        Subway,
+
+        /// A light rail line.
+        LightRail,
+
+        /// A regional train line.
+        IntercityRail,
+
+        /// A ferry line.
+        Ferry,
+    }
+
     public class Line : MonoBehaviour
     {
-        /// Represents the different public transit systems.
-        public enum TransitType
-        {
-            /// A bus line.
-            Bus,
-
-            /// A tram line.
-            Tram,
-
-            /// A subway line.
-            Subway,
-
-            /// An S-Train line.
-            STrain,
-
-            /// A regional train line.
-            RegionalTrain,
-
-            /// A long-distance train line.
-            LongDistanceTrain,
-
-            /// A ferry line.
-            Ferry,
-        }
 
         [System.Serializable]
         public struct SerializedLine
@@ -72,13 +70,31 @@ namespace Transidious
                     case TransitType.Bus: return 30.0f;
                     case TransitType.Tram: return 30.0f;
                     case TransitType.Subway: return 50.0f;
-                    case TransitType.STrain: return 60.0f;
-                    case TransitType.RegionalTrain: return 80.0f;
-                    case TransitType.LongDistanceTrain: return 120.0f;
+                    case TransitType.LightRail: return 60.0f;
+                    case TransitType.IntercityRail: return 80.0f;
                     case TransitType.Ferry: return 10.0f;
                     default:
                         Debug.LogError("Unknown transit type!");
                         return 50.0f;
+                }
+            }
+        }
+
+        public float LineWidth
+        {
+            get
+            {
+                switch (type)
+                {
+                    case TransitType.Bus: return 1.25f;
+                    case TransitType.Tram: return 1.25f;
+                    case TransitType.Subway: return 3f;
+                    case TransitType.LightRail: return 3f;
+                    case TransitType.IntercityRail: return 3f;
+                    case TransitType.Ferry: return 1.25f;
+                    default:
+                        Debug.LogError("Unknown transit type!");
+                        return 1.25f;
                 }
             }
         }

@@ -72,6 +72,19 @@ namespace Transidious
             return activeTranslator.Translate(key);
         }
 
+        public static string Get(string key, params string[] args)
+        {
+            Debug.Assert(activeTranslator != null, "no translator set!");
+
+            var text = activeTranslator.Translate(key);
+            for (var i = 0; i < args.Length; ++i)
+            {
+                text = text.Replace("$" + i, args[i]);
+            }
+
+            return text;
+        }
+
         static void AppendInteger(StringBuilder str, ulong value, string thousandsSeparator)
         {
             var tmp = new StringBuilder();

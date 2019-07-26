@@ -8,7 +8,7 @@ using Transidious.PathPlanning;
 
 namespace Transidious
 {
-    public class Stop : MonoBehaviour, IStop
+    public class Stop : MapObject, IStop
     {
         [System.Serializable]
         public class LineIntersectionInfo
@@ -288,8 +288,11 @@ namespace Transidious
             get { return transform.position; }
         }
 
-        void Initialize()
+        public void Initialize(Map map, string name, Vector3 position)
         {
+            this.map = map;
+            this.name = name;
+            this.inputController = map.input;
             this.appearance = Appearance.None;
             this.outgoingRoutes = new List<Route>();
             this.routes = new List<Route>();
@@ -305,8 +308,8 @@ namespace Transidious
             this.smallRectSprite = Resources.Load("Sprites/stop_small_rect", typeof(Sprite)) as Sprite;
             this.largeRectSprite = Resources.Load("Sprites/stop_large_rect", typeof(Sprite)) as Sprite;
 
-            transform.position = new Vector3(transform.position.x,
-                                             transform.position.y,
+            transform.position = new Vector3(position.x,
+                                             position.y,
                                              Map.Layer(MapLayer.TransitStops));
         }
 
@@ -516,7 +519,19 @@ namespace Transidious
             height = 1;
             width = 1;
 
-            CreateLargeRectMesh();
+            spriteRenderer.sprite = circleSprite;
+            spriteRenderer.drawMode = SpriteDrawMode.Simple;
+            spriteRenderer.color = Color.white;
+
+            spriteObject.transform.rotation = new Quaternion();
+            spriteObject.transform.localScale = Vector3.one;
+            spriteObject.transform.position = new Vector3(transform.position.x,
+                                                          transform.position.y,
+                                                          Map.Layer(MapLayer.TransitStops));
+
+            this.appearance = Appearance.Circle;
+
+            // CreateLargeRectMesh();
         }
 
         Vector3 VectorFromAngle(float theta)
@@ -548,7 +563,7 @@ namespace Transidious
         {
             switch (stops)
             {
-                case 0: case 1: return map.input.stopWidth;
+                case 0: case 1: return .5f;
                 default: return map.input.stopWidth + stops * (map.input.stopWidth * 0.5f);
             }
         }
@@ -1324,11 +1339,14 @@ namespace Transidious
 
             wasModified = false;
 
-            if (true || lineData.Count == 0)
+            CreateCircleMesh();
+
+            /*
+            // Simplest case, only a single line stops at this stop.
+            if (lineData.Count == 0)
             {
                 CreateCircleMesh();
             }
-            // Simplest case, only a single line stops at this stop.
             else if (lineData.Count == 1)
             {
                 var keyValuePair = lineData.First();
@@ -1413,6 +1431,9 @@ namespace Transidious
                     route.UpdatePath();
                 }
             }
+            */
+
+            this.GetComponent<BoxCollider2D>().size = spriteRenderer.bounds.size;
         }
 
         public void UpdateScale()
@@ -1476,7 +1497,6 @@ namespace Transidious
         void Awake()
         {
             this.spritePrefab = Resources.Load("Prefabs/SpritePrefab") as GameObject;
-            Initialize();
         }
 
         // Use this for initialization

@@ -24,6 +24,7 @@ namespace Transidious
         public void SetColor(Color c)
         {
             textMesh.color = c;
+            textMesh.faceColor = c;
         }
 
         public void SetFontSize(float size)
@@ -53,6 +54,14 @@ namespace Transidious
         {
             this.VertexCurve = curve;
             StartCoroutine(WarpText());
+        }
+
+        public Vector2 Size
+        {
+            get
+            {
+                return new Vector2(textMesh.preferredWidth, textMesh.preferredHeight);
+            }
         }
 
         /// <summary>

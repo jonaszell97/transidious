@@ -32,6 +32,7 @@ namespace Transidious
 
         public Mesh mesh;
         public StreetSegment street;
+        public int streetID;
         public string number;
 
         public string name;
@@ -41,8 +42,9 @@ namespace Transidious
 
         public Vector3 position;
 
-        public Building(Map map, Type type, StreetSegment street, string numberStr,
-                        Mesh mesh, string name = "", Vector3? position = null)
+        public Building(Type type, StreetSegment street, string numberStr,
+                        Mesh mesh, string name = "", Vector3? position = null,
+                        MultiMesh buildingMesh = null)
         {
             this.type = type;
 
@@ -53,15 +55,6 @@ namespace Transidious
             else if (mesh != null)
             {
                 UpdatePosition(mesh.vertices);
-            }
-
-            if (street == null)
-            {
-                var closest = map.GetClosestStreet(this.position);
-                if (closest != null)
-                {
-                    street = closest.seg;
-                }
             }
 
             this.street = street;
@@ -79,7 +72,16 @@ namespace Transidious
                 this.name = name;
             }
 
-            UpdateMesh(map, mesh);
+            UpdateMesh(buildingMesh, mesh);
+        }
+
+        public void UpdateStreet(Map map)
+        {
+            var closest = map.GetClosestStreet(this.position);
+            if (closest != null)
+            {
+                street = closest.seg;
+            }
         }
 
         int GetDefaultCapacity(Type type)
@@ -127,9 +129,9 @@ namespace Transidious
             }
         }
 
-        public void UpdateMesh(Map map, Mesh mesh)
+        public void UpdateMesh(MultiMesh buildingMesh, Mesh mesh)
         {
-            if (mesh == null)
+            if (mesh == null || buildingMesh == null)
             {
                 return;
             }
@@ -144,7 +146,7 @@ namespace Transidious
                     break;
             }
 
-            map.buildingMesh.AddMesh(GetColor(), mesh, layer);
+            buildingMesh.AddMesh(GetColor(), mesh, layer);
         }
 
         public SerializableBuilding Serialize()

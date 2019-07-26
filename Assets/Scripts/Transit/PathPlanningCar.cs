@@ -184,6 +184,9 @@ namespace Transidious.PathPlanning
 
     public class PathPlanningOptions
     {
+        /// Whether or not to allow walking.
+        public bool allowWalk = true;
+
         /// The starting position.
         public IStop start;
 
@@ -258,6 +261,36 @@ namespace Transidious.PathPlanning
 
             var drive = steps[steps.Count - 2] as PartialDriveStep;
             return new PointOnStreet { street = drive.driveSegment.segment, pos = drive.endPos };
+        }
+
+        public bool IsWalk
+        {
+            get
+            {
+                return steps.Count == 2 && steps.All(s => s is WalkStep);
+            }
+        }
+
+        public bool ValidForTram
+        {
+            get
+            {
+                foreach (var step in steps)
+                {
+                    if (step is DriveStep
+                    && !(step as DriveStep).driveSegment.segment.hasTramTracks)
+                    {
+                        return false;
+                    }
+                    else if (step is PartialDriveStep
+                    && !(step as PartialDriveStep).driveSegment.segment.hasTramTracks)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         public override string ToString()
@@ -773,6 +806,11 @@ namespace Transidious.PathPlanning
 
             if (nearestPtFrom == null || nearestPtTo == null)
             {
+                if (!this.options.allowWalk)
+                {
+                    return null;
+                }
+
                 return CreateWalk(from, to);
             }
 
@@ -809,6 +847,11 @@ namespace Transidious.PathPlanning
 
                 if (result == null)
                 {
+                    if (!this.options.allowWalk)
+                    {
+                        return null;
+                    }
+
                     return CreateWalk(from, to);
                 }
             }

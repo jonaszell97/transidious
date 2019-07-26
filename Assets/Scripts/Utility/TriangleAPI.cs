@@ -11,13 +11,15 @@ namespace Transidious
         public List<int[]> segments;
         public List<PSLG> holes;
         public List<int> boundaryMarkersForPolygons;
+        public float z;
 
-        public PSLG()
+        public PSLG(float z = 0)
         {
             vertices = new List<Vector3>();
             segments = new List<int[]>();
             holes = new List<PSLG>();
             boundaryMarkersForPolygons = new List<int>();
+            this.z = z;
         }
 
         public PSLG(List<Vector3> vertices) : this()
@@ -256,7 +258,7 @@ namespace Transidious
                 ExecuteTriangle();
 
                 // Read outout
-                Vector3[] vertices = ReadVerticesFile();
+                Vector3[] vertices = ReadVerticesFile(pslg.z);
                 int[] triangles = ReadTrianglesFile();
 
                 return new Polygon2D(triangles, vertices);
@@ -382,7 +384,7 @@ namespace Transidious
             }
         }
 
-        Vector3[] ReadVerticesFile()
+        Vector3[] ReadVerticesFile(float z = 0)
         {
             Vector3[] vertices = null;
             try
@@ -423,7 +425,7 @@ namespace Transidious
 
                     if (index != -1)
                     {
-                        vertices[index - 1] = new Vector3(x, y);
+                        vertices[index - 1] = new Vector3(x, y, z);
                     }
                 }
 

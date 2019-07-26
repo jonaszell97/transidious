@@ -201,26 +201,26 @@ namespace Transidious
                                     while (true)
                                     {
 
-                                        Line.TransitType type;
+                                        TransitType type;
                                         if (tags.Contains("type", "route") && tags.Contains("route", "tram"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "subway"))
                                         {
-                                            type = Line.TransitType.Subway;
+                                            type = TransitType.Subway;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("line", "light_rail"))
                                         {
-                                            type = Line.TransitType.STrain;
+                                            type = TransitType.LightRail;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("service", "regional"))
                                         {
-                                            type = Line.TransitType.RegionalTrain;
+                                            type = TransitType.IntercityRail;
                                         }
                                         else
                                         {
@@ -533,26 +533,26 @@ namespace Transidious
                                     while (true)
                                     {
 
-                                        Line.TransitType type;
+                                        TransitType type;
                                         if (tags.Contains("type", "route") && tags.Contains("route", "tram"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "subway"))
                                         {
-                                            type = Line.TransitType.Subway;
+                                            type = TransitType.Subway;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("line", "light_rail"))
                                         {
-                                            type = Line.TransitType.STrain;
+                                            type = TransitType.LightRail;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("service", "regional"))
                                         {
-                                            type = Line.TransitType.RegionalTrain;
+                                            type = TransitType.IntercityRail;
                                         }
                                         else
                                         {
@@ -865,26 +865,26 @@ namespace Transidious
                                     while (true)
                                     {
 
-                                        Line.TransitType type;
+                                        TransitType type;
                                         if (tags.Contains("type", "route") && tags.Contains("route", "tram"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "subway"))
                                         {
-                                            type = Line.TransitType.Subway;
+                                            type = TransitType.Subway;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("line", "light_rail"))
                                         {
-                                            type = Line.TransitType.STrain;
+                                            type = TransitType.LightRail;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("service", "regional"))
                                         {
-                                            type = Line.TransitType.RegionalTrain;
+                                            type = TransitType.IntercityRail;
                                         }
                                         else
                                         {
@@ -1197,26 +1197,26 @@ namespace Transidious
                                     while (true)
                                     {
 
-                                        Line.TransitType type;
+                                        TransitType type;
                                         if (tags.Contains("type", "route") && tags.Contains("route", "tram"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "subway"))
                                         {
-                                            type = Line.TransitType.Subway;
+                                            type = TransitType.Subway;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("line", "light_rail"))
                                         {
-                                            type = Line.TransitType.STrain;
+                                            type = TransitType.LightRail;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("service", "regional"))
                                         {
-                                            type = Line.TransitType.RegionalTrain;
+                                            type = TransitType.IntercityRail;
                                         }
                                         else
                                         {
@@ -1529,26 +1529,26 @@ namespace Transidious
                                     while (true)
                                     {
 
-                                        Line.TransitType type;
+                                        TransitType type;
                                         if (tags.Contains("type", "route") && tags.Contains("route", "tram"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "subway"))
                                         {
-                                            type = Line.TransitType.Subway;
+                                            type = TransitType.Subway;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("line", "light_rail"))
                                         {
-                                            type = Line.TransitType.STrain;
+                                            type = TransitType.LightRail;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("service", "regional"))
                                         {
-                                            type = Line.TransitType.RegionalTrain;
+                                            type = TransitType.IntercityRail;
                                         }
                                         else
                                         {
@@ -1861,26 +1861,26 @@ namespace Transidious
                                     while (true)
                                     {
 
-                                        Line.TransitType type;
+                                        TransitType type;
                                         if (tags.Contains("type", "route") && tags.Contains("route", "tram"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "subway"))
                                         {
-                                            type = Line.TransitType.Subway;
+                                            type = TransitType.Subway;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("line", "light_rail"))
                                         {
-                                            type = Line.TransitType.STrain;
+                                            type = TransitType.LightRail;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("service", "regional"))
                                         {
-                                            type = Line.TransitType.RegionalTrain;
+                                            type = TransitType.IntercityRail;
                                         }
                                         else
                                         {
@@ -2193,26 +2193,26 @@ namespace Transidious
                                     while (true)
                                     {
 
-                                        Line.TransitType type;
+                                        TransitType type;
                                         if (tags.Contains("type", "route") && tags.Contains("route", "tram"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "subway"))
                                         {
-                                            type = Line.TransitType.Subway;
+                                            type = TransitType.Subway;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("line", "light_rail"))
                                         {
-                                            type = Line.TransitType.STrain;
+                                            type = TransitType.LightRail;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("service", "regional"))
                                         {
-                                            type = Line.TransitType.RegionalTrain;
+                                            type = TransitType.IntercityRail;
                                         }
                                         else
                                         {
@@ -2525,26 +2525,26 @@ namespace Transidious
                                     while (true)
                                     {
 
-                                        Line.TransitType type;
+                                        TransitType type;
                                         if (tags.Contains("type", "route") && tags.Contains("route", "tram"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail"))
                                         {
-                                            type = Line.TransitType.Tram;
+                                            type = TransitType.Tram;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "subway"))
                                         {
-                                            type = Line.TransitType.Subway;
+                                            type = TransitType.Subway;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("line", "light_rail"))
                                         {
-                                            type = Line.TransitType.STrain;
+                                            type = TransitType.LightRail;
                                         }
                                         else if (tags.Contains("type", "route") && tags.Contains("route", "train") && tags.Contains("service", "regional"))
                                         {
-                                            type = Line.TransitType.RegionalTrain;
+                                            type = TransitType.IntercityRail;
                                         }
                                         else
                                         {

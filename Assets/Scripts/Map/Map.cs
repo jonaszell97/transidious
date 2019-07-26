@@ -1,21 +1,15 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Xml.Serialization;
-using System.Xml.Linq;
-using System.Text;
 
 namespace Transidious
 {
     public enum MapLayer : int
     {
-        Background = 0,
+        Background = -30,
 
-        NatureBackground,
+        NatureBackground = 0,
         Parks,
 
         RiverOutlines,
@@ -36,6 +30,7 @@ namespace Transidious
         TransitLines,
         TransitStops,
 
+        Boundary,
         Foreground,
         Cursor,
     }
@@ -86,15 +81,14 @@ namespace Transidious
 
     public class Map : MonoBehaviour
     {
-        public static readonly Dictionary<Line.TransitType, Color> defaultLineColors = new Dictionary<Line.TransitType, Color>
+        public static readonly Dictionary<TransitType, Color> defaultLineColors = new Dictionary<TransitType, Color>
     {
-        { Line.TransitType.Bus, new Color(0.58f, 0.0f, 0.83f)  },
-        { Line.TransitType.Tram, new Color(1.0f, 0.0f, 0.0f)  },
-        { Line.TransitType.Subway, new Color(0.09f, 0.02f, 0.69f)  },
-        { Line.TransitType.STrain, new Color(37f/255f, 102f/255f, 10f/255f)  },
-        { Line.TransitType.RegionalTrain, new Color(1.0f, 0.0f, 0.0f)  },
-        { Line.TransitType.LongDistanceTrain, new Color(1.0f, 0.0f, 0.0f)  },
-        { Line.TransitType.Ferry, new Color(0.14f, 0.66f, 0.79f)  }
+        { TransitType.Bus, new Color(0.58f, 0.0f, 0.83f)  },
+        { TransitType.Tram, new Color(1.0f, 0.0f, 0.0f)  },
+        { TransitType.Subway, new Color(0.09f, 0.02f, 0.69f)  },
+        { TransitType.LightRail, new Color(37f/255f, 102f/255f, 10f/255f)  },
+        { TransitType.IntercityRail, new Color(1.0f, 0.0f, 0.0f)  },
+        { TransitType.Ferry, new Color(0.14f, 0.66f, 0.79f)  }
     };
 
         /// Reference to the input controller.
@@ -306,58 +300,55 @@ namespace Transidious
         public static float Layer(MapLayer l, int orderInLayer = 0)
         {
             Debug.Assert(orderInLayer < 10, "invalid layer order");
-            return -((float)(int)l) - (orderInLayer * .1f);
+            return -((float)((int)l * 10)) - (orderInLayer * 1f);
         }
 
         public void UpdateBoundary(Vector3[] positions)
         {
-            maxX = 0f;
-            maxY = 0f;
+            var minX = this.minX - 1000f;
+            var maxX = this.maxX + 1000f;
+            var minY = this.minY - 1000f;
+            var maxY = this.maxY + 1000f;
 
-            minX = float.PositiveInfinity;
-            minY = float.PositiveInfinity;
-
-            foreach (var pos in positions)
+            if (input != null)
             {
-                maxX = Mathf.Max(maxX, pos.x);
-                maxY = Mathf.Max(maxY, pos.y);
-
-                minX = Mathf.Min(minX, pos.x);
-                minY = Mathf.Min(minY, pos.y);
+                input.minX = minX;
+                input.maxX = maxX;
+                input.minY = minY;
+                input.maxY = maxY;
             }
 
-            input.minX = minX - 1000f;
-            input.maxX = maxX + 1000f;
-            input.minY = minY - 1000f;
-            input.maxY = maxY + 1000f;
-
-            var pslg = new PSLG();
+            var pslg = new PSLG(Map.Layer(MapLayer.Boundary));
             pslg.AddOrderedVertices(positions);
 
             var backgroundMesh = triangleAPI.CreateMesh(pslg);
             var positionList = positions.ToList();
 
-            var boundaryMesh = MeshBuilder.CreateSmoothLine(positionList, input.boundaryWidth, 10);
-            float halfWidth = (input.maxX - input.minX) / 2f;
-            float halfHeight = (input.maxY - input.minY);
+            var boundaryMesh = MeshBuilder.CreateSmoothLine(
+                positionList, 10, 10, Map.Layer(MapLayer.Foreground));
 
-            var halfViewportWidth = Camera.main.rect.width;
-            var halfViewportHeight = Camera.main.rect.height;
+            float halfWidth = (maxX - minX) / 2f;
+            float halfHeight = (maxY - minY);
 
-            pslg = new PSLG();
+            Camera.main.orthographicSize = InputController.maxZoom;
+
+            var halfViewportWidth = Camera.main.ScreenToWorldPoint(new Vector3(Camera.main.rect.width, 0, 0)).x;
+            var halfViewportHeight = halfViewportWidth;
+
+            pslg = new PSLG(Map.Layer(MapLayer.Boundary));
             pslg.AddOrderedVertices(new Vector3[]
             {
-                new Vector3(input.minX - halfViewportWidth, input.minY - halfViewportHeight),
-                new Vector3(input.minX - halfViewportWidth, input.maxY + halfViewportHeight),
-                new Vector3(input.maxX + halfViewportWidth, input.maxY + halfViewportHeight),
-                new Vector3(input.maxX + halfViewportWidth, input.minY - halfViewportHeight)
+                new Vector3(minX - halfViewportWidth, minY - halfViewportHeight),
+                new Vector3(minX - halfViewportWidth, maxY + halfViewportHeight),
+                new Vector3(maxX + halfViewportWidth, maxY + halfViewportHeight),
+                new Vector3(maxX + halfViewportWidth, minY - halfViewportHeight)
             });
 
             pslg.AddHole(positionList);
 
             var maskMesh = triangleAPI.CreateMesh(pslg);
-            UpdateBoundary(backgroundMesh, boundaryMesh, maskMesh, minX, maxX,
-                           minY, maxY);
+            UpdateBoundary(backgroundMesh, boundaryMesh, maskMesh, this.minX, this.maxX,
+                           this.minY, this.maxY);
         }
 
         public void UpdateBoundary(Mesh backgroundMesh, Mesh outlineMesh, Mesh maskMesh,
@@ -368,12 +359,15 @@ namespace Transidious
                                             Camera.main.transform.position.z);
 
             Camera.main.transform.position = startingCameraPos;
-            input.minX = minX - 1000f;
-            input.maxX = maxX + 1000f;
-            input.minY = minY - 1000f;
-            input.maxY = maxY + 1000f;
 
-            input.UpdateZoomLevels();
+            if (input != null)
+            {
+                input.minX = minX - 1000f;
+                input.maxX = maxX + 1000f;
+                input.minY = minY - 1000f;
+                input.maxY = maxY + 1000f;
+                input.UpdateZoomLevels();
+            }
 
             var canvasTransform = canvas.GetComponent<RectTransform>();
             canvasTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxX - minX);
@@ -383,13 +377,16 @@ namespace Transidious
             if (boundaryBackgroundObj == null)
             {
                 boundaryBackgroundObj = Instantiate(meshPrefab);
-                boundaryBackgroundObj.transform.SetParent(this.transform);
+                // boundaryBackgroundObj.transform.SetParent(this.transform);
+                boundaryBackgroundObj.name = "Boundary Background";
 
                 boundaryOutlineObj = Instantiate(meshPrefab);
-                boundaryOutlineObj.transform.SetParent(this.transform);
+                // boundaryOutlineObj.transform.SetParent(this.transform);
+                boundaryOutlineObj.name = "Boundary Outline";
 
                 boundarymaskObj = Instantiate(meshPrefab);
-                boundarymaskObj.transform.SetParent(this.transform);
+                // boundarymaskObj.transform.SetParent(this.transform);
+                boundarymaskObj.name = "Boundary Mask";
             }
 
             // Create the background mesh.
@@ -399,9 +396,10 @@ namespace Transidious
 
                 ResetBackgroundColor();
 
-                boundaryBackgroundObj.transform.position = new Vector3(boundaryBackgroundObj.transform.position.x,
-                                                             boundaryBackgroundObj.transform.position.y,
-                                                             Layer(MapLayer.Background));
+                boundaryBackgroundObj.transform.position = new Vector3(
+                    boundaryBackgroundObj.transform.position.x,
+                    boundaryBackgroundObj.transform.position.y,
+                    Layer(MapLayer.Background));
             }
 
             // Create the boundary mesh.
@@ -411,9 +409,10 @@ namespace Transidious
 
                 filter.mesh = outlineMesh;
                 meshRenderer.material.color = Color.black;
-                boundaryOutlineObj.transform.position = new Vector3(boundaryOutlineObj.transform.position.x,
-                                                                    boundaryOutlineObj.transform.position.y,
-                                                                    Layer(MapLayer.Foreground, 1));
+                boundaryOutlineObj.transform.position = new Vector3(
+                    boundaryOutlineObj.transform.position.x,
+                    boundaryOutlineObj.transform.position.y,
+                    Layer(MapLayer.Foreground, 1));
             }
 
             // Create the "mask" to make sure only things inside the boundary are visible.
@@ -423,9 +422,10 @@ namespace Transidious
 
                 filter.mesh = maskMesh;
                 meshRenderer.material.color = Color.white;
-                boundarymaskObj.transform.position = new Vector3(boundarymaskObj.transform.position.x,
-                                                                 boundarymaskObj.transform.position.y,
-                                                                 Layer(MapLayer.Foreground, 0));
+                boundarymaskObj.transform.position = new Vector3(
+                    boundarymaskObj.transform.position.x,
+                    boundarymaskObj.transform.position.y,
+                    Layer(MapLayer.Foreground, 0));
             }
 
             var width = maxX - minX;
@@ -452,7 +452,7 @@ namespace Transidious
         public void SetBackgroundColor(Color c)
         {
             var meshRenderer = boundaryBackgroundObj.GetComponent<MeshRenderer>();
-            meshRenderer.material = input.controller.GetUnlitMaterial(c);
+            meshRenderer.material = GameController.GetUnlitMaterial(c);
         }
 
         public void ResetBackgroundColor()
@@ -699,14 +699,23 @@ namespace Transidious
         }
 
         /// Create a new public transit line.
-        public LineBuilder CreateLine(Line.TransitType type, string name, Color color)
+        public LineBuilder CreateLine(TransitType type, string name, Color color)
         {
+            string currentName = name;
+
+            var i = 1;
+            while (transitLineMap.TryGetValue(currentName, out Line _))
+            {
+                currentName = name + " (" + i.ToString() + ")";
+                ++i;
+            }
+
             GameObject lineObject = Instantiate(linePrefab);
             Line line = lineObject.GetComponent<Line>();
             line.transform.SetParent(this.transform);
 
             line.map = this;
-            line.name = name;
+            line.name = currentName;
             line.type = type;
             line.color = color;
 
@@ -717,50 +726,43 @@ namespace Transidious
         /// Create a new bus line.
         public LineBuilder CreateBusLine(string name, Color color = new Color())
         {
-            return CreateLine(Line.TransitType.Bus, name,
-                              color.a > 0.0f ? color : defaultLineColors[Line.TransitType.Bus]);
+            return CreateLine(TransitType.Bus, name,
+                              color.a > 0.0f ? color : defaultLineColors[TransitType.Bus]);
         }
 
         /// Create a new tram line.
         public LineBuilder CreateTramLine(string name, Color color = new Color())
         {
-            return CreateLine(Line.TransitType.Tram, name,
-                              color.a > 0.0f ? color : defaultLineColors[Line.TransitType.Tram]);
+            return CreateLine(TransitType.Tram, name,
+                              color.a > 0.0f ? color : defaultLineColors[TransitType.Tram]);
         }
 
         /// Create a new subway line.
         public LineBuilder CreateSubwayLine(string name, Color color = new Color())
         {
-            return CreateLine(Line.TransitType.Subway, name,
-                              color.a > 0.0f ? color : defaultLineColors[Line.TransitType.Subway]);
+            return CreateLine(TransitType.Subway, name,
+                              color.a > 0.0f ? color : defaultLineColors[TransitType.Subway]);
         }
 
         /// Create a new S-Train line.
         public LineBuilder CreateSTrainLine(string name, Color color = new Color())
         {
-            return CreateLine(Line.TransitType.STrain, name,
-                              color.a > 0.0f ? color : defaultLineColors[Line.TransitType.STrain]);
+            return CreateLine(TransitType.LightRail, name,
+                              color.a > 0.0f ? color : defaultLineColors[TransitType.LightRail]);
         }
 
         /// Create a new regional train line.
         public LineBuilder CreateRegionalTrainLine(string name, Color color = new Color())
         {
-            return CreateLine(Line.TransitType.RegionalTrain, name,
-                              color.a > 0.0f ? color : defaultLineColors[Line.TransitType.RegionalTrain]);
-        }
-
-        /// Create a new long distance train line.
-        public LineBuilder CreateLongDistanceTrainLine(string name, Color color = new Color())
-        {
-            return CreateLine(Line.TransitType.LongDistanceTrain, name,
-                              color.a > 0.0f ? color : defaultLineColors[Line.TransitType.LongDistanceTrain]);
+            return CreateLine(TransitType.IntercityRail, name,
+                              color.a > 0.0f ? color : defaultLineColors[TransitType.IntercityRail]);
         }
 
         /// Create a new ferry line.
         public LineBuilder CreateFerryLine(string name, Color color = new Color())
         {
-            return CreateLine(Line.TransitType.Ferry, name,
-                              color.a > 0.0f ? color : defaultLineColors[Line.TransitType.Ferry]);
+            return CreateLine(TransitType.Ferry, name,
+                              color.a > 0.0f ? color : defaultLineColors[TransitType.Ferry]);
         }
 
         /// Create a route.
@@ -802,6 +804,20 @@ namespace Transidious
             transitRouteIDMap.Add(route.id, route);
         }
 
+        public Stop CreateStop(string name, Vector2 location)
+        {
+            string currentName = name;
+
+            var i = 1;
+            while (transitStopMap.TryGetValue(currentName, out Stop stop))
+            {
+                currentName = name + " (" + i.ToString() + ")";
+                ++i;
+            }
+
+            return GetOrCreateStop(currentName, location);
+        }
+
         /// Register a new public transit stop.
         public Stop GetOrCreateStop(string name, Vector2 location)
         {
@@ -813,10 +829,7 @@ namespace Transidious
             GameObject stopObject = Instantiate(stopPrefab);
             stop = stopObject.GetComponent<Stop>();
             stop.transform.SetParent(this.transform);
-
-            stop.map = this;
-            stop.name = name;
-            stop.transform.position = location;
+            stop.Initialize(this, name, location);
 
             RegisterStop(stop);
             return stop;
@@ -877,7 +890,7 @@ namespace Transidious
             }
         }
 
-        public Text CreateText(Vector3 position, string txt = "", Color c = default, float fontSize = .01f)
+        public Text CreateText(Vector3 position, string txt = "", Color c = default, float fontSize = 10f)
         {
             var obj = Instantiate(textPrefab);
             obj.transform.position = position;
@@ -894,7 +907,7 @@ namespace Transidious
         public NaturalFeature CreateFeature(string name, NaturalFeature.Type type, Mesh mesh)
         {
             var nf = new NaturalFeature();
-            nf.Initialize(this, name, type, mesh);
+            nf.Initialize(name, type, mesh, natureMesh);
 
             naturalFeatures.Add(nf);
             return nf;
@@ -903,9 +916,10 @@ namespace Transidious
         public Building CreateBuilding(Building.Type type, Mesh mesh,
                                        string name, string numberStr, Vector3? position)
         {
-            var building = new Building(this, type, null, numberStr, mesh, name, position);
-            buildings.Add(building);
+            var building = new Building(type, null, numberStr, mesh,
+                                        name, position, buildingMesh);
 
+            buildings.Add(building);
             if (!buildingsByType.TryGetValue(type, out List<Building> buildingList))
             {
                 buildingList = new List<Building>();
@@ -918,22 +932,23 @@ namespace Transidious
 
         public void UpdateTextScale()
         {
-            if (!input.combineStreetMeshes)
+            var renderingDistance = input?.renderingDistance ?? InputController.RenderingDistance.Near;
+
+            foreach (var street in streets)
             {
-                foreach (var street in streets)
+                foreach (var seg in street.segments)
                 {
-                    foreach (var seg in street.segments)
-                    {
-                        seg.UpdateTextScale(input.renderingDistance);
-                    }
+                    seg.UpdateTextScale(renderingDistance);
                 }
             }
         }
 
         public void UpdateScale()
         {
-            buildingMesh.UpdateScale(input.renderingDistance);
-            natureMesh.UpdateScale(input.renderingDistance);
+            var renderingDistance = input?.renderingDistance ?? InputController.RenderingDistance.Near;
+
+            buildingMesh.UpdateScale(renderingDistance);
+            natureMesh.UpdateScale(renderingDistance);
 
             foreach (var stop in transitStops)
             {
@@ -945,18 +960,11 @@ namespace Transidious
                 route.UpdateScale();
             }
 
-            if (input.combineStreetMeshes)
+            foreach (var street in streets)
             {
-                streetMesh.UpdateScale(input.renderingDistance);
-            }
-            else
-            {
-                foreach (var street in streets)
+                foreach (var seg in street.segments)
                 {
-                    foreach (var seg in street.segments)
-                    {
-                        seg.UpdateScale(input.renderingDistance);
-                    }
+                    seg.UpdateScale(input.renderingDistance);
                 }
             }
         }
@@ -1102,185 +1110,22 @@ namespace Transidious
                 i.GenerateTrafficLights(this);
             }
 
-#if DEBUG && UNITY_EDITOR
-            if (saveOnExit && input.controller.reload)
+            foreach (var street in streets)
             {
-                SaveToFile(name);
-            }
-#endif
-        }
-
-        [Serializable]
-        public struct SerializedMap
-        {
-            public float minX, maxX, minY, maxY;
-            public MapTile.SerializableMapTile[][] tiles;
-            public SerializableVector3 cameraStartingPos;
-
-            public SerializableMesh[] boundaryMeshes;
-
-            public Street.SerializedStreet[] streets;
-            public StreetIntersection.SerializedStreetIntersection[] streetIntersections;
-            public StreetSegment.SerializedStreetSegment[] streetSegments;
-            public Route.SerializedRoute[] transitRoutes;
-            public Stop.SerializedStop[] transitStops;
-            public Line.SerializedLine[] transitLines;
-            public NaturalFeature.SerializedFeature[] naturalFeatures;
-            public Building.SerializableBuilding[] buildings;
-        }
-
-        SerializedMap GetSerializedMap()
-        {
-            var stiles = new MapTile.SerializableMapTile[tiles.Length][];
-            for (int x = 0; x < tiles.Length; ++x)
-            {
-                stiles[x] = new MapTile.SerializableMapTile[tiles[x].Length];
-
-                for (int y = 0; y < tiles[x].Length; ++y)
+                foreach (var seg in street.segments)
                 {
-                    stiles[x][y] = tiles[x][y].Serialize();
-                }
-            }
-
-            return new SerializedMap
-            {
-                minX = minX,
-                maxX = maxX,
-                minY = minY,
-                maxY = maxY,
-                tiles = stiles,
-                cameraStartingPos = new SerializableVector3(startingCameraPos),
-                boundaryMeshes = new SerializableMesh[]
-                {
-                    new SerializableMesh(boundaryBackgroundObj.GetComponent<MeshFilter>().mesh),
-                    new SerializableMesh(boundaryOutlineObj.GetComponent<MeshFilter>().mesh),
-                    new SerializableMesh(boundarymaskObj.GetComponent<MeshFilter>().mesh),
-                },
-                streets = streets.Select(s => s.Serialize()).ToArray(),
-                streetIntersections = streetIntersections.Select(s => s.Serialize()).ToArray(),
-                streetSegments = streetSegments.Select(s => s.Serialize()).ToArray(),
-                transitRoutes = transitRoutes.Select(r => r.Serialize()).ToArray(),
-                transitStops = transitStops.Select(r => r.Serialize()).ToArray(),
-                transitLines = transitLines.Select(r => r.Serialize()).ToArray(),
-
-                naturalFeatures = naturalFeatures.Select(r => r.Serialize()).ToArray(),
-                buildings = buildings.Select(r => r.Serialize()).ToArray(),
-            };
-        }
-
-        public void LoadFromFile(string saveName)
-        {
-            name = saveName;
-
-            var fileResource = (TextAsset)Resources.Load("Maps/" + saveName);
-            using (var stream = new MemoryStream())
-            {
-                stream.Write(fileResource.bytes, 0, fileResource.bytes.Length);
-                stream.Position = 0;
-
-                var formatter = new BinaryFormatter();
-                var map = (SerializedMap)formatter.Deserialize(stream);
-
-                minX = map.minX;
-                maxX = map.maxX;
-                minY = map.minY;
-                maxY = map.maxY;
-
-                UpdateBoundary(map.boundaryMeshes[0].GetMesh(),
-                               map.boundaryMeshes[1].GetMesh(),
-                               map.boundaryMeshes[2].GetMesh(),
-                               map.minX, map.maxX, map.minY, map.maxY);
-
-                Camera.main.transform.position = map.cameraStartingPos.ToVector();
-                startingCameraPos = Camera.main.transform.position;
-
-                foreach (var inter in map.streetIntersections)
-                {
-                    CreateIntersection(inter.position.ToVector());
-                }
-                foreach (var street in map.streets)
-                {
-                    var s = CreateStreet(street.name, street.type, street.lit,
-                                         street.oneway, street.maxspeed,
-                                         street.lanes);
-
-                    s.Deserialize(street);
-                }
-
-                foreach (var route in map.transitRoutes)
-                {
-                    CreateRoute();
-                }
-                foreach (var stop in map.transitStops)
-                {
-                    GetOrCreateStop(stop.name, stop.position.ToVector());
-                }
-                foreach (var line in map.transitLines)
-                {
-                    CreateLine(line.type, line.name, line.color.ToColor()).Finish();
-                }
-
-                foreach (var stop in map.transitStops)
-                {
-                    transitStopIDMap[stop.id].Deserialize(stop, this);
-                }
-                foreach (var line in map.transitLines)
-                {
-                    transitLineIDMap[line.id].Deserialize(line, this);
-                }
-                foreach (var route in map.transitRoutes)
-                {
-                    transitRouteIDMap[route.id].Deserialize(route, this);
-                }
-
-                foreach (var f in map.naturalFeatures)
-                {
-                    CreateFeature(f.name, f.type, f.mesh.GetMesh());
-                }
-                foreach (var b in map.buildings)
-                {
-                    var building = CreateBuilding(b.type, b.mesh.GetMesh(), b.name, b.number,
-                                                  b.position.ToVector());
-                    building.street = streetSegmentIDMap[b.streetID];
-                    building.number = b.number;
-                }
-
-                for (int x = 0; x < tiles.Length; ++x)
-                {
-                    for (int y = 0; y < tiles[x].Length; ++y)
+                    if (seg.hasTramTracks)
                     {
-                        tiles[x][y].Deserialize(this, map.tiles[x][y]);
+                        seg.AddTramTracks();
                     }
                 }
-
-                DoFinalize();
             }
         }
 
-        public void SaveToFile(string saveName)
+        void OnApplicationQuit()
         {
-            string fileName = "Assets/Resources/Maps/";
-            fileName += saveName;
-            fileName += ".txt";
-
-            var formatter = new BinaryFormatter();
-            using (Stream stream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            {
-                formatter.Serialize(stream, GetSerializedMap());
-            }
-        }
-
-        public void SaveToXMLFile(string saveName)
-        {
-            string fileName = "Assets/Resources/Maps/";
-            fileName += saveName;
-            fileName += ".xml";
-
-            XmlSerializer xsSubmit = new XmlSerializer(typeof(SerializedMap));
-            using (Stream stream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            {
-                xsSubmit.Serialize(stream, GetSerializedMap());
-            }
+            Debug.Log("saving file");
+            SaveManager.SaveMapData(this);
         }
     }
 }

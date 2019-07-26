@@ -11,20 +11,50 @@
     "thousandsSeparator": ",",
     "items": [
         {
-            "key": "ui_happiness",
+            "key": "ui:happiness",
             "text": "Happiness"
         },
         {
-            "key": "ui_happiness_happy",
+            "key": "ui:happiness_happy",
             "text": "Happy"
         },
         {
-            "key": "ui_happiness_med_happy",
+            "key": "ui:happiness_med_happy",
             "text": "Content"
         },
         {
-            "key": "ui_happiness_unhappy",
+            "key": "ui:happiness_unhappy",
             "text": "Unhappy"
+        },
+
+        {
+            "key": "transit:bus",
+            "text": "Bus"
+        },
+        {
+            "key": "transit:tram",
+            "text": "Tram"
+        },
+        {
+            "key": "transit:subway",
+            "text": "Subway"
+        },
+        {
+            "key": "transit:lightrail",
+            "text": "Light Rail"
+        },
+        {
+            "key": "transit:intercity",
+            "text": "Intercity Rail"
+        },
+        {
+            "key": "transit:ferry",
+            "text": "Ferry"
+        },
+
+        {
+            "key": "tooltip:new_line",
+            "text": "New $0 Line"
         }
     ]
 }
