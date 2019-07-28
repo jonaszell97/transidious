@@ -108,12 +108,13 @@ namespace Transidious
             LoadBoundary();
             // LoadTransitLines();
             LoadParks();
-            LoadBuildings();
 
             map.DoFinalize();
             SaveManager.SaveMapLayout(map);
 
             LoadStreets();
+            LoadBuildings();
+
             SaveManager.SaveMapData(map);
         }
 

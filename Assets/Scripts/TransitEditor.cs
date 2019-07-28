@@ -641,7 +641,8 @@ namespace Transidious
                 float h, s, v;
                 Color.RGBToHSV(r.line.color, out h, out s, out v);
 
-                Color high = Color.HSVToRGB(h, s, v * 1.5f);
+                var diff = v < .65f ? .35f : -.35f;
+                Color high = Color.HSVToRGB(h, s, v + diff);
                 gradient.Activate(r.line.color, high, 1.25f);
             }
         }

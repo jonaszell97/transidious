@@ -15,11 +15,9 @@ namespace Transidious
             public float minX, maxX, minY, maxY;
             public ScreenShotMaker.ScreenShotInfo screenShotInfo;
             public SerializableVector3 cameraStartingPos;
-
             public SerializableMesh[] boundaryMeshes;
-
             // public NaturalFeature.SerializedFeature[] naturalFeatures;
-            // public Building.SerializableBuilding[] buildings;
+            public Building.SerializableBuilding[] buildings;
         }
 
         [Serializable]
@@ -52,7 +50,7 @@ namespace Transidious
                     new SerializableMesh(map.boundarymaskObj.GetComponent<MeshFilter>().mesh),
                 },
                 // naturalFeatures = naturalFeatures.Select(r => r.Serialize()).ToArray(),
-                // buildings = buildings.Select(r => r.Serialize()).ToArray(),
+                buildings = map.buildings.Select(r => r.Serialize()).ToArray(),
             };
         }
 
@@ -174,13 +172,13 @@ namespace Transidious
             // {
             //     CreateFeature(f.name, f.type, f.mesh.GetMesh());
             // }
-            // foreach (var b in map.buildings)
-            // {
-            //     var building = CreateBuilding(b.type, b.mesh.GetMesh(), b.name, b.number,
-            //                                   b.position.ToVector());
-            //     building.streetID = b.streetID;
-            //     building.number = b.number;
-            // }
+            foreach (var b in serializedMap.buildings)
+            {
+                var building = map.CreateBuilding(b.type, b.mesh.GetMesh(), b.name, b.number,
+                                                  b.position.ToVector());
+                building.streetID = b.streetID;
+                building.number = b.number;
+            }
         }
 
         static void LoadTiles(Map map, string mapName,
