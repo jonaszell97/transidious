@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Transidious
 {
-    public class Building
+    public class Building : MonoBehaviour
     {
         [System.Serializable]
         public struct SerializableBuilding
@@ -30,7 +30,6 @@ namespace Transidious
             GroceryStore,
         }
 
-        public Mesh mesh;
         public StreetSegment street;
         public int streetID;
         public string number;
@@ -42,9 +41,8 @@ namespace Transidious
 
         public Vector3 position;
 
-        public Building(Type type, StreetSegment street, string numberStr,
-                        Mesh mesh, string name = "", Vector3? position = null,
-                        MultiMesh buildingMesh = null)
+        public void Initialize(Map map, Type type, StreetSegment street, string numberStr,
+                               Mesh mesh, string name = "", Vector3? position = null)
         {
             this.type = type;
 
@@ -72,7 +70,7 @@ namespace Transidious
                 this.name = name;
             }
 
-            UpdateMesh(buildingMesh, mesh);
+            UpdateMesh(map, mesh);
         }
 
         public void UpdateStreet(Map map)
@@ -129,14 +127,12 @@ namespace Transidious
             }
         }
 
-        public void UpdateMesh(MultiMesh buildingMesh, Mesh mesh)
+        public void UpdateMesh(Map map, Mesh mesh)
         {
-            if (mesh == null || buildingMesh == null)
+            if (mesh == null)
             {
                 return;
             }
-
-            this.mesh = mesh;
 
             float layer = 0f;
             switch (type)
@@ -146,14 +142,21 @@ namespace Transidious
                     break;
             }
 
-            buildingMesh.AddMesh(GetColor(), mesh, layer);
+            var meshFilter = GetComponent<MeshFilter>();
+            var meshRenderer = GetComponent<MeshRenderer>();
+
+            meshFilter.mesh = mesh;
+            meshRenderer.material = GameController.GetUnlitMaterial(GetColor());
+            meshRenderer.transform.position = new Vector3(meshRenderer.transform.position.x,
+                                                          meshRenderer.transform.position.y,
+                                                          layer);
         }
 
         public SerializableBuilding Serialize()
         {
             return new SerializableBuilding
             {
-                mesh = new SerializableMesh(mesh),
+                mesh = new SerializableMesh(GetComponent<MeshFilter>().mesh),
                 streetID = street?.id ?? 0,
                 number = number,
                 name = name,

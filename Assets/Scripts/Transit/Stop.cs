@@ -334,6 +334,14 @@ namespace Transidious
             return goal is Stop && this == goal as Stop;
         }
 
+        public bool uTurnAllowed
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// \return The incoming route from the direction of the line's depot stop.
         public Route GetIncomingRouteFromDepot(Line line)
         {

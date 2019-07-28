@@ -17,13 +17,13 @@ namespace Transidious
             public SerializableVector3 cameraStartingPos;
             public SerializableMesh[] boundaryMeshes;
             // public NaturalFeature.SerializedFeature[] naturalFeatures;
-            public Building.SerializableBuilding[] buildings;
         }
 
         [Serializable]
         public struct SaveFile
         {
             public MapTile.SerializableMapTile[][] tiles;
+            public Building.SerializableBuilding[] buildings;
             public Street.SerializedStreet[] streets;
             public StreetIntersection.SerializedStreetIntersection[] streetIntersections;
             public Route.SerializedRoute[] transitRoutes;
@@ -50,7 +50,6 @@ namespace Transidious
                     new SerializableMesh(map.boundarymaskObj.GetComponent<MeshFilter>().mesh),
                 },
                 // naturalFeatures = naturalFeatures.Select(r => r.Serialize()).ToArray(),
-                buildings = map.buildings.Select(r => r.Serialize()).ToArray(),
             };
         }
 
@@ -70,6 +69,7 @@ namespace Transidious
             return new SaveFile
             {
                 tiles = stiles,
+                buildings = map.buildings.Select(r => r.Serialize()).ToArray(),
                 streets = map.streets.Select(s => s.Serialize()).ToArray(),
                 streetIntersections = map.streetIntersections.Select(s => s.Serialize()).ToArray(),
                 transitRoutes = map.transitRoutes.Select(r => r.Serialize()).ToArray(),
@@ -139,6 +139,8 @@ namespace Transidious
             // fileName += (new DateTime()).ToString();
             fileName += ".txt";
 
+            Debug.Log("serialized " + map.buildings.Count + " buildings");
+
             using (Stream stream = File.Open(fileName, FileMode.OpenOrCreate,
                                              FileAccess.ReadWrite))
             {
@@ -172,13 +174,6 @@ namespace Transidious
             // {
             //     CreateFeature(f.name, f.type, f.mesh.GetMesh());
             // }
-            foreach (var b in serializedMap.buildings)
-            {
-                var building = map.CreateBuilding(b.type, b.mesh.GetMesh(), b.name, b.number,
-                                                  b.position.ToVector());
-                building.streetID = b.streetID;
-                building.number = b.number;
-            }
         }
 
         static void LoadTiles(Map map, string mapName,
@@ -225,6 +220,14 @@ namespace Transidious
             }
 
             var saveFile = (SaveFile)DeserializeFromStream(fileResource);
+
+            foreach (var b in saveFile.buildings)
+            {
+                var building = map.CreateBuilding(b.type, b.mesh.GetMesh(), b.name, b.number,
+                                                  b.position.ToVector());
+                building.streetID = b.streetID;
+                building.number = b.number;
+            }
 
             foreach (var inter in saveFile.streetIntersections)
             {

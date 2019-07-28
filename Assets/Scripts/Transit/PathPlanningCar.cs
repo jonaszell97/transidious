@@ -9,6 +9,7 @@ namespace Transidious.PathPlanning
     {
         IEnumerable<IRoute> Routes { get; }
         Vector3 Location { get; }
+        bool uTurnAllowed { get; }
 
         bool IsGoalReached(IStop goal);
     }
@@ -179,6 +180,14 @@ namespace Transidious.PathPlanning
             }
 
             return false;
+        }
+
+        public bool uTurnAllowed
+        {
+            get
+            {
+                return false;
+            }
         }
     }
 
@@ -622,6 +631,10 @@ namespace Transidious.PathPlanning
                         continue;
                     }
 
+                    if (current == neighbor && !current.uTurnAllowed)
+                    {
+                        continue;
+                    }
                     if (closedSet.Contains(neighbor))
                     {
                         continue;

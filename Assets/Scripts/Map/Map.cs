@@ -188,6 +188,9 @@ namespace Transidious
         /// The nature mesh.
         public MultiMesh natureMesh;
 
+        /// Prefab for creating buildings.
+        public GameObject buildingPrefab;
+
         /// Prefab for creating multimesh objects.
         public GameObject multiMeshPrefab;
 
@@ -916,8 +919,10 @@ namespace Transidious
         public Building CreateBuilding(Building.Type type, Mesh mesh,
                                        string name, string numberStr, Vector3? position)
         {
-            var building = new Building(type, null, numberStr, mesh,
-                                        name, position, buildingMesh);
+            var obj = Instantiate(this.buildingPrefab);
+            var building = obj.GetComponent<Building>();
+            building.Initialize(this, type, null, numberStr, mesh,
+                                name, position);
 
             buildings.Add(building);
             if (!buildingsByType.TryGetValue(type, out List<Building> buildingList))

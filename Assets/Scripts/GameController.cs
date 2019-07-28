@@ -82,7 +82,6 @@ namespace Transidious
         ///  Prefab for creating new maps.
         /// </summary>
         public GameObject mapPrefab;
-
         public GameObject tooltipPrefab;
 
         // Only for debugging.

@@ -232,6 +232,14 @@ namespace Transidious
             return false;
         }
 
+        public bool uTurnAllowed
+        {
+            get
+            {
+                return intersectingStreets.Count == 1;
+            }
+        }
+
         public IEnumerable<StreetSegment> IncomingStreets
         {
             get
@@ -255,7 +263,7 @@ namespace Transidious
 
         public int RelativePosition(StreetSegment seg)
         {
-            if (relativePositions == null)
+            if (relativePositions == null || !relativePositions.ContainsKey(seg))
             {
                 CalculateRelativePositions();
             }

@@ -61,10 +61,13 @@ MonoBehaviour:
   transitStops: []
   transitRoutes: []
   transitLines: []
+  buildings: []
   canvas: {fileID: 0}
   streetMesh: {fileID: 0}
   buildingMesh: {fileID: 0}
   natureMesh: {fileID: 0}
+  buildingPrefab: {fileID: 6846618925097531575, guid: 76bf47f727ec02b7cbbcb2c0ca9035e7,
+    type: 3}
   multiMeshPrefab: {fileID: 61026142767662235, guid: f49e2519502aa4eb5b9f49aefff1410f,
     type: 3}
   meshPrefab: {fileID: 4920824567467125320, guid: a8a8aebbab21c4fd5b304e5c60fe714b,
