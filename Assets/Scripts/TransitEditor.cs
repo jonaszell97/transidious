@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,6 +37,7 @@ namespace Transidious
         TemporaryLine currentLine;
         MapObject previousStop;
         List<Vector3> currentPath;
+        List<TrafficSimulator.PathSegmentInfo> currentSegments;
         GameObject existingPathMesh;
         GameObject plannedPathMesh;
         public GameObject temporaryStopPrefab;
@@ -45,6 +47,7 @@ namespace Transidious
         {
             this.active = false;
             this.selectedSystem = null;
+            this.currentSegments = new List<TrafficSimulator.PathSegmentInfo>();
             this.editingMode = EditingMode.CreateNewLine;
             this.snapSettings = null;
 
@@ -377,8 +380,10 @@ namespace Transidious
                     = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
+            currentSegments.Clear();
+
             var color = game.GetDefaultSystemColor(selectedSystem.Value);
-            currentPath = game.sim.trafficSim.GetCompletePath(result);
+            currentPath = game.sim.trafficSim.GetCompletePath(result, currentSegments);
 
             var mesh = MeshBuilder.CreateSmoothLine(currentPath, 1.25f, 10);
             var renderer = plannedPathMesh.GetComponent<MeshRenderer>();
@@ -674,6 +679,7 @@ namespace Transidious
                 stops = new List<MapObject>(),
                 completePath = new List<Vector3>(),
                 paths = new List<int>(),
+                streetSegments = new List<List<TrafficSimulator.PathSegmentInfo>>(),
             };
 
             var firstStop = CreateTempStop(hoveredStreet.street.name, game.input.GameCursorPosition);
@@ -693,6 +699,9 @@ namespace Transidious
             currentLine.completePath.AddRange(currentPath);
             currentLine.paths.Add(currentLine.completePath.Count);
 
+            currentLine.streetSegments.Add(currentSegments);
+            this.currentSegments = new List<TrafficSimulator.PathSegmentInfo>();
+
             UpdateExistingPath();
             return nextStop;
         }
@@ -704,6 +713,9 @@ namespace Transidious
             currentLine.stops.Add(nextStop);
             currentLine.completePath.AddRange(currentPath);
             currentLine.paths.Add(currentLine.completePath.Count);
+
+            currentLine.streetSegments.Add(currentSegments);
+            this.currentSegments = new List<TrafficSimulator.PathSegmentInfo>();
 
             UpdateExistingPath();
             return nextStop;
@@ -718,6 +730,9 @@ namespace Transidious
             currentLine.stops.Add(currentLine.stops.First());
             currentLine.completePath.AddRange(currentPath);
             currentLine.paths.Add(currentLine.completePath.Count);
+
+            currentLine.streetSegments.Add(currentSegments);
+            this.currentSegments = new List<TrafficSimulator.PathSegmentInfo>();
 
             Stop firstStop = null;
             var pathIdx = 0;
@@ -763,9 +778,27 @@ namespace Transidious
             var newLine = line.Finish();
 
             // Disable collision for the new routes.
+            var j = 0;
+            var crossedStreets = new HashSet<Tuple<StreetSegment, int>>();
             foreach (var route in newLine.routes)
             {
                 route.DisableCollision();
+                
+                // Note which streets this route passes over.
+                foreach (var segAndLane in currentLine.streetSegments[j])
+                {
+                    var routesOnSegment = segAndLane.segment.GetTransitRoutes(segAndLane.lane);
+                    routesOnSegment.Add(route);
+
+                    if (routesOnSegment.Count > 1)
+                    {
+                        crossedStreets.Add(new Tuple<StreetSegment, int>(segAndLane.segment, segAndLane.lane));
+                    }
+
+                    route.AddStreetSegmentOffset(segAndLane.segment, segAndLane.offset, segAndLane.length);
+                }
+
+                ++j;
             }
 
             currentLine = null;
@@ -776,6 +809,95 @@ namespace Transidious
             this.tooltip.Hide();
 
             EnterMode(EditingMode.CreateNewLine);
+            CheckOverlappingRoutes(crossedStreets);
+        }
+
+        void CheckOverlappingRoutes(HashSet<Tuple<StreetSegment, int>> segments)
+        {
+            foreach (var seg in segments)
+            {
+                CheckOverlappingRoutes(seg.Item1, seg.Item2);
+            }
+        }
+
+        struct OverlappingRouteInfo
+        {
+            public int start;
+            public int end;
+            public int numParallelRoutes;
+            public int position;
+        }
+
+        void CheckOverlappingRoutes(StreetSegment seg, int lane)
+        {
+            var routes = seg.GetTransitRoutes(lane);
+            var path = game.sim.trafficSim.GetPath(seg, lane);
+            var numIntersectingRoutes = routes.Count;
+
+            var isLeftLane = lane < seg.street.lanes / 2;
+            var halfStreetWidth = seg.GetStreetWidth(InputController.RenderingDistance.Near) / 2f;
+            var spacePerLine = halfStreetWidth / numIntersectingRoutes;
+
+            var laneOffset = seg.LanePositionFromMiddle(lane, true);
+            if (isLeftLane)
+            {
+                laneOffset = -laneOffset;
+            }
+
+            // Check where the routes overlap.
+            var i = 0;
+            foreach (var route in routes)
+            {
+                var position = i++; // FIXME
+
+                var offset = spacePerLine * position;
+                if (isLeftLane)
+                {
+                    offset = -offset;
+                }
+
+                var offsets = route.GetStreetSegmentOffsets(seg);
+                var newPath = new List<Vector3>(route.positions);
+
+                foreach (var offsetAndLength in offsets)
+                {
+                    var range = route.positions.GetRange(offsetAndLength.Item1, offsetAndLength.Item2);
+                    var offsetRange = MeshBuilder.GetOffsetPath(range, laneOffset + offset);
+
+                    for (int j = offsetAndLength.Item1; j < offsetAndLength.Item2; ++j)
+                    {
+                        newPath[j] = offsetRange[j - offsetAndLength.Item1];
+                    }
+                }
+
+                var mesh = MeshBuilder.CreateSmoothLine(newPath, spacePerLine / 2f, 20);
+                route.GetComponent<MeshFilter>().mesh = mesh;
+            }
+
+            // var overlappingRouteCount = new List<int>();
+            // overlappingRouteCount.AddRange(Enumerable.Repeat(0, path.Length));
+
+            // foreach (var route in routes)
+            // {
+            //     var offsets = route.GetStreetSegmentOffsets(seg);
+            //     foreach (var offsetAndLength in offsets)
+            //     {
+            //         var firstPosOnStreet = route.positions[offsetAndLength.Item1];
+            //         var i = 0;
+
+            //         while (!path[i].Equals(firstPosOnStreet))
+            //         {
+            //             ++i;
+            //         }
+
+            //         for (int j = 0; j < offsetAndLength.Item2; ++j)
+            //         {
+            //             overlappingRouteCount[i + j]++;
+            //         }
+            //     }
+            // }
+
+            // Debug.Log("overlapping routes: " + overlappingRouteCount.ToString());
         }
     }
 }

@@ -471,6 +471,64 @@ namespace Transidious
             return mesh;
         }
 
+        static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
+                                                       float currentOffset, out Vector3 perpendicular)
+        {
+            var dir = p1 - p0;
+            var perpendicular2d = -Vector2.Perpendicular(new Vector2(dir.x, dir.y)).normalized;
+            perpendicular = new Vector3(perpendicular2d.x, perpendicular2d.y, 0f);
+
+            p0 = p0 + (perpendicular * currentOffset);
+            p1 = p1 + (perpendicular * currentOffset);
+
+            return new Tuple<Vector3, Vector3>(p0, p1);
+        }
+
+        static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
+                                                       float currentOffset, Vector3 prevPerpendicular,
+                                                       out Vector3 perpendicular)
+        {
+            var dir = p1 - p0;
+            var perpendicular2d = -Vector2.Perpendicular(new Vector2(dir.x, dir.y)).normalized;
+            perpendicular = new Vector3(perpendicular2d.x, perpendicular2d.y, 0f);
+
+            var mid = (perpendicular + prevPerpendicular).normalized;
+            perpendicular = mid;
+
+            p0 = p0 + (mid * currentOffset);
+            p1 = p1 + (mid * currentOffset);
+
+            return new Tuple<Vector3, Vector3>(p0, p1);
+        }
+
+        public static List<Vector3> GetOffsetPath(IReadOnlyList<Vector3> segPositions, float offset)
+        {
+            var positions = new List<Vector3>();
+            var perpendicular = Vector3.zero;
+
+            for (int j = 1; j < segPositions.Count; ++j)
+            {
+                Vector3 p0 = segPositions[j - 1];
+                Vector3 p1 = segPositions[j];
+
+                if (j == 1)
+                {
+                    var offsetPoints = GetOffsetPoints(p0, p1, offset, out perpendicular);
+                    positions.Add(offsetPoints.Item1);
+                    positions.Add(offsetPoints.Item2);
+                }
+                else
+                {
+                    var offsetPoints = GetOffsetPoints(p0, p1, offset, perpendicular,
+                                                       out perpendicular);
+
+                    positions.Add(offsetPoints.Item2);
+                }
+            }
+
+            return positions;
+        }
+
         public static List<Vector3> RemoveSharpAngles(List<Vector3> positions,
                                                       float threshold = 45.0f,
                                                       int segmentSize = 10)

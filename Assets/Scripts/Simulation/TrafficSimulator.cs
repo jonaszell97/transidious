@@ -224,7 +224,16 @@ namespace Transidious
             return cars;
         }
 
-        public List<Vector3> GetCompletePath(PathPlanningResult result)
+        public struct PathSegmentInfo
+        {
+            public StreetSegment segment;
+            public int lane;
+            public int offset;
+            public int length;
+        }
+
+        public List<Vector3> GetCompletePath(PathPlanningResult result,
+                                             List<PathSegmentInfo> crossedSegments = null)
         {
             var path = new List<Vector3>();
 
@@ -238,6 +247,16 @@ namespace Transidious
             {
                 StreetSegment nextSegment;
                 GetStepPath(step, out nextSegment, out backward, out finalStep, out lane, out positions);
+
+                if (crossedSegments != null && nextSegment != null)
+                {
+                    crossedSegments.Add(new PathSegmentInfo {
+                        segment = nextSegment,
+                        lane = lane,
+                        offset = path.Count,
+                        length = positions.Count,
+                    });
+                }
 
                 if (segment != null && nextSegment != null)
                 {
@@ -279,7 +298,7 @@ namespace Transidious
             return paths[lane];
         }
 
-        Tuple<Vector3, Vector3> GetOffsetPoints(StreetSegment seg, int lane, Vector3 p0, Vector3 p1)
+        static Tuple<Vector3, Vector3> GetOffsetPoints(StreetSegment seg, int lane, Vector3 p0, Vector3 p1)
         {
             var lanes = seg.street.lanes;
             var halfLanes = lanes / 2;
@@ -294,11 +313,11 @@ namespace Transidious
                 currentOffset = -currentOffset;
             }
 
-            return GetOffsetPoints(seg, p0, p1, currentOffset, out Vector3 _);
+            return GetOffsetPoints(p0, p1, currentOffset, out Vector3 _);
         }
 
-        Tuple<Vector3, Vector3> GetOffsetPoints(StreetSegment seg, Vector3 p0, Vector3 p1,
-                                                float currentOffset, out Vector3 perpendicular)
+        static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
+                                                       float currentOffset, out Vector3 perpendicular)
         {
             var dir = p1 - p0;
             var perpendicular2d = -Vector2.Perpendicular(new Vector2(dir.x, dir.y)).normalized;
@@ -310,9 +329,9 @@ namespace Transidious
             return new Tuple<Vector3, Vector3>(p0, p1);
         }
 
-        Tuple<Vector3, Vector3> GetOffsetPoints(StreetSegment seg, Vector3 p0, Vector3 p1,
-                                                float currentOffset, Vector3 prevPerpendicular,
-                                                out Vector3 perpendicular)
+        static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
+                                                       float currentOffset, Vector3 prevPerpendicular,
+                                                       out Vector3 perpendicular)
         {
             var dir = p1 - p0;
             var perpendicular2d = -Vector2.Perpendicular(new Vector2(dir.x, dir.y)).normalized;
@@ -325,6 +344,71 @@ namespace Transidious
             p1 = p1 + (mid * currentOffset);
 
             return new Tuple<Vector3, Vector3>(p0, p1);
+        }
+
+        static List<Vector3> ComputePath(StreetSegment seg, int lane, float offset)
+        {
+            // Skip positions that are in front of the start stop line.
+            int i = 1;
+            while (i < seg.positions.Count && seg.cumulativeDistances[i] <= seg.BeginStopLineDistance)
+            {
+                ++i;
+            }
+
+            // Skip positions that are behind the end stop line.
+            int iLast = seg.positions.Count - 1;
+            while (iLast > 0 && (seg.length - seg.cumulativeDistances[iLast] <= seg.EndStopLineDistance))
+            {
+                --iLast;
+            }
+
+            var segPositions = new List<Vector3>();
+
+            // Include stop line positions.
+            segPositions.Add(seg.GetStartStopLinePosition());
+
+            for (int j = i; j <= iLast; ++j)
+            {
+                segPositions.Add(seg.positions[j]);
+            }
+
+            segPositions.Add(seg.GetEndStopLinePosition());
+
+            var lanes = seg.street.lanes;
+            var halfLanes = lanes / 2;
+            var isLeftLane = lane < halfLanes;
+            var laneOffset = seg.LanePositionFromMiddle(lane, true);
+
+            var currentOffset = offset * laneOffset;
+            if (isLeftLane)
+            {
+                currentOffset = -currentOffset;
+            }
+
+            var positions = new List<Vector3>();
+            var perpendicular = Vector3.zero;
+
+            for (int j = 1; j < segPositions.Count; ++j)
+            {
+                Vector3 p0 = segPositions[j - 1];
+                Vector3 p1 = segPositions[j];
+
+                if (j == 1)
+                {
+                    var offsetPoints = GetOffsetPoints(p0, p1, currentOffset, out perpendicular);
+                    positions.Add(offsetPoints.Item1);
+                    positions.Add(offsetPoints.Item2);
+                }
+                else
+                {
+                    var offsetPoints = GetOffsetPoints(p0, p1, currentOffset, perpendicular,
+                                                       out perpendicular);
+
+                    positions.Add(offsetPoints.Item2);
+                }
+            }
+
+            return positions;
         }
 
         Vector3[][] ComputePaths(StreetSegment seg)
@@ -380,13 +464,13 @@ namespace Transidious
 
                     if (j == 1)
                     {
-                        var offsetPoints = GetOffsetPoints(seg, p0, p1, currentOffset, out perpendicular);
+                        var offsetPoints = GetOffsetPoints(p0, p1, currentOffset, out perpendicular);
                         positions.Add(offsetPoints.Item1);
                         positions.Add(offsetPoints.Item2);
                     }
                     else
                     {
-                        var offsetPoints = GetOffsetPoints(seg, p0, p1, currentOffset, perpendicular,
+                        var offsetPoints = GetOffsetPoints(p0, p1, currentOffset, perpendicular,
                                                            out perpendicular);
 
                         positions.Add(offsetPoints.Item2);

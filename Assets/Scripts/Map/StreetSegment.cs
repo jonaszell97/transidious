@@ -724,7 +724,7 @@ namespace Transidious
         public bool hasTramTracks;
 
         /// The bus / tram routes that drive on this street segment.
-        HashSet<Route> transitRoutes;
+        HashSet<Route>[] transitRoutes;
 
         /// The text label for this segments street name.
         public Transidious.Text streetName;
@@ -885,17 +885,18 @@ namespace Transidious
             }
         }
 
-        public HashSet<Route> TransitRoutes
+        public HashSet<Route> GetTransitRoutes(int lane)
         {
-            get
+            if (transitRoutes == null)
             {
-                if (transitRoutes == null)
-                {
-                    transitRoutes = new HashSet<Route>();
-                }
-
-                return transitRoutes;
+                transitRoutes = new HashSet<Route>[this.street.lanes];
             }
+            if (transitRoutes[lane] == null)
+            {
+                transitRoutes[lane] = new HashSet<Route>();
+            }
+
+            return transitRoutes[lane];
         }
 
         public bool StartUTurnAllowed

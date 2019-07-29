@@ -383,8 +383,9 @@ namespace Transidious
             }
 
             seg.Initialize(this, pos, path, startIntersection, endIntersection, hasTramTracks);
-            map.RegisterSegment(seg);
+            seg.name = this.name + " " + this.segments.Count;
 
+            map.RegisterSegment(seg);
             return seg;
         }
 

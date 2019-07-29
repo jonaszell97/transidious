@@ -32,6 +32,10 @@ namespace Transidious
         public Path path;
         public Path originalPath;
 
+        /// For each street segment this route is on, the index into the position vector where that
+        /// segments positions start.
+        Dictionary<StreetSegment, List<Tuple<int, int>>> streetSegmentOffsetMap;
+
         public Stop beginStop;
         public Stop.Slot beginSlot;
 
@@ -152,6 +156,26 @@ namespace Transidious
         public void ResetTransparency()
         {
             this.m_Renderer.material = GameController.GetUnlitMaterial(this.line.color);
+        }
+
+        public void AddStreetSegmentOffset(StreetSegment seg, int offset, int length)
+        {
+            if (streetSegmentOffsetMap == null)
+            {
+                streetSegmentOffsetMap = new Dictionary<StreetSegment, List<Tuple<int, int>>>();
+            }
+            if (!streetSegmentOffsetMap.ContainsKey(seg))
+            {
+                streetSegmentOffsetMap.Add(seg, new List<Tuple<int, int>>());
+            }
+
+            streetSegmentOffsetMap[seg].Add(new Tuple<int, int>(offset, length));
+        }
+
+        public List<Tuple<int, int>> GetStreetSegmentOffsets(StreetSegment seg)
+        {
+            Debug.Assert(streetSegmentOffsetMap != null && streetSegmentOffsetMap.ContainsKey(seg));
+            return streetSegmentOffsetMap[seg];
         }
 
         public void UpdatePath()

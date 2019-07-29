@@ -1,7 +1,6 @@
 using UnityEngine;
-using UnityEngine.UI;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Transidious
 {
@@ -24,5 +23,6 @@ namespace Transidious
         internal List<MapObject> stops;
         internal List<Vector3> completePath;
         internal List<int> paths;
+        internal List<List<TrafficSimulator.PathSegmentInfo>> streetSegments;
     }
 }
