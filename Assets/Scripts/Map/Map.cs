@@ -25,9 +25,9 @@ namespace Transidious
         StreetMarkings,
         StreetNames,
 
-        Cars,
-
         TransitLines,
+        TemporaryLines,
+        Cars,
         TransitStops,
 
         Boundary,
@@ -229,6 +229,14 @@ namespace Transidious
         public bool renderTrafficLights = true;
         public bool renderStreetOrder = true;
 #endif
+
+        public GameController Game
+        {
+            get
+            {
+                return input.controller;
+            }
+        }
 
         public void Initialize(int width, int height)
         {
@@ -1125,12 +1133,6 @@ namespace Transidious
                     }
                 }
             }
-        }
-
-        void OnApplicationQuit()
-        {
-            Debug.Log("saving file");
-            SaveManager.SaveMapData(this);
         }
     }
 }

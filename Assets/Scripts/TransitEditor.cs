@@ -9,10 +9,14 @@ namespace Transidious
     {
         public enum EditingMode
         {
-            Stops,
-            Routes,
-            Tracks,
-            Bulldoze,
+            /// In this mode, no line is currently being edited. A mouse click will create a new line.
+            CreateNewLine,
+
+            /// In this mode, we are adding stops to a newly created line.
+            ModifyUnfinishedLine,
+
+            /// In this mode, existing stops can be moved or deleted.
+            ModifyFinishedLine,
         }
 
         public GameController game;
@@ -26,10 +30,11 @@ namespace Transidious
         public Button[] systemButtons;
         public int[] snapSettings;
         public int temporaryStopSnapSettingsId;
+        public int stopSnapSettingsId;
         public Tooltip tooltip;
 
         TemporaryLine currentLine;
-        TemporaryStop previousStop;
+        MapObject previousStop;
         List<Vector3> currentPath;
         GameObject existingPathMesh;
         GameObject plannedPathMesh;
@@ -40,7 +45,7 @@ namespace Transidious
         {
             this.active = false;
             this.selectedSystem = null;
-            this.editingMode = EditingMode.Stops;
+            this.editingMode = EditingMode.CreateNewLine;
             this.snapSettings = null;
 
             this.tooltip = game.CreateTooltip(null, Color.black);
@@ -128,7 +133,15 @@ namespace Transidious
                 typeof(TemporaryStop)
             );
 
+            this.stopSnapSettingsId = game.snapController.AddSnap(
+                null,
+                Color.white,
+                Vector3.one,
+                typeof(Stop)
+            );
+
             game.snapController.DisableSnap(this.temporaryStopSnapSettingsId);
+            game.snapController.DisableSnap(this.stopSnapSettingsId);
         }
 
         Button GetButton(TransitType system)
@@ -168,11 +181,7 @@ namespace Transidious
             game.input.RegisterEventListener(InputController.InputEvent.MouseExit,
                                              (MapObject obj) =>
             {
-                var r = obj as Route;
-                if (r != null)
-                {
-                    MouseExitRoute(r);
-                }
+                this.MapObjectExited(obj);
             });
         }
 
@@ -213,6 +222,7 @@ namespace Transidious
             this.selectedSystem = system;
             this.game.snapController.EnableSnap(snapSettings[(int)system]);
             this.HighlightSystemButton(system);
+            EnterMode(EditingMode.CreateNewLine);
 
             foreach (var id in listenerIDs)
             {
@@ -227,10 +237,28 @@ namespace Transidious
             this.HighlightSystemButton(null);
             this.tooltip.Hide();
 
+            ResetTemporaryLine();
+            EnterMode(EditingMode.CreateNewLine);
+
             foreach (var id in listenerIDs)
             {
                 game.input.DisableEventListener(id);
             }
+        }
+
+        void ResetTemporaryLine()
+        {
+            if (currentLine == null)
+            {
+                return;
+            }
+
+            foreach (var stop in currentLine.stops)
+            {
+                Destroy(stop.gameObject);
+            }
+
+            currentLine = null;
         }
 
         public void Toggle()
@@ -260,11 +288,28 @@ namespace Transidious
 
             this.game.transitEditorButton.GetComponent<Image>().color =
                 this.game.transitEditorButton.colors.highlightedColor;
+
+            // Disable collision for all existing routes while we're editing.
+            foreach (var route in map.transitRoutes)
+            {
+                route.DisableCollision();
+            }
         }
 
         public void Deactivate()
         {
             Debug.Assert(this.active, "TransitEditor is not active!");
+
+            if (selectedSystem != null)
+            {
+                DeactivateSystem();
+            }
+
+            // Reenable collision.
+            foreach (var route in map.transitRoutes)
+            {
+                route.EnableCollision();
+            }
 
             this.active = false;
             this.map = null;
@@ -272,11 +317,35 @@ namespace Transidious
 
             this.game.transitEditorButton.GetComponent<Image>().color =
                 this.game.transitEditorButton.colors.normalColor;
+        }
 
-            if (selectedSystem != null)
-            {
-                DeactivateSystem();
+        void EnterMode(EditingMode mode)
+        {
+            switch (mode) {
+            case EditingMode.CreateNewLine:
+                // Remove transparency.
+                foreach (var route in map.transitRoutes) {
+                    route.ResetTransparency();
+                }
+
+                break;
+            case EditingMode.ModifyUnfinishedLine:
+                // Add transparency to all other lines to make the new line easier to see.
+                foreach (var route in map.transitRoutes) {
+                    route.SetTransparency(.5f);
+                }
+
+                break;
+            case EditingMode.ModifyFinishedLine:
+                // Add transparency to all other lines to make the new line easier to see.
+                foreach (var route in map.transitRoutes) {
+                    route.SetTransparency(.5f);
+                }
+
+                break;
             }
+
+            this.editingMode = mode;
         }
 
         void UpdateExistingPath()
@@ -285,7 +354,7 @@ namespace Transidious
             {
                 this.existingPathMesh = Instantiate(game.loadedMap.meshPrefab);
                 this.existingPathMesh.transform.position
-                    = new Vector3(0, 0, Map.Layer(MapLayer.StreetNames));
+                    = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
             var color = game.GetDefaultSystemColor(selectedSystem.Value);
@@ -305,7 +374,7 @@ namespace Transidious
             {
                 this.plannedPathMesh = Instantiate(game.loadedMap.meshPrefab);
                 this.plannedPathMesh.transform.position
-                    = new Vector3(0, 0, Map.Layer(MapLayer.StreetNames));
+                    = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
             var color = game.GetDefaultSystemColor(selectedSystem.Value);
@@ -323,12 +392,12 @@ namespace Transidious
 
         public void MapObjectEntered(MapObject obj)
         {
-            var r = obj as Route;
-            if (r != null)
-            {
-                MouseOverRoute(r);
-                return;
-            }
+            
+        }
+
+        public void MapObjectExited(MapObject obj)
+        {
+            
         }
 
         public void MapObjectHovered(MapObject obj)
@@ -340,10 +409,17 @@ namespace Transidious
                 return;
             }
 
-            var stop = obj as TemporaryStop;
+            var tmpStop = obj as TemporaryStop;
+            if (tmpStop != null)
+            {
+                TemporaryStopHovered(tmpStop);
+                return;
+            }
+
+            var stop = obj as Stop;
             if (stop != null)
             {
-                TemporaryStopHovered(stop);
+                StopHovered(stop);
                 return;
             }
         }
@@ -357,10 +433,17 @@ namespace Transidious
                 return;
             }
 
-            var stop = obj as TemporaryStop;
+            var tmpStop = obj as TemporaryStop;
+            if (tmpStop != null)
+            {
+                TemporaryStopHoverExit(tmpStop);
+                return;
+            }
+
+            var stop = obj as Stop;
             if (stop != null)
             {
-                TemporaryStopHoverExit(stop);
+                StopHoverExit(stop);
                 return;
             }
         }
@@ -373,10 +456,17 @@ namespace Transidious
                 StreetClicked(s);
             }
 
-            var stop = obj as TemporaryStop;
+            var tmpStop = obj as TemporaryStop;
+            if (tmpStop != null)
+            {
+                TemporaryStopClicked(tmpStop);
+                return;
+            }
+
+            var stop = obj as Stop;
             if (stop != null)
             {
-                TemporaryStopClicked(stop);
+                StopClicked(stop);
                 return;
             }
         }
@@ -389,13 +479,13 @@ namespace Transidious
                     {
                         if (previousStop == null)
                         {
-                            ActivateTooltip(selectedSystem.Value, "Create Stop");
+                            ActivateTooltip(selectedSystem.Value, "Create Line");
                             break;
                         }
 
                         var options = new PathPlanning.PathPlanningOptions { allowWalk = false };
                         var planner = new PathPlanning.PathPlanner(options);
-                        var result = planner.FindClosestDrive(game.loadedMap, previousStop.position,
+                        var result = planner.FindClosestDrive(game.loadedMap, previousStop.transform.position,
                                                               game.input.GameCursorPosition);
 
                         if (result == null)
@@ -418,14 +508,14 @@ namespace Transidious
                         }
                         if (previousStop == null)
                         {
-                            ActivateTooltip(selectedSystem.Value, "Create Stop");
+                            ActivateTooltip(selectedSystem.Value, "Create Line");
                             break;
                         }
 
                         var options = new PathPlanning.PathPlanningOptions { allowWalk = false };
                         var planner = new PathPlanning.PathPlanner(options);
                         var result = planner.FindClosestDrive(game.loadedMap,
-                                                              previousStop.position,
+                                                              previousStop.transform.position,
                                                               game.input.GameCursorPosition);
 
                         if (result == null || !result.ValidForTram)
@@ -467,6 +557,8 @@ namespace Transidious
                     if (previousStop == null)
                     {
                         previousStop = CreateStop(street);
+                        EnterMode(EditingMode.ModifyUnfinishedLine);
+
                         return;
                     }
                     if (currentPath == null)
@@ -486,6 +578,8 @@ namespace Transidious
                     if (previousStop == null)
                     {
                         previousStop = CreateStop(street);
+                        EnterMode(EditingMode.ModifyUnfinishedLine);
+
                         return;
                     }
                     if (currentPath == null)
@@ -513,9 +607,28 @@ namespace Transidious
             game.snapController.EnableSnap(this.temporaryStopSnapSettingsId);
         }
 
+        void StopHovered(Stop stop)
+        {
+            StreetHovered(null);
+
+            if (currentLine == null || stop != currentLine.stops.First())
+            {
+                return;
+            }
+
+            ActivateTooltip(selectedSystem.Value, "Finish Line");
+            game.snapController.EnableSnap(this.stopSnapSettingsId);
+        }
+
         void TemporaryStopHoverExit(TemporaryStop stop)
         {
             game.snapController.DisableSnap(this.temporaryStopSnapSettingsId);
+            ActivateTooltip(selectedSystem.Value, "Add Stop");
+        }
+
+        void StopHoverExit(Stop stop)
+        {
+            game.snapController.DisableSnap(this.stopSnapSettingsId);
             ActivateTooltip(selectedSystem.Value, "Add Stop");
         }
 
@@ -527,6 +640,18 @@ namespace Transidious
             }
 
             FinishLine();
+        }
+
+        void StopClicked(Stop stop)
+        {
+            var firstStop = currentLine.stops.First() as Stop;
+            if (stop == firstStop)
+            {
+                FinishLine();
+                return;
+            }
+
+            previousStop = AddStop(stop);
         }
 
         TemporaryStop CreateTempStop(string name, Vector3 pos)
@@ -546,7 +671,7 @@ namespace Transidious
             {
                 name = Translator.Get("tooltip:new_line",
                                       game.GetSystemName(selectedSystem.Value)),
-                stops = new List<TemporaryStop>(),
+                stops = new List<MapObject>(),
                 completePath = new List<Vector3>(),
                 paths = new List<int>(),
             };
@@ -569,7 +694,18 @@ namespace Transidious
             currentLine.paths.Add(currentLine.completePath.Count);
 
             UpdateExistingPath();
+            return nextStop;
+        }
 
+        Stop AddStop(Stop nextStop)
+        {
+            Debug.Assert(currentPath != null, "invalid path!");
+
+            currentLine.stops.Add(nextStop);
+            currentLine.completePath.AddRange(currentPath);
+            currentLine.paths.Add(currentLine.completePath.Count);
+
+            UpdateExistingPath();
             return nextStop;
         }
 
@@ -587,20 +723,23 @@ namespace Transidious
             var pathIdx = 0;
             for (var i = 0; i < currentLine.stops.Count; ++i)
             {
-                var tmpStop = currentLine.stops[i];
+                var nextStop = currentLine.stops[i];
 
                 Stop stop;
                 if (i == currentLine.stops.Count - 1)
                 {
                     stop = firstStop;
                 }
-                else if (tmpStop.existingStop != null)
+                else if (nextStop is Stop)
                 {
-                    stop = tmpStop.existingStop;
+                    stop = nextStop as Stop;
                 }
                 else
                 {
+                    var tmpStop = nextStop as TemporaryStop;
                     stop = game.loadedMap.CreateStop(tmpStop.name, tmpStop.position);
+
+                    Destroy(tmpStop.gameObject);
                 }
 
                 if (firstStop == null)
@@ -619,40 +758,24 @@ namespace Transidious
                 {
                     line.AddStop(stop, true, false);
                 }
-
-                Destroy(tmpStop.gameObject);
             }
 
-            line.Finish();
+            var newLine = line.Finish();
+
+            // Disable collision for the new routes.
+            foreach (var route in newLine.routes)
+            {
+                route.DisableCollision();
+            }
 
             currentLine = null;
             currentPath = null;
             previousStop = null;
 
             existingPathMesh?.SetActive(false);
-        }
+            this.tooltip.Hide();
 
-        public void MouseOverRoute(Route route)
-        {
-            foreach (var r in route.line.routes)
-            {
-                var gradient = r.Gradient;
-
-                float h, s, v;
-                Color.RGBToHSV(r.line.color, out h, out s, out v);
-
-                var diff = v < .65f ? .35f : -.35f;
-                Color high = Color.HSVToRGB(h, s, v + diff);
-                gradient.Activate(r.line.color, high, 1.25f);
-            }
-        }
-
-        public void MouseExitRoute(Route route)
-        {
-            foreach (var r in route.line.routes)
-            {
-                r.Gradient.Stop();
-            }
+            EnterMode(EditingMode.CreateNewLine);
         }
     }
 }

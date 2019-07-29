@@ -7,7 +7,6 @@ namespace Transidious
 {
     class TemporaryStop : MapObject
     {
-        internal Stop existingStop;
         internal Vector3 position;
 
         public void Initialize(GameController game, string name, Vector3 position)
@@ -17,17 +16,12 @@ namespace Transidious
             this.position = position;
             this.transform.position = new Vector3(position.x, position.y, Map.Layer(MapLayer.TransitStops));
         }
-
-        public void Initialize(Stop stop)
-        {
-            this.existingStop = stop;
-        }
     }
 
     class TemporaryLine
     {
         internal string name;
-        internal List<TemporaryStop> stops;
+        internal List<MapObject> stops;
         internal List<Vector3> completePath;
         internal List<int> paths;
     }

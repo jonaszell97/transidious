@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 using System;
 using System.IO;
 using System.Linq;
@@ -113,6 +114,12 @@ namespace Transidious
             fileName += map.name;
             fileName += ".txt";
 
+            var di = new System.IO.DirectoryInfo("Assets/Resources/Saves/");
+            foreach (var file in di.GetFiles())
+            {
+                file.Delete();
+            }
+
             var formatter = new BinaryFormatter();
             using (Stream stream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
@@ -201,7 +208,7 @@ namespace Transidious
                         continue;
                     }
 
-                    var spriteObj = map.input.controller.CreateSprite(sprite);
+                    var spriteObj = map.Game.CreateSprite(sprite);
                     spriteObj.transform.position = new Vector3(
                         minX + (x * tileSizeUnits) + tileSizeUnits / 2,
                         minY + (y * tileSizeUnits) + tileSizeUnits / 2,
@@ -223,8 +230,10 @@ namespace Transidious
 
             foreach (var b in saveFile.buildings)
             {
-                var building = map.CreateBuilding(b.type, b.mesh.GetMesh(), b.name, b.number,
+                Mesh mesh = b.mesh.GetMesh();
+                var building = map.CreateBuilding(b.type, mesh, b.name, b.number,
                                                   b.position.ToVector());
+
                 building.streetID = b.streetID;
                 building.number = b.number;
             }
@@ -286,6 +295,10 @@ namespace Transidious
 
         public static Map LoadSave(GameController game, string saveName)
         {
+#if UNITY_EDITOR
+            AssetDatabase.Refresh();
+#endif
+
             var mapPrefab = Resources.Load("Prefabs/Map") as GameObject;
             var mapObj = GameObject.Instantiate(mapPrefab);
 

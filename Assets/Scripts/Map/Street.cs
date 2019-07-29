@@ -257,7 +257,7 @@ namespace Transidious
 
             if (seg.directionArrow == null)
             {
-                seg.directionArrow = map.input.controller.CreateSprite(
+                seg.directionArrow = map.Game.CreateSprite(
                     GameController.streetArrowSprite);
 
                 seg.directionArrow.GetComponent<SpriteRenderer>().color = new Color(0.9f, 0.9f, 0.9f, 1f);

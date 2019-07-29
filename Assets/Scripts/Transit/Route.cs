@@ -137,10 +137,21 @@ namespace Transidious
                 }
 
                 gradient = this.gameObject.AddComponent<ColorGradient>();
-                gradient.Initialize(line.map.input.controller);
+                gradient.Initialize(line.map.Game);
 
                 return gradient;
             }
+        }
+
+        public void SetTransparency(float a)
+        {
+            Color current = this.m_Renderer.material.color;
+            this.m_Renderer.material = GameController.GetUnlitMaterial(Math.ApplyTransparency(current, a));
+        }
+
+        public void ResetTransparency()
+        {
+            this.m_Renderer.material = GameController.GetUnlitMaterial(this.line.color);
         }
 
         public void UpdatePath()
@@ -151,7 +162,7 @@ namespace Transidious
             }
 
             var collider = this.GetComponent<PolygonCollider2D>();
-            mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 10, 0, false, collider);
+            mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 20, 0, false, collider);
 
             UpdateMesh();
         }
@@ -345,6 +356,34 @@ namespace Transidious
         void Update()
         {
 
+        }
+
+        protected override void OnMouseEnter()
+        {
+            if (line.map.Game.transitEditor.active)
+            {
+                return;
+            }
+
+            foreach (var r in this.line.routes)
+            {
+                var gradient = r.Gradient;
+
+                float h, s, v;
+                Color.RGBToHSV(r.line.color, out h, out s, out v);
+
+                var diff = v < .65f ? .35f : -.35f;
+                Color high = Color.HSVToRGB(h, s, v + diff);
+                gradient.Activate(r.line.color, high, 1.25f);
+            }
+        }
+
+        protected override void OnMouseExit()
+        {
+            foreach (var r in this.line.routes)
+            {
+                r.Gradient.Stop();
+            }
         }
     }
 }

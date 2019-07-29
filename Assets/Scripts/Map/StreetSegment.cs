@@ -94,12 +94,12 @@ namespace Transidious
             if (spriteObj1 != null)
             {
                 var map = spriteObj1.GetComponentInParent<Map>();
-                spriteObj1.GetComponent<SpriteRenderer>().sprite = map.input.controller.trafficLightSprites[(int)status];
+                spriteObj1.GetComponent<SpriteRenderer>().sprite = map.Game.trafficLightSprites[(int)status];
             }
             if (spriteObj2 != null)
             {
                 var map = spriteObj2.GetComponentInParent<Map>();
-                spriteObj2.GetComponent<SpriteRenderer>().sprite = map.input.controller.trafficLightSprites[(int)status];
+                spriteObj2.GetComponent<SpriteRenderer>().sprite = map.Game.trafficLightSprites[(int)status];
             }
 #endif
         }
@@ -609,7 +609,7 @@ namespace Transidious
             if (!shouldGenerateTrafficLights || allOneWay)
                 return;
 
-            var trafficSim = map.input.controller.sim.trafficSim;
+            var trafficSim = map.Game.sim.trafficSim;
 
             int numStreets = intersectingStreets.Count;
             if (numStreets % 2 != 0)
@@ -657,8 +657,8 @@ namespace Transidious
 #if DEBUG
                 if (map.renderTrafficLights)
                 {
-                    var sprite1 = map.input.controller.CreateSprite(
-                        map.input.controller.trafficLightSprites[(int)tl.status]);
+                    var sprite1 = map.Game.CreateSprite(
+                        map.Game.trafficLightSprites[(int)tl.status]);
 
                     sprite1.transform.SetParent(map.transform);
                     sprite1.transform.position = GetTrafficLightPosition(seg);
@@ -668,8 +668,8 @@ namespace Transidious
 
                     if (oppositeSeg != null)
                     {
-                        var sprite2 = map.input.controller.CreateSprite(
-                            map.input.controller.trafficLightSprites[(int)tl.status]);
+                        var sprite2 = map.Game.CreateSprite(
+                            map.Game.trafficLightSprites[(int)tl.status]);
 
                         sprite2.transform.SetParent(map.transform);
                         sprite2.transform.position = GetTrafficLightPosition(oppositeSeg);
@@ -722,6 +722,9 @@ namespace Transidious
 
         /// Whether or not there are tram tracks on this street segment.
         public bool hasTramTracks;
+
+        /// The bus / tram routes that drive on this street segment.
+        HashSet<Route> transitRoutes;
 
         /// The text label for this segments street name.
         public Transidious.Text streetName;
@@ -879,6 +882,19 @@ namespace Transidious
             else
             {
                 return halfLanes - 1 - (lane - halfLanes);
+            }
+        }
+
+        public HashSet<Route> TransitRoutes
+        {
+            get
+            {
+                if (transitRoutes == null)
+                {
+                    transitRoutes = new HashSet<Route>();
+                }
+
+                return transitRoutes;
             }
         }
 
@@ -1516,7 +1532,7 @@ namespace Transidious
         void GetIntersectionMeshes(StreetIntersection intersection,
                                    List<Mesh> trackMeshes)
         {
-            var trafficSim = street.map.input.controller.sim.trafficSim;
+            var trafficSim = street.map.Game.sim.trafficSim;
             foreach (var s in intersection.intersectingStreets)
             {
                 if (s == this || !s.hasTramTracks)
@@ -1549,7 +1565,7 @@ namespace Transidious
 
         void CreateTramTrackMesh(StreetSegmentMeshInfo meshInfo)
         {
-            var trafficSim = street.map.input.controller.sim.trafficSim;
+            var trafficSim = street.map.Game.sim.trafficSim;
 
             // Create tracks for right lane.
             var rightLane = this.RightmostLane;
@@ -1619,7 +1635,7 @@ namespace Transidious
             Gizmos.DrawSphere(GetEndStopLinePosition(), 3f * Map.Meters);
 
 #if DEBUG
-            var trafficSim = street.map.input.controller.sim.trafficSim;
+            var trafficSim = street.map.Game.sim.trafficSim;
             if (_laneMeshes == null)
             {
                 _laneMeshes = new Mesh[street.lanes];
@@ -1875,7 +1891,7 @@ namespace Transidious
 
         public void HighlightBorder(bool bulldozing)
         {
-            var game = street.map.input.controller;
+            var game = street.map.Game;
             if (bulldozing)
             {
                 UpdateBorderColor(game.bulldozeHighlightColor);

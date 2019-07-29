@@ -214,6 +214,11 @@ namespace Transidious
             {
                 game.input.debugRouteTest = true;
             }
+            if (GUI.Button(new Rect(350, 25, 100, 30), "Save"))
+            {
+                SaveManager.SaveMapData(game.loadedMap);
+                Debug.Log("file saved successfully");
+            }
         }
     }
 }

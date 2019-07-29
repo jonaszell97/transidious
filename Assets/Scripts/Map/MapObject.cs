@@ -7,6 +7,33 @@ namespace Transidious
         public InputController inputController;
         public bool highlighted = false;
 
+        public void DisableCollision()
+        {
+            var collider = this.gameObject.GetComponent<Collider2D>();
+            if (collider)
+            {
+                collider.enabled = false;
+            }
+        }
+
+        public void EnableCollision()
+        {
+            var collider = this.gameObject.GetComponent<Collider2D>();
+            if (collider)
+            {
+                collider.enabled = true;
+            }
+        }
+
+        public void ToggleCollision()
+        {
+            var collider = this.gameObject.GetComponent<Collider2D>();
+            if (collider)
+            {
+                collider.enabled = !collider.enabled;
+            }
+        }
+
         protected virtual void OnMouseOver()
         {
             // Debug.Log("mouse over " + this.GetType().Name);

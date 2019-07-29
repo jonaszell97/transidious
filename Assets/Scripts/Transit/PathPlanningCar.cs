@@ -812,7 +812,7 @@ namespace Transidious.PathPlanning
                 });
         }
 
-        public PathPlanningResult FindClosestDrive(Map map, Vector3 from, Vector3 to)
+        public PathPlanningResult FindClosestDrive(Map map, Vector2 from, Vector2 to)
         {
             var nearestPtFrom = map.GetClosestStreet(from);
             var nearestPtTo = map.GetClosestStreet(to);

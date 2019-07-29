@@ -113,7 +113,7 @@ namespace Transidious
             SaveManager.SaveMapLayout(map);
 
             LoadStreets();
-            LoadBuildings();
+            // LoadBuildings();
 
             SaveManager.SaveMapData(map);
         }

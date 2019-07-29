@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Transidious
 {
@@ -59,7 +57,10 @@ namespace Transidious
         Dictionary<ControlType, Tuple<KeyCode, KeyCode>> keyBindings;
         public static float minZoom = 45f * Map.Meters;
         public static float maxZoom = 15000f * Map.Meters;
-        float zoomSensitivity = 5.0f;
+        static float zoomSensitivityMouse = 25.0f;
+        static float zoomSensitivityTrackpad = 5.0f;
+        static float zoomSensitivityTouchscreen = 5.0f;
+        float zoomSensitivity;
 
         static float panSensitivityX = 0.5f;
         static float panSensitivityXMobile = panSensitivityX / 20f;
@@ -645,6 +646,17 @@ namespace Transidious
             else if (aspectRatio < 1.0f)
             {
                 panSensitivityX = 1f / aspectRatio;
+            }
+
+            switch (Application.platform)
+            {
+                case RuntimePlatform.IPhonePlayer:
+                case RuntimePlatform.Android:
+                    zoomSensitivity = zoomSensitivityTouchscreen;
+                    break;
+                default:
+                    zoomSensitivity = zoomSensitivityMouse;
+                    break;
             }
         }
 

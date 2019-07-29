@@ -238,5 +238,12 @@ namespace Transidious
             var angleDiff = Mathf.Abs(angle1 - angle2);
             return angleDiff <= tolerance;
         }
+
+        public static Color ApplyTransparency(Color rgb, float a)
+        {
+            return new Color(1.0f - a * (1.0f - rgb.r),
+                             1.0f - a * (1.0f - rgb.g),
+                             1.0f - a * (1.0f - rgb.b));
+        }
     }
 }
