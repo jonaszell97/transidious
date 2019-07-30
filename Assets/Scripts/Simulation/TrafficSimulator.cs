@@ -224,12 +224,16 @@ namespace Transidious
             return cars;
         }
 
-        public struct PathSegmentInfo
+        public class PathSegmentInfo
         {
             public StreetSegment segment;
             public int lane;
             public int offset;
             public int length;
+            public bool partialStart;
+            public bool partialEnd;
+            public bool backward;
+            public int linePos;
         }
 
         public List<Vector3> GetCompletePath(PathPlanningResult result,
@@ -246,17 +250,8 @@ namespace Transidious
             foreach (var step in result.steps)
             {
                 StreetSegment nextSegment;
-                GetStepPath(step, out nextSegment, out backward, out finalStep, out lane, out positions);
-
-                if (crossedSegments != null && nextSegment != null)
-                {
-                    crossedSegments.Add(new PathSegmentInfo {
-                        segment = nextSegment,
-                        lane = lane,
-                        offset = path.Count,
-                        length = positions.Count,
-                    });
-                }
+                GetStepPath(step, out nextSegment, out backward, out finalStep, out lane, out positions,
+                            out bool partialStart, out bool partialEnd);
 
                 if (segment != null && nextSegment != null)
                 {
@@ -278,6 +273,20 @@ namespace Transidious
 
                 if (positions != null)
                 {
+                    if (crossedSegments != null && nextSegment != null)
+                    {
+                        crossedSegments.Add(new PathSegmentInfo {
+                            segment = nextSegment,
+                            lane = lane,
+                            offset = path.Count,
+                            length = positions.Count,
+                            partialStart = partialStart,
+                            partialEnd = partialEnd,
+                            backward = backward,
+                            linePos = 0,
+                        });
+                    }
+
                     path.AddRange(positions);
                 }
 
@@ -835,9 +844,12 @@ namespace Transidious
 
         void GetStepPath(PathStep step, out StreetSegment segment,
                          out bool backward, out bool finalStep,
-                         out int lane, out List<Vector3> positions)
+                         out int lane, out List<Vector3> positions,
+                         out bool partialStart, out bool partialEnd)
         {
             finalStep = false;
+            partialStart = false;
+            partialEnd = false;
 
             if (step is DriveStep)
             {
@@ -857,6 +869,9 @@ namespace Transidious
             {
                 var drive = step as PartialDriveStep;
                 finalStep = drive.partialEnd;
+
+                partialStart = drive.partialStart;
+                partialEnd = drive.partialEnd;
 
                 segment = drive.driveSegment.segment;
                 backward = drive.driveSegment.backward;
@@ -946,7 +961,8 @@ namespace Transidious
                 return;
             }
 
-            GetStepPath(step, out segment, out backward, out finalStep, out lane, out positions);
+            GetStepPath(step, out segment, out backward, out finalStep, out lane, out positions,
+                        out bool partialStart, out bool partialEnd);
 
             if (positions.Count == 0)
             {

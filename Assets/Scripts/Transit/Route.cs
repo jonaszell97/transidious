@@ -29,12 +29,14 @@ namespace Transidious
         public Line line;
 
         public List<Vector3> positions;
+        List<Vector3> overlapAwarePositions;
+        List<float> overlapAwareWidths;
         public Path path;
         public Path originalPath;
 
         /// For each street segment this route is on, the index into the position vector where that
         /// segments positions start.
-        Dictionary<StreetSegment, List<Tuple<int, int>>> streetSegmentOffsetMap;
+        Dictionary<Tuple<StreetSegment, int>, List<TrafficSimulator.PathSegmentInfo>> streetSegmentOffsetMap;
 
         public Stop beginStop;
         public Stop.Slot beginSlot;
@@ -125,6 +127,34 @@ namespace Transidious
             }
         }
 
+        public List<Vector3> CurrentPositions
+        {
+            get
+            {
+                if (overlapAwarePositions != null)
+                {
+                    return overlapAwarePositions;
+                }
+
+                return positions;
+            }
+        }
+
+        public List<float> CurrentWidths
+        {
+            get
+            {
+                return overlapAwareWidths;
+            }
+        }
+
+        public void UpdateMesh(Mesh mesh, List<Vector3> newPositions, List<float> newWidths)
+        {
+            GetComponent<MeshFilter>().mesh = mesh;
+            overlapAwarePositions = newPositions;
+            overlapAwareWidths = newWidths;
+        }
+
         public DateTime NextDeparture(DateTime after)
         {
             return after;
@@ -158,24 +188,43 @@ namespace Transidious
             this.m_Renderer.material = GameController.GetUnlitMaterial(this.line.color);
         }
 
-        public void AddStreetSegmentOffset(StreetSegment seg, int offset, int length)
+        public void AddStreetSegmentOffset(TrafficSimulator.PathSegmentInfo info)
         {
             if (streetSegmentOffsetMap == null)
             {
-                streetSegmentOffsetMap = new Dictionary<StreetSegment, List<Tuple<int, int>>>();
-            }
-            if (!streetSegmentOffsetMap.ContainsKey(seg))
-            {
-                streetSegmentOffsetMap.Add(seg, new List<Tuple<int, int>>());
+                streetSegmentOffsetMap = new Dictionary<Tuple<StreetSegment, int>, List<TrafficSimulator.PathSegmentInfo>>();
             }
 
-            streetSegmentOffsetMap[seg].Add(new Tuple<int, int>(offset, length));
+            var key = new Tuple<StreetSegment, int>(info.segment, info.lane);
+            if (!streetSegmentOffsetMap.ContainsKey(key))
+            {
+                streetSegmentOffsetMap.Add(key, new List<TrafficSimulator.PathSegmentInfo>());
+            }
+
+            streetSegmentOffsetMap[key].Add(info);
         }
 
-        public List<Tuple<int, int>> GetStreetSegmentOffsets(StreetSegment seg)
+        public List<TrafficSimulator.PathSegmentInfo> GetStreetSegmentOffsets(StreetSegment seg, int lane)
         {
-            Debug.Assert(streetSegmentOffsetMap != null && streetSegmentOffsetMap.ContainsKey(seg));
-            return streetSegmentOffsetMap[seg];
+            var key = new Tuple<StreetSegment, int>(seg, lane);
+            Debug.Assert(streetSegmentOffsetMap != null && streetSegmentOffsetMap.ContainsKey(key));
+            return streetSegmentOffsetMap[key];
+        }
+
+        public TrafficSimulator.PathSegmentInfo GetSegmentForPosition(int pos)
+        {
+            foreach (var entry in streetSegmentOffsetMap)
+            {
+                foreach (var data in entry.Value)
+                {
+                    if (data.offset <= pos && data.offset + data.length >= pos)
+                    {
+                        return data;
+                    }
+                }
+            }
+
+            return null;
         }
 
         public void UpdatePath()
@@ -186,7 +235,7 @@ namespace Transidious
             }
 
             var collider = this.GetComponent<PolygonCollider2D>();
-            mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 20, 0, false, collider);
+            mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 20, 0, collider);
 
             UpdateMesh();
         }

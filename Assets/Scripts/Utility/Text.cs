@@ -19,6 +19,7 @@ namespace Transidious
         public void SetText(string txt)
         {
             textMesh.text = txt;
+            textMesh.ForceMeshUpdate();
         }
 
         public void SetColor(Color c)

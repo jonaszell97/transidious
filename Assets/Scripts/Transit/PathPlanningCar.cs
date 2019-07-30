@@ -843,7 +843,7 @@ namespace Transidious.PathPlanning
                 var endDistance = (nearestPtFrom.seg.positions.First() - nearestPtTo.pos).sqrMagnitude;
                 var backward = startDistance > endDistance;
 
-                simpleJourney = startSide == endSide
+                simpleJourney = !startDistance.Equals(endDistance) && startSide == endSide
                     && !(startSide == Math.PointPosition.Right && backward)
                     && !(startSide == Math.PointPosition.Left && !backward);
             }

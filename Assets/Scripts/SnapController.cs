@@ -129,7 +129,7 @@ namespace Transidious
             return null;
         }
 
-        void HandleMouseOver(MapObject obj)
+        public void HandleMouseOver(MapObject obj)
         {
             var snap = GetSnapForObject(obj);
             if (snap == null)
@@ -152,7 +152,7 @@ namespace Transidious
             }
         }
 
-        void HandleMouseExit(MapObject obj)
+        public void HandleMouseExit(MapObject obj)
         {
             Unsnap();
         }
@@ -233,6 +233,7 @@ namespace Transidious
             spriteRenderer.color = snapSettings.snapCursorColor;
             spriteRenderer.transform.localScale = snapSettings.snapCursorScale;
 
+            Cursor.visible = false;
             cursorObj.SetActive(true);
             cursorObj.transform.position = new Vector3(obj.transform.position.x,
                                                        obj.transform.position.y,

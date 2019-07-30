@@ -57,6 +57,17 @@ namespace Transidious
             this.spriteRenderer.size = size;
         }
 
+        public void UpdateText(string txt)
+        {
+            this.text.SetText(txt);
+
+            var size = this.text.Size;
+            size.x += 2f;
+            size.y += 1f;
+
+            this.spriteRenderer.size = size;
+        }
+
         public void SetPosition(Vector3 position)
         {
             position.y -= 7f;

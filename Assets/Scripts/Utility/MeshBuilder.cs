@@ -328,6 +328,89 @@ namespace Transidious
             }
         }
 
+        static void CreateSmoothLine_AddQuad(IReadOnlyList<Vector3> positions,
+                                            int i,
+                                            float startWidth,
+                                            float endWidth,
+                                            bool startCap,
+                                            bool endCap,
+                                            List<Vector3> vertices,
+                                            List<int> triangles,
+                                            List<Vector2> uv,
+                                            List<Vector3> normals,
+                                            int cornerVertices,
+                                            float z,
+                                            bool useZ,
+                                            PolygonCollider2D collider,
+                                            Vector2[] colliderPath,
+                                            float offset)
+        {
+            var p0 = positions[i - 1];
+            var p1 = positions[i];
+
+            if (useZ)
+            {
+                p0 = new Vector3(p0.x, p0.y, z);
+                p1 = new Vector3(p1.x, p1.y, z);
+            }
+
+            Vector3 line = p0 - p1;
+            Vector3 normal = new Vector3(-line.y, line.x, 0.0f).normalized;
+
+            Vector3 bl = p1 - endWidth * normal;
+            Vector3 tl = p1 + endWidth * normal;
+            Vector3 tr = p0 + startWidth * normal;
+            Vector3 br = p0 - startWidth * normal;
+
+            if (!offset.Equals(0f))
+            {
+                p0 += offset * normal;
+                p1 += offset * normal;
+
+                bl += offset * normal;
+                tl += offset * normal;
+                tr += offset * normal;
+                br += offset * normal;
+            }
+
+            if (colliderPath != null)
+            {
+                var angle = Math.Angle(Vector2.down, normal);
+                if (!angle.Equals(0f))
+                {
+                    // Add right side to forward path.
+                    colliderPath[i - 1] = br;
+
+                    // Add left side to backward path.
+                    colliderPath[colliderPath.Length - i] = tr;
+
+                    if (i == positions.Count - 1)
+                    {
+                        // Add right side to forward path.
+                        colliderPath[i] = bl;
+
+                        // Add left side to backward path.
+                        colliderPath[i + 1] = tl;
+                    }
+                }
+            }
+
+            if (i == 1 && startCap)
+            {
+                AddCirclePart(vertices, triangles, uv, br, tr, startWidth, p0,
+                                cornerVertices, z);
+            }
+
+            MeshBuilder.AddQuad(vertices, triangles, normals,
+                                uv, bl, tr, br, tl);
+
+            if (i < positions.Count - 1 || endCap)
+            {
+                AddCirclePart(vertices, triangles, uv, bl, tl, endWidth, p1,
+                                cornerVertices, z);
+            }
+        }
+
         public static void CreateSmoothLine(IReadOnlyList<Vector3> positions,
                                             float width,
                                             bool startCap,
@@ -351,83 +434,61 @@ namespace Transidious
 
             for (int i = 1; i < positions.Count; ++i)
             {
-                var p0 = positions[i - 1];
-                var p1 = positions[i];
-
-                if (useZ)
-                {
-                    p0 = new Vector3(p0.x, p0.y, z);
-                    p1 = new Vector3(p1.x, p1.y, z);
-                }
-
-                Vector3 line = p0 - p1;
-                Vector3 normal = new Vector3(-line.y, line.x, 0.0f).normalized;
-
-                Vector3 bl = p1 - width * normal;
-                Vector3 tl = p1 + width * normal;
-                Vector3 tr = p0 + width * normal;
-                Vector3 br = p0 - width * normal;
-
-                if (!offset.Equals(0f))
-                {
-                    p0 += offset * normal;
-                    p1 += offset * normal;
-
-                    bl += offset * normal;
-                    tl += offset * normal;
-                    tr += offset * normal;
-                    br += offset * normal;
-                }
-
-                if (colliderPath != null)
-                {
-                    var angle = Math.Angle(Vector2.down, normal);
-                    if (!angle.Equals(0f))
-                    {
-                        // Add right side to forward path.
-                        colliderPath[i - 1] = br;
-
-                        // Add left side to backward path.
-                        colliderPath[colliderPath.Length - i] = tr;
-
-                        if (i == positions.Count - 1)
-                        {
-                            // Add right side to forward path.
-                            colliderPath[i] = bl;
-
-                            // Add left side to backward path.
-                            colliderPath[i + 1] = tl;
-                        }
-                    }
-                }
-
-                if (i == 1 && startCap)
-                {
-                    AddCirclePart(vertices, triangles, uv, br, tr, width, p0,
-                                  cornerVertices, z);
-                }
-
-                MeshBuilder.AddQuad(vertices, triangles, normals,
-                                    uv, bl, tr, br, tl);
-
-                if (i < positions.Count - 1 || endCap)
-                {
-                    AddCirclePart(vertices, triangles, uv, bl, tl, width, p1,
-                                  cornerVertices, z);
-                }
+                CreateSmoothLine_AddQuad(positions, i, width, width, startCap, endCap, vertices,
+                                         triangles, uv, normals, cornerVertices, z, useZ,
+                                         collider, colliderPath, offset);
             }
 
             if (collider != null)
             {
-                collider.pathCount = 1;
-                collider.SetPath(0,
+                var prevPathCount = collider.pathCount;
+                collider.pathCount = prevPathCount + 1;
+                collider.SetPath(prevPathCount,
+                    colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray());
+            }
+        }
+
+        public static void CreateSmoothLine(IReadOnlyList<Vector3> positions,
+                                            IReadOnlyList<float> widths,
+                                            bool startCap,
+                                            bool endCap,
+                                            List<Vector3> vertices,
+                                            List<int> triangles,
+                                            List<Vector2> uv,
+                                            int cornerVertices = 5,
+                                            float z = 0f,
+                                            PolygonCollider2D collider = null,
+                                            float offset = 0f)
+        {
+            Debug.Assert(widths.Count == positions.Count);
+
+            var normals = new List<Vector3>();
+            var useZ = !z.Equals(0f);
+
+            Vector2[] colliderPath = null;
+            if (collider != null)
+            {
+                colliderPath = Enumerable.Repeat(Vector2.positiveInfinity, positions.Count * 2).ToArray();
+            }
+
+            for (int i = 1; i < positions.Count; ++i)
+            {
+                CreateSmoothLine_AddQuad(positions, i, widths[i - 1], widths[i], startCap, endCap, vertices,
+                                         triangles, uv, normals, cornerVertices, z, useZ,
+                                         collider, colliderPath, offset);
+            }
+
+            if (collider != null)
+            {
+                var prevPathCount = collider.pathCount;
+                collider.pathCount = prevPathCount + 1;
+                collider.SetPath(prevPathCount,
                     colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray());
             }
         }
 
         public static Mesh CreateSmoothLine(IReadOnlyList<Vector3> positions, float width,
                                             int cornerVertices = 5, float z = 0f,
-                                            bool updateNormals = false,
                                             PolygonCollider2D collider = null,
                                             bool startCap = true, bool endCap = true,
                                             float offset = 0f)
@@ -446,28 +507,31 @@ namespace Transidious
                 uv = uv.ToArray(),
             };
 
-            if (updateNormals)
+            mesh.RecalculateNormals();
+            return mesh;
+        }
+
+        public static Mesh CreateSmoothLine(IReadOnlyList<Vector3> positions, IReadOnlyList<float> widths,
+                                            int cornerVertices = 5, float z = 0f,
+                                            PolygonCollider2D collider = null,
+                                            bool startCap = true, bool endCap = true,
+                                            float offset = 0f)
+        {
+            var vertices = new List<Vector3>();
+            var triangles = new List<int>();
+            var uv = new List<Vector2>();
+
+            CreateSmoothLine(positions, widths, startCap, endCap, vertices,
+                             triangles, uv, cornerVertices, z, collider, offset);
+
+            var mesh = new Mesh
             {
-                var normals = new List<Vector3>(vertices.Count);
-                for (int i = 1; i < vertices.Count; ++i)
-                {
-                    var p0 = vertices[i - 1];
-                    var p1 = vertices[i];
+                vertices = vertices.ToArray(),
+                triangles = triangles.ToArray(),
+                uv = uv.ToArray(),
+            };
 
-                    Vector2 diff = p1 - p0;
-                    var perp = -Vector2.Perpendicular(diff);
-
-                    normals.Add(perp.normalized);
-                }
-
-                normals.Add(normals.Last());
-                mesh.normals = normals.ToArray();
-            }
-            else
-            {
-                mesh.RecalculateNormals();
-            }
-
+            mesh.RecalculateNormals();
             return mesh;
         }
 

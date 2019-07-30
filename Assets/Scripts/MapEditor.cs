@@ -163,7 +163,7 @@ namespace Transidious
 
                 var mesh = MeshBuilder.CreateSmoothLine(
                     new List<Vector3> { startPos, endPos },
-                    streetWidth, 10, 0f, false);
+                    streetWidth, 10, 0f);
 
                 var meshFilter = inProgressStreetObj.GetComponent<MeshFilter>();
                 meshFilter.mesh = mesh;
@@ -171,7 +171,7 @@ namespace Transidious
                 var borderMesh = MeshBuilder.CreateSmoothLine(
                     new List<Vector3> { startPos, endPos },
                     streetWidth + StreetSegment.GetBorderWidth(streetType,
-                        game.input.renderingDistance), 10, 0f, false);
+                        game.input.renderingDistance), 10, 0f);
 
                 var borderMeshFilter = inProgressStreetObjBorder.GetComponent<MeshFilter>();
                 borderMeshFilter.mesh = borderMesh;

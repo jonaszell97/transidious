@@ -1491,7 +1491,7 @@ namespace Transidious
 
                     meshInfo.outlineMesh = MeshBuilder.CreateSmoothLine(
                         positions, width + borderWidth, 20,
-                        lineOutlineLayer, false, collider);
+                        lineOutlineLayer, collider);
                 }
             }
 
@@ -1507,12 +1507,12 @@ namespace Transidious
             var meshRight = MeshBuilder.CreateSmoothLine(
                 path, trackWidth, 20,
                 Map.Layer(MapLayer.StreetMarkings),
-                false, null, false, false,
+                null, false, false,
                 trackDistance * .5f + trackWidth * .5f + offset);
 
             var meshLeft = MeshBuilder.CreateSmoothLine(path, trackWidth, 20,
                 Map.Layer(MapLayer.StreetMarkings),
-                false, null, false, false,
+                null, false, false,
                 trackDistance * -.5f - trackWidth * .5f + offset);
 
             return new Tuple<Mesh, Mesh>(meshRight, meshLeft);
