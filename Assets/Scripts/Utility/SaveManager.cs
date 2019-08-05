@@ -71,7 +71,7 @@ namespace Transidious
             {
                 tiles = stiles,
                 buildings = map.buildings.Select(r => r.Serialize()).ToArray(),
-                streets = map.streets.Select(s => s.Serialize()).ToArray(),
+                streets = map.streets.Where(s => s.type != Street.Type.FootPath).Select(s => s.Serialize()).ToArray(),
                 streetIntersections = map.streetIntersections.Select(s => s.Serialize()).ToArray(),
                 transitRoutes = map.transitRoutes.Select(r => r.Serialize()).ToArray(),
                 transitStops = map.transitStops.Select(r => r.Serialize()).ToArray(),
@@ -121,7 +121,7 @@ namespace Transidious
             }
 
             var formatter = new BinaryFormatter();
-            using (Stream stream = File.Open(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
             {
                 SerializeToStream(stream, GetSerializedMap(map, screenShotInfo));
             }
@@ -148,8 +148,7 @@ namespace Transidious
 
             Debug.Log("serialized " + map.buildings.Count + " buildings");
 
-            using (Stream stream = File.Open(fileName, FileMode.OpenOrCreate,
-                                             FileAccess.ReadWrite))
+            using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
             {
                 SerializeToStream(stream, GetSaveFile(map));
             }

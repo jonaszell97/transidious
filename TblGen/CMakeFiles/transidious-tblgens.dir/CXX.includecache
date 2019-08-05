@@ -6,7 +6,41 @@
 
 #IncludeRegexTransform: 
 
-/Users/Jonas/Transidious/TblGen/Backends/OSMImportBackend.cpp
+/home/jonas/tblgen/include/tblgen/Lex/SourceLocation.h
+tblgen/Support/Config.h
+/home/jonas/tblgen/include/tblgen/Lex/tblgen/Support/Config.h
+cassert
+-
+cstdint
+-
+
+/home/jonas/tblgen/include/tblgen/Record.h
+tblgen/Lex/SourceLocation.h
+/home/jonas/tblgen/include/tblgen/tblgen/Lex/SourceLocation.h
+llvm/ADT/MapVector.h
+-
+llvm/ADT/StringMap.h
+-
+unordered_set
+-
+vector
+-
+
+/home/jonas/tblgen/include/tblgen/Support/Config.h
+
+/home/jonas/tblgen/include/tblgen/Value.h
+llvm/ADT/APSInt.h
+-
+llvm/ADT/APFloat.h
+-
+llvm/ADT/StringMap.h
+-
+llvm/Support/Casting.h
+-
+vector
+-
+
+/home/jonas/transidious/TblGen/Backends/OSMImportBackend.cpp
 tblgen/Record.h
 -
 tblgen/Value.h
@@ -20,21 +54,21 @@ string
 vector
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/APFloat.h
+/usr/lib/llvm-6.0/include/llvm/ADT/APFloat.h
 llvm/ADT/APInt.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/APInt.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/APInt.h
 llvm/ADT/ArrayRef.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/ArrayRef.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/ArrayRef.h
 llvm/Support/ErrorHandling.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/ErrorHandling.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/ErrorHandling.h
 memory
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/APInt.h
+/usr/lib/llvm-6.0/include/llvm/ADT/APInt.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/Compiler.h
 llvm/Support/MathExtras.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/MathExtras.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/MathExtras.h
 cassert
 -
 climits
@@ -44,21 +78,21 @@ cstring
 string
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/APSInt.h
+/usr/lib/llvm-6.0/include/llvm/ADT/APSInt.h
 llvm/ADT/APInt.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/APInt.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/APInt.h
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/ArrayRef.h
+/usr/lib/llvm-6.0/include/llvm/ADT/ArrayRef.h
 llvm/ADT/Hashing.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/Hashing.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/Hashing.h
 llvm/ADT/None.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/None.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/None.h
 llvm/ADT/SmallVector.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/SmallVector.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/SmallVector.h
 llvm/ADT/STLExtras.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/STLExtras.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/STLExtras.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/Compiler.h
 algorithm
 -
 array
@@ -78,21 +112,21 @@ type_traits
 vector
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/DenseMap.h
+/usr/lib/llvm-6.0/include/llvm/ADT/DenseMap.h
 llvm/ADT/DenseMapInfo.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/DenseMapInfo.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/DenseMapInfo.h
 llvm/ADT/EpochTracker.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/EpochTracker.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/EpochTracker.h
 llvm/Support/AlignOf.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/AlignOf.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/AlignOf.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/Compiler.h
 llvm/Support/MathExtras.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/MathExtras.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/MathExtras.h
 llvm/Support/ReverseIteration.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/ReverseIteration.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/ReverseIteration.h
 llvm/Support/type_traits.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/type_traits.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/type_traits.h
 algorithm
 -
 cassert
@@ -110,15 +144,15 @@ type_traits
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/DenseMapInfo.h
+/usr/lib/llvm-6.0/include/llvm/ADT/DenseMapInfo.h
 llvm/ADT/ArrayRef.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/ArrayRef.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/ArrayRef.h
 llvm/ADT/Hashing.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/Hashing.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/Hashing.h
 llvm/ADT/StringRef.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/StringRef.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/StringRef.h
 llvm/Support/PointerLikeTypeTraits.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/PointerLikeTypeTraits.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/PointerLikeTypeTraits.h
 cassert
 -
 cstddef
@@ -128,23 +162,23 @@ cstdint
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/EpochTracker.h
+/usr/lib/llvm-6.0/include/llvm/ADT/EpochTracker.h
 llvm/Config/abi-breaking.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Config/abi-breaking.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Config/abi-breaking.h
 llvm/Config/llvm-config.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Config/llvm-config.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Config/llvm-config.h
 cstdint
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/Hashing.h
+/usr/lib/llvm-6.0/include/llvm/ADT/Hashing.h
 llvm/Support/DataTypes.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/DataTypes.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/DataTypes.h
 llvm/Support/Host.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/Host.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/Host.h
 llvm/Support/SwapByteOrder.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/SwapByteOrder.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/SwapByteOrder.h
 llvm/Support/type_traits.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/type_traits.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/type_traits.h
 algorithm
 -
 cassert
@@ -156,11 +190,11 @@ string
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/MapVector.h
+/usr/lib/llvm-6.0/include/llvm/ADT/MapVector.h
 llvm/ADT/DenseMap.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/DenseMap.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/DenseMap.h
 llvm/ADT/SmallVector.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/SmallVector.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/SmallVector.h
 algorithm
 -
 cassert
@@ -176,17 +210,17 @@ utility
 vector
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/None.h
+/usr/lib/llvm-6.0/include/llvm/ADT/None.h
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/Optional.h
+/usr/lib/llvm-6.0/include/llvm/ADT/Optional.h
 llvm/ADT/None.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/None.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/None.h
 llvm/Support/AlignOf.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/AlignOf.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/AlignOf.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/Compiler.h
 llvm/Support/type_traits.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/type_traits.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/type_traits.h
 algorithm
 -
 cassert
@@ -196,17 +230,17 @@ new
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/STLExtras.h
+/usr/lib/llvm-6.0/include/llvm/ADT/STLExtras.h
 llvm/ADT/Optional.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/Optional.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/Optional.h
 llvm/ADT/SmallVector.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/SmallVector.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/SmallVector.h
 llvm/ADT/iterator.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/iterator.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/iterator.h
 llvm/ADT/iterator_range.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/iterator_range.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/iterator_range.h
 llvm/Support/ErrorHandling.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/ErrorHandling.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/ErrorHandling.h
 algorithm
 -
 cassert
@@ -234,19 +268,19 @@ type_traits
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/SmallVector.h
+/usr/lib/llvm-6.0/include/llvm/ADT/SmallVector.h
 llvm/ADT/iterator_range.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/iterator_range.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/iterator_range.h
 llvm/Support/AlignOf.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/AlignOf.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/AlignOf.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/Compiler.h
 llvm/Support/MathExtras.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/MathExtras.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/MathExtras.h
 llvm/Support/type_traits.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/type_traits.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/type_traits.h
 llvm/Support/ErrorHandling.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/ErrorHandling.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/ErrorHandling.h
 algorithm
 -
 cassert
@@ -270,19 +304,19 @@ type_traits
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/StringMap.h
+/usr/lib/llvm-6.0/include/llvm/ADT/StringMap.h
 llvm/ADT/StringRef.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/StringRef.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/StringRef.h
 llvm/ADT/iterator.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/iterator.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/iterator.h
 llvm/ADT/iterator_range.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/iterator_range.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/iterator_range.h
 llvm/Support/Allocator.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/Allocator.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/Allocator.h
 llvm/Support/PointerLikeTypeTraits.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/PointerLikeTypeTraits.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/PointerLikeTypeTraits.h
 llvm/Support/ErrorHandling.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/ErrorHandling.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/ErrorHandling.h
 algorithm
 -
 cassert
@@ -300,13 +334,13 @@ iterator
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/StringRef.h
+/usr/lib/llvm-6.0/include/llvm/ADT/StringRef.h
 llvm/ADT/STLExtras.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/STLExtras.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/STLExtras.h
 llvm/ADT/iterator_range.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/iterator_range.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/iterator_range.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/Support/Compiler.h
 algorithm
 -
 cassert
@@ -324,9 +358,9 @@ type_traits
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/iterator.h
+/usr/lib/llvm-6.0/include/llvm/ADT/iterator.h
 llvm/ADT/iterator_range.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/llvm/ADT/iterator_range.h
+/usr/lib/llvm-6.0/include/llvm/ADT/llvm/ADT/iterator_range.h
 algorithm
 -
 cstddef
@@ -338,29 +372,29 @@ type_traits
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/ADT/iterator_range.h
+/usr/lib/llvm-6.0/include/llvm/ADT/iterator_range.h
 iterator
 -
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Config/abi-breaking.h
+/usr/lib/llvm-6.0/include/llvm/Config/abi-breaking.h
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Config/llvm-config.h
+/usr/lib/llvm-6.0/include/llvm/Config/llvm-config.h
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/AlignOf.h
+/usr/lib/llvm-6.0/include/llvm/Support/AlignOf.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/Compiler.h
 cstddef
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/Allocator.h
+/usr/lib/llvm-6.0/include/llvm/Support/Allocator.h
 llvm/ADT/SmallVector.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/ADT/SmallVector.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/ADT/SmallVector.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/Compiler.h
 llvm/Support/MathExtras.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/MathExtras.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/MathExtras.h
 algorithm
 -
 cassert
@@ -378,11 +412,11 @@ type_traits
 utility
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/Casting.h
+/usr/lib/llvm-6.0/include/llvm/Support/Casting.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/Compiler.h
 llvm/Support/type_traits.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/type_traits.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/type_traits.h
 cassert
 -
 memory
@@ -390,9 +424,9 @@ memory
 type_traits
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/Support/Compiler.h
 llvm/Config/llvm-config.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Config/llvm-config.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Config/llvm-config.h
 sal.h
 -
 sanitizer/msan_interface.h
@@ -400,7 +434,7 @@ sanitizer/msan_interface.h
 sanitizer/asan_interface.h
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/DataTypes.h
+/usr/lib/llvm-6.0/include/llvm/Support/DataTypes.h
 cmath
 -
 math.h
@@ -426,15 +460,15 @@ stdlib.h
 sys/types.h
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/ErrorHandling.h
+/usr/lib/llvm-6.0/include/llvm/Support/ErrorHandling.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/Compiler.h
 string
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/Host.h
+/usr/lib/llvm-6.0/include/llvm/Support/Host.h
 llvm/ADT/StringMap.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/ADT/StringMap.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/ADT/StringMap.h
 endian.h
 -
 sys/machine.h
@@ -446,11 +480,11 @@ machine/endian.h
 string
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/MathExtras.h
+/usr/lib/llvm-6.0/include/llvm/Support/MathExtras.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/Compiler.h
 llvm/Support/SwapByteOrder.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/SwapByteOrder.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/SwapByteOrder.h
 algorithm
 -
 cassert
@@ -468,33 +502,33 @@ intrin.h
 android/api-level.h
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/PointerLikeTypeTraits.h
+/usr/lib/llvm-6.0/include/llvm/Support/PointerLikeTypeTraits.h
 llvm/Support/DataTypes.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/DataTypes.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/DataTypes.h
 type_traits
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/ReverseIteration.h
+/usr/lib/llvm-6.0/include/llvm/Support/ReverseIteration.h
 llvm/Config/abi-breaking.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Config/abi-breaking.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Config/abi-breaking.h
 llvm/Support/PointerLikeTypeTraits.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/PointerLikeTypeTraits.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/PointerLikeTypeTraits.h
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/SwapByteOrder.h
+/usr/lib/llvm-6.0/include/llvm/Support/SwapByteOrder.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/Compiler.h
 llvm/Support/DataTypes.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/DataTypes.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/DataTypes.h
 cstddef
 -
 stdlib.h
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/raw_ostream.h
+/usr/lib/llvm-6.0/include/llvm/Support/raw_ostream.h
 llvm/ADT/SmallVector.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/ADT/SmallVector.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/ADT/SmallVector.h
 llvm/ADT/StringRef.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/ADT/StringRef.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/ADT/StringRef.h
 cassert
 -
 cstddef
@@ -508,45 +542,11 @@ string
 system_error
 -
 
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/type_traits.h
+/usr/lib/llvm-6.0/include/llvm/Support/type_traits.h
 llvm/Support/Compiler.h
-/usr/local/Cellar/llvm/6.0.0/include/llvm/Support/llvm/Support/Compiler.h
+/usr/lib/llvm-6.0/include/llvm/Support/llvm/Support/Compiler.h
 type_traits
 -
 utility
--
-
-/usr/local/include/TableGen/include/tblgen/Lex/SourceLocation.h
-tblgen/Support/Config.h
-/usr/local/include/TableGen/include/tblgen/Lex/tblgen/Support/Config.h
-cassert
--
-cstdint
--
-
-/usr/local/include/TableGen/include/tblgen/Record.h
-tblgen/Lex/SourceLocation.h
-/usr/local/include/TableGen/include/tblgen/tblgen/Lex/SourceLocation.h
-llvm/ADT/MapVector.h
--
-llvm/ADT/StringMap.h
--
-unordered_set
--
-vector
--
-
-/usr/local/include/TableGen/include/tblgen/Support/Config.h
-
-/usr/local/include/TableGen/include/tblgen/Value.h
-llvm/ADT/APSInt.h
--
-llvm/ADT/APFloat.h
--
-llvm/ADT/StringMap.h
--
-llvm/Support/Casting.h
--
-vector
 -
 

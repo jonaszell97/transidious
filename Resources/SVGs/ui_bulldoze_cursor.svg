@@ -14,27 +14,27 @@
    viewBox="0 0 210 297"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
    sodipodi:docname="ui_bulldoze_cursor.svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
      id="base"
-     pagecolor="#ffffff"
+     pagecolor="#00ffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0.0"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="397.14286"
+     inkscape:cx="165.71429"
      inkscape:cy="674.28571"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="755"
-     inkscape:window-x="0"
-     inkscape:window-y="1"
+     inkscape:window-width="1853"
+     inkscape:window-height="1025"
+     inkscape:window-x="67"
+     inkscape:window-y="27"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata5">
@@ -54,7 +54,8 @@
      id="layer1">
     <g
        id="g851"
-       transform="translate(67.53825,29.551644)">
+       transform="translate(67.53825,29.551644)"
+       style="fill:#ffffff;fill-opacity:1;stroke:none">
       <rect
          transform="rotate(45)"
          y="9.4436474"
@@ -62,7 +63,7 @@
          height="60.098217"
          width="12.473215"
          id="rect832"
-         style="opacity:1;fill:#8c0000;fill-opacity:1;stroke:none;stroke-width:1.77006245;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.77006245;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
       <rect
          transform="rotate(-45)"
          y="37.373314"
@@ -70,7 +71,7 @@
          height="60.098217"
          width="12.473215"
          id="rect832-9"
-         style="opacity:1;fill:#8c0000;fill-opacity:1;stroke:none;stroke-width:1.77006257;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.77006257;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     </g>
   </g>
 </svg>

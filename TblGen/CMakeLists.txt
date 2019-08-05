@@ -1,5 +1,6 @@
 
-cmake_minimum_required(VERSION 3.13)
+
+cmake_minimum_required(VERSION 3.10)
 project(TransidiousTblgens)
 
 set(CMAKE_CXX_COMPILER /usr/bin/clang++)
@@ -7,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -Wall")
 
 # include tblgen
-include_directories("/usr/local/include/TableGen/include")
+include_directories("~/tblgen/include")
 
 # find LLVM
 set(LLVM_DIR /usr/local/Cellar/llvm/6.0.0/lib/cmake/llvm)

@@ -60,7 +60,7 @@ namespace Transidious
         {
             return new SerializableMapTile
             {
-                streetSegmentIDs = streetSegments.Select(s => s.id).ToArray(),
+                streetSegmentIDs = streetSegments.Where(s => s.street.type != Street.Type.FootPath).Select(s => s.id).ToArray(),
                 stopIDs = transitStops.Select(s => s.id).ToArray(),
             };
         }
@@ -69,6 +69,11 @@ namespace Transidious
         {
             foreach (var id in tile.streetSegmentIDs)
             {
+                if (!map.streetSegmentIDMap.ContainsKey(id))
+                {
+                    continue;
+                }
+
                 this.streetSegments.Add(map.streetSegmentIDMap[id]);
             }
 
@@ -211,6 +216,9 @@ namespace Transidious
 
         /// Prefab for creating routes.
         public GameObject routePrefab;
+
+        /// Prefab for creating a canvas.
+        public GameObject canvasPrefab;
 
         /// Prefab for creating text.
         public GameObject textPrefab;
@@ -724,11 +732,7 @@ namespace Transidious
             GameObject lineObject = Instantiate(linePrefab);
             Line line = lineObject.GetComponent<Line>();
             line.transform.SetParent(this.transform);
-
-            line.map = this;
-            line.name = currentName;
-            line.type = type;
-            line.color = color;
+            line.Initialize(this, currentName, type, color);
 
             RegisterLine(line);
             return new LineBuilder(line);
@@ -872,6 +876,11 @@ namespace Transidious
 
         public StreetIntersection CreateIntersection(Vector3 pos)
         {
+            if (streetIntersectionMap.TryGetValue(pos, out StreetIntersection val))
+            {
+                return val;
+            }
+
             var inter = new StreetIntersection
             (
                 streetIntersections.Count + 1,
@@ -977,9 +986,41 @@ namespace Transidious
             {
                 foreach (var seg in street.segments)
                 {
-                    seg.UpdateScale(input.renderingDistance);
+                    seg.UpdateScale(renderingDistance);
                 }
             }
+        }
+
+        public void Reset()
+        {
+            foreach (var route in transitRoutes)
+            {
+                Destroy(route.gameObject);
+            }
+            foreach (var line in transitLines)
+            {
+                Destroy(line.gameObject);
+            }
+            foreach (var stop in transitStops)
+            {
+                Destroy(stop.gameObject);
+            }
+
+            this.transitRoutes = new List<Route>();
+            this.transitRouteIDMap = new Dictionary<int, Route>();
+            this.transitStops = new List<Stop>();
+            this.transitStopMap = new Dictionary<string, Stop>();
+            this.transitStopIDMap = new Dictionary<int, Stop>();
+            this.transitLines = new List<Line>();
+            this.transitLineMap = new Dictionary<string, Line>();
+            this.transitLineIDMap = new Dictionary<int, Line>();
+
+            streetIDMap[0] = null;
+            streetSegmentIDMap[0] = null;
+            streetIntersectionIDMap[0] = null;
+            transitRouteIDMap[0] = null;
+            transitStopIDMap[0] = null;
+            transitLineIDMap[0] = null;
         }
 
         // Use this for initialization
@@ -1099,7 +1140,7 @@ namespace Transidious
         public bool saveOnExit = false;
         public bool saveScene = false;
 
-        public void DoFinalize()
+        public void DoFinalize(bool needTrafficLights = true)
         {
             streetMesh.CreateMeshes();
 
@@ -1117,10 +1158,13 @@ namespace Transidious
 
             UpdateScale();
             UpdateTextScale();
-
-            foreach (var i in streetIntersections)
+            
+            if (needTrafficLights)
             {
-                i.GenerateTrafficLights(this);
+                foreach (var i in streetIntersections)
+                {
+                    i.GenerateTrafficLights(this);
+                }
             }
 
             foreach (var street in streets)

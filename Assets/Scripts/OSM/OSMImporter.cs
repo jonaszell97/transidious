@@ -108,11 +108,12 @@ namespace Transidious
             LoadBoundary();
             // LoadTransitLines();
             LoadParks();
+            LoadStreets(true);
 
-            map.DoFinalize();
+            map.DoFinalize(false);
             SaveManager.SaveMapLayout(map);
 
-            LoadStreets();
+            LoadStreets(false);
             // LoadBuildings();
 
             SaveManager.SaveMapData(map);
@@ -477,7 +478,7 @@ namespace Transidious
             internal StreetIntersection end;
         }
 
-        void LoadStreets()
+        void LoadStreets(bool onlyFootpaths)
         {
             var namelessStreets = 0;
             var partialStreets = new List<PartialStreet>();
@@ -488,6 +489,24 @@ namespace Transidious
 
             foreach (var street in streets)
             {
+                switch (street.Item2)
+                {
+                case Street.Type.FootPath:
+                    if (!onlyFootpaths)
+                    {
+                        continue;
+                    }
+
+                    break;
+                default:
+                    if (onlyFootpaths)
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+
                 var tags = street.Item1.Tags;
                 var streetName = tags.GetValue("name");
 

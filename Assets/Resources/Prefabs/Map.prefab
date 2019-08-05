@@ -82,6 +82,8 @@ MonoBehaviour:
     type: 3}
   routePrefab: {fileID: 5385331838536828253, guid: 1bef0fa22cec944bf8dc1065e50fc04f,
     type: 3}
+  canvasPrefab: {fileID: 6162135837808990986, guid: 130a87a37bdb44c6b8978595ad00e5a5,
+    type: 3}
   textPrefab: {fileID: 422271516409478062, guid: 63afb29d639f74af497a92a4533b4135,
     type: 3}
   screenshotMakerPrefab: {fileID: 8826896525106204825, guid: e58bf724d0755419b81e7bf24e2b0811,

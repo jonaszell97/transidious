@@ -7,7 +7,7 @@ enum GeoType {
 }
 
 enum TransitLineType {
-    Bus, Tram, Subway, STrain, RegionalTrain, LongDistanceTrain, Ferry
+    Bus, Tram, Subway, LightRail, LongDistanceTrain, Ferry
 }
 
 class TransitLineInfo<let type: TransitLineType, let tags: list<Tag> >
@@ -20,6 +20,8 @@ enum StreetType {
     Residential,
     Path,
     River,
+
+    FootPath,
 }
 
 class StreetInfo<let type: StreetType,
@@ -80,6 +82,9 @@ class DefaultArea : Area
         StreetInfo<.Residential, [
             Tag<"highway", "residential">
         ]>,
+        StreetInfo<.Residential, [
+            Tag<"highway", "living_street">
+        ]>,
         StreetInfo<.Primary, [
             Tag<"highway", "primary">
         ]>,
@@ -94,6 +99,18 @@ class DefaultArea : Area
         ]>,
         StreetInfo<.Tertiary, [
             Tag<"highway", "tertiary">
+        ]>,
+        StreetInfo<.FootPath, [
+            Tag<"highway", "path">
+        ]>,
+        StreetInfo<.FootPath, [
+            Tag<"highway", "service">
+        ]>,
+        StreetInfo<.FootPath, [
+            Tag<"highway", "track">
+        ]>,
+        StreetInfo<.FootPath, [
+            Tag<"highway", "footway">
         ]>,
         StreetInfo<.River, [
             Tag<"waterway", "river">
@@ -128,12 +145,12 @@ class DefaultArea : Area
             Tag<"type", "route">,
             Tag<"route", "subway">
         ]>,
-        TransitLineInfo<.STrain, [
+        TransitLineInfo<.LightRail, [
             Tag<"type", "route">,
             Tag<"route", "train">,
             Tag<"line", "light_rail">
         ]>,
-        TransitLineInfo<.RegionalTrain, [
+        TransitLineInfo<.LightRail, [
             Tag<"type", "route">,
             Tag<"route", "train">,
             Tag<"service", "regional">
@@ -192,7 +209,7 @@ class DefaultArea : Area
         ], [.Way, .Relation]>,
 
         NaturalFeatureInfo<.FootpathArea, [
-            Tag<"high.Way", "footpath">,
+            Tag<"highway", "footpath">,
             Tag<"area", "yes">,
         ], [.Way, .Relation]>,
 

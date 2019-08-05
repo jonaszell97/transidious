@@ -4,14 +4,14 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/Users/Jonas/Transidious/TblGen/Backends/OSMImportBackend.cpp" "/Users/Jonas/Transidious/TblGen/CMakeFiles/transidious-tblgens.dir/Backends/OSMImportBackend.cpp.o"
+  "/home/jonas/transidious/TblGen/Backends/OSMImportBackend.cpp" "/home/jonas/transidious/TblGen/CMakeFiles/transidious-tblgens.dir/Backends/OSMImportBackend.cpp.o"
   )
-set(CMAKE_CXX_COMPILER_ID "AppleClang")
+set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "/usr/local/include/TableGen/include"
-  "/usr/local/Cellar/llvm/6.0.0/include"
+  "/home/jonas/tblgen/include"
+  "/usr/lib/llvm-6.0/include"
   )
 
 # Targets to which this target links.

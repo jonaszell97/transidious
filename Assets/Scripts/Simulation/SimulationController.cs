@@ -208,16 +208,19 @@ namespace Transidious
             {
                 SpawnTestCitiziens();
             }
-#endif
-
             if (GUI.Button(new Rect(150, 25, 100, 30), "Spawn Car"))
             {
                 game.input.debugRouteTest = true;
             }
+#endif
             if (GUI.Button(new Rect(350, 25, 100, 30), "Save"))
             {
                 SaveManager.SaveMapData(game.loadedMap);
                 Debug.Log("file saved successfully");
+            }
+            if (GUI.Button(new Rect(450, 25, 100, 30), "Reset"))
+            {
+                game.loadedMap.Reset();
             }
         }
     }

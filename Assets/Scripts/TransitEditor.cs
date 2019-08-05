@@ -43,6 +43,8 @@ namespace Transidious
         public GameObject temporaryStopPrefab;
         int[] listenerIDs;
 
+        public UIModal lineInfoModal;
+
         void Awake()
         {
             this.active = false;
@@ -328,25 +330,25 @@ namespace Transidious
             {
             case EditingMode.CreateNewLine:
                 // Remove transparency.
-                foreach (var route in map.transitRoutes)
+                foreach (var line in map.transitLines)
                 {
-                    route.ResetTransparency();
+                    line.ResetTransparency();
                 }
 
                 break;
             case EditingMode.ModifyUnfinishedLine:
                 // Add transparency to all other lines to make the new line easier to see.
-                foreach (var route in map.transitRoutes)
+                foreach (var line in map.transitLines)
                 {
-                    route.SetTransparency(.5f);
+                    line.SetTransparency(.5f);
                 }
 
                 break;
             case EditingMode.ModifyFinishedLine:
                 // Add transparency to all other lines to make the new line easier to see.
-                foreach (var route in map.transitRoutes)
+                foreach (var line in map.transitLines)
                 {
-                    route.SetTransparency(.5f);
+                    line.SetTransparency(.5f);
                 }
 
                 break;
@@ -902,12 +904,6 @@ namespace Transidious
                                     Dictionary<Tuple<StreetSegment, int, int>, int> linePositionMap)
         {
             var routes = seg.GetTransitRoutes(lane);
-            Debug.Log(seg.name + ", lane " + lane + ": ");
-            foreach (var route in routes)
-            {
-                Debug.Log("   " + route.name);
-            }
-
             var path = game.sim.trafficSim.GetPath(seg, lane).ToList();
 
             // For a path like 'A -> B -> C', remember how many lines drive on each route (A->B), (B->C)
@@ -918,11 +914,16 @@ namespace Transidious
             foreach (var route in routes)
             {
                 // Remember how many lines drive at each position on the route's path.
+                List<int> linesPerPosition;
                 if (!linesPerPositionMap.ContainsKey(route))
                 {
-                    var linesPerPosition = new List<int>();
-                    linesPerPosition.AddRange(Enumerable.Repeat(1, route.positions.Count));
+                    linesPerPosition = new List<int>();
+                    linesPerPosition.AddRange(Enumerable.Repeat(0, route.positions.Count));
                     linesPerPositionMap.Add(route, linesPerPosition);
+                }
+                else
+                {
+                    linesPerPosition = linesPerPositionMap[route];
                 }
 
                 occupiedSegments.Add(route, new List<Tuple<int, int>>());
@@ -933,11 +934,18 @@ namespace Transidious
                 foreach (var offsetAndLength in offsets)
                 {
                     var i = 0;
+                    for (i = offsetAndLength.offset; i < offsetAndLength.offset + offsetAndLength.length; ++i)
+                    {
+                        if (linesPerPosition[i] == 0)
+                        {
+                            linesPerPosition[i] = 1;
+                        }
+                    }
 
                     // If this route is not partial, increase the line count of every path segment.
                     if (!offsetAndLength.partialStart && !offsetAndLength.partialEnd)
                     {
-                        for (; i < overlappingRouteCount.Count; ++i)
+                        for (i = 0; i < overlappingRouteCount.Count; ++i)
                         {
                             ++overlappingRouteCount[i];
                         }
@@ -950,54 +958,25 @@ namespace Transidious
                     var firstPosOnStreet = route.positions[offsetAndLength.offset];
                     var lastPosOnStreet = route.positions[offsetAndLength.offset + offsetAndLength.length - 1];
 
-                    float startDistance;
-                    float endDistance;
-                    if (false&&offsetAndLength.backward)
-                    {
-                        startDistance = seg.GetDistanceFromEndStopLine(firstPosOnStreet);
-                        endDistance = seg.GetDistanceFromStartStopLine(lastPosOnStreet);
-                    }
-                    else
-                    {
-                        startDistance = seg.GetDistanceFromStartStopLine(firstPosOnStreet);
-                        // endDistance = seg.GetDistanceFromEndStopLine(lastPosOnStreet);
-                        endDistance = seg.GetDistanceFromStartStopLine(lastPosOnStreet);
-                    }
-
+                    float startDistance = seg.GetDistanceFromStartStopLine(firstPosOnStreet);
+                    float endDistance = seg.GetDistanceFromStartStopLine(lastPosOnStreet);
+                    
                     var minIdx = 0;
                     if (offsetAndLength.partialStart)
                     {
                         for (i = 1; i < path.Count; ++i)
                         {
-                            float distance;
-                            if (offsetAndLength.backward)
-                            {
-                                // distance = seg.GetDistanceFromEndStopLine(pathRef[i]);
-                                distance = seg.GetDistanceFromStartStopLine(path[i]);
-                            }
-                            else
-                            {
-                                distance = seg.GetDistanceFromStartStopLine(path[i]);
-                            }
-
+                            float distance = distance = seg.GetDistanceFromStartStopLine(path[i]);
                             if (distance >= startDistance)
                             {
                                 minIdx = i;
-                                // if (offsetAndLength.backward)
-                                // {
-                                //     minIdx = path.Count - minIdx;
-                                // }
 
                                 // Insert the partial position into our position vector.
                                 // This simplifies things later.
                                 if (!distance.Equals(startDistance))
                                 {
                                     var insertPos = i;
-                                    // if (offsetAndLength.backward)
-                                    // {
-                                    //     insertPos = path.Count - insertPos;
-                                    // }
-
+                                    
                                     var beforeCount = overlappingRouteCount[insertPos - 1];
                                     path.Insert(insertPos, firstPosOnStreet);
                                     overlappingRouteCount.Insert(insertPos - 1, beforeCount);
@@ -1015,34 +994,16 @@ namespace Transidious
                     {
                         for (i = 1; i < path.Count; ++i)
                         {
-                            float distance;
-                            if (offsetAndLength.backward)
-                            {
-                                // distance = seg.GetDistanceFromEndStopLine(pathRef[i]);
-                                distance = seg.GetDistanceFromStartStopLine(path[i]);
-                            }
-                            else
-                            {
-                                distance = seg.GetDistanceFromStartStopLine(path[i]);
-                            }
-
+                            float distance = seg.GetDistanceFromStartStopLine(path[i]);
                             if (distance >= endDistance)
                             {
                                 maxIdx = i;
-                                // if (offsetAndLength.backward)
-                                // {
-                                //     maxIdx = path.Count - maxIdx;
-                                // }
 
                                 // Insert the partial position into our position vector.
                                 if (!distance.Equals(endDistance))
                                 {
                                     var insertPos = i;
-                                    // if (offsetAndLength.backward)
-                                    // {
-                                    //     insertPos = path.Count - insertPos;
-                                    // }
-
+                                    
                                     var afterCount = overlappingRouteCount[insertPos - 1];
                                     path.Insert(insertPos, lastPosOnStreet);
                                     overlappingRouteCount.Insert(insertPos - 1, afterCount);
@@ -1099,63 +1060,6 @@ namespace Transidious
                 var idx = 0;
                 foreach (var offsetAndLength in offsets)
                 {
-                //     var maxPos = 0;
-                //     int startPos;
-                //     int endPos;
-
-                //     // Assign "positions" to each route, i.e. what the distance from the middle of the road should be.
-                //     // Every additional route that drives over the same spot on the path should be assigned a higher
-                //     // position value.
-                //     if (offsetAndLength.partialStart)
-                //     {
-                //         var firstPos = route.positions[offsetAndLength.offset];
-                //         if (offsetAndLength.backward)
-                //         {
-                //             startPos = path.Count - 1;
-                //             while (!path[startPos].Equals(firstPos))
-                //             {
-                //                 --startPos;
-                //             }
-                //         }
-                //         else
-                //         {
-                //             startPos = 0;
-                //             while (!path[startPos].Equals(firstPos))
-                //             {
-                //                 ++startPos;
-                //             }
-                //         }
-                //     }
-                //     else
-                //     {
-                //         startPos = 0;
-                //     }
-
-                //     if (offsetAndLength.partialEnd)
-                //     {
-                //         var lastPos = route.positions[offsetAndLength.offset + offsetAndLength.length - 1];
-                //         if (offsetAndLength.backward)
-                //         {
-                //             endPos = 0;
-                //             while (!path[endPos].Equals(lastPos))
-                //             {
-                //                 ++endPos;
-                //             }
-                //         }
-                //         else
-                //         {
-                //             endPos = overlappingRouteCount.Count;
-                //             while (!path[endPos].Equals(lastPos))
-                //             {
-                //                 --endPos;
-                //             }
-                //         }
-                //     }
-                //     else
-                //     {
-                //         endPos = path.Count - 1;
-                //     }
-
                     var occupiedInfo = occupiedSegments[route][idx];
                     var startPos = occupiedInfo.Item1;
                     var endPos = occupiedInfo.Item2;
@@ -1262,6 +1166,11 @@ namespace Transidious
                 var newPositions = new List<Vector3>();
                 var newWidths = new List<float>();
 
+                StreetSegment prevSegment = null;
+                int prevLane = 0;
+                int prevLines = 0;
+                int prevLinePos = 0;
+
                 for (var i = 0; i < currentPositions.Count;)
                 {
                     var begin = i;
@@ -1302,10 +1211,10 @@ namespace Transidious
 
                     List<Vector3> range;
                     IEnumerable<float> widthRange;
-                    if (segInfo == null || lines == 1)
-                    {
-                        Debug.Assert(lines == 1);
 
+                    var isIntersectionPath = false; // lines == 0;
+                    if (!(isIntersectionPath && prevSegment != null) && (segInfo == null || lines <= 1))
+                    {
                         range = currentPositions.GetRange(begin, i - begin);
                         if (currentWidths != null)
                         {
@@ -1317,24 +1226,67 @@ namespace Transidious
                         }
 
                         AddPositions(newPositions, range, newWidths, widthRange);
+
+                        if (!isIntersectionPath)
+                        {
+                            prevSegment = null;
+                        }
+
                         continue;
                     }
 
-                    var seg = segInfo.segment;
-                    var lane = segInfo.lane;
+                    StreetSegment seg;
+                    int lane;
+                    int linePos;
 
-                    var linePos = segInfo.linePos;
+                    if (isIntersectionPath)
+                    {
+                        seg = prevSegment;
+                        lane = prevLane;
+                        linePos = prevLinePos;
+                        lines = prevLines;
+                    }
+                    else
+                    {
+                        seg = segInfo.segment;
+                        lane = segInfo.lane;
+                        linePos = segInfo.linePos;
+                    }
+
                     var lanes = seg.street.lanes;
-
                     var width = seg.GetStreetWidth(InputController.RenderingDistance.Near);
                     var halfWidth = width * 0.5f;
                     var spacePerLine = halfWidth / lines;
-                    var offset = linePos * spacePerLine + spacePerLine * 0.1f + spacePerLine * 0.4f;
+
+                    var gap = spacePerLine * 0.1f;
+                    var lineWidth = spacePerLine - gap;
+                    var halfLineWidth = lineWidth * 0.5f;
+    
+                    var baseOffset = -(route.line.LineWidth / 2f);
+                    
+                    float offset;
+                    if (linePos == 0)
+                    {
+                        offset = baseOffset;// + halfLineWidth;
+                    }
+                    // else if (linePos == lines - 1)
+                    // {
+                    //     offset = baseOffset + linePos * spacePerLine + (spacePerLine - lineWidth);
+                    // }
+                    else
+                    {
+                        offset = baseOffset + (linePos * spacePerLine) + gap;// + halfLineWidth;
+                    }
 
                     range = MeshBuilder.GetOffsetPath(positions.GetRange(begin, i - begin), offset);
-                    widthRange = Enumerable.Repeat(spacePerLine * 0.4f, range.Count);
-                    
+                    widthRange = Enumerable.Repeat(halfLineWidth, range.Count);
+
                     AddPositions(newPositions, range, newWidths, widthRange);
+
+                    prevSegment = seg;
+                    prevLane = lane;
+                    prevLines = lines;
+                    prevLinePos = linePos; 
                 }
 
                 var collider = route.GetComponent<PolygonCollider2D>();

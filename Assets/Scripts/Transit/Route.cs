@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Transidious;
 using Transidious.PathPlanning;
 
 namespace Transidious
@@ -49,7 +49,7 @@ namespace Transidious
 
         public Mesh mesh;
         MeshFilter meshFilter;
-        Renderer m_Renderer;
+        public MeshRenderer meshRenderer;
 
         public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector3> positions, bool isBackRoute = false)
         {
@@ -160,34 +160,6 @@ namespace Transidious
             return after;
         }
 
-        public ColorGradient Gradient
-        {
-            get
-            {
-                var gradient = this.gameObject.GetComponent<ColorGradient>();
-                if (gradient != null)
-                {
-                    return gradient;
-                }
-
-                gradient = this.gameObject.AddComponent<ColorGradient>();
-                gradient.Initialize(line.map.Game);
-
-                return gradient;
-            }
-        }
-
-        public void SetTransparency(float a)
-        {
-            Color current = this.m_Renderer.material.color;
-            this.m_Renderer.material = GameController.GetUnlitMaterial(Math.ApplyTransparency(current, a));
-        }
-
-        public void ResetTransparency()
-        {
-            this.m_Renderer.material = GameController.GetUnlitMaterial(this.line.color);
-        }
-
         public void AddStreetSegmentOffset(TrafficSimulator.PathSegmentInfo info)
         {
             if (streetSegmentOffsetMap == null)
@@ -235,8 +207,9 @@ namespace Transidious
             }
 
             var collider = this.GetComponent<PolygonCollider2D>();
-            mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 20, 0, collider);
+            collider.pathCount = 0;
 
+            mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 20, 0, collider);
             UpdateMesh();
         }
 
@@ -374,7 +347,7 @@ namespace Transidious
             }
 
             meshFilter.mesh = mesh;
-            m_Renderer.material = GameController.GetUnlitMaterial(line.color);
+            meshRenderer.sharedMaterial = line.material;
             transform.position = new Vector3(transform.position.x,
                                              transform.position.y,
                                              Map.Layer(MapLayer.TransitLines));
@@ -388,7 +361,7 @@ namespace Transidious
         void Awake()
         {
             meshFilter = GetComponent<MeshFilter>();
-            m_Renderer = GetComponent<Renderer>();
+            meshRenderer = GetComponent<MeshRenderer>();
         }
 
         public SerializedRoute Serialize()
@@ -428,35 +401,147 @@ namespace Transidious
         // Update is called once per frame
         void Update()
         {
-
+            
         }
 
         protected override void OnMouseEnter()
         {
-            if (line.map.Game.transitEditor.active)
+            if (GameController.instance.input.IsPointerOverUIElement())
+            {
+                return;
+            }
+            
+            if (line.map.Game.transitEditor.active || selectedLine == line)
             {
                 return;
             }
 
-            foreach (var r in this.line.routes)
+            float h, s, v;
+            Color.RGBToHSV(line.color, out h, out s, out v);
+
+            float increase = .5f;
+            Color high;
+            if (v < (1f - increase))
             {
-                var gradient = r.Gradient;
-
-                float h, s, v;
-                Color.RGBToHSV(r.line.color, out h, out s, out v);
-
-                var diff = v < .65f ? .35f : -.35f;
-                Color high = Color.HSVToRGB(h, s, v + diff);
-                gradient.Activate(r.line.color, high, 1.25f);
+                high = Color.HSVToRGB(h, s, v + increase);
             }
+            else
+            {
+                high = Color.HSVToRGB(h, s, v - increase);
+            }
+
+            line.gradient = new ColorGradient(line.color, high, 1.25f);
         }
 
         protected override void OnMouseExit()
         {
-            foreach (var r in this.line.routes)
+            if (selectedLine == line)
             {
-                r.Gradient.Stop();
+                return;
             }
+
+            line.gradient = null;
+            line.material.color = line.color;
+        }
+
+        private static Line selectedLine;
+
+        IEnumerator UpdateColorPickerNextFrame(ColorPicker colorPicker)
+        {
+            yield return null;
+
+            colorPicker.UpdateBoundingBoxes(true);
+            colorPicker.SetColor(line.color);
+
+            yield break;
+        }
+
+        IEnumerator UpdateModalPositionNextFrame(UIModal modal, Vector3 pos)
+        {
+            yield return null;
+
+            modal.PositionAt(pos);
+            
+            yield break;
+        }
+
+        protected override void OnMouseDown()
+        {
+            if (GameController.instance.input.IsPointerOverUIElement())
+            {
+                return;
+            }
+            if (selectedLine != null && selectedLine != this.line)
+            {
+                selectedLine.gradient = null;
+                selectedLine.material.color = selectedLine.color;
+            }
+
+            selectedLine = this.line;
+
+            var modal = GameController.instance.transitEditor.lineInfoModal;
+            modal.Enable();
+            StartCoroutine(UpdateModalPositionNextFrame(modal, Camera.main.ScreenToWorldPoint(Input.mousePosition)));
+
+            var colorPicker = modal.GetComponentInChildren<ColorPicker>();
+            var logo = modal.titleInput.transform.parent.gameObject.GetComponent<UnityEngine.UI.Image>();
+
+            if (!modal.initialized)
+            {
+                modal.initialized = true;
+
+                var maxCharacters = 32;
+                modal.titleInput.interactable = true;
+                modal.titleInput.onValidateInput = (string text, int charIndex, char addedChar) => {
+                    if (text.Length + 1 >= maxCharacters)
+                    {
+                        return '\0';
+                    }
+
+                    return addedChar;
+                };
+                modal.titleInput.onSubmit.AddListener((string newName) => {
+                    if (newName.Length == 0 || newName.Length > maxCharacters)
+                    {
+                        modal.titleInput.text = selectedLine.name;
+                        return;
+                    }
+
+                    selectedLine.name = newName;
+                });
+
+                modal.onClose.AddListener(() => {
+                    selectedLine.gradient = null;
+                    selectedLine.material.color = selectedLine.color;
+                    selectedLine = null;
+                });
+
+                colorPicker.onChange.AddListener((Color c) => {
+                    selectedLine.gradient = null;
+                    selectedLine.SetColor(c);
+                    logo.color = c;
+                });
+            }
+
+            logo.color = line.color;
+            switch (line.type)
+            {
+                case TransitType.Bus:
+                case TransitType.LightRail:
+                case TransitType.IntercityRail:
+                    logo.sprite = GameController.instance.roundedRectSprite;
+                    logo.type = UnityEngine.UI.Image.Type.Sliced;
+                    break;
+                default:
+                    logo.sprite = GameController.instance.squareSprite;
+                    logo.type = UnityEngine.UI.Image.Type.Simple;
+                    break;
+            }
+
+            logo.GetComponentInChildren<TMPro.TMP_InputField>().text = line.name;
+
+            // We need to this next frame, otherwise the position of the color picker won't be up-to-date. 
+            StartCoroutine(UpdateColorPickerNextFrame(colorPicker));
         }
     }
 }

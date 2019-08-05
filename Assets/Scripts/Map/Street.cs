@@ -16,6 +16,7 @@ namespace Transidious
             Residential,
             Path,
             River,
+            FootPath,
         }
 
         [System.Serializable]
@@ -88,18 +89,18 @@ namespace Transidious
         {
             switch (type)
             {
-                case Type.Primary:
-                case Type.Secondary:
-                    return 2;
-                case Type.Tertiary:
-                case Type.Residential:
-                    return 2;
-                case Type.Path:
-                    return isOneWay ? 1 : 2;
-                case Type.River:
-                    return 2;
-                default:
-                    return 0;
+            case Type.Primary:
+            case Type.Secondary:
+                return 2;
+            case Type.Tertiary:
+            case Type.Residential:
+                return 2;
+            case Type.Path:
+                return isOneWay ? 1 : 2;
+            case Type.River:
+                return 2;
+            default:
+                return 0;
             }
         }
 
@@ -107,16 +108,16 @@ namespace Transidious
         {
             switch (type)
             {
-                case Type.Primary:
-                    return 70;
-                case Type.Secondary:
-                    return 50;
-                case Type.Tertiary:
-                case Type.Residential:
-                case Type.Path:
-                    return 30;
-                default:
-                    return 50;
+            case Type.Primary:
+                return 70;
+            case Type.Secondary:
+                return 50;
+            case Type.Tertiary:
+            case Type.Residential:
+            case Type.Path:
+                return 30;
+            default:
+                return 50;
             }
         }
 
@@ -291,7 +292,16 @@ namespace Transidious
 
         public void CreateTextMeshes()
         {
+            switch (type)
+            {
+            case Type.Path:
+                return;
+            default:
+                break;
+            }
+
             var txt = map.CreateText(Vector3.zero, name, new Color(0.3f, 0.3f, 0.3f, 1f));
+            txt.UseDefaultCanvas(map);
             txt.textMesh.autoSizeTextContainer = true;
             txt.textMesh.fontSize = segments.First().GetFontSize(InputController.maxZoom);
             txt.textMesh.alignment = TMPro.TextAlignmentOptions.Center;

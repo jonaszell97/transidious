@@ -179,6 +179,9 @@ namespace Transidious
             }
         }
 
+        public Sprite squareSprite;
+        public Sprite roundedRectSprite;
+
         /// The citizien info UI.
         public GameObject citizienUI;
         public Image citizienUIHappinessSprite;
@@ -188,6 +191,15 @@ namespace Transidious
         public Image citizienUIDestinationImg;
         public TMPro.TextMeshProUGUI citizienUIDestinationText;
         public Sprite[] happinessSprites;
+
+        static GameController _instance;
+        public static GameController instance
+        {
+            get
+            {
+                return _instance;
+            }
+        }
 
         public static Material GetUnlitMaterial(Color c)
         {
@@ -310,6 +322,8 @@ namespace Transidious
 
         void Awake()
         {
+            GameController._instance = this;
+
             this.status = GameStatus.MainMenu;
             this.lang = new Translator("en_US");
             this.editorMode = MapEditorMode.ViewMode;

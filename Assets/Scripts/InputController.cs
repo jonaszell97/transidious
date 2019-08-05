@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Lean.Touch;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using System;
 using System.Collections.Generic;
@@ -32,27 +33,34 @@ namespace Transidious
             MouseEnter,
             MouseExit,
             MouseDown,
+            Zoom,
+            Pan,
             _EventCount,
         }
 
         public GameController controller;
         public RenderingDistance renderingDistance = RenderingDistance.Near;
-        public delegate void InputEventListener(MapObject mapObject);
 
+        public delegate void InputEventListener(MapObject mapObject);
         Dictionary<int, InputEventListener>[] inputEventListeners;
         int eventListenerCount;
         HashSet<int> disabledListeners;
 
+        public delegate void KeyboardEventListener(KeyCode keyCode);
+        Dictionary<KeyCode, List<KeyboardEventListener>> keyboardEventListeners;
+        bool controlListenersEnabled = true;
+
+        bool zooming = false;
 
         float aspectRatio = 0.0f;
         float windowWidth = 0.0f;
         float windowHeight = 0.0f;
 
-        public float maxX = 0f;
-        public float maxY = 0f;
+        public float maxX = float.PositiveInfinity;
+        public float maxY = float.PositiveInfinity;
 
-        public float minX = float.PositiveInfinity;
-        public float minY = float.PositiveInfinity;
+        public float minX = float.NegativeInfinity;
+        public float minY = float.NegativeInfinity;
 
         Dictionary<ControlType, Tuple<KeyCode, KeyCode>> keyBindings;
         public static float minZoom = 45f * Map.Meters;
@@ -135,6 +143,25 @@ namespace Transidious
             inputEventListeners[(int)e].Remove(id);
         }
 
+        public int RegisterKeyboardEventListener(KeyCode key, KeyboardEventListener eventListener,
+                                                 bool enabled = true)
+        {
+            var id = eventListenerCount++;
+            if (!keyboardEventListeners.TryGetValue(key, out List<KeyboardEventListener> listeners))
+            {
+                listeners = new List<KeyboardEventListener>();
+                keyboardEventListeners.Add(key, listeners);
+            }
+
+            if (!enabled)
+            {
+                disabledListeners.Add(id);
+            }
+
+            listeners.Add(eventListener);
+            return id;
+        }
+
         public void DisableEventListener(int id)
         {
             disabledListeners.Add(id);
@@ -145,25 +172,46 @@ namespace Transidious
             disabledListeners.Remove(id);
         }
 
+        public void FireEvent(InputEvent type, MapObject target = null)
+        {
+            var eventListeners = inputEventListeners[(int)type];
+            foreach (var listener in eventListeners)
+            {
+                listener.Value(target);
+            }
+        }
+
+        public void DisableControls()
+        {
+            controlListenersEnabled = false;
+        }
+
+        public void EnableControls()
+        {
+            controlListenersEnabled = true;
+        }
+
         public bool IsPointerOverUIElement()
         {
             if (EventSystem.current.IsPointerOverGameObject())
             {
-                if (EventSystem.current.currentSelectedGameObject != null)
-                {
-                    if (EventSystem.current.currentSelectedGameObject.GetComponent<CanvasRenderer>() != null)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
+                // Debug.Log(EventSystem.current.currentSelectedGameObject);
+                // if (EventSystem.current.currentSelectedGameObject != null)
+                // {
+                //     if (EventSystem.current.currentSelectedGameObject.GetComponent<CanvasRenderer>() != null)
+                //     {
+                //         return true;
+                //     }
+                //     else
+                //     {
+                //         return false;
+                //     }
+                // }
+                // else
+                // {
+                //     return false;
+                // }
+                return true;
             }
             else
             {
@@ -173,6 +221,11 @@ namespace Transidious
 
         public void MouseOverMapObject(MapObject obj)
         {
+            if (IsPointerOverUIElement())
+            {
+                return;
+            }
+
             foreach (var listener in inputEventListeners[(int)InputEvent.MouseOver])
             {
                 if (disabledListeners.Contains(listener.Key))
@@ -186,6 +239,11 @@ namespace Transidious
 
         public void MouseEnterMapObject(MapObject obj)
         {
+            if (IsPointerOverUIElement())
+            {
+                return;
+            }
+            
             foreach (var listener in inputEventListeners[(int)InputEvent.MouseEnter])
             {
                 if (disabledListeners.Contains(listener.Key))
@@ -199,6 +257,11 @@ namespace Transidious
 
         public void MouseExitMapObject(MapObject obj)
         {
+            if (IsPointerOverUIElement())
+            {
+                return;
+            }
+            
             foreach (var listener in inputEventListeners[(int)InputEvent.MouseExit])
             {
                 if (disabledListeners.Contains(listener.Key))
@@ -248,18 +311,18 @@ namespace Transidious
         {
             switch (renderingDistance)
             {
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    lineWidth = 2.5f * Map.Meters;
-                    break;
-                case RenderingDistance.Far:
-                    lineWidth = 3f * Map.Meters;
-                    break;
-                case RenderingDistance.Near:
-                    lineWidth = 5f * Map.Meters;
-                    break;
-                default:
-                    throw new System.ArgumentException(string.Format("Illegal enum value {0}", renderingDistance));
+            case RenderingDistance.VeryFar:
+            case RenderingDistance.Farthest:
+                lineWidth = 2.5f * Map.Meters;
+                break;
+            case RenderingDistance.Far:
+                lineWidth = 3f * Map.Meters;
+                break;
+            case RenderingDistance.Near:
+                lineWidth = 5f * Map.Meters;
+                break;
+            default:
+                throw new System.ArgumentException(string.Format("Illegal enum value {0}", renderingDistance));
             }
         }
 
@@ -267,18 +330,18 @@ namespace Transidious
         {
             switch (renderingDistance)
             {
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    boundaryWidth = 40f * Map.Meters;
-                    break;
-                case RenderingDistance.Far:
-                    boundaryWidth = 20f * Map.Meters;
-                    break;
-                case RenderingDistance.Near:
-                    boundaryWidth = 10f * Map.Meters;
-                    break;
-                default:
-                    throw new System.ArgumentException(string.Format("Illegal enum value {0}", renderingDistance));
+            case RenderingDistance.VeryFar:
+            case RenderingDistance.Farthest:
+                boundaryWidth = 40f * Map.Meters;
+                break;
+            case RenderingDistance.Far:
+                boundaryWidth = 20f * Map.Meters;
+                break;
+            case RenderingDistance.Near:
+                boundaryWidth = 10f * Map.Meters;
+                break;
+            default:
+                throw new System.ArgumentException(string.Format("Illegal enum value {0}", renderingDistance));
             }
 
             boundaryWidth = 20f * Map.Meters;
@@ -335,13 +398,13 @@ namespace Transidious
             float input;
             switch (Application.platform)
             {
-                case RuntimePlatform.IPhonePlayer:
-                case RuntimePlatform.Android:
-                    input = GetPinchZoom();
-                    break;
-                default:
-                    input = GetMouseZoom();
-                    break;
+            case RuntimePlatform.IPhonePlayer:
+            case RuntimePlatform.Android:
+                input = GetPinchZoom();
+                break;
+            default:
+                input = GetMouseZoom();
+                break;
             }
 
             var cmp = input.CompareTo(0f);
@@ -362,9 +425,11 @@ namespace Transidious
             ZoomOrthoCamera(camera.ScreenToWorldPoint(Input.mousePosition), input * zoomSensitivity);
 
             if (prevSize == camera.orthographicSize)
+            {
                 return;
+            }
 
-            controller.loadedMap.UpdateTextScale();
+            controller?.loadedMap?.UpdateTextScale();
 
             panSensitivityX = camera.orthographicSize * 0.1f;
             panSensitivityY = camera.orthographicSize * 0.1f;
@@ -375,10 +440,12 @@ namespace Transidious
             UpdateBoundaryWidth();
             UpdateScaleBar();
 
+            FireEvent(InputEvent.Zoom);
+
             if (currRenderingDist == renderingDistance)
                 return;
 
-            controller.loadedMap.UpdateScale();
+            controller?.loadedMap?.UpdateScale();
         }
 
         void FadeScaleBar()
@@ -391,6 +458,11 @@ namespace Transidious
 
         void UpdateScaleBar()
         {
+            if (controller == null)
+            {
+                return;
+            }
+
             controller.scaleBar.SetActive(true);
             controller.scaleText.gameObject.SetActive(true);
 
@@ -474,7 +546,7 @@ namespace Transidious
 
         public void UpdateRenderingDistance()
         {
-            if (controller.Editing)
+            if (controller?.Editing ?? false)
             {
                 renderingDistance = RenderingDistance.Near;
                 return;
@@ -502,11 +574,10 @@ namespace Transidious
         private Vector3 mouseOrigin;
         private bool isPanning;
 
-        Vector3 GetNewDesktopPosition(Vector3 position)
+        Vector2 GetNewDesktopPosition(Vector2 position)
         {
-            if (Input.GetMouseButtonDown(1))
-            {
-                //right click was pressed    
+            if (Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2))
+            {  
                 mouseOrigin = Input.mousePosition;
                 isPanning = true;
             }
@@ -525,27 +596,30 @@ namespace Transidious
                 return position;
             }
 
-            if (IsPressed(ControlType.PanUp))
+            if (controlListenersEnabled)
             {
-                position.y += panSensitivityY;
-            }
-            if (IsPressed(ControlType.PanDown))
-            {
-                position.y -= panSensitivityY;
-            }
-            if (IsPressed(ControlType.PanRight))
-            {
-                position.x += panSensitivityX;
-            }
-            if (IsPressed(ControlType.PanLeft))
-            {
-                position.x -= panSensitivityX;
+                if (IsPressed(ControlType.PanUp))
+                {
+                    position.y += panSensitivityY;
+                }
+                if (IsPressed(ControlType.PanDown))
+                {
+                    position.y -= panSensitivityY;
+                }
+                if (IsPressed(ControlType.PanRight))
+                {
+                    position.x += panSensitivityX;
+                }
+                if (IsPressed(ControlType.PanLeft))
+                {
+                    position.x -= panSensitivityX;
+                }
             }
 
             return position;
         }
 
-        Vector3 GetNewMobilePosition(Vector3 position)
+        Vector2 GetNewMobilePosition(Vector2 position)
         {
             if (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began && Input.GetTouch(0).tapCount == 2)
             {
@@ -565,21 +639,34 @@ namespace Transidious
         // Update the camera position.
         void UpdatePosition()
         {
-            Vector3 position = Camera.main.transform.position;
+            Vector2 position = Camera.main.transform.position;
             switch (Application.platform)
             {
-                case RuntimePlatform.IPhonePlayer:
-                case RuntimePlatform.Android:
-                    position = GetNewMobilePosition(position);
-                    break;
-                default:
-                    position = GetNewDesktopPosition(position);
-                    break;
+            case RuntimePlatform.IPhonePlayer:
+            case RuntimePlatform.Android:
+                position = GetNewMobilePosition(position);
+                break;
+            default:
+                position = GetNewDesktopPosition(position);
+                break;
             }
 
-            camera.transform.position = new Vector3(Mathf.Clamp(position.x, minX, maxX),
-                                                    Mathf.Clamp(position.y, minY, maxY),
+            if (position.x.Equals(camera.transform.position.x)
+            && position.y.Equals(camera.transform.position.y))
+            {
+                return;
+            }
+
+            if (controller != null)
+            {
+                position.x = Mathf.Clamp(position.x, minX, maxX);
+                position.y = Mathf.Clamp(position.y, minY, maxY);
+            }
+
+            camera.transform.position = new Vector3(position.x, position.y,
                                                     camera.transform.position.z);
+        
+            FireEvent(InputEvent.Pan);
         }
 
         public void UpdateZoomLevels()
@@ -588,6 +675,7 @@ namespace Transidious
             maxZoom = (maxY - minY) / 2f;
 
             camera.orthographicSize = maxZoom;
+            FireEvent(InputEvent.Zoom);
         }
 
         public Vector3 WorldToUISpace(Canvas parentCanvas, Vector3 worldPos)
@@ -618,9 +706,9 @@ namespace Transidious
             InitKeybindings();
 
             this.eventListenerCount = 0;
-            this.inputEventListeners = new Dictionary<int, InputEventListener>[
-                (int)InputEvent._EventCount];
+            this.inputEventListeners = new Dictionary<int, InputEventListener>[(int)InputEvent._EventCount];
             this.disabledListeners = new HashSet<int>();
+            this.keyboardEventListeners = new Dictionary<KeyCode, List<KeyboardEventListener>>();
 
             for (var i = 0; i < this.inputEventListeners.Length; ++i)
             {
@@ -634,7 +722,6 @@ namespace Transidious
             camera.orthographicSize = 5000f * Map.Meters;
 
             UpdateRenderingDistance();
-
             UpdateStopWidth();
             UpdateLineWidth();
             UpdateBoundaryWidth();
@@ -650,13 +737,13 @@ namespace Transidious
 
             switch (Application.platform)
             {
-                case RuntimePlatform.IPhonePlayer:
-                case RuntimePlatform.Android:
-                    zoomSensitivity = zoomSensitivityTouchscreen;
-                    break;
-                default:
-                    zoomSensitivity = zoomSensitivityMouse;
-                    break;
+            case RuntimePlatform.IPhonePlayer:
+            case RuntimePlatform.Android:
+                zoomSensitivity = zoomSensitivityTouchscreen;
+                break;
+            default:
+                zoomSensitivity = zoomSensitivityMouse;
+                break;
             }
         }
 
@@ -666,18 +753,41 @@ namespace Transidious
 
         }
 
+#if DEBUG
         public bool debugClickTest = false;
         StreetSegment highlighted = null;
 
         public bool debugRouteTest = false;
         Vector3 fromPos = Vector3.zero;
         MultiMesh routeMesh;
+#endif
+
+        void CheckKeyboardEvents()
+        {
+            if (!Input.anyKeyDown)
+            {
+                return;
+            }
+
+            foreach (var entry in keyboardEventListeners)
+            {
+                if (Input.GetKey(entry.Key))
+                {
+                    foreach (var listener in entry.Value)
+                    {
+                        listener(entry.Key);
+                    }
+                }
+            }
+        }
 
         // Update is called once per frame
         void Update()
         {
             UpdateZoom();
             UpdatePosition();
+
+            CheckKeyboardEvents();
 
             if (fadeScaleBarTime > 0f)
             {

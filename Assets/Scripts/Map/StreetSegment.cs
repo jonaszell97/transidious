@@ -1136,7 +1136,7 @@ namespace Transidious
                     switch (distance)
                     {
                         case InputController.RenderingDistance.Near:
-                            return lanes * laneWidth + 2f * Map.Meters;
+                            return lanes * laneWidth + 3f * Map.Meters;
                         case InputController.RenderingDistance.Far:
                         case InputController.RenderingDistance.VeryFar:
                         case InputController.RenderingDistance.Farthest:
@@ -1145,6 +1145,19 @@ namespace Transidious
 
                     break;
                 case Street.Type.Secondary:
+                    switch (distance)
+                    {
+                        case InputController.RenderingDistance.Near:
+                            return lanes * laneWidth + 2f * Map.Meters;
+                        case InputController.RenderingDistance.Far:
+                        case InputController.RenderingDistance.VeryFar:
+                            return lanes * laneWidth;
+                        case InputController.RenderingDistance.Farthest:
+                            return 0f;
+                    }
+
+                    break;
+                case Street.Type.Tertiary:
                     switch (distance)
                     {
                         case InputController.RenderingDistance.Near:
@@ -1157,7 +1170,6 @@ namespace Transidious
                     }
 
                     break;
-                case Street.Type.Tertiary:
                 case Street.Type.Residential:
                     switch (distance)
                     {
@@ -1175,14 +1187,16 @@ namespace Transidious
                     switch (distance)
                     {
                         case InputController.RenderingDistance.Near:
+                            return lanes * laneWidth * 0.3f;
                         case InputController.RenderingDistance.Far:
-                            return lanes * laneWidth * 0.9f;
                         case InputController.RenderingDistance.VeryFar:
                         case InputController.RenderingDistance.Farthest:
                             return 0f;
                     }
 
                     break;
+                case Street.Type.FootPath:
+                    return 2 * laneWidth * 0.3f;
                 case Street.Type.River:
                     switch (distance)
                     {
@@ -1254,6 +1268,7 @@ namespace Transidious
 
                     break;
                 case Street.Type.Path:
+                case Street.Type.FootPath:
                     switch (distance)
                     {
                         case InputController.RenderingDistance.Near:
@@ -1323,20 +1338,22 @@ namespace Transidious
                     {
                         case InputController.RenderingDistance.Near:
                         case InputController.RenderingDistance.Far:
+                            return Color.white;
                         case InputController.RenderingDistance.VeryFar:
                         case InputController.RenderingDistance.Farthest:
-                            return Color.white;
+                            return new Color(0.7f, 0.7f, 0.7f);
                     }
 
                     break;
                 case Street.Type.Path:
+                case Street.Type.FootPath:
                     switch (distance)
                     {
                         case InputController.RenderingDistance.Near:
                         case InputController.RenderingDistance.Far:
                         case InputController.RenderingDistance.VeryFar:
                         case InputController.RenderingDistance.Farthest:
-                            return new Color(92f / 255f, 92f / 255f, 87f / 255f);
+                            return new Color(232f / 255f, 220f / 255f, 192f / 255f);
                     }
 
                     break;
@@ -1402,6 +1419,7 @@ namespace Transidious
 
                     break;
                 case Street.Type.Path:
+                case Street.Type.FootPath:
                     switch (distance)
                     {
                         case InputController.RenderingDistance.Near:

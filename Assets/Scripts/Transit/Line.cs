@@ -49,6 +49,9 @@ namespace Transidious
 
         public TransitType type;
         public Color color;
+        public ColorGradient gradient;
+        public Material material;
+
         public bool wasModified = true;
 
         public Stop depot;
@@ -97,6 +100,38 @@ namespace Transidious
                         return 1.25f;
                 }
             }
+        }
+
+        public void Initialize(Map map, string name, TransitType type, Color color)
+        {
+            this.map = map;
+            this.name = name;
+            this.color = color;
+            this.type = type;
+
+            this.material = new Material(Shader.Find("Unlit/Color"));
+            this.material.color = color;
+        }
+
+        public void SetName(string name)
+        {
+            this.name = name;
+        }
+
+        public void SetColor(Color color)
+        {
+            this.color = color;
+            this.material.color = color;
+        }
+
+        public void SetTransparency(float a)
+        {
+            material.color = Math.ApplyTransparency(material.color, a);
+        }
+
+        public void ResetTransparency()
+        {
+            material.color = this.color;
         }
 
         /// Add a stop to the end of this line.
@@ -191,7 +226,10 @@ namespace Transidious
         // Update is called once per frame
         void Update()
         {
-
+            if (gradient != null)
+            {
+                this.material.color = gradient.CurrentColor;
+            }
         }
     }
 }

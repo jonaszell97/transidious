@@ -36,19 +36,16 @@ namespace Transidious
 
         protected virtual void OnMouseOver()
         {
-            // Debug.Log("mouse over " + this.GetType().Name);
             inputController.MouseOverMapObject(this);
         }
 
         protected virtual void OnMouseExit()
         {
-            // Debug.Log("mouse exit " + this.GetType().Name);
             inputController.MouseExitMapObject(this);
         }
 
         protected virtual void OnMouseDown()
         {
-            // Debug.Log("mouse down " + this.GetType().Name);
             inputController.MouseDownMapObject(this);
         }
 
