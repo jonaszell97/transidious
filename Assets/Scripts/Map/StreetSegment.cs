@@ -799,7 +799,7 @@ namespace Transidious
 
             cumulativeDistances.Add(length);
 
-            if ((startIntersection?.NumIntersectingStreets ?? 0) < 2 || length <= 10f * Map.Meters)
+            if (/*(startIntersection?.NumIntersectingStreets ?? 0) < 2 ||*/ length <= 10f * Map.Meters)
             {
                 BeginStopLineDistance = 0f;
             }
@@ -816,7 +816,7 @@ namespace Transidious
                 BeginStopLineDistance = 10f * Map.Meters;
             }
 
-            if ((endIntersection?.NumIntersectingStreets ?? 0) < 2 || length <= 10f * Map.Meters)
+            if (/*(endIntersection?.NumIntersectingStreets ?? 0) < 2 ||*/ length <= 10f * Map.Meters)
             {
                 EndStopLineDistance = 0f;
             }
@@ -1673,6 +1673,11 @@ namespace Transidious
                     foreach (var outgoing in startIntersection.OutgoingStreets)
                     {
                         var path = trafficSim.GetPath(startIntersection, this, outgoing, lane);
+                        if (path == null)
+                        {
+                            continue;
+                        }
+                        
                         _startIntersectionMeshes.Add(MeshBuilder.CreateSmoothLine(new List<Vector3>(path), .75f * Map.Meters));
                     }
                 }
@@ -1681,11 +1686,16 @@ namespace Transidious
             {
                 _endIntersectionMeshes = new List<Mesh>();
 
-                for (int lane = street.lanes / 2; lane < street.lanes; ++lane)
+                for (int lane = 0; lane < street.lanes / 2; ++lane)
                 {
-                    foreach (var outgoing in endIntersection.OutgoingStreets)
+                    foreach (var outgoing in endIntersection.IncomingStreets)
                     {
-                        var path = trafficSim.GetPath(endIntersection, this, outgoing, lane);
+                        var path = trafficSim.GetPath(endIntersection, outgoing, this, lane);
+                        if (path == null)
+                        {
+                            continue;
+                        }
+
                         _endIntersectionMeshes.Add(MeshBuilder.CreateSmoothLine(new List<Vector3>(path), .75f * Map.Meters));
                     }
                 }

@@ -39,10 +39,14 @@ namespace Transidious
         Dictionary<string, string> items;
         Language loadedLanguage;
 
-        static Translator activeTranslator;
+        public static Translator current;
 
         public Translator(string langId)
         {
+#if UNITY_EDITOR
+            UnityEditor.AssetDatabase.Refresh();
+#endif
+
             var file = Resources.Load("Languages/" + langId) as TextAsset;
             this.loadedLanguage = JsonUtility.FromJson<Language>(file.text);
 
@@ -52,7 +56,7 @@ namespace Transidious
                 this.items.Add(item.key, item.text);
             }
 
-            activeTranslator = this;
+            current = this;
         }
 
         public string Translate(string key)
@@ -60,23 +64,43 @@ namespace Transidious
             if (!items.TryGetValue(key, out string text))
             {
                 Debug.LogError("language is missing item '" + key + "'");
+#if DEBUG
+                return key;
+#else
                 return "";
+#endif
             }
 
             return text;
         }
 
+        public string CurrentLanguageID
+        {
+            get
+            {
+                return loadedLanguage.lang_id;
+            }
+        }
+
+        public string CurrentLanguageName
+        {
+            get
+            {
+                return loadedLanguage.language;
+            }
+        }
+
         public static string Get(string key)
         {
-            Debug.Assert(activeTranslator != null, "no translator set!");
-            return activeTranslator.Translate(key);
+            Debug.Assert(current != null, "no translator set!");
+            return current.Translate(key);
         }
 
         public static string Get(string key, params string[] args)
         {
-            Debug.Assert(activeTranslator != null, "no translator set!");
+            Debug.Assert(current != null, "no translator set!");
 
-            var text = activeTranslator.Translate(key);
+            var text = current.Translate(key);
             for (var i = 0; i < args.Length; ++i)
             {
                 text = text.Replace("$" + i, args[i]);
@@ -136,7 +160,7 @@ namespace Transidious
 
         public static string GetCurrency(float amount, int digits = 2)
         {
-            ref var currency = ref activeTranslator.loadedLanguage.currency;
+            ref var currency = ref current.loadedLanguage.currency;
 
             var str = new StringBuilder();
             if (currency.beforeNumber)
@@ -144,7 +168,7 @@ namespace Transidious
                 str.Append(currency.symbol);
             }
 
-            AddCurrency(ref activeTranslator.loadedLanguage, str, amount * currency.valueInDollars, 2);
+            AddCurrency(ref current.loadedLanguage, str, amount * currency.valueInDollars, 2);
 
             if (!currency.beforeNumber)
             {

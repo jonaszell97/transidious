@@ -25,6 +25,19 @@
         {
             "key": "ui:happiness_unhappy",
             "text": "Unglücklich"
+        },
+        {
+            "key": "ui:transit:line_color",
+            "text": "Farbe"
+        },
+
+        {
+            "key": "ui:transit:weekly_passengers",
+            "text": "Wöchentliche Passagiere"
+        },
+        {
+            "key": "ui:transit:trips_saved",
+            "text": "Reduzierte Autofahrten"
         }
     ]
 }

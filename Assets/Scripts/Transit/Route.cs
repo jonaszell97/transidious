@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -444,7 +445,13 @@ namespace Transidious
             line.material.color = line.color;
         }
 
-        private static Line selectedLine;
+        private static Line selectedLine
+        {
+            get
+            {
+                return GameController.instance.transitEditor.lineInfoModal.selectedLine;
+            }
+        }
 
         IEnumerator UpdateColorPickerNextFrame(ColorPicker colorPicker)
         {
@@ -471,77 +478,21 @@ namespace Transidious
             {
                 return;
             }
-            if (selectedLine != null && selectedLine != this.line)
-            {
-                selectedLine.gradient = null;
-                selectedLine.material.color = selectedLine.color;
-            }
-
-            selectedLine = this.line;
 
             var modal = GameController.instance.transitEditor.lineInfoModal;
-            modal.Enable();
-            StartCoroutine(UpdateModalPositionNextFrame(modal, Camera.main.ScreenToWorldPoint(Input.mousePosition)));
-
-            var colorPicker = modal.GetComponentInChildren<ColorPicker>();
-            var logo = modal.titleInput.transform.parent.gameObject.GetComponent<UnityEngine.UI.Image>();
-
-            if (!modal.initialized)
+            if (modal.selectedLine != null && modal.selectedLine != this.line)
             {
-                modal.initialized = true;
-
-                var maxCharacters = 32;
-                modal.titleInput.interactable = true;
-                modal.titleInput.onValidateInput = (string text, int charIndex, char addedChar) => {
-                    if (text.Length + 1 >= maxCharacters)
-                    {
-                        return '\0';
-                    }
-
-                    return addedChar;
-                };
-                modal.titleInput.onSubmit.AddListener((string newName) => {
-                    if (newName.Length == 0 || newName.Length > maxCharacters)
-                    {
-                        modal.titleInput.text = selectedLine.name;
-                        return;
-                    }
-
-                    selectedLine.name = newName;
-                });
-
-                modal.onClose.AddListener(() => {
-                    selectedLine.gradient = null;
-                    selectedLine.material.color = selectedLine.color;
-                    selectedLine = null;
-                });
-
-                colorPicker.onChange.AddListener((Color c) => {
-                    selectedLine.gradient = null;
-                    selectedLine.SetColor(c);
-                    logo.color = c;
-                });
+                modal.selectedLine.gradient = null;
+                modal.selectedLine.material.color = selectedLine.color;
             }
 
-            logo.color = line.color;
-            switch (line.type)
-            {
-                case TransitType.Bus:
-                case TransitType.LightRail:
-                case TransitType.IntercityRail:
-                    logo.sprite = GameController.instance.roundedRectSprite;
-                    logo.type = UnityEngine.UI.Image.Type.Sliced;
-                    break;
-                default:
-                    logo.sprite = GameController.instance.squareSprite;
-                    logo.type = UnityEngine.UI.Image.Type.Simple;
-                    break;
-            }
+            modal.modal.Enable();
+            modal.SetLine(line, this);
 
-            logo.GetComponentInChildren<TMPro.TMP_InputField>().text = line.name;
-
-            // We need to this next frame, otherwise the position of the color picker won't be up-to-date. 
-            StartCoroutine(UpdateColorPickerNextFrame(colorPicker));
+            var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            this.RunNextFrame(() => {
+                modal.modal.PositionAt(pos);
+            });
         }
     }
 }

@@ -4,6 +4,27 @@ namespace Transidious
 {
     public static class GameObjectExtensions
     {
+        static System.Collections.IEnumerator RunNextFrameImpl(this MonoBehaviour behaviour, System.Action callback)
+        {
+            yield return null;
+            callback();
+            yield break;
+        }
+
+        public static void RunNextFrame(this MonoBehaviour behaviour, System.Action callback)
+        {
+            behaviour.StartCoroutine(RunNextFrameImpl(behaviour, callback));
+        }
+
+        public static void RemoveAllChildren(this GameObject obj)
+        {
+            for (int i = obj.transform.childCount - 1; i >= 0; --i)
+            {
+                Transform child = obj.transform.GetChild(i);
+                GameObject.Destroy(child.gameObject);
+            }
+        }
+
         public static void DrawCircle(this GameObject container, float radius, float lineWidth, Color c)
         {
             var segments = 360;

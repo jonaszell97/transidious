@@ -320,18 +320,6 @@ namespace Transidious
             hueBackground.color = Color.HSVToRGB(h, s, v);
         }
 
-        Color ContrastColor(Color color)
-        {
-            // https://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
-            double luminance = (0.299 * color.r + 0.587 * color.g + 0.114 * color.b);
-            if (luminance > 0.5)
-            {
-                return Color.black;
-            }
-
-            return Color.white;
-        }
-
         void UpdateSaturationAndBrightness(Vector2 cursorScreenPos)
         {
             var width = hueBounds[1] - hueBounds[0];
@@ -347,7 +335,10 @@ namespace Transidious
             var result = Color.HSVToRGB(h, s, v);
             selectedColor.color = result;
             selectedColorText.text = "#" + ColorUtility.ToHtmlStringRGB(result);
-            selectedColorText.textComponent.color = ContrastColor(result);
+
+            var textColor = Math.ContrastColor(result);
+            selectedColorText.textComponent.color = textColor;
+            selectedColorText.textComponent.outlineColor = textColor;
 
             r = result.r;
             g = result.g;

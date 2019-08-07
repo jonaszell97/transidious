@@ -141,6 +141,12 @@ namespace Transidious
             Route route = routeObject.GetComponent<Route>();
             route.Initialize(this, begin, end, positions, isBackRoute);
 
+            if (stops.Count == 0)
+            {
+                stops.Add(begin);
+            }
+
+            stops.Add(end);
             routes.Add(route);
             map.RegisterRoute(route);
 

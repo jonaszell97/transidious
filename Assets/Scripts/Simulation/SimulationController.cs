@@ -222,6 +222,17 @@ namespace Transidious
             {
                 game.loadedMap.Reset();
             }
+            if (GUI.Button(new Rect(550, 25, 100, 30), "SwitchLang"))
+            {
+                if (Translator.current.CurrentLanguageID == "en_US")
+                {
+                    GameController.instance.SetLanguage("de_DE");
+                }
+                else
+                {
+                    GameController.instance.SetLanguage("en_US");
+                }
+            }
         }
     }
 }

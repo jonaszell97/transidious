@@ -43,7 +43,7 @@ namespace Transidious
         public GameObject temporaryStopPrefab;
         int[] listenerIDs;
 
-        public UIModal lineInfoModal;
+        public UILineModal lineInfoModal;
 
         void Awake()
         {

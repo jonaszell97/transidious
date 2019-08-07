@@ -275,7 +275,6 @@ namespace Transidious
 
         public GameObject spritePrefab;
 
-        GameObject spriteObject;
         SpriteRenderer spriteRenderer;
 
         Sprite circleSprite;
@@ -300,9 +299,7 @@ namespace Transidious
             this.slotsToAssign = new List<PendingSlotAssignment>();
             this.parallelRoutes = new Dictionary<Stop, ParallelRouteInfo>();
 
-            this.spriteObject = Instantiate(spritePrefab);
-            this.spriteObject.transform.SetParent(this.transform);
-            this.spriteRenderer = spriteObject.GetComponent<SpriteRenderer>();
+            this.spriteRenderer = this.GetComponent<SpriteRenderer>();
 
             this.circleSprite = Resources.Load("Sprites/stop_ring", typeof(Sprite)) as Sprite;
             this.smallRectSprite = Resources.Load("Sprites/stop_small_rect", typeof(Sprite)) as Sprite;
@@ -530,16 +527,21 @@ namespace Transidious
             spriteRenderer.sprite = circleSprite;
             spriteRenderer.drawMode = SpriteDrawMode.Simple;
             spriteRenderer.color = Color.white;
+            
+            var collider = GetComponent<Collider2D>();
+            if (collider != null)
+            {
+                Destroy(collider);
+            }
 
-            spriteObject.transform.rotation = new Quaternion();
-            spriteObject.transform.localScale = Vector3.one;
-            spriteObject.transform.position = new Vector3(transform.position.x,
+            this.transform.rotation = new Quaternion();
+            this.transform.localScale = new Vector3(5f, 5f, 1f);
+            this.transform.position = new Vector3(transform.position.x,
                                                           transform.position.y,
                                                           Map.Layer(MapLayer.TransitStops));
 
+            this.gameObject.AddComponent<CircleCollider2D>();
             this.appearance = Appearance.Circle;
-
-            // CreateLargeRectMesh();
         }
 
         Vector3 VectorFromAngle(float theta)
@@ -558,9 +560,9 @@ namespace Transidious
 
             var quat = Quaternion.FromToRotation(new Vector3(1f, 0f, 0f), direction);
 
-            spriteObject.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
-            spriteObject.transform.rotation = quat;
-            spriteObject.transform.position = new Vector3(transform.position.x,
+            this.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
+            this.transform.rotation = quat;
+            this.transform.position = new Vector3(transform.position.x,
                                                           transform.position.y,
                                                           Map.Layer(MapLayer.TransitStops));
 
@@ -583,9 +585,9 @@ namespace Transidious
             spriteRenderer.size = new Vector2(GetSize(width), GetSize(height));
             spriteRenderer.color = Color.white;
 
-            spriteObject.transform.rotation = new Quaternion();
-            spriteObject.transform.localScale = Vector3.one;
-            spriteObject.transform.position = new Vector3(transform.position.x,
+            this.transform.rotation = new Quaternion();
+            this.transform.localScale = Vector3.one;
+            this.transform.position = new Vector3(transform.position.x,
                                                           transform.position.y,
                                                           Map.Layer(MapLayer.TransitStops));
 
@@ -1440,8 +1442,6 @@ namespace Transidious
                 }
             }
             */
-
-            this.GetComponent<BoxCollider2D>().size = spriteRenderer.bounds.size;
         }
 
         public void UpdateScale()
@@ -1451,9 +1451,9 @@ namespace Transidious
             if (appearance == Appearance.SmallRect)
             {
                 spriteRenderer.size = new Vector2(map.input.lineWidth * 5f, map.input.lineWidth * 2f);
-                spriteObject.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
-                spriteObject.transform.position = new Vector3(spriteObject.transform.position.x,
-                                                              spriteObject.transform.position.y,
+                this.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
+                this.transform.position = new Vector3(this.transform.position.x,
+                                                              this.transform.position.y,
                                                               Map.Layer(MapLayer.TransitStops));
             }
         }

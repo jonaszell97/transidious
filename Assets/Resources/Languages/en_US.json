@@ -51,6 +51,18 @@
             "key": "transit:ferry",
             "text": "Ferry"
         },
+        {
+            "key": "ui:transit:weekly_passengers",
+            "text": "Weekly Passengers"
+        },
+        {
+            "key": "ui:transit:trips_saved",
+            "text": "Trips Saved"
+        },
+        {
+            "key": "ui:transit:line_color",
+            "text": "Line Color"
+        },
 
         {
             "key": "tooltip:new_line",

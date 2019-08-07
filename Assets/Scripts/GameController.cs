@@ -355,6 +355,12 @@ namespace Transidious
 
         }
 
+        public void SetLanguage(string newLang)
+        {
+            this.lang = new Translator(newLang);
+            EventManager.current.TriggerEvent("LanguageChange");
+        }
+
         public Color GetDefaultSystemColor(TransitType system)
         {
             return Map.defaultLineColors[system];

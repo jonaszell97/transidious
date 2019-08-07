@@ -269,7 +269,8 @@ namespace Transidious
             }
             foreach (var line in saveFile.transitLines)
             {
-                map.transitLineIDMap[line.id].Deserialize(line, map);
+                var createdLine = map.transitLineIDMap[line.id];
+                createdLine.Deserialize(line, map);
             }
             foreach (var route in saveFile.transitRoutes)
             {

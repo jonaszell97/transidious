@@ -245,5 +245,41 @@ namespace Transidious
                              1.0f - a * (1.0f - rgb.g),
                              1.0f - a * (1.0f - rgb.b));
         }
+
+        public static Color ContrastColor(Color color)
+        {
+            // https://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
+            double luminance = (0.299 * color.r + 0.587 * color.g + 0.114 * color.b);
+            if (luminance > 0.5)
+            {
+                return Color.black;
+            }
+
+            return Color.white;
+        }
+
+        public static Rect GetWorldBoundingRect(RectTransform rectTransform,
+                                                RenderMode renderMode = RenderMode.WorldSpace)
+        {
+            if (renderMode == RenderMode.WorldSpace)
+            {
+                var corners = new Vector3[4];
+                rectTransform.GetWorldCorners(corners);
+
+                return new Rect(corners[0].x, corners[0].y, corners[3].x - corners[0].x, corners[2].y - corners[0].y);
+            }
+            else
+            {
+                var transformedPos = Camera.main.ScreenToWorldPoint(new Vector2(
+                    rectTransform.position.x, rectTransform.position.y - rectTransform.rect.height));
+                var baseSize = Camera.main.ScreenToWorldPoint(new Vector2(0, 0));
+                var transformedSize = Camera.main.ScreenToWorldPoint(
+                    new Vector2(rectTransform.rect.width, rectTransform.rect.height));
+
+                return new Rect(transformedPos.x, transformedPos.y,
+                                transformedSize.x - baseSize.x,
+                                transformedSize.y - baseSize.y);
+            }
+        }
     }
 }
