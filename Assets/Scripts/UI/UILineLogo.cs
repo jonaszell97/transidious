@@ -12,6 +12,9 @@ namespace Transidious
         /// The background image.
         [SerializeField] Image backgroundImage;
 
+        /// The placeholder text.
+        [SerializeField] TMP_Text placeholderText;
+
         /// The input text field.
         [SerializeField] TMP_InputField inputField;
 
@@ -28,25 +31,48 @@ namespace Transidious
             backgroundImage.color = c;
         }
 
-        public void SetLine(Line line)
+        string GetTruncatedLineName(Line line)
+        {
+            return line.name.Length > 4 ? line.name.Substring(0, 4).Trim() : line.name;
+        }
+
+        public void SetLine(Line line, bool truncateName = false)
         {
             this.line = line;
-
             backgroundImage.color = line.color;
-            inputField.text = line.name;
+
+            if (truncateName)
+            {
+                if (inputField != null)
+                {
+                    inputField.text = GetTruncatedLineName(line);
+                }
+                else
+                {
+                    placeholderText.text = GetTruncatedLineName(line);
+                }
+            }
+            else if (inputField != null)
+            {
+                inputField.text = line.name;
+            }
+            else
+            {
+                placeholderText.text = line.name;
+            }
 
             switch (line.type)
             {
-                case TransitType.Bus:
-                case TransitType.LightRail:
-                case TransitType.IntercityRail:
-                    backgroundImage.sprite = GameController.instance.roundedRectSprite;
-                    backgroundImage.type = UnityEngine.UI.Image.Type.Sliced;
-                    break;
-                default:
-                    backgroundImage.sprite = GameController.instance.squareSprite;
-                    backgroundImage.type = UnityEngine.UI.Image.Type.Simple;
-                    break;
+            case TransitType.Bus:
+            case TransitType.LightRail:
+            case TransitType.IntercityRail:
+                backgroundImage.sprite = GameController.instance.roundedRectSprite;
+                backgroundImage.type = UnityEngine.UI.Image.Type.Sliced;
+                break;
+            default:
+                backgroundImage.sprite = GameController.instance.squareSprite;
+                backgroundImage.type = UnityEngine.UI.Image.Type.Simple;
+                break;
             }
         }
     }

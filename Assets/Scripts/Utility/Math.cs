@@ -118,6 +118,11 @@ namespace Transidious
             }
         }
 
+        public static bool PointOnLine(Vector2 a, Vector2 b, Vector2 pt)
+        {
+            return Mathf.Approximately((pt - a).magnitude + (pt - b).magnitude, (a - b).magnitude);
+        }
+
         public static Vector3 NearestPointOnLine(Vector3 p0, Vector3 p1, Vector3 pnt)
         {
             return NearestPointOnLine(new Vector2(p0.x, p0.y),
@@ -186,6 +191,17 @@ namespace Transidious
             return PointPosition.Right;
         }
 
+        public static PointPosition GetPointPosition(Vector3 p, Map.PointOnStreet pos)
+        {
+            if (pos.seg.street.isOneWay)
+                return PointPosition.Right;
+
+            var a = pos.seg.drivablePositions[pos.prevIdx];
+            var b = pos.seg.drivablePositions[pos.prevIdx + 1];
+
+            return GetPointPosition(a, b, p);
+        }
+
         public static Vector3 GetMidPoint(Vector3 a, Vector3 b)
         {
             var diff = b - a;
@@ -211,6 +227,22 @@ namespace Transidious
                 B1.x + (B2.x - B1.x) * mu,
                 B1.y + (B2.y - B1.y) * mu
             );
+        }
+
+        public static Vector2 GetIntersectionPoint(Ray2D ray, Vector2 a, Vector2 b, out bool found)
+        {
+            var o = ray.origin;
+            var d = ray.direction;
+
+            var v1 = o - a;
+            var v2 = b - a;
+            var v3 = new Vector2(-d.y, d.x);
+
+            var t1 = Vector3.Cross(v2, v1).magnitude / Vector2.Dot(v2, v3);
+            var t2 = Vector2.Dot(v1, v3) / Vector2.Dot(v2, v3);
+
+            found = t1 >= 0f && 0f <= t2 && t2 <= 1f;
+            return o + d * t1;
         }
 
         public static float NormalizeAngle(float angle)

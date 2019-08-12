@@ -52,7 +52,7 @@ namespace Transidious
         public ColorGradient gradient;
         public Material material;
 
-        public bool wasModified = true;
+        public bool wasModified = false;
 
         public Stop depot;
         public List<Stop> stops;
@@ -144,9 +144,12 @@ namespace Transidious
             if (stops.Count == 0)
             {
                 stops.Add(begin);
+                begin.AddLine(this);
             }
 
             stops.Add(end);
+            end.AddLine(this);
+
             routes.Add(route);
             map.RegisterRoute(route);
 
@@ -210,6 +213,11 @@ namespace Transidious
             stops = line.stopIDs.Select(id => map.transitStopIDMap[id]).ToList();
             routes = line.routeIDs.Select(id => map.transitRouteIDMap[id]).ToList();
             depot = map.transitStopIDMap[line.depotID];
+
+            foreach (var stop in stops)
+            {
+                stop.AddLine(this);
+            }
 
             wasModified = true;
         }

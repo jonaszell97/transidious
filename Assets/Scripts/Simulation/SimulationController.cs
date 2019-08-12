@@ -61,6 +61,26 @@ namespace Transidious
 
                 citizien.Update(minuteOfDay);
             }
+
+#if DEBUG
+            if (measuring)
+            {
+                if (Input.GetMouseButton(0))
+                {
+                    if (firstMeasurePos == null)
+                    {
+                        firstMeasurePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                    }
+                    else
+                    {
+                        Vector2 otherPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                        Debug.Log("distance: " + (firstMeasurePos.Value - otherPos).magnitude);
+
+                        measuring = false;
+                    }
+                }
+            }
+#endif
         }
 
         public int SpeedMultiplier
@@ -74,12 +94,12 @@ namespace Transidious
 
                 switch (simulationSpeed)
                 {
-                    default:
-                        return 1;
-                    case 1:
-                        return 4;
-                    case 2:
-                        return 10;
+                default:
+                    return 1;
+                case 1:
+                    return 4;
+                case 2:
+                    return 10;
                 }
             }
         }
@@ -196,6 +216,9 @@ namespace Transidious
                 citiziens.Add(citizien);
             }
         }
+
+        bool measuring = false;
+        Vector2? firstMeasurePos;
 #endif
         public void OnGUI()
         {
@@ -231,6 +254,14 @@ namespace Transidious
                 else
                 {
                     GameController.instance.SetLanguage("en_US");
+                }
+            }
+
+            if (GUI.Button(new Rect(650, 25, 100, 30), "Measure"))
+            {
+                if (!measuring)
+                {
+                    measuring = true;
                 }
             }
         }

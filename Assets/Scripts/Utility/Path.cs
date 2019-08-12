@@ -6,60 +6,6 @@ using Transidious;
 
 namespace Transidious
 {
-    [System.Serializable]
-    public struct SerializableVector3
-    {
-        public float x, y, z;
-
-        public SerializableVector3(Vector3 vec)
-        {
-            this.x = vec.x;
-            this.y = vec.y;
-            this.z = vec.z;
-        }
-
-        public Vector3 ToVector()
-        {
-            return new Vector3(x, y, z);
-        }
-    }
-
-    [System.Serializable]
-    public struct SerializableVector2
-    {
-        public float x, y;
-
-        public SerializableVector2(Vector2 vec)
-        {
-            this.x = vec.x;
-            this.y = vec.y;
-        }
-
-        public Vector2 ToVector()
-        {
-            return new Vector2(x, y);
-        }
-    }
-
-    [System.Serializable]
-    public struct SerializableColor
-    {
-        public float r, g, b, a;
-
-        public SerializableColor(Color c)
-        {
-            this.r = c.r;
-            this.g = c.g;
-            this.b = c.b;
-            this.a = c.a;
-        }
-
-        public Color ToColor()
-        {
-            return new Color(r, g, b, a);
-        }
-    }
-
     public enum CardinalDirection
     {
         North, South, West, East

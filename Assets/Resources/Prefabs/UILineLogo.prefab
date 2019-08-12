@@ -682,6 +682,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   line: {fileID: 0}
   backgroundImage: {fileID: 5681410079684658702}
+  placeholderText: {fileID: 6835266831591018537}
   inputField: {fileID: 2061713165558550916}
 --- !u!1 &8006064663790931280
 GameObject:

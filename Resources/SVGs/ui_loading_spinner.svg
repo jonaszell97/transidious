@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="ui_loading_spinner.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#3c5dff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="244.99745"
+     inkscape:cy="655.03845"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:snap-global="false"
+     inkscape:window-width="1853"
+     inkscape:window-height="1025"
+     inkscape:window-x="67"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="stroke-width:0.99999994;fill:#ffffff;fill-opacity:1"
+       d="M 287.89258 287.12305 A 162.63457 162.63457 0 0 0 137.63867 387.52148 A 162.63457 162.63457 0 0 0 172.89258 564.75781 A 162.63457 162.63457 0 0 0 350.13086 600.01367 A 162.63457 162.63457 0 0 0 450.52734 449.75781 L 408.10156 449.75781 A 120.20816 120.20816 0 0 1 287.89258 569.9668 A 120.20816 120.20816 0 0 1 167.68555 449.75781 A 120.20816 120.20816 0 0 1 287.89258 329.55078 L 287.89258 287.12305 z "
+       transform="scale(0.26458333)"
+       id="path10"
+       inkscape:export-filename="/home/jonas/transidious/Assets/Resources/Sprites/ui_loading_spinner.png"
+       inkscape:export-xdpi="302.22"
+       inkscape:export-ydpi="302.22" />
+  </g>
+</svg>

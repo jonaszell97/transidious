@@ -181,9 +181,13 @@ namespace Transidious
             if (snapSettings.snapToLane)
             {
                 closestPtAndPos = street.GetClosestPointAndPosition(cursorPos);
-                var positions = game.sim.trafficSim.GetPath(street, closestPtAndPos.Item2 == Math.PointPosition.Right ? street.RightmostLane : street.LeftmostLane);
+                var positions = game.sim.trafficSim.GetPath(
+                    street,
+                    (closestPtAndPos.Item2 == Math.PointPosition.Right || street.street.isOneWay)
+                        ? street.RightmostLane
+                        : street.LeftmostLane);
 
-                closestPtAndPos = street.GetClosestPointAndPosition(cursorPos, positions);
+                closestPtAndPos = StreetSegment.GetClosestPointAndPosition(cursorPos, positions);
             }
             else
             {
@@ -195,17 +199,17 @@ namespace Transidious
 
             if (snapSettings.snapToEnd)
             {
-                var distanceFromStart = (street.positions.First() - closestPt).magnitude;
+                var distanceFromStart = (street.drivablePositions.First() - closestPt).magnitude;
                 if (distanceFromStart < endSnapThreshold)
                 {
-                    closestPt = street.positions.First();
+                    closestPt = street.drivablePositions.First();
                     pos = Math.PointPosition.OnLine;
                 }
 
-                var distanceFromEnd = (street.positions.Last() - closestPt).magnitude;
+                var distanceFromEnd = (street.drivablePositions.Last() - closestPt).magnitude;
                 if (distanceFromEnd < endSnapThreshold)
                 {
-                    closestPt = street.positions.Last();
+                    closestPt = street.drivablePositions.Last();
                     pos = Math.PointPosition.OnLine;
                 }
             }
@@ -221,6 +225,7 @@ namespace Transidious
             cursorObj.transform.position = new Vector3(closestPt.x, closestPt.y,
                                                        Map.Layer(MapLayer.Cursor));
 
+                Debug.Log("snapping");
             game.input.gameCursorPosition = cursorObj.transform.position;
         }
 

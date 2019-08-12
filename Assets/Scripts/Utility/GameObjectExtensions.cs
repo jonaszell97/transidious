@@ -1,7 +1,39 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace Transidious
 {
+    public static class DictionaryExtensions
+    {
+        public static TValue GetOrPutDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary,
+                                                           TKey key,
+                                                           TValue defaultValue = default(TValue))
+        {
+            if (dictionary.TryGetValue(key, out TValue value))
+            {
+                return value;
+            }
+
+            dictionary.Add(key, defaultValue);
+            return defaultValue;
+        }
+
+        public static TValue GetOrPutDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary,
+                                                           TKey key,
+                                                           System.Func<TValue> defaultValueProvider)
+        {
+            if (dictionary.TryGetValue(key, out TValue value))
+            {
+                return value;
+            }
+
+            var defaultValue = defaultValueProvider();
+            dictionary.Add(key, defaultValue);
+
+            return defaultValue;
+        }
+    }
+
     public static class GameObjectExtensions
     {
         static System.Collections.IEnumerator RunNextFrameImpl(this MonoBehaviour behaviour, System.Action callback)
@@ -13,6 +45,7 @@ namespace Transidious
 
         public static void RunNextFrame(this MonoBehaviour behaviour, System.Action callback)
         {
+            behaviour.gameObject.SetActive(true);
             behaviour.StartCoroutine(RunNextFrameImpl(behaviour, callback));
         }
 

@@ -458,7 +458,7 @@ namespace Transidious
 
         void UpdateScaleBar()
         {
-            if (controller == null)
+            if (controller?.scaleBar == null)
             {
                 return;
             }
@@ -596,24 +596,21 @@ namespace Transidious
                 return position;
             }
 
-            if (controlListenersEnabled)
+            if (IsPressed(ControlType.PanUp))
             {
-                if (IsPressed(ControlType.PanUp))
-                {
-                    position.y += panSensitivityY;
-                }
-                if (IsPressed(ControlType.PanDown))
-                {
-                    position.y -= panSensitivityY;
-                }
-                if (IsPressed(ControlType.PanRight))
-                {
-                    position.x += panSensitivityX;
-                }
-                if (IsPressed(ControlType.PanLeft))
-                {
-                    position.x -= panSensitivityX;
-                }
+                position.y += panSensitivityY;
+            }
+            if (IsPressed(ControlType.PanDown))
+            {
+                position.y -= panSensitivityY;
+            }
+            if (IsPressed(ControlType.PanRight))
+            {
+                position.x += panSensitivityX;
+            }
+            if (IsPressed(ControlType.PanLeft))
+            {
+                position.x -= panSensitivityX;
             }
 
             return position;
@@ -781,11 +778,13 @@ namespace Transidious
             }
         }
 
-        // Update is called once per frame
         void Update()
         {
-            UpdateZoom();
-            UpdatePosition();
+            if (controlListenersEnabled)
+            {
+                UpdateZoom();
+                UpdatePosition();
+            }
 
             CheckKeyboardEvents();
 
@@ -799,6 +798,7 @@ namespace Transidious
                 }
             }
 
+#if DEBUG
             if (debugClickTest && Input.GetMouseButtonDown(0))
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -854,6 +854,7 @@ namespace Transidious
                     debugRouteTest = false;
                 }
             }
+#endif
         }
     }
 }

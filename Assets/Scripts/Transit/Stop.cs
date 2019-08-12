@@ -264,7 +264,7 @@ namespace Transidious
 
         int width = 1;
         int height = 1;
-        public bool wasModified = true;
+        public bool wasModified = false;
 
         List<PendingSlotAssignment> slotsToAssign;
         Dictionary<Stop, ParallelRouteInfo> parallelRoutes;
@@ -381,6 +381,14 @@ namespace Transidious
             }
 
             return null;
+        }
+
+        public void AddLine(Line line)
+        {
+            if (!lineData.ContainsKey(line))
+            {
+                lineData.Add(line, new LineData());
+            }
         }
 
         LineData GetLineData(Line line)
@@ -1482,8 +1490,6 @@ namespace Transidious
 
         public void Deserialize(SerializedStop stop, Map map)
         {
-            id = stop.id;
-
             foreach (var data in stop.lineDataSerial)
             {
                 lineData.Add(map.transitLineIDMap[data.lineID], new LineData

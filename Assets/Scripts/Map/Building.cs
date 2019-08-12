@@ -34,7 +34,6 @@ namespace Transidious
         public int streetID;
         public string number;
 
-        public string name;
         public Type type;
         public int capacity;
         public int occupants;

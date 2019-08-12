@@ -14,27 +14,27 @@
    viewBox="0 0 210 297"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
    sodipodi:docname="stop_ring.svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
      id="base"
-     pagecolor="#ffffff"
+     pagecolor="#485eff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0.0"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="168.57143"
-     inkscape:cy="674.28571"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="287.26435"
+     inkscape:cy="790.45325"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="707"
-     inkscape:window-x="0"
-     inkscape:window-y="1"
+     inkscape:window-width="1853"
+     inkscape:window-height="1025"
+     inkscape:window-x="67"
+     inkscape:window-y="27"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata5">
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -53,22 +53,17 @@
      inkscape:groupmode="layer"
      id="layer1">
     <g
-       id="g821"
-       inkscape:export-xdpi="51.200001"
-       inkscape:export-ydpi="51.200001"
-       inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/stop_ring.png">
-      <circle
-         r="63.5"
-         cy="131.44643"
-         cx="103.56548"
-         id="path815"
-         style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.77006245;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <circle
-         style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.07468081;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="circle817"
-         cx="103.56548"
-         cy="131.44643"
-         r="38.55357" />
+       id="g1508"
+       inkscape:export-xdpi="258.82001"
+       inkscape:export-ydpi="258.82001">
+      <path
+         id="path945"
+         d="M 136.04019,72.760864 A 50.24667,50.24667 0 0 1 85.793518,123.00753 50.24667,50.24667 0 0 1 35.546848,72.760864 50.24667,50.24667 0 0 1 85.793518,22.514194 50.24667,50.24667 0 0 1 136.04019,72.760864 Z"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;stroke-opacity:1" />
+      <path
+         id="circle1501"
+         d="M 117.59859,72.760864 A 31.805073,31.805073 0 0 1 85.793518,104.56594 31.805073,31.805073 0 0 1 53.988445,72.760864 31.805073,31.805073 0 0 1 85.793518,40.955791 31.805073,31.805073 0 0 1 117.59859,72.760864 Z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.16747561;stroke-opacity:1" />
     </g>
   </g>
 </svg>

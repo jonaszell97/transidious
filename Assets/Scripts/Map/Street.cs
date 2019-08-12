@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,6 +13,7 @@ namespace Transidious
             Secondary,
             Tertiary,
             Residential,
+            Link,
             Path,
             River,
             FootPath,
@@ -22,6 +22,7 @@ namespace Transidious
         [System.Serializable]
         public struct SerializedStreet
         {
+            public int id;
             public string name;
             public Type type;
             public StreetSegment.SerializedStreetSegment[] segments;
@@ -33,6 +34,9 @@ namespace Transidious
 
         /// ID of the street.
         public int id;
+
+        /// The display name of the street. If null, same as name.
+        public string displayName;
 
         /// Reference to the map.
         public Map map;
@@ -71,10 +75,23 @@ namespace Transidious
             this.name = name;
             this.lit = lit;
             this.isOneWay = isOneWay;
-            this.maxspeed = maxspeed != 0 ? maxspeed : GetDefaultMaxSpeed();
-            this.lanes = lanes != 0 ? lanes : GetDefaultLanes();
+            this.maxspeed = maxspeed > 0 ? maxspeed : GetDefaultMaxSpeed();
+            this.lanes = lanes > 0 ? lanes : GetDefaultLanes();
             this.segments = new List<StreetSegment>();
             this.length = 0f;
+        }
+
+        public string DisplayName
+        {
+            get
+            {
+                if (displayName != null)
+                {
+                    return displayName;
+                }
+
+                return name;
+            }
         }
 
         public float MaxSpeedMetersPerSecond
@@ -96,11 +113,12 @@ namespace Transidious
             case Type.Residential:
                 return 2;
             case Type.Path:
-                return isOneWay ? 1 : 2;
+            case Type.FootPath:
+                return 2;// return isOneWay ? 1 : 2;
             case Type.River:
                 return 2;
             default:
-                return 0;
+                return 2;
             }
         }
 
@@ -300,7 +318,7 @@ namespace Transidious
                 break;
             }
 
-            var txt = map.CreateText(Vector3.zero, name, new Color(0.3f, 0.3f, 0.3f, 1f));
+            var txt = map.CreateText(Vector3.zero, DisplayName, new Color(0.3f, 0.3f, 0.3f, 1f));
             txt.UseDefaultCanvas(map);
             txt.textMesh.autoSizeTextContainer = true;
             txt.textMesh.fontSize = segments.First().GetFontSize(InputController.maxZoom);
@@ -368,7 +386,8 @@ namespace Transidious
                                         StreetIntersection startIntersection,
                                         StreetIntersection endIntersection,
                                         int atPosition = -1,
-                                        bool hasTramTracks = false)
+                                        bool hasTramTracks = false,
+                                        int segId = -1)
         {
             var segObj = Instantiate(map.streetSegmentPrefab);
             segObj.transform.SetParent(this.transform);
@@ -395,7 +414,7 @@ namespace Transidious
             seg.Initialize(this, pos, path, startIntersection, endIntersection, hasTramTracks);
             seg.name = this.name + " " + this.segments.Count;
 
-            map.RegisterSegment(seg);
+            map.RegisterSegment(seg, segId);
             return seg;
         }
 
@@ -447,6 +466,7 @@ namespace Transidious
         {
             return new SerializedStreet
             {
+                id = id,
                 name = name,
                 type = type,
 
@@ -465,7 +485,7 @@ namespace Transidious
                 AddSegment(seg.positions.Select(v => v.ToVector()).ToList(),
                            map.streetIntersectionIDMap[seg.startIntersectionID],
                            map.streetIntersectionIDMap[seg.endIntersectionID],
-                           -1, seg.hasTramTracks);
+                           -1, seg.hasTramTracks, seg.id);
             }
 
             CalculateLength();

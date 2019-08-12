@@ -44,6 +44,9 @@ namespace Transidious
         /// The prefab for creating new crossing line grids.
         [SerializeField] GameObject crossingLineGridPrefab;
 
+        /// The prefab for creating new crossing line sprites.
+        [SerializeField] GameObject crossingLinePrefab;
+
         public void UpdateLayout(Line line, int maxStops = -1)
         {
             Debug.Assert(line.stops.Count != 0);
@@ -96,9 +99,6 @@ namespace Transidious
             {
                 AddStop(stops[i], stops, (i == 0 && !partialStart), (i == stops.Count - 1 && !partialEnd));
             }
-
-            Debug.Log(partialStart);
-            Debug.Log(partialEnd);
 
             if (!partialStart || !partialEnd)
             {
@@ -190,6 +190,28 @@ namespace Transidious
             crossingLines.transform.SetParent(crossingLineGrid.transform);
             crossingLines.transform.localScale = new Vector3(1f, 1f, 1f);
             crossingLines.transform.localPosition = new Vector3(0, 0, 0);
+
+            var lineCount = 0;
+            foreach (var entry in stop.lineData)
+            {
+                if (entry.Key == this.line)
+                {
+                    continue;
+                }
+
+                var crossingLine = Instantiate(crossingLinePrefab);
+                crossingLine.transform.SetParent(crossingLines.transform);
+                crossingLine.transform.localScale = new Vector3(1f, 1f, 1f);
+                crossingLine.transform.localPosition = new Vector3(0, 0, 0);
+
+                var lineLogo = crossingLine.GetComponentInChildren<UILineLogo>();
+                lineLogo.SetLine(entry.Key, true);
+
+                if (++lineCount == 3)
+                {
+                    break;
+                }
+            }
         }
     }
 }

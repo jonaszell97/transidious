@@ -180,7 +180,9 @@ break;
 while (true) {
 
          TransitType type;
-if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
+if (tags.Contains("type", "route") && tags.Contains("route", "bus")) {
+type = TransitType.Bus;
+} else if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
 type = TransitType.Tram;
 } else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail")) {
 type = TransitType.Tram;
@@ -273,13 +275,15 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Residential));
 } else if (tags.Contains("highway", "primary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
 } else if (tags.Contains("highway", "primary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "secondary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
 } else if (tags.Contains("highway", "secondary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "tertiary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
+} else if (tags.Contains("highway", "tertiary_link")) {
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "path")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("highway", "service")) {
@@ -359,7 +363,11 @@ break;
                   }
 
 while (true) {
-if (tags.Contains("railway", "stop")) {
+if (tags.Contains("highway", "bus_stop")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("public_transport", "stop_position")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("railway", "stop")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
 } else if (tags.Contains("railway", "stop_exit_only")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
@@ -404,7 +412,9 @@ break;
 while (true) {
 
          TransitType type;
-if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
+if (tags.Contains("type", "route") && tags.Contains("route", "bus")) {
+type = TransitType.Bus;
+} else if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
 type = TransitType.Tram;
 } else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail")) {
 type = TransitType.Tram;
@@ -497,13 +507,15 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Residential));
 } else if (tags.Contains("highway", "primary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
 } else if (tags.Contains("highway", "primary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "secondary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
 } else if (tags.Contains("highway", "secondary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "tertiary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
+} else if (tags.Contains("highway", "tertiary_link")) {
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "path")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("highway", "service")) {
@@ -583,7 +595,11 @@ break;
                   }
 
 while (true) {
-if (tags.Contains("railway", "stop")) {
+if (tags.Contains("highway", "bus_stop")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("public_transport", "stop_position")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("railway", "stop")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
 } else if (tags.Contains("railway", "stop_exit_only")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
@@ -628,7 +644,9 @@ break;
 while (true) {
 
          TransitType type;
-if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
+if (tags.Contains("type", "route") && tags.Contains("route", "bus")) {
+type = TransitType.Bus;
+} else if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
 type = TransitType.Tram;
 } else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail")) {
 type = TransitType.Tram;
@@ -721,13 +739,15 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Residential));
 } else if (tags.Contains("highway", "primary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
 } else if (tags.Contains("highway", "primary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "secondary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
 } else if (tags.Contains("highway", "secondary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "tertiary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
+} else if (tags.Contains("highway", "tertiary_link")) {
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "path")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("highway", "service")) {
@@ -807,7 +827,11 @@ break;
                   }
 
 while (true) {
-if (tags.Contains("railway", "stop")) {
+if (tags.Contains("highway", "bus_stop")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("public_transport", "stop_position")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("railway", "stop")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
 } else if (tags.Contains("railway", "stop_exit_only")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
@@ -852,7 +876,9 @@ break;
 while (true) {
 
          TransitType type;
-if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
+if (tags.Contains("type", "route") && tags.Contains("route", "bus")) {
+type = TransitType.Bus;
+} else if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
 type = TransitType.Tram;
 } else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail")) {
 type = TransitType.Tram;
@@ -945,13 +971,15 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Residential));
 } else if (tags.Contains("highway", "primary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
 } else if (tags.Contains("highway", "primary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "secondary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
 } else if (tags.Contains("highway", "secondary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "tertiary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
+} else if (tags.Contains("highway", "tertiary_link")) {
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "path")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("highway", "service")) {
@@ -1031,7 +1059,11 @@ break;
                   }
 
 while (true) {
-if (tags.Contains("railway", "stop")) {
+if (tags.Contains("highway", "bus_stop")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("public_transport", "stop_position")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("railway", "stop")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
 } else if (tags.Contains("railway", "stop_exit_only")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
@@ -1076,7 +1108,9 @@ break;
 while (true) {
 
          TransitType type;
-if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
+if (tags.Contains("type", "route") && tags.Contains("route", "bus")) {
+type = TransitType.Bus;
+} else if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
 type = TransitType.Tram;
 } else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail")) {
 type = TransitType.Tram;
@@ -1169,13 +1203,15 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Residential));
 } else if (tags.Contains("highway", "primary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
 } else if (tags.Contains("highway", "primary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "secondary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
 } else if (tags.Contains("highway", "secondary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "tertiary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
+} else if (tags.Contains("highway", "tertiary_link")) {
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "path")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("highway", "service")) {
@@ -1255,7 +1291,11 @@ break;
                   }
 
 while (true) {
-if (tags.Contains("railway", "stop")) {
+if (tags.Contains("highway", "bus_stop")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("public_transport", "stop_position")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("railway", "stop")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
 } else if (tags.Contains("railway", "stop_exit_only")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
@@ -1300,7 +1340,9 @@ break;
 while (true) {
 
          TransitType type;
-if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
+if (tags.Contains("type", "route") && tags.Contains("route", "bus")) {
+type = TransitType.Bus;
+} else if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
 type = TransitType.Tram;
 } else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail")) {
 type = TransitType.Tram;
@@ -1393,13 +1435,15 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Residential));
 } else if (tags.Contains("highway", "primary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
 } else if (tags.Contains("highway", "primary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "secondary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
 } else if (tags.Contains("highway", "secondary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "tertiary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
+} else if (tags.Contains("highway", "tertiary_link")) {
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "path")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("highway", "service")) {
@@ -1479,7 +1523,11 @@ break;
                   }
 
 while (true) {
-if (tags.Contains("railway", "stop")) {
+if (tags.Contains("highway", "bus_stop")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("public_transport", "stop_position")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("railway", "stop")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
 } else if (tags.Contains("railway", "stop_exit_only")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
@@ -1524,7 +1572,9 @@ break;
 while (true) {
 
          TransitType type;
-if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
+if (tags.Contains("type", "route") && tags.Contains("route", "bus")) {
+type = TransitType.Bus;
+} else if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
 type = TransitType.Tram;
 } else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail")) {
 type = TransitType.Tram;
@@ -1617,13 +1667,15 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Residential));
 } else if (tags.Contains("highway", "primary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
 } else if (tags.Contains("highway", "primary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "secondary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
 } else if (tags.Contains("highway", "secondary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "tertiary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
+} else if (tags.Contains("highway", "tertiary_link")) {
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "path")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("highway", "service")) {
@@ -1703,7 +1755,11 @@ break;
                   }
 
 while (true) {
-if (tags.Contains("railway", "stop")) {
+if (tags.Contains("highway", "bus_stop")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("public_transport", "stop_position")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("railway", "stop")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
 } else if (tags.Contains("railway", "stop_exit_only")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
@@ -1748,7 +1804,9 @@ break;
 while (true) {
 
          TransitType type;
-if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
+if (tags.Contains("type", "route") && tags.Contains("route", "bus")) {
+type = TransitType.Bus;
+} else if (tags.Contains("type", "route") && tags.Contains("route", "tram")) {
 type = TransitType.Tram;
 } else if (tags.Contains("type", "route") && tags.Contains("route", "light_rail")) {
 type = TransitType.Tram;
@@ -1841,13 +1899,15 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Residential));
 } else if (tags.Contains("highway", "primary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
 } else if (tags.Contains("highway", "primary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Primary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "secondary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
 } else if (tags.Contains("highway", "secondary_link")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Secondary));
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "tertiary")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
+} else if (tags.Contains("highway", "tertiary_link")) {
+importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 } else if (tags.Contains("highway", "path")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("highway", "service")) {
@@ -1927,7 +1987,11 @@ break;
                   }
 
 while (true) {
-if (tags.Contains("railway", "stop")) {
+if (tags.Contains("highway", "bus_stop")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("public_transport", "stop_position")) {
+Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
+} else if (tags.Contains("railway", "stop")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);
 } else if (tags.Contains("railway", "stop_exit_only")) {
 Debug.Assert(geo.Id.HasValue, "stop does not have an ID");importer.stops.Add(geo.Id.Value, node);

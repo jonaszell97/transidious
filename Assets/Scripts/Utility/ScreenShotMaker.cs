@@ -184,6 +184,18 @@ namespace Transidious
             RenderTexture.active = null;
             renderCamera.targetTexture = null;
 
+            // Color32[] colors = virtualPhoto.GetPixels32();
+            // for (int i = 0; i < colors.Length; i++)
+            // {
+            //     if (colors[i] == Color.white)
+            //     {
+            //         colors[i] = Color.clear;
+            //     }
+            // }
+
+            // virtualPhoto.SetPixels32(colors);
+            // virtualPhoto.Apply();
+
             byte[] bytes = virtualPhoto.EncodeToPNG();
             System.IO.File.WriteAllBytes("Assets/Resources/Maps/" + map.name + ".png", bytes);
         }

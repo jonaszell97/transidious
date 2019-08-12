@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Transidious.PathPlanning;
 
 namespace Transidious
@@ -226,6 +227,19 @@ namespace Transidious
 
         public class PathSegmentInfo
         {
+            [System.Serializable]
+            public struct Serializable
+            {
+                public int segmentID;
+                public int lane;
+                public int offset;
+                public int length;
+                public bool partialStart;
+                public bool partialEnd;
+                public bool backward;
+                public SerializableVector2 direction;
+            }
+
             public StreetSegment segment;
             public int lane;
             public int offset;
@@ -233,7 +247,39 @@ namespace Transidious
             public bool partialStart;
             public bool partialEnd;
             public bool backward;
-            public int linePos;
+            public Vector2 direction;
+
+            public Serializable Serialize()
+            {
+                return new Serializable
+                {
+                    segmentID = segment.id,
+                    lane = lane,
+                    offset = offset,
+                    length = length,
+                    partialStart = partialStart,
+                    partialEnd = partialEnd,
+                    backward = backward,
+                    direction = new SerializableVector2(direction),
+                };
+            }
+
+            public PathSegmentInfo(Serializable data)
+            {
+                segment = GameController.instance.loadedMap.streetSegmentIDMap[data.segmentID];
+                lane = data.lane;
+                offset = data.offset;
+                length = data.length;
+                partialStart = data.partialStart;
+                partialEnd = data.partialEnd;
+                backward = data.backward;
+                direction = data.direction.ToVector();
+            }
+
+            public PathSegmentInfo()
+            {
+
+            }
         }
 
         public List<Vector3> GetCompletePath(PathPlanningResult result,
@@ -243,6 +289,7 @@ namespace Transidious
 
             List<Vector3> positions;
             StreetSegment segment = null;
+            int prevLane = 0;
             bool backward;
             int lane;
             bool finalStep;
@@ -251,7 +298,7 @@ namespace Transidious
             {
                 StreetSegment nextSegment;
                 GetStepPath(step, out nextSegment, out backward, out finalStep, out lane, out positions,
-                            out bool partialStart, out bool partialEnd);
+                            out bool partialStart, out bool partialEnd, out Vector2 direction);
 
                 if (segment != null && nextSegment != null)
                 {
@@ -266,16 +313,29 @@ namespace Transidious
                     }
 
                     var intersectionPath = GetPath(nextIntersection, segment,
-                                                   nextSegment, lane);
+                                                   nextSegment, prevLane);
 
-                    path.AddRange(intersectionPath);
+                    var begin = 1;
+                    var end = intersectionPath.Length - 1;
+
+                    for (int i = begin; i < end; ++i)
+                    {
+                        path.Add(intersectionPath[i]);
+                    }
                 }
 
                 if (positions != null)
                 {
                     if (crossedSegments != null && nextSegment != null)
                     {
-                        crossedSegments.Add(new PathSegmentInfo {
+                        Debug.Assert(nextSegment.street.type != Street.Type.FootPath);
+                        if (positions.Count == 1 && direction.Equals(default(Vector2)))
+                        {
+                            GetStepPath(step, out nextSegment, out backward, out finalStep, out lane, out positions,
+                            out partialStart, out  partialEnd, out direction);
+                        }
+                        crossedSegments.Add(new PathSegmentInfo
+                        {
                             segment = nextSegment,
                             lane = lane,
                             offset = path.Count,
@@ -283,7 +343,7 @@ namespace Transidious
                             partialStart = partialStart,
                             partialEnd = partialEnd,
                             backward = backward,
-                            linePos = 0,
+                            direction = direction,
                         });
                     }
 
@@ -291,6 +351,7 @@ namespace Transidious
                 }
 
                 segment = nextSegment;
+                prevLane = lane;
             }
 
             return path;
@@ -298,6 +359,8 @@ namespace Transidious
 
         public Vector3[] GetPath(StreetSegment seg, int lane)
         {
+            Debug.Assert(seg.street.type != Street.Type.FootPath, "footpaths are purely decorational!");
+
             if (!computedPaths.TryGetValue(seg, out Vector3[][] paths))
             {
                 paths = ComputePaths(seg);
@@ -357,31 +420,7 @@ namespace Transidious
 
         static List<Vector3> ComputePath(StreetSegment seg, int lane, float offset)
         {
-            // Skip positions that are in front of the start stop line.
-            int i = 1;
-            while (i < seg.positions.Count && seg.cumulativeDistances[i] <= seg.BeginStopLineDistance)
-            {
-                ++i;
-            }
-
-            // Skip positions that are behind the end stop line.
-            int iLast = seg.positions.Count - 1;
-            while (iLast > 0 && (seg.length - seg.cumulativeDistances[iLast] <= seg.EndStopLineDistance))
-            {
-                --iLast;
-            }
-
-            var segPositions = new List<Vector3>();
-
-            // Include stop line positions.
-            segPositions.Add(seg.GetStartStopLinePosition());
-
-            for (int j = i; j <= iLast; ++j)
-            {
-                segPositions.Add(seg.positions[j]);
-            }
-
-            segPositions.Add(seg.GetEndStopLinePosition());
+            var segPositions = seg.drivablePositions;
 
             var lanes = seg.street.lanes;
             var halfLanes = lanes / 2;
@@ -426,32 +465,7 @@ namespace Transidious
             var lanes = seg.street.lanes;
             var halfLanes = lanes / 2;
             var offset = seg.GetStreetWidth(InputController.RenderingDistance.Near) / lanes;
-
-            // Skip positions that are in front of the start stop line.
-            int i = 1;
-            while (i < seg.positions.Count && seg.cumulativeDistances[i] <= seg.BeginStopLineDistance)
-            {
-                ++i;
-            }
-
-            // Skip positions that are behind the end stop line.
-            int iLast = seg.positions.Count - 1;
-            while (iLast > 0 && (seg.length - seg.cumulativeDistances[iLast] <= seg.EndStopLineDistance))
-            {
-                --iLast;
-            }
-
-            var segPositions = new List<Vector3>();
-
-            // Include stop line positions.
-            segPositions.Add(seg.GetStartStopLinePosition());
-
-            for (int j = i; j <= iLast; ++j)
-            {
-                segPositions.Add(seg.positions[j]);
-            }
-
-            segPositions.Add(seg.GetEndStopLinePosition());
+            var segPositions = seg.drivablePositions;
 
             var positions = new List<Vector3>();
             for (int lane = 0; lane < lanes; ++lane)
@@ -515,18 +529,23 @@ namespace Transidious
 
             foreach (var from in intersection.IncomingStreets)
             {
+                if (from.street.type == Street.Type.FootPath)
+                {
+                    continue;
+                }
+
                 var fromLanes = from.street.lanes;
-                var fromLanesHalf = from.street.LanesPerDirection;
+                var fromLanesPerDirection = from.street.LanesPerDirection;
 
                 ref var fromPaths = ref paths[intersection.RelativePosition(from)];
-                fromPaths = new Vector3[fromLanesHalf][][];
+                fromPaths = new Vector3[fromLanesPerDirection][][];
 
                 var endsHere = from.endIntersection == intersection;
 
-                int fromLane = fromLanesHalf;
+                int fromLane = fromLanesPerDirection;
                 if (from.street.isOneWay)
                 {
-                    fromLane = 0;
+                    --fromLane;
                     Debug.Assert(endsHere, "invalid one-way street!");
                 }
                 else if (!endsHere)
@@ -541,6 +560,11 @@ namespace Transidious
 
                     foreach (var to in intersection.OutgoingStreets)
                     {
+                        if (to.street.type == Street.Type.FootPath)
+                        {
+                            continue;
+                        }
+
                         var uturn = false;
                         if (from == to)
                         {
@@ -638,7 +662,7 @@ namespace Transidious
                         currentPath.Clear();
                     }
 
-                    if (!endsHere)
+                    if (!endsHere || from.street.isOneWay)
                     {
                         --fromLane;
                         if (fromLane < 0)
@@ -793,10 +817,12 @@ namespace Transidious
 
         int GetDefaultLane(StreetSegment seg, bool backward)
         {
-            if (backward)
-                return 0;
+            if (backward && !seg.street.isOneWay)
+            {
+                return seg.LeftmostLane;
+            }
 
-            return seg.street.lanes - 1;
+            return seg.RightmostLane;
         }
 
         void SetNextStep(DrivingCar car, PathPlanningResult result, int nextStep)
@@ -845,11 +871,13 @@ namespace Transidious
         void GetStepPath(PathStep step, out StreetSegment segment,
                          out bool backward, out bool finalStep,
                          out int lane, out List<Vector3> positions,
-                         out bool partialStart, out bool partialEnd)
+                         out bool partialStart, out bool partialEnd,
+                         out Vector2 direction)
         {
             finalStep = false;
             partialStart = false;
             partialEnd = false;
+            direction = new Vector2();
 
             if (step is DriveStep)
             {
@@ -883,55 +911,103 @@ namespace Transidious
                     path = path.Reverse().ToArray();
                 }
 
-                var minDist = float.PositiveInfinity;
                 var minIdx = 0;
-                var minPt = Vector3.zero;
+                Vector3 startPos;
 
-                for (int i = 1; i < path.Length; ++i)
+                if (partialStart)
                 {
-                    var p0 = path[i - 1];
-                    var p1 = path[i];
-
-                    var closestPt = Math.NearestPointOnLine(p0, p1, drive.startPos);
-                    var dist = (closestPt - drive.startPos).sqrMagnitude;
-
-                    if (dist < minDist)
+                    var startDistance = (drive.startPos - path[0]).sqrMagnitude;
+                    for (int i = 0; i < path.Length; ++i)
                     {
-                        minDist = dist;
-                        minIdx = i;
-                        minPt = closestPt;
+                        var pt = path[i];
+                        var dist = (pt - path[0]).sqrMagnitude;
+                        var cmp = dist.CompareTo(startDistance);
+
+                        if (cmp > 0)
+                        {
+                            minIdx = i;
+                            break;
+                        }
+                        else if (cmp == 0)
+                        {
+                            minIdx = i + 1;
+                            break;
+                        }
                     }
+
+                    startPos = drive.startPos;
+                }
+                else
+                {
+                    startPos = path.First();
                 }
 
-                minDist = float.PositiveInfinity;
-                var maxIdx = 0;
-                var maxPt = Vector3.zero;
+                var maxIdx = path.Length;
+                Vector3 endPos;
 
-                for (int i = path.Length - 2; i >= 0; --i)
+                if (partialEnd)
                 {
-                    var p0 = path[i];
-                    var p1 = path[i + 1];
-
-                    var closestPt = Math.NearestPointOnLine(p0, p1, drive.endPos);
-                    var dist = (closestPt - drive.endPos).sqrMagnitude;
-
-                    if (dist < minDist)
+                    var endDistance = (drive.endPos - path[0]).sqrMagnitude;
+                    for (int i = 0; i < path.Length; ++i)
                     {
-                        minDist = dist;
-                        maxIdx = i;
-                        maxPt = closestPt;
+                        var pt = path[i];
+                        var dist = (pt - path[0]).sqrMagnitude;
+                        var cmp = dist.CompareTo(endDistance);
+
+                        if (cmp >= 0)
+                        {
+                            maxIdx = i;
+                            break;
+                        }
                     }
+
+                    endPos = drive.endPos;
+                }
+                else
+                {
+                    endPos = path.Last();
+                }
+
+                // This can happen when the the start and end position are the first position on
+                // the street, which is technically still a valid path since an intersection will be
+                // crossed.
+                if (startPos.Equals(endPos))
+                {
+                    positions = new List<Vector3> { startPos };
+
+                    if (startPos.Equals(path.First()))
+                    {
+                        partialStart = false;
+                        partialEnd = true;
+                        direction = (path[1] - startPos).normalized;
+                    }
+                    else
+                    {
+                        Debug.Assert(startPos.Equals(path.Last()));
+                        partialStart = true;
+                        partialEnd = false;
+                        direction = (endPos - path[path.Length - 2]).normalized;
+                    }
+
+                    return;
                 }
 
                 positions = new List<Vector3>();
-                positions.Add(minPt);
 
-                for (int i = minIdx; i <= maxIdx; ++i)
+                if (partialStart)
+                {
+                    positions.Add(startPos);
+                }
+
+                for (int i = minIdx; i < maxIdx; ++i)
                 {
                     positions.Add(path[i]);
                 }
 
-                positions.Add(maxPt);
+                if (partialEnd)
+                {
+                    positions.Add(endPos);
+                }
             }
             else
             {
@@ -962,9 +1038,9 @@ namespace Transidious
             }
 
             GetStepPath(step, out segment, out backward, out finalStep, out lane, out positions,
-                        out bool partialStart, out bool partialEnd);
+                        out bool partialStart, out bool partialEnd, out Vector2 direction);
 
-            if (positions.Count == 0)
+            if (positions == null || positions.Count == 0)
             {
                 InitStep(car, result, stepNo + 1);
                 return;
@@ -1120,10 +1196,178 @@ namespace Transidious
 
             switch (otherTurn)
             {
-                case TurnType.Unclassified:
-                    return true;
-                case TurnType.Straight:
-                    /*
+            case TurnType.Unclassified:
+                return true;
+            case TurnType.Straight:
+                /*
+                Scenario 1:
+                       2
+                    |  |  |
+                    |     |
+                    |  |  |
+             -------       -------
+
+           3 -- -- -       -- -- - 1
+                  C2 ------->
+             -------       -------
+                    |  | C|
+                    |     |
+                    |  |  |
+                       0
+                No turn possible.
+                 */
+                if (diff == 3)
+                {
+                    return false;
+                }
+
+                /*
+                Scenario 2:
+                       2
+                    |  |  |
+                    |     |
+                    |C2|  |
+             ------- |     -------
+                     |
+           3 -- -- - |     -- -- - 1
+                     |
+             ------- |     -------
+                    |V | C|
+                    |     |
+                    |  |  |
+                       0
+                Right Turn: OK
+                Straight: OK
+                 */
+                if (diff == 2)
+                {
+                    switch (thisTurn)
+                    {
+                    case TurnType.RightTurn:
+                    case TurnType.Straight:
+                        return true;
+                    default:
+                        return false;
+                    }
+                }
+
+                /*
+                Scenario 3:
+                       2
+                    |  |  |
+                    |     |
+                    |  |  |
+             -------       -------
+                   <------- C2
+           3 -- -- -       -- -- - 1
+
+             -------       -------
+                    |  | C|
+                    |     |
+                    |  |  |
+                       0
+                Right Turn: OK
+                U-Turn: OK
+                 */
+                if (diff == 1)
+                {
+                    switch (thisTurn)
+                    {
+                    case TurnType.RightTurn:
+                    case TurnType.UTurn:
+                        return true;
+                    default:
+                        return false;
+                    }
+                }
+
+                Debug.Assert(false, "should not be possible! (" + diff + ")");
+                return false;
+            case TurnType.UTurn:
+                /*
+                    Scenario 1:
+                           2
+                        |  |  |
+                        |     |
+                        |  |  |
+                 -------       -------
+                       <---
+               3 -- -- -  |    -- -- - 1
+                      C2 --
+                 -------       -------
+                        |  | C|
+                        |     |
+                        |  |  |
+                           0
+                    Right Turn: OK
+                    Straight: OK
+                     */
+                if (diff == 3)
+                {
+                    switch (thisTurn)
+                    {
+                    case TurnType.RightTurn:
+                    case TurnType.Straight:
+                        return true;
+                    default:
+                        return false;
+                    }
+                }
+
+                /*
+                    Scenario 2:
+                           2
+                        |  |  |
+                        |     |
+                        |C2| A|
+                 ------- |   | -------
+                         -----
+               3 -- -- -       -- -- - 1
+
+                 -------       -------
+                        |  | C|
+                        |     |
+                        |  |  |
+                           0
+                    Right Turn: OK
+                     */
+                if (diff == 2)
+                {
+                    switch (thisTurn)
+                    {
+                    case TurnType.RightTurn:
+                        return true;
+                    default:
+                        return false;
+                    }
+                }
+
+                /*
+                    Scenario 3:
+                           2
+                        |  |  |
+                        |     |
+                        |  |  |
+                 -------       -------
+                             ---- C2
+               3 -- -- -     | -- -- - 1
+                             --->
+                 -------       -------
+                        |  | C|
+                        |     |
+                        |  |  |
+                           0
+                    No Turn allowed
+                     */
+                if (diff == 1)
+                {
+                    return false;
+                }
+
+                Debug.Assert(false, "should not be possible! (" + diff + ")");
+                return false;
+            case TurnType.RightTurn:
+                /*
                     Scenario 1:
                            2
                         |  |  |
@@ -1132,29 +1376,7 @@ namespace Transidious
                  -------       -------
 
                3 -- -- -       -- -- - 1
-                      C2 ------->
-                 -------       -------
-                        |  | C|
-                        |     |
-                        |  |  |
-                           0
-                    No turn possible.
-                     */
-                    if (diff == 3)
-                    {
-                        return false;
-                    }
-
-                    /*
-                    Scenario 2:
-                           2
-                        |  |  |
-                        |     |
-                        |C2|  |
-                 ------- |     -------
-                         |
-               3 -- -- - |     -- -- - 1
-                         |
+                      C2 -
                  ------- |     -------
                         |V | C|
                         |     |
@@ -1162,27 +1384,29 @@ namespace Transidious
                            0
                     Right Turn: OK
                     Straight: OK
+                    Left Turn: OK
                      */
-                    if (diff == 2)
+                if (diff == 3)
+                {
+                    switch (thisTurn)
                     {
-                        switch (thisTurn)
-                        {
-                            case TurnType.RightTurn:
-                            case TurnType.Straight:
-                                return true;
-                            default:
-                                return false;
-                        }
+                    case TurnType.RightTurn:
+                    case TurnType.Straight:
+                    case TurnType.LeftTurn:
+                        return true;
+                    default:
+                        return false;
                     }
+                }
 
-                    /*
-                    Scenario 3:
+                /*
+                    Scenario 2:
                            2
                         |  |  |
                         |     |
-                        |  |  |
-                 -------       -------
-                       <------- C2
+                        |C2|  |
+                 ------- |     -------
+                       <--
                3 -- -- -       -- -- - 1
 
                  -------       -------
@@ -1191,277 +1415,129 @@ namespace Transidious
                         |  |  |
                            0
                     Right Turn: OK
-                    U-Turn: OK
+                    Straight: OK
+                    UTurn: OK
                      */
-                    if (diff == 1)
+                if (diff == 2)
+                {
+                    switch (thisTurn)
                     {
-                        switch (thisTurn)
-                        {
-                            case TurnType.RightTurn:
-                            case TurnType.UTurn:
-                                return true;
-                            default:
-                                return false;
-                        }
-                    }
-
-                    Debug.Assert(false, "should not be possible! (" + diff + ")");
-                    return false;
-                case TurnType.UTurn:
-                    /*
-                        Scenario 1:
-                               2
-                            |  |  |
-                            |     |
-                            |  |  |
-                     -------       -------
-                           <---
-                   3 -- -- -  |    -- -- - 1
-                          C2 --
-                     -------       -------
-                            |  | C|
-                            |     |
-                            |  |  |
-                               0
-                        Right Turn: OK
-                        Straight: OK
-                         */
-                    if (diff == 3)
-                    {
-                        switch (thisTurn)
-                        {
-                            case TurnType.RightTurn:
-                            case TurnType.Straight:
-                                return true;
-                            default:
-                                return false;
-                        }
-                    }
-
-                    /*
-                        Scenario 2:
-                               2
-                            |  |  |
-                            |     |
-                            |C2| A|
-                     ------- |   | -------
-                             -----
-                   3 -- -- -       -- -- - 1
-
-                     -------       -------
-                            |  | C|
-                            |     |
-                            |  |  |
-                               0
-                        Right Turn: OK
-                         */
-                    if (diff == 2)
-                    {
-                        switch (thisTurn)
-                        {
-                            case TurnType.RightTurn:
-                                return true;
-                            default:
-                                return false;
-                        }
-                    }
-
-                    /*
-                        Scenario 3:
-                               2
-                            |  |  |
-                            |     |
-                            |  |  |
-                     -------       -------
-                                 ---- C2
-                   3 -- -- -     | -- -- - 1
-                                 --->
-                     -------       -------
-                            |  | C|
-                            |     |
-                            |  |  |
-                               0
-                        No Turn allowed
-                         */
-                    if (diff == 1)
-                    {
+                    case TurnType.RightTurn:
+                    case TurnType.Straight:
+                    case TurnType.UTurn:
+                        return true;
+                    default:
                         return false;
                     }
+                }
 
-                    Debug.Assert(false, "should not be possible! (" + diff + ")");
-                    return false;
-                case TurnType.RightTurn:
-                    /*
-                        Scenario 1:
-                               2
-                            |  |  |
-                            |     |
-                            |  |  |
-                     -------       -------
+                /*
+                    Scenario 3:
+                           2
+                        |  |  |
+                        |     |
+                        |  | A|
+                 -------     | -------
+                             ---- C2
+               3 -- -- -       -- -- - 1
 
-                   3 -- -- -       -- -- - 1
-                          C2 -
-                     ------- |     -------
-                            |V | C|
-                            |     |
-                            |  |  |
-                               0
-                        Right Turn: OK
-                        Straight: OK
-                        Left Turn: OK
-                         */
-                    if (diff == 3)
+                 -------       -------
+                        |  | C|
+                        |     |
+                        |  |  |
+                           0
+                    Right Turn: OK
+                    UTurn: OK
+                     */
+                if (diff == 1)
+                {
+                    switch (thisTurn)
                     {
-                        switch (thisTurn)
-                        {
-                            case TurnType.RightTurn:
-                            case TurnType.Straight:
-                            case TurnType.LeftTurn:
-                                return true;
-                            default:
-                                return false;
-                        }
-                    }
-
-                    /*
-                        Scenario 2:
-                               2
-                            |  |  |
-                            |     |
-                            |C2|  |
-                     ------- |     -------
-                           <--
-                   3 -- -- -       -- -- - 1
-
-                     -------       -------
-                            |  | C|
-                            |     |
-                            |  |  |
-                               0
-                        Right Turn: OK
-                        Straight: OK
-                        UTurn: OK
-                         */
-                    if (diff == 2)
-                    {
-                        switch (thisTurn)
-                        {
-                            case TurnType.RightTurn:
-                            case TurnType.Straight:
-                            case TurnType.UTurn:
-                                return true;
-                            default:
-                                return false;
-                        }
-                    }
-
-                    /*
-                        Scenario 3:
-                               2
-                            |  |  |
-                            |     |
-                            |  | A|
-                     -------     | -------
-                                 ---- C2
-                   3 -- -- -       -- -- - 1
-
-                     -------       -------
-                            |  | C|
-                            |     |
-                            |  |  |
-                               0
-                        Right Turn: OK
-                        UTurn: OK
-                         */
-                    if (diff == 1)
-                    {
-                        switch (thisTurn)
-                        {
-                            case TurnType.RightTurn:
-                            case TurnType.UTurn:
-                                return true;
-                            default:
-                                return false;
-                        }
-                    }
-
-                    Debug.Assert(false, "should not be possible! (" + diff + ")");
-                    return false;
-                case TurnType.LeftTurn:
-                    /*
-                        Scenario 1:
-                               2
-                            |  |  |
-                            |     |
-                            |  | A|
-                     -------     | -------
-                                 |
-                   3 -- -- -     | -- -- - 1
-                          C2 -----
-                     -------       -------
-                            |  | C|
-                            |     |
-                            |  |  |
-                               0
-                        No turn allowed
-                         */
-                    if (diff == 3)
-                    {
+                    case TurnType.RightTurn:
+                    case TurnType.UTurn:
+                        return true;
+                    default:
                         return false;
                     }
+                }
 
-                    /*
-                        Scenario 2:
-                               2
-                            |  |  |
-                            |     |
-                            |C2|  |
-                     ------- |     -------
+                Debug.Assert(false, "should not be possible! (" + diff + ")");
+                return false;
+            case TurnType.LeftTurn:
+                /*
+                    Scenario 1:
+                           2
+                        |  |  |
+                        |     |
+                        |  | A|
+                 -------     | -------
                              |
-                   3 -- -- - |     -- -- - 1
-                             -------->
-                     -------       -------
-                            |  | C|
-                            |     |
-                            |  |  |
-                               0
-                        No turn allowed
-                         */
-                    if (diff == 2)
+               3 -- -- -     | -- -- - 1
+                      C2 -----
+                 -------       -------
+                        |  | C|
+                        |     |
+                        |  |  |
+                           0
+                    No turn allowed
+                     */
+                if (diff == 3)
+                {
+                    return false;
+                }
+
+                /*
+                    Scenario 2:
+                           2
+                        |  |  |
+                        |     |
+                        |C2|  |
+                 ------- |     -------
+                         |
+               3 -- -- - |     -- -- - 1
+                         -------->
+                 -------       -------
+                        |  | C|
+                        |     |
+                        |  |  |
+                           0
+                    No turn allowed
+                     */
+                if (diff == 2)
+                {
+                    return false;
+                }
+
+                /*
+                    Scenario 3:
+                           2
+                        |  |  |
+                        |     |
+                        |  |  |
+                 -------       -------
+                         ------- C2
+               3 -- -- - |     -- -- - 1
+                         |
+                 ------- |     -------
+                        |V | C|
+                        |     |
+                        |  |  |
+                           0
+                    Right Turn: OK
+                     */
+                if (diff == 1)
+                {
+                    switch (thisTurn)
                     {
+                    case TurnType.RightTurn:
+                        return true;
+                    default:
                         return false;
                     }
+                }
 
-                    /*
-                        Scenario 3:
-                               2
-                            |  |  |
-                            |     |
-                            |  |  |
-                     -------       -------
-                             ------- C2
-                   3 -- -- - |     -- -- - 1
-                             |
-                     ------- |     -------
-                            |V | C|
-                            |     |
-                            |  |  |
-                               0
-                        Right Turn: OK
-                         */
-                    if (diff == 1)
-                    {
-                        switch (thisTurn)
-                        {
-                            case TurnType.RightTurn:
-                                return true;
-                            default:
-                                return false;
-                        }
-                    }
-
-                    Debug.Assert(false, "should not be possible! (" + diff + ")");
-                    return false;
+                Debug.Assert(false, "should not be possible! (" + diff + ")");
+                return false;
             }
 
             Debug.Assert(false, "should not be possible!");

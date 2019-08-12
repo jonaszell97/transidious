@@ -697,109 +697,15 @@ namespace Transidious.PathPlanning
             return null;
         }
 
-        float OuterProduct(Vector3 a, Vector3 b, Vector3 p)
-        {
-            return (p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x);
-        }
-
-        static Math.PointPosition GetPointPosition(Vector3 p, Map.PointOnStreet pos)
-        {
-            if (pos.seg.street.isOneWay)
-                return Math.PointPosition.Right;
-
-            var a = pos.seg.positions[pos.prevIdx];
-            var b = pos.seg.positions[pos.prevIdx + 1];
-
-            return Math.GetPointPosition(a, b, p);
-        }
-
         static IStop GetNearestIntersection(Math.PointPosition pointPos, Map.PointOnStreet pos, bool isGoal = false)
         {
             switch (pointPos)
             {
-                case Math.PointPosition.Left:
-                    return isGoal ? pos.seg.End : pos.seg.Begin;
-                default:
-                    return isGoal ? pos.seg.Begin : pos.seg.End;
+            case Math.PointPosition.Left:
+                return isGoal ? pos.seg.End : pos.seg.Begin;
+            default:
+                return isGoal ? pos.seg.Begin : pos.seg.End;
             }
-        }
-
-        static float GetDistanceFromStart(StreetSegment seg, Vector3 pos, bool backward)
-        {
-            if (backward)
-            {
-                return Mathf.Max(0f, seg.GetDistanceFromEndStopLine(pos));
-            }
-            else
-            {
-                return Mathf.Max(0f, seg.GetDistanceFromStartStopLine(pos));
-            }
-        }
-
-        static float GetDistanceFromEnd(StreetSegment seg, Vector3 pos, bool backward)
-        {
-            if (backward)
-            {
-                return Mathf.Max(0f, seg.GetDistanceFromStartStopLine(pos));
-            }
-            else
-            {
-                return Mathf.Max(0f, seg.GetDistanceFromEndStopLine(pos));
-            }
-        }
-
-        static Vector3[] GetPartialDrivePositions(Vector3 from, Vector3 to,
-                                                  StreetSegment seg, bool backward,
-                                                  bool addFrom, bool addTo)
-        {
-            var segPositions = new List<Vector3>(seg.positions);
-            var positions = new List<Vector3>();
-
-            float startDistance = GetDistanceFromStart(seg, from, backward);
-            float endDistance = GetDistanceFromEnd(seg, to, backward);
-
-            if (backward)
-            {
-                segPositions.Reverse();
-            }
-
-            int j = 0;
-            int jLast = seg.positions.Count - 1;
-
-            while (true)
-            {
-                var dist = GetDistanceFromStart(seg, segPositions[j], backward);
-                if (dist >= startDistance)
-                    break;
-
-                if (j == seg.positions.Count - 1)
-                    break;
-
-                ++j;
-            }
-
-            while (true)
-            {
-                var dist = GetDistanceFromEnd(seg, segPositions[jLast], backward);
-                if (dist >= endDistance)
-                    break;
-
-                if (jLast == j)
-                    break;
-
-                --jLast;
-            }
-
-            var range = segPositions.GetRange(j, jLast - j + (addTo && !addFrom ? 1 : 0));
-            if (addFrom && (range.Count == 0 || !from.Equals(range.First())))
-                positions.Add(from);
-
-            positions.AddRange(range);
-
-            if (addTo && (range.Count == 0 || !positions.Last().Equals(to)))
-                positions.Add(to);
-
-            return positions.ToArray();
         }
 
         PathPlanningResult CreateWalk(Vector3 from, Vector3 to)
@@ -810,6 +716,18 @@ namespace Transidious.PathPlanning
                 new List<PathStep> {
                     new WalkStep(from, to)
                 });
+        }
+
+        public Tuple<Vector3, Math.PointPosition> GetPositionOnLane(Map.PointOnStreet pointOnStreet, Vector2 loc)
+        {
+            var street = pointOnStreet.seg;
+            var closestPtAndPosFrom = street.GetClosestPointAndPosition(loc);
+            var positions = GameController.instance.sim.trafficSim.GetPath(
+                street, closestPtAndPosFrom.Item2 == Math.PointPosition.Right
+                    ? street.RightmostLane 
+                    : street.LeftmostLane);
+
+            return StreetSegment.GetClosestPointAndPosition(loc, positions);
         }
 
         public PathPlanningResult FindClosestDrive(Map map, Vector2 from, Vector2 to)
@@ -827,8 +745,8 @@ namespace Transidious.PathPlanning
                 return CreateWalk(from, to);
             }
 
-            var startSide = GetPointPosition(from, nearestPtFrom);
-            var endSide = GetPointPosition(to, nearestPtTo);
+            var startSide = Math.GetPointPosition(from, nearestPtFrom);
+            var endSide = Math.GetPointPosition(to, nearestPtTo);
 
             var options = new PathPlanningOptions
             {
@@ -836,11 +754,14 @@ namespace Transidious.PathPlanning
                 goal = GetNearestIntersection(endSide, nearestPtTo, true),
             };
 
+            var startPosOnLane = GetPositionOnLane(nearestPtFrom, from);
+            var endPosOnLane = GetPositionOnLane(nearestPtTo, to);
+
             var simpleJourney = false;
             if (nearestPtFrom.seg == nearestPtTo.seg)
             {
-                var startDistance = (nearestPtFrom.seg.positions.First() - nearestPtFrom.pos).sqrMagnitude;
-                var endDistance = (nearestPtFrom.seg.positions.First() - nearestPtTo.pos).sqrMagnitude;
+                var startDistance = (nearestPtFrom.seg.drivablePositions.First() - nearestPtFrom.pos).sqrMagnitude;
+                var endDistance = (nearestPtFrom.seg.drivablePositions.First() - nearestPtTo.pos).sqrMagnitude;
                 var backward = startDistance > endDistance;
 
                 simpleJourney = !startDistance.Equals(endDistance) && startSide == endSide
@@ -869,15 +790,18 @@ namespace Transidious.PathPlanning
                 }
             }
 
-            result.steps.Insert(0, new WalkStep(from, nearestPtFrom.pos));
+            var startPos = startPosOnLane.Item1;
+            var endPos = endPosOnLane.Item1;
+
+            result.steps.Insert(0, new WalkStep(from, startPos));
 
             if (simpleJourney)
             {
-                if (!nearestPtFrom.pos.Equals(nearestPtTo.pos))
+                if (!startPos.Equals(endPos))
                 {
                     result.steps.Insert(1, new PartialDriveStep(
-                        nearestPtFrom.pos,
-                        nearestPtTo.pos,
+                        startPos,
+                        endPos,
                         new DriveSegment
                         {
                             segment = nearestPtFrom.seg,
@@ -890,7 +814,7 @@ namespace Transidious.PathPlanning
                 if (!nearestPtFrom.pos.Equals(options.start.Location))
                 {
                     result.steps.Insert(1, new PartialDriveStep(
-                        nearestPtFrom.pos,
+                        startPos,
                         options.start.Location,
                         new DriveSegment
                         {
@@ -901,7 +825,7 @@ namespace Transidious.PathPlanning
 
                 result.steps.Add(new PartialDriveStep(
                         options.goal.Location,
-                        nearestPtTo.pos,
+                        endPos,
                         new DriveSegment
                         {
                             segment = nearestPtTo.seg,
@@ -909,7 +833,7 @@ namespace Transidious.PathPlanning
                         }, false, true));
             }
 
-            result.steps.Add(new WalkStep(nearestPtTo.pos, to));
+            result.steps.Add(new WalkStep(endPos, to));
             return result;
         }
     }

@@ -18,6 +18,7 @@ enum StreetType {
     Secondary,
     Tertiary,
     Residential,
+    Link,
     Path,
     River,
 
@@ -88,17 +89,20 @@ class DefaultArea : Area
         StreetInfo<.Primary, [
             Tag<"highway", "primary">
         ]>,
-        StreetInfo<.Primary, [
+        StreetInfo<.Link, [
             Tag<"highway", "primary_link">
         ]>,
         StreetInfo<.Secondary, [
             Tag<"highway", "secondary">
         ]>,
-        StreetInfo<.Secondary, [
+        StreetInfo<.Link, [
             Tag<"highway", "secondary_link">
         ]>,
         StreetInfo<.Tertiary, [
             Tag<"highway", "tertiary">
+        ]>,
+        StreetInfo<.Link, [
+            Tag<"highway", "tertiary_link">
         ]>,
         StreetInfo<.FootPath, [
             Tag<"highway", "path">
@@ -119,6 +123,12 @@ class DefaultArea : Area
 
     override transitStops = [
         TransitStopInfo<[
+            Tag<"highway", "bus_stop">,
+        ]>,
+        TransitStopInfo<[
+            Tag<"public_transport", "stop_position">,
+        ]>,
+        TransitStopInfo<[
             Tag<"railway", "stop">,
         ]>,
         TransitStopInfo<[
@@ -133,6 +143,10 @@ class DefaultArea : Area
     ]
 
     override transitLines = [
+        TransitLineInfo<.Bus, [
+            Tag<"type", "route">,
+            Tag<"route", "bus">
+        ]>,
         TransitLineInfo<.Tram, [
             Tag<"type", "route">,
             Tag<"route", "tram">

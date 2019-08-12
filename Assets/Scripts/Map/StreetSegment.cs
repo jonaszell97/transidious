@@ -70,18 +70,18 @@ namespace Transidious
         {
             switch (status)
             {
-                case Status.Green:
-                    timeToNextSwitch = DefaultGreenTime;
-                    break;
-                case Status.Red:
-                    timeToNextSwitch = redTime;
-                    break;
-                case Status.Yellow:
-                    timeToNextSwitch = DefaultYellowTime;
-                    break;
-                case Status.YellowRed:
-                    timeToNextSwitch = DefaultYellowRedTime;
-                    break;
+            case Status.Green:
+                timeToNextSwitch = DefaultGreenTime;
+                break;
+            case Status.Red:
+                timeToNextSwitch = redTime;
+                break;
+            case Status.Yellow:
+                timeToNextSwitch = DefaultYellowTime;
+                break;
+            case Status.YellowRed:
+                timeToNextSwitch = DefaultYellowRedTime;
+                break;
             }
         }
 
@@ -127,6 +127,7 @@ namespace Transidious
         [System.Serializable]
         public struct SerializedStreetIntersection
         {
+            public int id;
             public SerializableVector3 position;
         }
 
@@ -183,13 +184,9 @@ namespace Transidious
         {
             return new SerializedStreetIntersection
             {
+                id = id,
                 position = new SerializableVector3(position)
             };
-        }
-
-        public static void Deserialize(Map map, SerializedStreetIntersection inter)
-        {
-            map.CreateIntersection(inter.position.ToVector());
         }
 
         public void DeleteSegment(StreetSegment seg)
@@ -209,7 +206,11 @@ namespace Transidious
         {
             get
             {
+#if UNITY_EDITOR
+                return intersectingStreets.Where(s => s.street.type != Street.Type.FootPath).Select(s => s as IRoute);
+#else
                 return intersectingStreets.Select(s => s as IRoute);
+#endif
             }
         }
 
@@ -587,27 +588,30 @@ namespace Transidious
 
             bool shouldGenerateTrafficLights = false;
             bool allOneWay = true;
+            bool foundLink = false;
 
             foreach (var seg in intersectingStreets)
             {
                 allOneWay &= seg.street.isOneWay;
                 switch (seg.street.type)
                 {
-                    case Street.Type.Primary:
-                    case Street.Type.Secondary:
-                    case Street.Type.Tertiary:
-                        shouldGenerateTrafficLights = true;
-                        break;
-                    default:
-                        break;
-                }
-
-                if (shouldGenerateTrafficLights)
+                case Street.Type.Primary:
+                case Street.Type.Secondary:
+                // case Street.Type.Tertiary:
+                    shouldGenerateTrafficLights = true;
                     break;
+                case Street.Type.Link:
+                    foundLink = true;
+                    break;
+                default:
+                    break;
+                }
             }
 
-            if (!shouldGenerateTrafficLights || allOneWay)
+            if (!shouldGenerateTrafficLights || allOneWay || foundLink)
+            {
                 return;
+            }
 
             var trafficSim = map.Game.sim.trafficSim;
 
@@ -688,6 +692,7 @@ namespace Transidious
         [System.Serializable]
         public struct SerializedStreetSegment
         {
+            public int id;
             public List<SerializableVector3> positions;
             public int startIntersectionID;
             public int endIntersectionID;
@@ -707,6 +712,7 @@ namespace Transidious
         /// The path of this street segment.
         /// </summary>
         public List<Vector3> positions;
+        public List<Vector3> drivablePositions;
 
         /// List of distances from the start to this position.
         public List<float> cumulativeDistances;
@@ -832,6 +838,37 @@ namespace Transidious
             {
                 EndStopLineDistance = 10f * Map.Meters;
             }
+
+            UpdateDrivablePositions();
+        }
+
+        void UpdateDrivablePositions()
+        {
+            // Skip positions that are in front of the start stop line.
+            int i = 1;
+            while (i < positions.Count && cumulativeDistances[i] <= BeginStopLineDistance)
+            {
+                ++i;
+            }
+
+            // Skip positions that are behind the end stop line.
+            int iLast = positions.Count - 1;
+            while (iLast > 0 && (length - cumulativeDistances[iLast] <= EndStopLineDistance))
+            {
+                --iLast;
+            }
+            
+            drivablePositions = new List<Vector3>();
+
+            // Include stop line positions.
+            drivablePositions.Add(GetStartStopLinePosition());
+
+            for (int j = i; j <= iLast; ++j)
+            {
+                drivablePositions.Add(positions[j]);
+            }
+
+            drivablePositions.Add(GetEndStopLinePosition());
         }
 
         public int LanePositionFromMiddle(int lane, bool ignoreOneWay = false)
@@ -917,10 +954,10 @@ namespace Transidious
 
         public Tuple<Vector3, Math.PointPosition> GetClosestPointAndPosition(Vector3 pos)
         {
-            return GetClosestPointAndPosition(pos, positions);
+            return GetClosestPointAndPosition(pos, drivablePositions);
         }
 
-        public Tuple<Vector3, Math.PointPosition>
+        public static Tuple<Vector3, Math.PointPosition>
         GetClosestPointAndPosition(Vector3 pos, IReadOnlyList<Vector3> positions)
         {
             var minDist = float.PositiveInfinity;
@@ -948,6 +985,11 @@ namespace Transidious
         }
 
         public int GetClosestPoint(Vector3 pos)
+        {
+            return GetClosestPoint(pos, drivablePositions);
+        }
+
+        public static int GetClosestPoint(Vector3 pos, IReadOnlyList<Vector3> positions)
         {
             pos.z = 0f;
 
@@ -992,6 +1034,20 @@ namespace Transidious
 
             var cumulativeDist = cumulativeDistances[closestIdx] - BeginStopLineDistance;
             return cumulativeDist + (closestPt - pos).magnitude;
+        }
+
+        public float GetDistanceFromStartStopLine(Vector2 pos, IReadOnlyList<Vector3> offsetPositions)
+        {
+            var closestIdx = GetClosestPoint(pos, offsetPositions);
+            Vector2 closestPt = offsetPositions[closestIdx];
+
+            float dist = (closestPt - pos).magnitude;
+            for (var i = 1; i <= closestIdx; ++i)
+            {
+                dist += (offsetPositions[i] - offsetPositions[i - 1]).magnitude;
+            }
+
+            return dist;
         }
 
         public float GetDistanceFromEndStopLine(Vector2 pos)
@@ -1132,87 +1188,88 @@ namespace Transidious
         {
             switch (type)
             {
-                case Street.Type.Primary:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return lanes * laneWidth + 3f * Map.Meters;
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return lanes * laneWidth;
-                    }
+            case Street.Type.Primary:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return lanes * laneWidth + 3f * Map.Meters;
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return lanes * laneWidth;
+                }
 
-                    break;
-                case Street.Type.Secondary:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return lanes * laneWidth + 2f * Map.Meters;
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                            return lanes * laneWidth;
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+                break;
+            case Street.Type.Secondary:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return lanes * laneWidth + 2f * Map.Meters;
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                    return lanes * laneWidth;
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                case Street.Type.Tertiary:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return lanes * laneWidth + 1f * Map.Meters;
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                            return lanes * laneWidth;
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+                break;
+            case Street.Type.Tertiary:
+            case Street.Type.Link:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return lanes * laneWidth + 1f * Map.Meters;
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                    return lanes * laneWidth;
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                case Street.Type.Residential:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return lanes * laneWidth;
-                        case InputController.RenderingDistance.Far:
-                            return lanes * laneWidth - 1f * Map.Meters;
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+                break;
+            case Street.Type.Residential:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return lanes * laneWidth;
+                case InputController.RenderingDistance.Far:
+                    return lanes * laneWidth - 1f * Map.Meters;
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                case Street.Type.Path:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return lanes * laneWidth * 0.3f;
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+                break;
+            case Street.Type.Path:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return lanes * laneWidth * 0.3f;
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                case Street.Type.FootPath:
-                    return 2 * laneWidth * 0.3f;
-                case Street.Type.River:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return laneWidth * 2.2f;
-                        case InputController.RenderingDistance.Far:
-                            return laneWidth * 2f;
-                        case InputController.RenderingDistance.VeryFar:
-                            return laneWidth * 1.8f;
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+                break;
+            case Street.Type.FootPath:
+                return 2 * laneWidth * 0.3f;
+            case Street.Type.River:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return laneWidth * 2.2f;
+                case InputController.RenderingDistance.Far:
+                    return laneWidth * 2f;
+                case InputController.RenderingDistance.VeryFar:
+                    return laneWidth * 1.8f;
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                default:
-                    break;
+                break;
+            default:
+                break;
             }
 
             throw new System.ArgumentException(string.Format("Illegal enum value {0}", distance));
@@ -1227,73 +1284,74 @@ namespace Transidious
         {
             switch (type)
             {
-                case Street.Type.Primary:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return 1f * Map.Meters;
-                        case InputController.RenderingDistance.Far:
-                            return 3f * Map.Meters;
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+            case Street.Type.Primary:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return 1f * Map.Meters;
+                case InputController.RenderingDistance.Far:
+                    return 3f * Map.Meters;
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                case Street.Type.Secondary:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return 1f * Map.Meters;
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                            return 3f * Map.Meters;
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+                break;
+            case Street.Type.Secondary:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return 1f * Map.Meters;
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                    return 3f * Map.Meters;
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                case Street.Type.Tertiary:
-                case Street.Type.Residential:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return 1f * Map.Meters;
-                        case InputController.RenderingDistance.Far:
-                            return 3f * Map.Meters;
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+                break;
+            case Street.Type.Tertiary:
+            case Street.Type.Residential:
+            case Street.Type.Link:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return 1f * Map.Meters;
+                case InputController.RenderingDistance.Far:
+                    return 3f * Map.Meters;
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                case Street.Type.Path:
-                case Street.Type.FootPath:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+                break;
+            case Street.Type.Path:
+            case Street.Type.FootPath:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                case Street.Type.River:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                            return 2f * Map.Meters;
-                        case InputController.RenderingDistance.Far:
-                            return 3f * Map.Meters;
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return 0f;
-                    }
+                break;
+            case Street.Type.River:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                    return 2f * Map.Meters;
+                case InputController.RenderingDistance.Far:
+                    return 3f * Map.Meters;
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return 0f;
+                }
 
-                    break;
-                default:
-                    break;
+                break;
+            default:
+                break;
             }
 
             throw new System.ArgumentException(string.Format("Illegal enum value {0}", distance));
@@ -1308,68 +1366,69 @@ namespace Transidious
         {
             switch (type)
             {
-                case Street.Type.Primary:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                            return Color.white;
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return new Color(0.7f, 0.7f, 0.7f);
-                    }
+            case Street.Type.Primary:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                    return Color.white;
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return new Color(0.7f, 0.7f, 0.7f);
+                }
 
-                    break;
-                case Street.Type.Secondary:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                            return Color.white;
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return new Color(0.7f, 0.7f, 0.7f);
-                    }
+                break;
+            case Street.Type.Secondary:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                    return Color.white;
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return new Color(0.7f, 0.7f, 0.7f);
+                }
 
-                    break;
-                case Street.Type.Tertiary:
-                case Street.Type.Residential:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                            return Color.white;
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return new Color(0.7f, 0.7f, 0.7f);
-                    }
+                break;
+            case Street.Type.Tertiary:
+            case Street.Type.Residential:
+            case Street.Type.Link:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                    return Color.white;
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return new Color(0.7f, 0.7f, 0.7f);
+                }
 
-                    break;
-                case Street.Type.Path:
-                case Street.Type.FootPath:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return new Color(232f / 255f, 220f / 255f, 192f / 255f);
-                    }
+                break;
+            case Street.Type.Path:
+            case Street.Type.FootPath:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return new Color(232f / 255f, 220f / 255f, 192f / 255f);
+                }
 
-                    break;
-                case Street.Type.River:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return new Color(160f / 255f, 218f / 255f, 242f / 255f);
-                    }
+                break;
+            case Street.Type.River:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return new Color(160f / 255f, 218f / 255f, 242f / 255f);
+                }
 
-                    break;
-                default:
-                    break;
+                break;
+            default:
+                break;
             }
 
             throw new System.ArgumentException(string.Format("Illegal enum value {0}", distance));
@@ -1384,65 +1443,66 @@ namespace Transidious
         {
             switch (type)
             {
-                case Street.Type.Primary:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return Color.gray;
-                    }
+            case Street.Type.Primary:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return Color.gray;
+                }
 
-                    break;
-                case Street.Type.Secondary:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return Color.gray;
-                    }
+                break;
+            case Street.Type.Secondary:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return Color.gray;
+                }
 
-                    break;
-                case Street.Type.Tertiary:
-                case Street.Type.Residential:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return Color.gray;
-                    }
+                break;
+            case Street.Type.Tertiary:
+            case Street.Type.Residential:
+            case Street.Type.Link:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return Color.gray;
+                }
 
-                    break;
-                case Street.Type.Path:
-                case Street.Type.FootPath:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return new Color(0f, 0f, 0f, 0f);
-                    }
+                break;
+            case Street.Type.Path:
+            case Street.Type.FootPath:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return new Color(0f, 0f, 0f, 0f);
+                }
 
-                    break;
-                case Street.Type.River:
-                    switch (distance)
-                    {
-                        case InputController.RenderingDistance.Near:
-                        case InputController.RenderingDistance.Far:
-                        case InputController.RenderingDistance.VeryFar:
-                        case InputController.RenderingDistance.Farthest:
-                            return new Color(116f / 255f, 187f / 255f, 218f / 255f);
-                    }
+                break;
+            case Street.Type.River:
+                switch (distance)
+                {
+                case InputController.RenderingDistance.Near:
+                case InputController.RenderingDistance.Far:
+                case InputController.RenderingDistance.VeryFar:
+                case InputController.RenderingDistance.Farthest:
+                    return new Color(116f / 255f, 187f / 255f, 218f / 255f);
+                }
 
-                    break;
-                default:
-                    break;
+                break;
+            default:
+                break;
             }
 
             throw new System.ArgumentException(string.Format("Illegal enum value {0}", distance));
@@ -1642,7 +1702,7 @@ namespace Transidious
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.red;
-            foreach (var pos in positions)
+            foreach (var pos in drivablePositions)
             {
                 Gizmos.DrawSphere(pos, 3f * Map.Meters);
             }
@@ -1677,7 +1737,7 @@ namespace Transidious
                         {
                             continue;
                         }
-                        
+
                         _startIntersectionMeshes.Add(MeshBuilder.CreateSmoothLine(new List<Vector3>(path), .75f * Map.Meters));
                     }
                 }
@@ -1761,18 +1821,18 @@ namespace Transidious
 
             switch (street.type)
             {
-                case Street.Type.Primary:
-                    min = 9f * Map.Meters;
-                    max = 15f * Map.Meters;
-                    factor = 6f / (100f * Map.Meters);
+            case Street.Type.Primary:
+                min = 9f * Map.Meters;
+                max = 15f * Map.Meters;
+                factor = 6f / (100f * Map.Meters);
 
-                    break;
-                default:
-                    min = 7.5f * Map.Meters;
-                    max = 15f * Map.Meters;
-                    factor = 5f / (100f * Map.Meters);
+                break;
+            default:
+                min = 7.5f * Map.Meters;
+                max = 15f * Map.Meters;
+                factor = 5f / (100f * Map.Meters);
 
-                    break;
+                break;
             }
 
             return Mathf.Clamp(factor * orthographicSize, min, max);
@@ -1790,27 +1850,27 @@ namespace Transidious
             var setTextActive = false;
             switch (dist)
             {
-                case InputController.RenderingDistance.Far:
-                    switch (street.type)
-                    {
-                        case Street.Type.Primary:
-                            setTextActive = true;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    break;
-                case InputController.RenderingDistance.VeryFar:
-                case InputController.RenderingDistance.Farthest:
+            case InputController.RenderingDistance.Far:
+                switch (street.type)
+                {
+                case Street.Type.Primary:
+                    setTextActive = true;
                     break;
                 default:
-                    if (streetName != null)
-                    {
-                        setTextActive = true;
-                    }
-
                     break;
+                }
+
+                break;
+            case InputController.RenderingDistance.VeryFar:
+            case InputController.RenderingDistance.Farthest:
+                break;
+            default:
+                if (streetName != null)
+                {
+                    setTextActive = true;
+                }
+
+                break;
             }
 
             if (setTextActive)
@@ -1887,12 +1947,9 @@ namespace Transidious
 
         public SerializedStreetSegment Serialize()
         {
-            if (hasTramTracks)
-            {
-                Debug.Log("henlo");
-            }
             return new SerializedStreetSegment
             {
+                id = id,
                 positions = positions.Select(p => new SerializableVector3(p)).ToList(),
                 startIntersectionID = startIntersection?.id ?? 0,
                 endIntersectionID = endIntersection?.id ?? 0,

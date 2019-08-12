@@ -22,6 +22,11 @@ namespace Transidious
             public int beginStopID;
             public int endStopID;
 
+            public SerializableDictionary<Tuple<int, int>, TrafficSimulator.PathSegmentInfo.Serializable[]>
+                streetSegmentOffsetMap;
+
+            public SerializableDictionary<int, TrafficSimulator.PathSegmentInfo.Serializable> pathSegmentInfoMap;
+
             public float totalTravelTime;
             public bool isBackRoute;
         }
@@ -38,6 +43,7 @@ namespace Transidious
         /// For each street segment this route is on, the index into the position vector where that
         /// segments positions start.
         Dictionary<Tuple<StreetSegment, int>, List<TrafficSimulator.PathSegmentInfo>> streetSegmentOffsetMap;
+        Dictionary<int, TrafficSimulator.PathSegmentInfo> pathSegmentInfoMap;
 
         public Stop beginStop;
         public Stop.Slot beginSlot;
@@ -67,6 +73,10 @@ namespace Transidious
             this.name = "(" + line.name + ") " + beginStop.name + " -> " + endStop.name;
             this.originalPath = path;
 
+            this.pathSegmentInfoMap = new Dictionary<int, TrafficSimulator.PathSegmentInfo>();
+            this.streetSegmentOffsetMap = new Dictionary<Tuple<StreetSegment, int>,
+                                                         List<TrafficSimulator.PathSegmentInfo>>();
+
             UpdatePath();
 
             Route previousRoute = beginStop.GetIncomingRouteFromDepot(line);
@@ -77,6 +87,17 @@ namespace Transidious
             else
             {
                 this.totalTravelTime = previousRoute.totalTravelTime + this.TravelTime;
+            }
+        }
+
+        void OnDestroy()
+        {
+            foreach (var entry in streetSegmentOffsetMap)
+            {
+                foreach (var seg in entry.Value)
+                {
+                    seg.segment.GetTransitRoutes(seg.lane).Remove(this);
+                }
             }
         }
 
@@ -163,11 +184,6 @@ namespace Transidious
 
         public void AddStreetSegmentOffset(TrafficSimulator.PathSegmentInfo info)
         {
-            if (streetSegmentOffsetMap == null)
-            {
-                streetSegmentOffsetMap = new Dictionary<Tuple<StreetSegment, int>, List<TrafficSimulator.PathSegmentInfo>>();
-            }
-
             var key = new Tuple<StreetSegment, int>(info.segment, info.lane);
             if (!streetSegmentOffsetMap.ContainsKey(key))
             {
@@ -175,6 +191,17 @@ namespace Transidious
             }
 
             streetSegmentOffsetMap[key].Add(info);
+
+            for (var i = info.offset; i < info.offset + info.length; ++i)
+            {
+                pathSegmentInfoMap.Add(i, info);
+            }
+        }
+
+        public Dictionary<Tuple<StreetSegment, int>, List<TrafficSimulator.PathSegmentInfo>>
+        GetStreetSegmentOffsetInfo()
+        {
+            return streetSegmentOffsetMap;
         }
 
         public List<TrafficSimulator.PathSegmentInfo> GetStreetSegmentOffsets(StreetSegment seg, int lane)
@@ -186,15 +213,9 @@ namespace Transidious
 
         public TrafficSimulator.PathSegmentInfo GetSegmentForPosition(int pos)
         {
-            foreach (var entry in streetSegmentOffsetMap)
+            if (pathSegmentInfoMap.TryGetValue(pos, out TrafficSimulator.PathSegmentInfo Value))
             {
-                foreach (var data in entry.Value)
-                {
-                    if (data.offset <= pos && data.offset + data.length >= pos)
-                    {
-                        return data;
-                    }
-                }
+                return Value;
             }
 
             return null;
@@ -377,6 +398,18 @@ namespace Transidious
                 beginStopID = beginStop.id,
                 endStopID = endStop.id,
 
+                streetSegmentOffsetMap = new SerializableDictionary<Tuple<int, int>,
+                                                        TrafficSimulator.PathSegmentInfo.Serializable[]> {
+                    keys = this.streetSegmentOffsetMap.Keys.Select(key => Tuple.Create(key.Item1.id, key.Item2)).ToArray(),
+                    values = this.streetSegmentOffsetMap.Values.Select(
+                        list => list.Select(info => info.Serialize()).ToArray()).ToArray(),
+                },
+                pathSegmentInfoMap = new SerializableDictionary<int,
+                                                        TrafficSimulator.PathSegmentInfo.Serializable> {
+                    keys = this.pathSegmentInfoMap.Keys.ToArray(),
+                    values = this.pathSegmentInfoMap.Values.Select(info => info.Serialize()).ToArray(),
+                },
+
                 totalTravelTime = totalTravelTime,
                 isBackRoute = isBackRoute
             };
@@ -384,11 +417,28 @@ namespace Transidious
 
         public void Deserialize(SerializedRoute route, Map map)
         {
-            id = route.id;
             Initialize(map.transitLineIDMap[route.lineID], map.transitStopIDMap[route.beginStopID],
                        map.transitStopIDMap[route.endStopID],
                        route.positions?.Select(v => v.ToVector()).ToList() ?? null,
                        route.isBackRoute);
+
+            for (var i = 0; i < route.pathSegmentInfoMap.keys.Length; ++i)
+            {
+                var key = route.pathSegmentInfoMap.keys[i];
+                var value = route.pathSegmentInfoMap.values[i];
+
+                pathSegmentInfoMap.Add(key, new TrafficSimulator.PathSegmentInfo(value));
+            }
+
+            for (var i = 0; i < route.streetSegmentOffsetMap.keys.Length; ++i)
+            {
+                var key = route.streetSegmentOffsetMap.keys[i];
+                var value = route.streetSegmentOffsetMap.values[i];
+
+                streetSegmentOffsetMap.Add(
+                    Tuple.Create(map.streetSegmentIDMap[key.Item1], key.Item2),
+                    value.Select(info => new TrafficSimulator.PathSegmentInfo(info)).ToList());
+            }
 
             originalPath = Path.Deserialize(route.originalPath);
         }
@@ -451,25 +501,6 @@ namespace Transidious
             {
                 return GameController.instance.transitEditor.lineInfoModal.selectedLine;
             }
-        }
-
-        IEnumerator UpdateColorPickerNextFrame(ColorPicker colorPicker)
-        {
-            yield return null;
-
-            colorPicker.UpdateBoundingBoxes(true);
-            colorPicker.SetColor(line.color);
-
-            yield break;
-        }
-
-        IEnumerator UpdateModalPositionNextFrame(UIModal modal, Vector3 pos)
-        {
-            yield return null;
-
-            modal.PositionAt(pos);
-            
-            yield break;
         }
 
         protected override void OnMouseDown()

@@ -24,6 +24,9 @@ namespace Transidious
             ///  The game is currently paused.
             /// </summary>
             Paused,
+
+            /// The game controller is disabled.
+            Disabled,
         }
 
         public enum MapEditorMode
@@ -103,6 +106,9 @@ namespace Transidious
         public Color bulldozeHighlightColor;
 
         // *** UI elements ***
+
+        /// The main loading screen.
+        public UILoadingScreen loadingScreen;
 
         /// The UI canvas.
         public Canvas uiCanvas;
@@ -304,10 +310,11 @@ namespace Transidious
             }
         }
 
-        public void LoadMap(OSMImportHelper.Area area)
+        public System.Collections.IEnumerator LoadMap(OSMImportHelper.Area area)
         {
-            SaveManager.LoadSave(this, area.ToString());
+            yield return SaveManager.LoadSave(this, area.ToString());
             this.status = GameStatus.Playing;
+            loadingScreen.gameObject.SetActive(false);
         }
 
         void RegisterUICallbacks()
@@ -323,6 +330,12 @@ namespace Transidious
         void Awake()
         {
             GameController._instance = this;
+
+            if (status == GameStatus.Disabled)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
 
             this.status = GameStatus.MainMenu;
             this.lang = new Translator("en_US");
@@ -345,8 +358,12 @@ namespace Transidious
         // Use this for initialization
         void Start()
         {
-            LoadMap(areaToLoad);
+            input.DisableControls();
+
             this.snapController = new SnapController(this);
+            StartCoroutine(LoadMap(areaToLoad));
+
+            input.EnableControls();
         }
 
         // Update is called once per frame
@@ -589,125 +606,6 @@ namespace Transidious
             sim.simulationSpeed = newSimSpeed;
 
             this.simSpeedButton.GetComponent<Image>().sprite = simSpeedSprites[newSimSpeed];
-        }
-
-        public void MouseDownStreetSegment(StreetSegment seg)
-        {
-            if (input.IsPointerOverUIElement())
-            {
-                return;
-            }
-
-            if (transitEditor.active)
-            {
-
-            }
-            else if (Bulldozing)
-            {
-                seg.DeleteSegment();
-            }
-            else if (seg.highlighted)
-            {
-                seg.highlighted = false;
-                seg.ResetBorderColor(input.renderingDistance);
-            }
-            else if (Viewing)
-            {
-                seg.highlighted = true;
-                seg.HighlightBorder(input.controller.Bulldozing);
-            }
-
-#if DEBUG
-            if (sim.trafficSim.manualTrafficLightControl)
-            {
-                seg.startTrafficLight?.Switch();
-                seg.endTrafficLight?.Switch();
-            }
-#endif
-        }
-
-        static readonly float endSnapThreshold = 5f * Map.Meters;
-
-        Vector3 GetClosestPointToCursor(StreetSegment seg)
-        {
-            var cursorPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            var minDist = float.PositiveInfinity;
-            var minPt = Vector3.zero;
-
-            for (int i = 1; i < seg.positions.Count; ++i)
-            {
-                var p0 = seg.positions[i - 1];
-                var p1 = seg.positions[i];
-
-                var closestPt = Math.NearestPointOnLine(p0, p1, cursorPos);
-                var sqrDist = (closestPt - cursorPos).sqrMagnitude;
-
-                if (sqrDist < minDist)
-                {
-                    minDist = sqrDist;
-                    minPt = closestPt;
-                }
-            }
-
-            var distanceFromStart = (seg.positions.First() - minPt).magnitude;
-            if (distanceFromStart < endSnapThreshold)
-            {
-                return seg.positions.First();
-            }
-
-            var distanceFromEnd = (seg.positions.Last() - minPt).magnitude;
-            if (distanceFromEnd < endSnapThreshold)
-            {
-                return seg.positions.Last();
-            }
-
-            return minPt;
-        }
-
-        void SnapMouseToPath(StreetSegment seg)
-        {
-            Cursor.visible = false;
-
-            var closestPt = GetClosestPointToCursor(seg);
-            var cursorObj = CreateCursorSprite;
-            cursorObj.SetActive(true);
-
-            cursorObj.transform.position = new Vector3(closestPt.x, closestPt.y, Map.Layer(MapLayer.Cursor));
-            mapEditor.hoveredStreetSegment = seg;
-        }
-
-        public void MouseOverStreetSegment(StreetSegment seg)
-        {
-            switch (editorMode)
-            {
-                case GameController.MapEditorMode.BulldozeMode:
-                    seg.UpdateBorderColor(bulldozeHighlightColor);
-                    break;
-                case GameController.MapEditorMode.ViewMode:
-                    seg.UpdateBorderColor(highlightColor);
-                    break;
-                case GameController.MapEditorMode.EditMode:
-                    SnapMouseToPath(seg);
-                    break;
-            }
-        }
-
-        public void MouseExitStreetSegment(StreetSegment seg)
-        {
-            if (!seg.highlighted && seg.outlineMeshObj != null)
-            {
-                seg.ResetBorderColor(input.renderingDistance);
-            }
-
-            Cursor.visible = true;
-
-            if (Editing)
-            {
-                var cursorObj = CreateCursorSprite;
-                cursorObj.SetActive(false);
-
-                mapEditor.hoveredStreetSegment = null;
-            }
         }
     }
 }

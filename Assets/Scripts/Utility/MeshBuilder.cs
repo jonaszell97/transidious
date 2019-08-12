@@ -234,7 +234,7 @@ namespace Transidious
 
         public static void AddQuadraticBezierCurve(List<Vector3> points,
                                                    Vector2 startPt, Vector2 endPt, Vector2 controlPt,
-                                                   int segments = 5)
+                                                   int segments = 15)
         {
             Debug.Assert(segments > 0, "segment count must be positive!");
             points.Add(startPt);
@@ -254,7 +254,7 @@ namespace Transidious
         public static void AddCubicBezierCurve(List<Vector3> points,
                                                Vector2 startPt, Vector2 endPt,
                                                Vector2 controlPt1, Vector2 controlPt2,
-                                               int segments = 5)
+                                               int segments = 15)
         {
             Debug.Assert(segments > 0, "segment count must be positive!");
             points.Add(startPt);
@@ -536,20 +536,24 @@ namespace Transidious
         }
 
         static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
-                                                       float currentOffset, out Vector3 perpendicular)
+                                                       float currentOffsetStart,
+                                                       float currentOffsetEnd,
+                                                       out Vector3 perpendicular)
         {
             var dir = p1 - p0;
             var perpendicular2d = -Vector2.Perpendicular(new Vector2(dir.x, dir.y)).normalized;
             perpendicular = new Vector3(perpendicular2d.x, perpendicular2d.y, 0f);
 
-            p0 = p0 + (perpendicular * currentOffset);
-            p1 = p1 + (perpendicular * currentOffset);
+            p0 = p0 + (perpendicular * currentOffsetStart);
+            p1 = p1 + (perpendicular * currentOffsetEnd);
 
             return new Tuple<Vector3, Vector3>(p0, p1);
         }
 
         static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
-                                                       float currentOffset, Vector3 prevPerpendicular,
+                                                       float currentOffsetStart,
+                                                       float currentOffsetEnd,
+                                                       Vector3 prevPerpendicular,
                                                        out Vector3 perpendicular)
         {
             var dir = p1 - p0;
@@ -559,14 +563,16 @@ namespace Transidious
             var mid = (perpendicular + prevPerpendicular).normalized;
             perpendicular = mid;
 
-            p0 = p0 + (mid * currentOffset);
-            p1 = p1 + (mid * currentOffset);
+            p0 = p0 + (mid * currentOffsetStart);
+            p1 = p1 + (mid * currentOffsetEnd);
 
             return new Tuple<Vector3, Vector3>(p0, p1);
         }
 
         public static List<Vector3> GetOffsetPath(IReadOnlyList<Vector3> segPositions, float offset)
         {
+            Debug.Assert(segPositions.Count != 1, "can't offset a path of length 1!");
+
             var positions = new List<Vector3>();
             var perpendicular = Vector3.zero;
 
@@ -577,13 +583,51 @@ namespace Transidious
 
                 if (j == 1)
                 {
-                    var offsetPoints = GetOffsetPoints(p0, p1, offset, out perpendicular);
+                    var offsetPoints = GetOffsetPoints(p0, p1, offset, offset, out perpendicular);
                     positions.Add(offsetPoints.Item1);
                     positions.Add(offsetPoints.Item2);
                 }
                 else
                 {
-                    var offsetPoints = GetOffsetPoints(p0, p1, offset, perpendicular,
+                    var offsetPoints = GetOffsetPoints(p0, p1, offset, offset, perpendicular,
+                                                       out perpendicular);
+
+                    positions.Add(offsetPoints.Item2);
+                }
+            }
+
+            return positions;
+        }
+
+        public static Vector2 GetOffsetPoint(Vector2 pt, float offset, Vector2 direction)
+        {
+            var perpendicular2d = -Vector2.Perpendicular(direction).normalized;
+            return pt + (offset * perpendicular2d);
+        }
+
+        public static List<Vector3> GetOffsetPath(IReadOnlyList<Vector3> segPositions,
+                                                  IReadOnlyList<float> offsets)
+        {
+            Debug.Assert(segPositions.Count != 1, "can't offset a path of length 1!");
+            Debug.Assert(segPositions.Count == offsets.Count, "offset count doesn't match!");
+
+            var positions = new List<Vector3>();
+            var perpendicular = Vector3.zero;
+
+            for (int j = 1; j < segPositions.Count; ++j)
+            {
+                Vector3 p0 = segPositions[j - 1];
+                Vector3 p1 = segPositions[j];
+
+                if (j == 1)
+                {
+                    var offsetPoints = GetOffsetPoints(p0, p1, offsets[j - 1], offsets[j], out perpendicular);
+                    positions.Add(offsetPoints.Item1);
+                    positions.Add(offsetPoints.Item2);
+                }
+                else
+                {
+                    var offsetPoints = GetOffsetPoints(p0, p1, offsets[j - 1], offsets[j], perpendicular,
                                                        out perpendicular);
 
                     positions.Add(offsetPoints.Item2);

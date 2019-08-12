@@ -113,6 +113,9 @@ namespace Transidious
         public Vector3 startingCameraPos;
         public float minX, maxX, minY, maxY;
 
+        /// The map's boundary.
+        public Vector3[] boundaryPositions;
+
         /// The object carrying the boundary mesh.
         public GameObject boundaryBackgroundObj;
 
@@ -242,7 +245,7 @@ namespace Transidious
         {
             get
             {
-                return input.controller;
+                return input?.controller;
             }
         }
 
@@ -324,6 +327,8 @@ namespace Transidious
 
         public void UpdateBoundary(Vector3[] positions)
         {
+            this.boundaryPositions = positions;
+
             var minX = this.minX - 1000f;
             var maxX = this.maxX + 1000f;
             var minY = this.minY - 1000f;
@@ -468,10 +473,38 @@ namespace Transidious
             tilesHeight = neededTilesY;
         }
 
+        public bool IsPointOnMap(Vector2 pt)
+        {
+            var b = new Vector2(pt.x, maxY);
+            var ray = new Ray2D(pt, Vector2.right);
+            var intersections = 0;
+
+            for (var i = 1; i < boundaryPositions.Length; ++i)
+            {
+                var p0 = boundaryPositions[i - 1];
+                var p1 = boundaryPositions[i];
+
+                Math.GetIntersectionPoint(pt, b, p0, p1, out bool found);
+
+                if (found)
+                {
+                    ++intersections;
+                }
+            }
+
+            return (intersections & 1) == 1;
+        }
+
         public void SetBackgroundColor(Color c)
         {
             var meshRenderer = boundaryBackgroundObj.GetComponent<MeshRenderer>();
             meshRenderer.material = GameController.GetUnlitMaterial(c);
+        }
+
+        public void MakeBackgroundTransparent()
+        {
+            var meshRenderer = boundaryBackgroundObj.GetComponent<MeshRenderer>();
+            meshRenderer.material = new Material(Shader.Find("Unlit/Transparent"));
         }
 
         public void ResetBackgroundColor()
@@ -534,10 +567,10 @@ namespace Transidious
                                 if (disregardRivers && seg.street.type == Street.Type.River)
                                     continue;
 
-                                for (int i = 1; i < seg.positions.Count; ++i)
+                                for (int i = 1; i < seg.drivablePositions.Count; ++i)
                                 {
-                                    var p0 = seg.positions[i - 1];
-                                    var p1 = seg.positions[i];
+                                    var p0 = seg.drivablePositions[i - 1];
+                                    var p1 = seg.drivablePositions[i];
 
                                     var closestPt = Math.NearestPointOnLine(p0, p1, position);
 
@@ -578,11 +611,27 @@ namespace Transidious
             return new PointOnStreet { seg = minSeg, pos = minPnt, prevIdx = prevIdx };
         }
 
-        public PointOnStreet GetClosestStreet(Vector3 position, bool disregardRivers = true)
+        public PointOnStreet GetClosestStreet(Vector3 position, bool mustBeOnMap = true, bool disregardRivers = true)
         {
             var tile = GetTile(position);
             if (tile == null)
+            {
+                if (mustBeOnMap)
+                {
+                    return null;
+                }
+
+                position = new Vector3(Mathf.Clamp(position.x, minX, maxX),
+                       Mathf.Clamp(position.y, minY, maxY),
+                       0f);
+
+                tile = GetTile(position);
+            }
+
+            if (mustBeOnMap && !IsPointOnMap(position))
+            {
                 return null;
+            }
 
             float minDist = float.PositiveInfinity;
             StreetSegment minSeg = null;
@@ -594,10 +643,10 @@ namespace Transidious
                 if (disregardRivers && seg.street.type == Street.Type.River)
                     continue;
 
-                for (int i = 1; i < seg.positions.Count; ++i)
+                for (int i = 1; i < seg.drivablePositions.Count; ++i)
                 {
-                    var p0 = seg.positions[i - 1];
-                    var p1 = seg.positions[i];
+                    var p0 = seg.drivablePositions[i - 1];
+                    var p1 = seg.drivablePositions[i];
 
                     var closestPt = Math.NearestPointOnLine(p0, p1, position);
                     var sqrDist = (closestPt - position).sqrMagnitude;
@@ -718,7 +767,7 @@ namespace Transidious
         }
 
         /// Create a new public transit line.
-        public LineBuilder CreateLine(TransitType type, string name, Color color)
+        public LineBuilder CreateLine(TransitType type, string name, Color color, int id = -1)
         {
             string currentName = name;
 
@@ -734,7 +783,7 @@ namespace Transidious
             line.transform.SetParent(this.transform);
             line.Initialize(this, currentName, type, color);
 
-            RegisterLine(line);
+            RegisterLine(line, id);
             return new LineBuilder(line);
         }
 
@@ -781,19 +830,20 @@ namespace Transidious
         }
 
         /// Create a route.
-        public Route CreateRoute()
+        public Route CreateRoute(int id = -1)
         {
             var obj = Instantiate(routePrefab);
             var route = obj.GetComponent<Route>();
-            RegisterRoute(route);
+            RegisterRoute(route, id);
 
             return route;
         }
 
         /// Register a new public transit line.
-        public void RegisterLine(Line line)
+        public void RegisterLine(Line line, int id = -1)
         {
-            line.id = transitLines.Count + 1;
+            id = id == -1 ? transitLines.Count + 1 : id;
+            line.id = id;
 
             transitLines.Add(line);
             transitLineMap.Add(line.name, line);
@@ -801,9 +851,10 @@ namespace Transidious
         }
 
         /// Register a new public transit line.
-        public void RegisterStop(Stop stop)
+        public void RegisterStop(Stop stop, int id = -1)
         {
-            stop.id = transitStops.Count + 1;
+            id = id == -1 ? transitStops.Count + 1 : id;
+            stop.id = id;
 
             transitStops.Add(stop);
             transitStopMap.Add(stop.name, stop);
@@ -811,15 +862,16 @@ namespace Transidious
         }
 
         /// Register a new public transit route.
-        public void RegisterRoute(Route route)
+        public void RegisterRoute(Route route, int id = -1)
         {
-            route.id = transitRoutes.Count + 1;
+            id = id == -1 ? transitRoutes.Count + 1 : id;
+            route.id = id;
 
             transitRoutes.Add(route);
             transitRouteIDMap.Add(route.id, route);
         }
 
-        public Stop CreateStop(string name, Vector2 location)
+        public Stop CreateStop(string name, Vector2 location, int id = -1)
         {
             string currentName = name;
 
@@ -830,11 +882,11 @@ namespace Transidious
                 ++i;
             }
 
-            return GetOrCreateStop(currentName, location);
+            return GetOrCreateStop(currentName, location, id);
         }
 
         /// Register a new public transit stop.
-        public Stop GetOrCreateStop(string name, Vector2 location)
+        public Stop GetOrCreateStop(string name, Vector2 location, int id = -1)
         {
             if (transitStopMap.TryGetValue(name, out Stop stop))
             {
@@ -846,7 +898,7 @@ namespace Transidious
             stop.transform.SetParent(this.transform);
             stop.Initialize(this, name, location);
 
-            RegisterStop(stop);
+            RegisterStop(stop, id);
             return stop;
         }
 
@@ -854,36 +906,53 @@ namespace Transidious
         ///  Create a street.
         /// </summary>
         public Street CreateStreet(string name, Street.Type type, bool lit,
-                                   bool oneWay, int maxspeed, int lanes)
+                                   bool oneWay, int maxspeed, int lanes,
+                                   int id = -1)
         {
+            string currentName = name;
+
+            var i = 1;
+            var modifiedName = false;
+
+            while (streetMap.TryGetValue(currentName, out Street _))
+            {
+                currentName = name + " (" + i.ToString() + ")";
+                modifiedName = true;
+                ++i;
+            }
+
+            id = id == -1 ? streets.Count + 1 : id;
+
             var streetObj = Instantiate(streetPrefab);
             streetObj.transform.SetParent(this.transform);
 
             var street = streetObj.GetComponent<Street>();
-            street.id = streets.Count + 1;
-            street.Initialize(this, type, name, lit, oneWay, maxspeed, lanes);
+            street.id = id;
+            street.Initialize(this, type, currentName, lit, oneWay, maxspeed, lanes);
+
+            if (modifiedName)
+            {
+                street.displayName = name;
+            }
 
             streets.Add(street);
             streetIDMap.Add(street.id, street);
-
-            if (!streetMap.ContainsKey(name))
-            {
-                streetMap.Add(name, street);
-            }
+            streetMap.Add(currentName, street);
 
             return street;
         }
 
-        public StreetIntersection CreateIntersection(Vector3 pos)
+        public StreetIntersection CreateIntersection(Vector3 pos, int id = -1)
         {
             if (streetIntersectionMap.TryGetValue(pos, out StreetIntersection val))
             {
                 return val;
             }
 
+            id = id == -1 ? streetIntersections.Count + 1 : id;
             var inter = new StreetIntersection
             (
-                streetIntersections.Count + 1,
+                id,
                 pos
             );
 
@@ -894,11 +963,18 @@ namespace Transidious
             return inter;
         }
 
-        public void RegisterSegment(StreetSegment s)
+        public void RegisterSegment(StreetSegment s, int id = -1)
         {
-            s.id = streetSegments.Count + 1;
+            id = id == -1 ? streetSegments.Count + 1 : id;
+
+            s.id = id;
             streetSegments.Add(s);
             streetSegmentIDMap.Add(s.id, s);
+
+            if (s.street.type == Street.Type.FootPath)
+            {
+                return;
+            }
 
             foreach (var pos in s.positions)
             {
@@ -972,9 +1048,12 @@ namespace Transidious
             buildingMesh.UpdateScale(renderingDistance);
             natureMesh.UpdateScale(renderingDistance);
 
-            foreach (var stop in transitStops)
+            if (input != null)
             {
-                stop.UpdateScale();
+                foreach (var stop in transitStops)
+                {
+                    stop.UpdateScale();
+                }
             }
 
             foreach (var route in transitRoutes)
@@ -1006,18 +1085,15 @@ namespace Transidious
                 Destroy(stop.gameObject);
             }
 
-            this.transitRoutes = new List<Route>();
-            this.transitRouteIDMap = new Dictionary<int, Route>();
-            this.transitStops = new List<Stop>();
-            this.transitStopMap = new Dictionary<string, Stop>();
-            this.transitStopIDMap = new Dictionary<int, Stop>();
-            this.transitLines = new List<Line>();
-            this.transitLineMap = new Dictionary<string, Line>();
-            this.transitLineIDMap = new Dictionary<int, Line>();
+            this.transitRoutes.Clear();
+            this.transitRouteIDMap.Clear();
+            this.transitStops.Clear();
+            this.transitStopMap.Clear();
+            this.transitStopIDMap.Clear();
+            this.transitLines.Clear();
+            this.transitLineMap.Clear();
+            this.transitLineIDMap.Clear();
 
-            streetIDMap[0] = null;
-            streetSegmentIDMap[0] = null;
-            streetIntersectionIDMap[0] = null;
             transitRouteIDMap[0] = null;
             transitStopIDMap[0] = null;
             transitLineIDMap[0] = null;
@@ -1158,7 +1234,7 @@ namespace Transidious
 
             UpdateScale();
             UpdateTextScale();
-            
+
             if (needTrafficLights)
             {
                 foreach (var i in streetIntersections)
@@ -1176,6 +1252,11 @@ namespace Transidious
                         seg.AddTramTracks();
                     }
                 }
+            }
+
+            if (needTrafficLights)
+            {
+                Game.transitEditor.InitOverlappingRoutes();
             }
         }
     }
