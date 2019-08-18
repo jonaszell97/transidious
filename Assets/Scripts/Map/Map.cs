@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Transidious
 {
@@ -40,46 +41,55 @@ namespace Transidious
         [System.Serializable]
         public struct SerializableMapTile
         {
-            public int[] streetSegmentIDs;
-            public int[] stopIDs;
+            public int[] mapObjectIDs;
         }
 
         public readonly int x, y;
-        public HashSet<StreetSegment> streetSegments;
-        public HashSet<Stop> transitStops;
+        public HashSet<MapObject> mapObjects;
+
+        public IEnumerable<StreetSegment> streetSegments
+        {
+            get
+            {
+                return mapObjects.OfType<StreetSegment>();
+            }
+        }
+
+        public IEnumerable<Stop> transitStops
+        {
+            get
+            {
+                return mapObjects.OfType<Stop>();
+            }
+        }
 
         public MapTile(int x, int y)
         {
             this.x = x;
             this.y = y;
-            this.streetSegments = new HashSet<StreetSegment>();
-            this.transitStops = new HashSet<Stop>();
+            this.mapObjects = new HashSet<MapObject>();
         }
 
         public SerializableMapTile Serialize()
         {
             return new SerializableMapTile
             {
-                streetSegmentIDs = streetSegments.Where(s => s.street.type != Street.Type.FootPath).Select(s => s.id).ToArray(),
-                stopIDs = transitStops.Select(s => s.id).ToArray(),
+                mapObjectIDs = mapObjects.Select(obj => obj.id).ToArray(),
             };
         }
 
         public void Deserialize(Map map, SerializableMapTile tile)
         {
-            foreach (var id in tile.streetSegmentIDs)
+            foreach (var id in tile.mapObjectIDs)
             {
-                if (!map.streetSegmentIDMap.ContainsKey(id))
+                var obj = map.GetMapObject(id);
+                if (obj == null)
                 {
+                    Debug.LogWarning("missing map object with ID " + id);
                     continue;
                 }
 
-                this.streetSegments.Add(map.streetSegmentIDMap[id]);
-            }
-
-            foreach (var id in tile.stopIDs)
-            {
-                this.transitStops.Add(map.transitStopIDMap[id]);
+                this.mapObjects.Add(obj);
             }
         }
     }
@@ -114,7 +124,7 @@ namespace Transidious
         public float minX, maxX, minY, maxY;
 
         /// The map's boundary.
-        public Vector3[] boundaryPositions;
+        public Vector2[] boundaryPositions;
 
         /// The object carrying the boundary mesh.
         public GameObject boundaryBackgroundObj;
@@ -125,20 +135,19 @@ namespace Transidious
         /// The object carrying the boundary mask.
         public GameObject boundarymaskObj;
 
-        /// List of all streets.
-        public List<Street> streets;
+        /// Map objects indexed by name.
+        Dictionary<string, MapObject> mapObjectMap;
 
-        /// Map of streets indexed by name.
-        public Dictionary<string, Street> streetMap;
+        /// Map objects indexed by ID.
+        Dictionary<int, MapObject> mapObjectIDMap;
 
-        /// Map of streets indexed by ID.
-        public Dictionary<int, Street> streetIDMap;
+        int lastAssignedMapObjectID = 1;
 
         /// List of streets segemnts.
         public List<StreetSegment> streetSegments;
 
-        /// Map of street segments indexed by ID.
-        public Dictionary<int, StreetSegment> streetSegmentIDMap;
+        /// List of all streets.
+        public List<Street> streets;
 
         /// List of all intersections.
         public List<StreetIntersection> streetIntersections;
@@ -146,32 +155,14 @@ namespace Transidious
         /// Map of streets indexed by position.
         public Dictionary<Vector3, StreetIntersection> streetIntersectionMap;
 
-        /// Map of streets indexed by ID.
-        public Dictionary<int, StreetIntersection> streetIntersectionIDMap;
-
         /// List of all public transit stops.
         public List<Stop> transitStops;
 
         /// List of all public transit routes.
         public List<Route> transitRoutes;
 
-        /// Map of transit routes by ID.
-        public Dictionary<int, Route> transitRouteIDMap;
-
-        /// Map of transit stops by name.
-        public Dictionary<string, Stop> transitStopMap;
-
-        /// Map of transit stops by ID.
-        public Dictionary<int, Stop> transitStopIDMap;
-
         /// List of all public transit lines.
         public List<Line> transitLines;
-
-        /// Map of transit lines by name.
-        public Dictionary<string, Line> transitLineMap;
-
-        /// Map of transit lines by ID.
-        public Dictionary<int, Line> transitLineIDMap;
 
         /// List of natural features.
         public List<NaturalFeature> naturalFeatures;
@@ -210,6 +201,9 @@ namespace Transidious
 
         /// Prefab for creating street segments.
         public GameObject streetSegmentPrefab;
+
+        /// Prefab for creating street intersections.
+        public GameObject streetIntersectionPrefab;
 
         /// Prefab for creating stops.
         public GameObject stopPrefab;
@@ -254,32 +248,21 @@ namespace Transidious
             this.width = width;
             this.height = height;
 
+            this.mapObjectMap = new Dictionary<string, MapObject>();
+            this.mapObjectIDMap = new Dictionary<int, MapObject>();
+
             this.streets = new List<Street>();
-            this.streetMap = new Dictionary<string, Street>();
-            this.streetIDMap = new Dictionary<int, Street>();
             this.streetSegments = new List<StreetSegment>();
-            this.streetSegmentIDMap = new Dictionary<int, StreetSegment>();
             this.streetIntersections = new List<StreetIntersection>();
             this.streetIntersectionMap = new Dictionary<Vector3, StreetIntersection>();
-            this.streetIntersectionIDMap = new Dictionary<int, StreetIntersection>();
             this.transitRoutes = new List<Route>();
-            this.transitRouteIDMap = new Dictionary<int, Route>();
             this.transitStops = new List<Stop>();
-            this.transitStopMap = new Dictionary<string, Stop>();
-            this.transitStopIDMap = new Dictionary<int, Stop>();
             this.transitLines = new List<Line>();
-            this.transitLineMap = new Dictionary<string, Line>();
-            this.transitLineIDMap = new Dictionary<int, Line>();
             this.naturalFeatures = new List<NaturalFeature>();
             this.buildings = new List<Building>();
             this.buildingsByType = new Dictionary<Building.Type, List<Building>>();
 
-            streetIDMap[0] = null;
-            streetSegmentIDMap[0] = null;
-            streetIntersectionIDMap[0] = null;
-            transitRouteIDMap[0] = null;
-            transitStopIDMap[0] = null;
-            transitLineIDMap[0] = null;
+            mapObjectIDMap[0] = null;
 
             this.triangleAPI = new TriangleAPI();
 
@@ -319,13 +302,136 @@ namespace Transidious
             return mm;
         }
 
+        public void RegisterMapObject(MapObject obj, Vector3 position, int id = -1)
+        {
+            var tile = GetTile(position);
+            if (tile != null)
+            {
+                tile.mapObjects.Add(obj);
+            }
+
+            RegisterMapObject(obj, id);
+        }
+
+        public void RegisterMapObject(MapObject obj, IEnumerable<Vector3> positions, int id = -1)
+        {
+            if (positions != null)
+            {
+                foreach (var pos in positions)
+                {
+                    var tile = GetTile(pos);
+                    if (tile != null)
+                    {
+                        tile.mapObjects.Add(obj);
+                    }
+                }
+            }
+
+            RegisterMapObject(obj, id);
+        }
+
+        public void RegisterMapObject(MapObject obj, int id = -1)
+        {
+            if (id == -1)
+            {
+                id = lastAssignedMapObjectID++;
+            }
+            else if (id > lastAssignedMapObjectID)
+            {
+                lastAssignedMapObjectID = id;
+            }
+
+            mapObjectIDMap.Add(id, obj);
+
+            if (obj.name.EndsWith("Clone)"))
+            {
+                return;
+            }
+
+#if DEBUG
+            if (mapObjectMap.ContainsKey(obj.name))
+            {
+                Debug.LogWarning("duplicate map object name " + obj.name);
+                return;
+            }
+#endif
+
+            mapObjectMap.Add(obj.name, obj);
+        }
+
+        public void DeleteMapObject(MapObject obj)
+        {
+            mapObjectIDMap.Remove(obj.id);
+            mapObjectMap.Remove(obj.name);
+
+            foreach (var tileArr in tiles)
+            {
+                foreach (var tile in tileArr)
+                {
+                    tile.mapObjects.Remove(obj);
+                }
+            }
+
+            Destroy(obj.gameObject);
+        }
+
+        public bool HasMapObject(int id)
+        {
+            return mapObjectIDMap.ContainsKey(id);
+        }
+
+        public bool HasMapObject(string name)
+        {
+            return mapObjectMap.ContainsKey(name);
+        }
+
+        public MapObject GetMapObject(int id)
+        {
+            if (mapObjectIDMap.TryGetValue(id, out MapObject val))
+            {
+                return val;
+            }
+
+            return null;
+        }
+
+        public T GetMapObject<T>(int id) where T : MapObject
+        {
+            if (mapObjectIDMap.TryGetValue(id, out MapObject val))
+            {
+                return val as T;
+            }
+
+            return null;
+        }
+
+        public MapObject GetMapObject(string name)
+        {
+            if (mapObjectMap.TryGetValue(name, out MapObject val))
+            {
+                return val;
+            }
+
+            return null;
+        }
+
+        public T GetMapObject<T>(string name) where T : MapObject
+        {
+            if (mapObjectMap.TryGetValue(name, out MapObject val))
+            {
+                return val as T;
+            }
+
+            return null;
+        }
+
         public static float Layer(MapLayer l, int orderInLayer = 0)
         {
             Debug.Assert(orderInLayer < 10, "invalid layer order");
             return -((float)((int)l * 10)) - (orderInLayer * 1f);
         }
 
-        public void UpdateBoundary(Vector3[] positions)
+        public void UpdateBoundary(Vector2[] positions)
         {
             this.boundaryPositions = positions;
 
@@ -342,11 +448,13 @@ namespace Transidious
                 input.maxY = maxY;
             }
 
+            var positions3d = positions.Select(v => (Vector3)v).ToArray();
+
             var pslg = new PSLG(Map.Layer(MapLayer.Boundary));
-            pslg.AddOrderedVertices(positions);
+            pslg.AddOrderedVertices(positions3d);
 
             var backgroundMesh = triangleAPI.CreateMesh(pslg);
-            var positionList = positions.ToList();
+            var positionList = positions3d.ToList();
 
             var boundaryMesh = MeshBuilder.CreateSmoothLine(
                 positionList, 10, 10, Map.Layer(MapLayer.Foreground));
@@ -396,7 +504,6 @@ namespace Transidious
             var canvasTransform = canvas.GetComponent<RectTransform>();
             canvasTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxX - minX);
             canvasTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxY - minY);
-            canvasTransform.position = startingCameraPos;
 
             if (boundaryBackgroundObj == null)
             {
@@ -475,24 +582,27 @@ namespace Transidious
 
         public bool IsPointOnMap(Vector2 pt)
         {
-            var b = new Vector2(pt.x, maxY);
-            var ray = new Ray2D(pt, Vector2.right);
-            var intersections = 0;
+            return pt.x >= minX && pt.x <= maxX
+                && pt.y >= minY && pt.y <= maxY;
 
-            for (var i = 1; i < boundaryPositions.Length; ++i)
-            {
-                var p0 = boundaryPositions[i - 1];
-                var p1 = boundaryPositions[i];
+            // var b = new Vector2(pt.x, maxY);
+            // var ray = new Ray2D(pt, Vector2.right);
+            // var intersections = 0;
 
-                Math.GetIntersectionPoint(pt, b, p0, p1, out bool found);
+            // for (var i = 1; i < boundaryPositions.Length; ++i)
+            // {
+            //     var p0 = boundaryPositions[i - 1];
+            //     var p1 = boundaryPositions[i];
 
-                if (found)
-                {
-                    ++intersections;
-                }
-            }
+            //     Math.GetIntersectionPoint(pt, b, p0, p1, out bool found);
 
-            return (intersections & 1) == 1;
+            //     if (found)
+            //     {
+            //         ++intersections;
+            //     }
+            // }
+
+            // return (intersections & 1) == 1;
         }
 
         public void SetBackgroundColor(Color c)
@@ -611,7 +721,9 @@ namespace Transidious
             return new PointOnStreet { seg = minSeg, pos = minPnt, prevIdx = prevIdx };
         }
 
-        public PointOnStreet GetClosestStreet(Vector3 position, bool mustBeOnMap = true, bool disregardRivers = true)
+        public PointOnStreet GetClosestStreet(Vector3 position,
+                                              bool mustBeOnMap = true,
+                                              bool disregardRivers = true)
         {
             var tile = GetTile(position);
             if (tile == null)
@@ -622,8 +734,8 @@ namespace Transidious
                 }
 
                 position = new Vector3(Mathf.Clamp(position.x, minX, maxX),
-                       Mathf.Clamp(position.y, minY, maxY),
-                       0f);
+                                       Mathf.Clamp(position.y, minY, maxY),
+                                       0f);
 
                 tile = GetTile(position);
             }
@@ -689,37 +801,17 @@ namespace Transidious
                                     new Vector3(baseX + tileSize, baseY + tileSize, -13f));
                 }
             }
-        }
 
-        /*void OnDrawGizmosSelected()
-        {
-            if (boundaryPositions == null)
-                return;
-
-            Gizmos.color = Color.red;
-            Vector3 prev = Vector3.positiveInfinity;
-
+            Gizmos.color = Color.blue;
             foreach (var pos in boundaryPositions)
             {
-                if (prev != Vector3.positiveInfinity)
-                {
-                    Gizmos.DrawLine(prev, pos);
-                }
-
-                Gizmos.DrawSphere(pos, 0.05f);
-                prev = pos;
+                Gizmos.DrawSphere(new Vector3(pos.x, pos.y, -160f), 5f);
             }
-        }*/
+        }
 
         public Line GetLine(string name)
         {
-            if (transitLineMap.TryGetValue(name, out Line l))
-            {
-                return l;
-            }
-
-            return null;
-
+            return GetMapObject<Line>(name);
         }
 
         public class LineBuilder
@@ -772,7 +864,7 @@ namespace Transidious
             string currentName = name;
 
             var i = 1;
-            while (transitLineMap.TryGetValue(currentName, out Line _))
+            while (HasMapObject(currentName))
             {
                 currentName = name + " (" + i.ToString() + ")";
                 ++i;
@@ -842,33 +934,31 @@ namespace Transidious
         /// Register a new public transit line.
         public void RegisterLine(Line line, int id = -1)
         {
-            id = id == -1 ? transitLines.Count + 1 : id;
+            id = id == -1 ? lastAssignedMapObjectID++ : id;
             line.id = id;
 
             transitLines.Add(line);
-            transitLineMap.Add(line.name, line);
-            transitLineIDMap.Add(line.id, line);
+            RegisterMapObject(line, id);
         }
 
         /// Register a new public transit line.
         public void RegisterStop(Stop stop, int id = -1)
         {
-            id = id == -1 ? transitStops.Count + 1 : id;
+            id = id == -1 ? lastAssignedMapObjectID++ : id;
             stop.id = id;
 
             transitStops.Add(stop);
-            transitStopMap.Add(stop.name, stop);
-            transitStopIDMap.Add(stop.id, stop);
+            RegisterMapObject(stop, stop.location, id);
         }
 
         /// Register a new public transit route.
         public void RegisterRoute(Route route, int id = -1)
         {
-            id = id == -1 ? transitRoutes.Count + 1 : id;
+            id = id == -1 ? lastAssignedMapObjectID++ : id;
             route.id = id;
 
             transitRoutes.Add(route);
-            transitRouteIDMap.Add(route.id, route);
+            RegisterMapObject(route, route.positions, id);
         }
 
         public Stop CreateStop(string name, Vector2 location, int id = -1)
@@ -876,7 +966,7 @@ namespace Transidious
             string currentName = name;
 
             var i = 1;
-            while (transitStopMap.TryGetValue(currentName, out Stop stop))
+            while (HasMapObject(currentName))
             {
                 currentName = name + " (" + i.ToString() + ")";
                 ++i;
@@ -888,13 +978,14 @@ namespace Transidious
         /// Register a new public transit stop.
         public Stop GetOrCreateStop(string name, Vector2 location, int id = -1)
         {
-            if (transitStopMap.TryGetValue(name, out Stop stop))
+            var existingStop = GetMapObject<Stop>(name);
+            if (existingStop != null)
             {
-                return stop;
+                return existingStop;
             }
 
             GameObject stopObject = Instantiate(stopPrefab);
-            stop = stopObject.GetComponent<Stop>();
+            var stop = stopObject.GetComponent<Stop>();
             stop.transform.SetParent(this.transform);
             stop.Initialize(this, name, location);
 
@@ -914,14 +1005,14 @@ namespace Transidious
             var i = 1;
             var modifiedName = false;
 
-            while (streetMap.TryGetValue(currentName, out Street _))
+            while (HasMapObject(currentName))
             {
                 currentName = name + " (" + i.ToString() + ")";
                 modifiedName = true;
                 ++i;
             }
 
-            id = id == -1 ? streets.Count + 1 : id;
+            id = id == -1 ? lastAssignedMapObjectID++ : id;
 
             var streetObj = Instantiate(streetPrefab);
             streetObj.transform.SetParent(this.transform);
@@ -936,8 +1027,7 @@ namespace Transidious
             }
 
             streets.Add(street);
-            streetIDMap.Add(street.id, street);
-            streetMap.Add(currentName, street);
+            RegisterMapObject(street, id);
 
             return street;
         }
@@ -949,41 +1039,26 @@ namespace Transidious
                 return val;
             }
 
-            id = id == -1 ? streetIntersections.Count + 1 : id;
-            var inter = new StreetIntersection
-            (
-                id,
-                pos
-            );
+            id = id == -1 ? lastAssignedMapObjectID++ : id;
+
+            var obj = Instantiate(streetIntersectionPrefab);
+            var inter = obj.GetComponent<StreetIntersection>();
+            inter.Initialize(id, pos);
 
             streetIntersections.Add(inter);
             streetIntersectionMap.Add(pos, inter);
-            streetIntersectionIDMap.Add(inter.id, inter);
+            RegisterMapObject(inter, pos, id);
 
             return inter;
         }
 
         public void RegisterSegment(StreetSegment s, int id = -1)
         {
-            id = id == -1 ? streetSegments.Count + 1 : id;
+            id = id == -1 ? lastAssignedMapObjectID++ : id;
 
             s.id = id;
             streetSegments.Add(s);
-            streetSegmentIDMap.Add(s.id, s);
-
-            if (s.street.type == Street.Type.FootPath)
-            {
-                return;
-            }
-
-            foreach (var pos in s.positions)
-            {
-                var tile = GetTile(pos);
-                if (tile != null)
-                {
-                    tile.streetSegments.Add(s);
-                }
-            }
+            RegisterMapObject(s, s.positions, id);
         }
 
         public Text CreateText(Vector3 position, string txt = "", Color c = default, float fontSize = 10f)
@@ -1074,29 +1149,20 @@ namespace Transidious
         {
             foreach (var route in transitRoutes)
             {
-                Destroy(route.gameObject);
+                DeleteMapObject(route);
             }
             foreach (var line in transitLines)
             {
-                Destroy(line.gameObject);
+                DeleteMapObject(line);
             }
             foreach (var stop in transitStops)
             {
-                Destroy(stop.gameObject);
+                DeleteMapObject(stop);
             }
 
             this.transitRoutes.Clear();
-            this.transitRouteIDMap.Clear();
             this.transitStops.Clear();
-            this.transitStopMap.Clear();
-            this.transitStopIDMap.Clear();
             this.transitLines.Clear();
-            this.transitLineMap.Clear();
-            this.transitLineIDMap.Clear();
-
-            transitRouteIDMap[0] = null;
-            transitStopIDMap[0] = null;
-            transitLineIDMap[0] = null;
         }
 
         // Use this for initialization

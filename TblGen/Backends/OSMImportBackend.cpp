@@ -135,12 +135,14 @@ public class OSMImportHelper {
     Stream input = null;
     PBFOsmStreamSource sourceStream = null;
 
-    public OSMImportHelper(OSMImporter importer, string area)
+    public OSMImportHelper(OSMImporter importer, string area, string country)
     {
          this.importer = importer;
 
          string fileName;
          fileName = "Resources/OSM/";
+         fileName += country;
+         fileName += "/";
          fileName += area;
          fileName += ".osm.pbf";
 
@@ -317,13 +319,11 @@ void OSMImportBackend::EmitBoundary(Record *area)
       return;
    }
 
-   REL << "if (tags.Contains(\"name\", \"" << name << "\")) {\n";
-
+   REL << "if (tags.Contains(\"name\", \"" << name << "\")) {";
    CheckTags(REL, tags, [&]() {
       REL << "                importer.boundary = geo as Relation; break;\n";
    });
-
-   REL << "\n}\n";
+   REL << "}";
 }
 
 void OSMImportBackend::EmitImportTransitLines(Record *area)

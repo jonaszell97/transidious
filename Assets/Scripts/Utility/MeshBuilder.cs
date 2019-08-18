@@ -6,45 +6,6 @@ using UnityEngine;
 
 namespace Transidious
 {
-    [System.Serializable]
-    public struct SerializableMesh
-    {
-        public SerializableVector3[] vertices;
-        public int[] triangles;
-        public SerializableVector2[] uv;
-
-        public SerializableMesh(Mesh mesh)
-        {
-            if (mesh == null)
-            {
-                this.vertices = null;
-                this.triangles = null;
-                this.uv = null;
-
-                return;
-            }
-
-            this.vertices = mesh.vertices.Select(v => new SerializableVector3(v)).ToArray();
-            this.triangles = mesh.triangles;
-            this.uv = mesh.uv.Select(v => new SerializableVector2(v)).ToArray();
-        }
-
-        public Mesh GetMesh()
-        {
-            if (vertices == null)
-            {
-                return null;
-            }
-
-            return new Mesh
-            {
-                vertices = vertices.Select(v => v.ToVector()).ToArray(),
-                triangles = triangles,
-                uv = uv.Select(v => v.ToVector()).ToArray()
-            };
-        }
-    }
-
     public abstract class MeshBuilder
     {
         public static Mesh CreateQuad(Vector3 bl, Vector3 tr, Vector3 br, Vector3 tl)
@@ -281,7 +242,7 @@ namespace Transidious
                                          List<Vector2> uvs,
                                          Vector3 from, Vector3 to,
                                          float radius, Vector3 center,
-                                         int segments, float z = 0f)
+                                         int segments, float z, bool useZ)
         {
             /*var fromAngle = Math.toRadians(Math.Angle(from, center));
             var toAngle = Math.toRadians(Math.Angle(center, to));
@@ -305,7 +266,7 @@ namespace Transidious
                 var y = center.y + (radius * Mathf.Sin(i * twicePI / segments));
 
                 p0 = p1;
-                p1 = new Vector3(x, y, z);
+                p1 = new Vector3(x, y, useZ ? z : 0f);
 
                 if (i == 0)
                 {
@@ -348,6 +309,11 @@ namespace Transidious
             var p0 = positions[i - 1];
             var p1 = positions[i];
 
+            if (p0.Equals(Vector3.positiveInfinity) || p1.Equals(Vector3.positiveInfinity))
+            {
+                return;
+            }
+
             if (useZ)
             {
                 p0 = new Vector3(p0.x, p0.y, z);
@@ -355,7 +321,7 @@ namespace Transidious
             }
 
             Vector3 line = p0 - p1;
-            Vector3 normal = new Vector3(-line.y, line.x, 0.0f).normalized;
+            Vector3 normal = new Vector3(-line.y, line.x, 0f).normalized;
 
             Vector3 bl = p1 - endWidth * normal;
             Vector3 tl = p1 + endWidth * normal;
@@ -398,7 +364,7 @@ namespace Transidious
             if (i == 1 && startCap)
             {
                 AddCirclePart(vertices, triangles, uv, br, tr, startWidth, p0,
-                                cornerVertices, z);
+                              cornerVertices, z, useZ);
             }
 
             MeshBuilder.AddQuad(vertices, triangles, normals,
@@ -407,7 +373,7 @@ namespace Transidious
             if (i < positions.Count - 1 || endCap)
             {
                 AddCirclePart(vertices, triangles, uv, bl, tl, endWidth, p1,
-                                cornerVertices, z);
+                              cornerVertices, z, useZ);
             }
         }
 
@@ -424,7 +390,7 @@ namespace Transidious
                                             float offset = 0f)
         {
             var normals = new List<Vector3>();
-            var useZ = !z.Equals(0f);
+            var useZ = !z.Equals(float.NaN);
 
             Vector2[] colliderPath = null;
             if (collider != null)
@@ -463,7 +429,7 @@ namespace Transidious
             Debug.Assert(widths.Count == positions.Count);
 
             var normals = new List<Vector3>();
-            var useZ = !z.Equals(0f);
+            var useZ = !z.Equals(float.NaN);
 
             Vector2[] colliderPath = null;
             if (collider != null)
@@ -473,7 +439,8 @@ namespace Transidious
 
             for (int i = 1; i < positions.Count; ++i)
             {
-                CreateSmoothLine_AddQuad(positions, i, widths[i - 1], widths[i], startCap, endCap, vertices,
+                CreateSmoothLine_AddQuad(positions, i, widths[i - 1], widths[i],
+                                         startCap, endCap, vertices,
                                          triangles, uv, normals, cornerVertices, z, useZ,
                                          collider, colliderPath, offset);
             }
@@ -511,7 +478,8 @@ namespace Transidious
             return mesh;
         }
 
-        public static Mesh CreateSmoothLine(IReadOnlyList<Vector3> positions, IReadOnlyList<float> widths,
+        public static Mesh CreateSmoothLine(IReadOnlyList<Vector3> positions,
+                                            IReadOnlyList<float> widths,
                                             int cornerVertices = 5, float z = 0f,
                                             PolygonCollider2D collider = null,
                                             bool startCap = true, bool endCap = true,
@@ -720,21 +688,22 @@ namespace Transidious
             return 180f - Mathf.Abs(angle) >= threshold;
         }
 
-        public static List<Vector3> RemoveDetail(Vector3[] positions, float thresholdAngle = 5f)
+        public static List<Vector3> RemoveDetailByAngle(IReadOnlyList<Vector3> positions,
+                                                        float thresholdAngle = 5f)
         {
-            if (positions.Length <= 3)
+            if (positions.Count <= 3)
             {
                 return new List<Vector3>(positions);
             }
 
-            var newPositions = new List<Vector3>(positions.Length);
+            var newPositions = new List<Vector3>(positions.Count);
             newPositions.Add(positions.First());
 
             var p2 = positions[2];
             var p1 = positions[1];
             var p0 = positions[0];
 
-            for (int i = 2; i < positions.Length - 1; ++i)
+            for (int i = 2; i < positions.Count - 1; ++i)
             {
                 p2 = positions[i];
 
@@ -758,8 +727,8 @@ namespace Transidious
             return newPositions;
         }
 
-        public static List<Vector3> RemoveDetail(List<Vector3> positions,
-                                                 float minDistance = -1f)
+        public static List<Vector3> RemoveDetailByDistance(IReadOnlyList<Vector3> positions,
+                                                           float minDistance = -1f)
         {
             if (minDistance.Equals(-1f))
             {
@@ -901,14 +870,6 @@ namespace Transidious
 
             m_Mesh.RecalculateBounds();
             return m_Mesh;
-        }
-
-        public static Mesh PointsToMesh(TriangleAPI api, Vector3[] points)
-        {
-            var pslg = new PSLG();
-            pslg.AddOrderedVertices(points);
-
-            return api.CreateMesh(pslg);
         }
 
         public static Mesh PointsToMesh(Vector3[] points)

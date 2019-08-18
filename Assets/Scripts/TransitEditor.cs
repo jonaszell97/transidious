@@ -44,6 +44,7 @@ namespace Transidious
         int[] listenerIDs;
 
         public UILineModal lineInfoModal;
+        public UIStopModal stopInfoModal;
 
         void Awake()
         {
@@ -899,8 +900,38 @@ namespace Transidious
 
         void CheckOverlappingRoutes(HashSet<Tuple<StreetSegment, int>> segments)
         {
-            var linesPerPositionMap = new Dictionary<Tuple<Vector2, int>, int>();
-            var linePositionMap = new Dictionary<Tuple<int, int>, int>();
+            var linesPerPositionMap = new Dictionary<Tuple<StreetSegment, int>, int>();
+            var affectedRoutes = new HashSet<Route>();
+
+            foreach (var seg in segments)
+            {
+                UpdateLinesPerPosition(linesPerPositionMap,
+                                       affectedRoutes,
+                                       seg.Item1, seg.Item2);
+            }
+
+            UpdateRouteMeshes(affectedRoutes, linesPerPositionMap);
+        }
+
+        void UpdateLinesPerPosition(Dictionary<Tuple<StreetSegment, int>, int> linesPerPositionMap,
+                                    HashSet<Route> affectedRoutes,
+                                    StreetSegment seg, int lane)
+        {
+            var routes = seg.GetTransitRoutes(lane);
+            var lines = new HashSet<Line>();
+
+            foreach (var route in routes)
+            {
+                affectedRoutes.Add(route);
+                lines.Add(route.line);
+            }
+
+            linesPerPositionMap.Add(Tuple.Create(seg, lane), lines.Count);
+        }
+
+        void CheckOverlappingRoutes_Alt(HashSet<Tuple<StreetSegment, int>> segments)
+        {
+            var linesPerSegmentMap = new Dictionary<Tuple<StreetSegment, Vector2, int>, int>();
             var allPositionsMap = new Dictionary<Tuple<StreetSegment, int>, List<Vector3>>();
             var coveredPositions = new HashSet<Vector2>();
             var affectedRoutes = new HashSet<Route>();
@@ -908,37 +939,14 @@ namespace Transidious
             foreach (var seg in segments)
             {
                 var allPositions = CheckOverlappingRoutes(seg.Item1, seg.Item2,
-                                                          linesPerPositionMap,
-                                                          linePositionMap,
+                                                          linesPerSegmentMap,
                                                           coveredPositions,
                                                           affectedRoutes);
 
                 allPositionsMap.Add(seg, allPositions);
             }
 
-            // Update intersection paths, these are always the same so this is much simpler.
-            foreach (var route in affectedRoutes)
-            {
-                for (var i = 0; i < route.positions.Count; ++i)
-                {
-                    if (route.GetSegmentForPosition(i) != null)
-                    {
-                        continue;
-                    }
-
-                    var pos = route.positions[i];
-                    var key = new Tuple<Vector2, int>(pos, 0);
-                    if (!linesPerPositionMap.ContainsKey(key))
-                    {
-                        linesPerPositionMap.Add(key, 1);
-                        continue;
-                    }
-
-                    ++linesPerPositionMap[key];
-                }
-            }
-
-            UpdateRouteMeshes(affectedRoutes, linesPerPositionMap, allPositionsMap);
+            UpdateRouteMeshes_Alt(affectedRoutes, linesPerSegmentMap, allPositionsMap);
         }
 
         void UpdateOccupiedSegments(Dictionary<Route, List<Tuple<int, int>>> occupiedSegments,
@@ -963,13 +971,13 @@ namespace Transidious
         }
 
         List<Vector3> CheckOverlappingRoutes(StreetSegment seg, int lane,
-                                             Dictionary<Tuple<Vector2, int>, int> linesPerPositionMap,
-                                             Dictionary<Tuple<int, int>, int> linePositionMap,
+                                             Dictionary<Tuple<StreetSegment, Vector2, int>, int> linesPerPositionMap,
                                              HashSet<Vector2> coveredPositions,
                                              HashSet<Route> affectedRoutes)
         {
             var routes = seg.GetTransitRoutes(lane);
-            var path = game.sim.trafficSim.GetPath(seg, lane).ToList();
+            var originalPath = game.sim.trafficSim.GetPath(seg, lane);
+            var path = originalPath.ToList();
 
             // For a path like 'A -> B -> C', remember how many lines drive on each route (A->B), (B->C)
             var overlappingRouteCount = new List<int>();
@@ -1110,28 +1118,12 @@ namespace Transidious
 
             Debug.Assert(path.Count - 1 == overlappingRouteCount.Count);
 
-            for (var i = 1; i < path.Count; ++i)
+            for (var i = 0; i < path.Count; ++i)
             {
-                int idx;
-                if (i == 0)
-                {
-                    idx = 0;
-                }
-                else
-                {
-                    idx = i - 1;
-                }
+                var overlappingRoutes = overlappingRouteCount[i == path.Count - 1 ? i - 1 : i];
+                var key = new Tuple<StreetSegment, Vector2, int>(seg, path[i], lane);
 
-                var overlappingRoutes = overlappingRouteCount[idx];
-                var key = new Tuple<Vector2, int>(path[i], lane);
-
-                if (linesPerPositionMap.ContainsKey(key))
-                {
-                    Debug.LogError("position " + path[i] + " is on two streets");
-                    continue;
-                }
-
-                linesPerPositionMap.Add(new Tuple<Vector2, int>(path[i], lane), overlappingRoutes);
+                linesPerPositionMap.Add(key, overlappingRoutes);
                 coveredPositions.Add(path[i]);
             }
 
@@ -1167,7 +1159,40 @@ namespace Transidious
         }
 
         void UpdateRouteMeshes(HashSet<Route> routes,
-                               Dictionary<Tuple<Vector2, int>, int> linesPerPositionMap,
+                               Dictionary<Tuple<StreetSegment, int>, int> linesPerPositionMap)
+        {
+            // Go line by line so every line has a consistent offset.
+            var lineSet = new HashSet<Line>();
+            foreach (var route in routes)
+            {
+                lineSet.Add(route.line);
+            }
+
+            var lines = lineSet.ToList();
+            lines.Sort((Line l1, Line l2) =>
+            {
+                return l1.name.CompareTo(l2.name);
+            });
+
+            var offsetMap = new Dictionary<Tuple<Line, StreetSegment, int>, int>();
+            var latestOffsetMap = new Dictionary<Tuple<StreetSegment, int>, int>();
+
+            foreach (var line in lines)
+            {
+                foreach (var route in line.routes)
+                {
+                    if (!routes.Contains(route))
+                    {
+                        continue;
+                    }
+
+                    UpdateRouteMesh(route, linesPerPositionMap, offsetMap, latestOffsetMap);
+                }
+            }
+        }
+
+        void UpdateRouteMeshes_Alt(HashSet<Route> routes,
+                               Dictionary<Tuple<StreetSegment, Vector2, int>, int> linesPerPositionMap,
                                Dictionary<Tuple<StreetSegment, int>, List<Vector3>> allPositionsMap)
         {
             // Go line by line so every line has a consistent offset.
@@ -1183,12 +1208,15 @@ namespace Transidious
                 return l1.name.CompareTo(l2.name);
             });
 
-            var offsetMap = new Dictionary<Tuple<Vector2, int>, int>();
+            var offsetMap = new Dictionary<Tuple<StreetSegment, Vector2, int>, int>();
             foreach (var entry in allPositionsMap)
             {
-                foreach (var pos in entry.Value)
+                for (var i = 0; i < entry.Value.Count; ++i)
                 {
-                    var key = Tuple.Create((Vector2)pos, entry.Key.Item2);
+                    var key = Tuple.Create(entry.Key.Item1,
+                                           (Vector2)entry.Value[i],
+                                           entry.Key.Item2);
+
                     offsetMap.Add(key, 0);
                 }
             }
@@ -1202,15 +1230,20 @@ namespace Transidious
                         continue;
                     }
 
-                    UpdateRouteMesh(route, linesPerPositionMap, allPositionsMap, offsetMap);
+                    UpdateRouteMesh_Alt(route, linesPerPositionMap, allPositionsMap, offsetMap);
                 }
             }
         }
+
+        static int MaxOverlappingLines = 4;
 
         void GetLineWidthAndOffset(Route route, StreetSegment streetSeg,
                                    int currentLines, int currentLineOffset,
                                    out float halfLineWidth, out float offset)
         {
+            currentLines = Mathf.Min(currentLines, MaxOverlappingLines);
+            currentLineOffset = currentLineOffset % MaxOverlappingLines;
+
             if (currentLines == 1)
             {
                 offset = 0f;
@@ -1243,10 +1276,321 @@ namespace Transidious
             offset = baseOffset + (currentLineOffset * spacePerLine);
         }
 
+        int GetAndIncreaseOffset(Route route, int startIdx, int endIdx,
+                                 StreetSegment seg, int lane, bool backward,
+                                 Dictionary<Tuple<StreetSegment, int>, List<int>> offsetMap)
+        {
+            Vector2 startPos;
+            Vector2 endPos;
+
+            if (backward)
+            {
+                startPos = route.positions[endIdx];
+                endPos = route.positions[startIdx];
+            }
+            else
+            {
+                startPos = route.positions[startIdx];
+                endPos = route.positions[endIdx];
+            }
+
+            var offsetPath = game.sim.trafficSim.GetPath(seg, lane);
+            var startDistance = seg.GetDistanceFromStartStopLine(startPos, offsetPath);
+            var endDistance = seg.GetDistanceFromStartStopLine(endPos, offsetPath);
+            var offsets = offsetMap[Tuple.Create(seg, lane)];
+
+            var i = 0;
+            var maxOffset = 0;
+
+            foreach (var pos in offsetPath)
+            {
+                var distance = seg.GetDistanceFromStartStopLine(pos, offsetPath);
+                if (distance >= startDistance && distance < endDistance)
+                {
+                    maxOffset = Mathf.Max(maxOffset, offsets[i]);
+                    ++offsets[i];
+                }
+
+                ++i;
+            }
+
+            return maxOffset;
+        }
+
+        void UpdateRouteMesh(Route route,
+                             Dictionary<Tuple<StreetSegment, int>, int> linesPerPositionMap,
+                             Dictionary<Tuple<Line, StreetSegment, int>, int> offsetMap,
+                             Dictionary<Tuple<StreetSegment, int>, int> latestOffsetMap)
+        {
+            var positions = route.positions;
+            var currentPositions = route.CurrentPositions;
+            var currentWidths = route.CurrentWidths;
+
+            var newPositions = Enumerable.Repeat(Vector3.zero, positions.Count).ToList();
+            var newWidths = Enumerable.Repeat(0f, positions.Count).ToList();
+
+            var segments = new Dictionary<int, StreetSegment>();
+            var numLines = new Dictionary<int, int>();
+            var lineOffsets = new Dictionary<int, int>();
+
+            for (var i = 0; i <= route.positions.Count;)
+            {
+                var pathSegment = route.GetSegmentForPosition(i);
+                if (pathSegment == null)
+                {
+                    while (pathSegment == null)
+                    {
+                        ++i;
+                        if (i >= route.positions.Count)
+                        {
+                            break;
+                        }
+
+                        pathSegment = route.GetSegmentForPosition(i);
+                    }
+
+                    continue;
+                }
+
+                Vector2 pos = route.positions[i];
+                var lane = pathSegment.lane;
+                var streetSeg = pathSegment.segment;
+                var startIdx = i;
+
+                var key = Tuple.Create(streetSeg, lane);
+                var currentLines = linesPerPositionMap[key];
+
+                ++i;
+                while (i < positions.Count)
+                {
+                    var nextSegment = route.GetSegmentForPosition(i);
+                    if (nextSegment?.segment != streetSeg && i != positions.Count)
+                    {
+                        break;
+                    }
+
+                    ++i;
+                }
+
+                var offsetKey = Tuple.Create(route.line, streetSeg, lane);
+                if (!offsetMap.TryGetValue(offsetKey, out int currentLineOffset))
+                {
+                    if (latestOffsetMap.TryGetValue(key, out currentLineOffset))
+                    {
+                        ++latestOffsetMap[key];
+                        ++currentLineOffset;
+                    }
+                    else
+                    {
+                        latestOffsetMap.Add(key, 0);
+                        currentLineOffset = 0;
+                    }
+
+                    offsetMap[offsetKey] = currentLineOffset;
+                }
+
+                segments.Add(startIdx, streetSeg);
+                numLines.Add(startIdx, currentLines);
+                lineOffsets.Add(startIdx, currentLineOffset);
+
+                var endIdx = i;
+                if (currentLineOffset >= MaxOverlappingLines)
+                {
+                    for (var j = startIdx; j < endIdx; ++j)
+                    {
+                        newPositions[j] = Vector3.positiveInfinity;
+                    }
+
+                    continue;
+                }
+
+                float offset, halfLineWidth;
+                GetLineWidthAndOffset(route, streetSeg, currentLines, currentLineOffset,
+                                      out halfLineWidth, out offset);
+
+                var length = endIdx - startIdx;
+                var range = MeshBuilder.GetOffsetPath(
+                    positions.GetRange(startIdx, length), offset);
+
+                for (var j = startIdx; j < endIdx; ++j)
+                {
+                    var nextPos = range[j - startIdx];
+                    newPositions[j] = new Vector3(nextPos.x, nextPos.y, 0f);
+
+                    newWidths[j] = halfLineWidth;
+                }
+            }
+
+            for (var i = 0; i < route.positions.Count;)
+            {
+                var pathSegment = route.GetSegmentForPosition(i);
+                if (pathSegment != null)
+                {
+                    ++i;
+                    continue;
+                }
+
+                var startIdx = i++;
+                while (i < positions.Count)
+                {
+                    var nextPathSegment = route.GetSegmentForPosition(i);
+                    if (nextPathSegment != null)
+                    {
+                        break;
+                    }
+
+                    ++i;
+                }
+
+                var prevIdx = startIdx;
+                while (!segments.ContainsKey(prevIdx))
+                {
+                    --prevIdx;
+
+                    if (prevIdx < 0)
+                    {
+                        prevIdx = -1;
+                        break;
+                    }
+                }
+
+                var nextIdx = i - 1;
+                while (!segments.ContainsKey(nextIdx))
+                {
+                    ++nextIdx;
+
+                    if (nextIdx >= positions.Count)
+                    {
+                        nextIdx = -1;
+                        break;
+                    }
+                }
+
+                Debug.Assert(prevIdx != -1 || nextIdx != -1, "orphaned intersection?");
+
+                if (prevIdx == -1 || nextIdx == -1)
+                {
+                    StreetSegment segment;
+                    int currentLines;
+                    int lineOffset;
+
+                    if (prevIdx != -1)
+                    {
+                        segment = segments[prevIdx];
+                        currentLines = numLines[prevIdx];
+                        lineOffset = lineOffsets[prevIdx];
+                    }
+                    else
+                    {
+                        segment = segments[nextIdx];
+                        currentLines = numLines[nextIdx];
+                        lineOffset = lineOffsets[nextIdx];
+                    }
+
+                    var length = i - startIdx;
+                    if (lineOffset >= MaxOverlappingLines)
+                    {
+                        for (var j = startIdx; j < startIdx + length; ++j)
+                        {
+                            newPositions[j] = Vector3.positiveInfinity;
+                        }
+
+                        continue;
+                    }
+
+                    float offset, halfLineWidth;
+                    GetLineWidthAndOffset(route, segment, currentLines, lineOffset,
+                                          out halfLineWidth, out offset);
+
+                    var range = MeshBuilder.GetOffsetPath(
+                        positions.GetRange(startIdx, length), offset);
+
+                    for (var j = startIdx; j < startIdx + length; ++j)
+                    {
+                        var nextPos = range[j - startIdx];
+                        newPositions[j] = new Vector3(nextPos.x, nextPos.y, 0f);
+
+                        newWidths[j] = halfLineWidth;
+                    }
+                }
+                else
+                {
+                    var prevSegment = segments[prevIdx];
+                    var nextSegment = segments[nextIdx];
+
+                    var prevLines = numLines[prevIdx];
+                    var nextLines = numLines[nextIdx];
+
+                    var prevLineOffset = lineOffsets[prevIdx];
+                    var nextLineOffset = lineOffsets[nextIdx];
+
+                    var z = 0f;
+                    var length = i - startIdx;
+                    if (prevLineOffset >= MaxOverlappingLines
+                    && nextLineOffset >= MaxOverlappingLines)
+                    {
+                        for (var j = startIdx; j < startIdx + length; ++j)
+                        {
+                            newPositions[j] = Vector3.positiveInfinity;
+                        }
+
+                        continue;
+                    }
+                    else if (prevLineOffset >= MaxOverlappingLines
+                    || nextLineOffset >= MaxOverlappingLines)
+                    {
+                        z += 1f;
+                    }
+
+                    float prevOffset, prevHalfLineWidth;
+                    GetLineWidthAndOffset(route, prevSegment, prevLines, prevLineOffset,
+                                          out prevHalfLineWidth, out prevOffset);
+
+                    float nextOffset, nextHalfLineWidth;
+                    GetLineWidthAndOffset(route, prevSegment, nextLines, nextLineOffset,
+                                          out nextHalfLineWidth, out nextOffset);
+
+                    var offsetDiff = nextOffset - prevOffset;
+                    var widthDiff = nextHalfLineWidth - prevHalfLineWidth;
+
+                    var offsetStep = offsetDiff / (length - 1);
+                    var widthStep = widthDiff / (length - 1);
+
+                    for (var j = 0; j < length; ++j)
+                    {
+                        newWidths[startIdx + j] = prevHalfLineWidth + j * widthStep;
+                    }
+
+                    var offsets = new List<float>();
+                    for (var j = 0; j < length; ++j)
+                    {
+                        offsets.Add(prevOffset + j * offsetStep);
+                    }
+
+                    var range = MeshBuilder.GetOffsetPath(
+                        positions.GetRange(startIdx, length), offsets);
+
+                    for (var j = startIdx; j < i; ++j)
+                    {
+                        var nextPos = range[j - startIdx];
+                        newPositions[j] = new Vector3(nextPos.x, nextPos.y, z);
+                    }
+                }
+            }
+
+            var collider = route.GetComponent<PolygonCollider2D>();
+            collider.pathCount = 0;
+
+            var mesh = MeshBuilder.CreateSmoothLine(newPositions, newWidths, 20, float.NaN, collider);
+            route.UpdateMesh(mesh, newPositions, newWidths);
+            route.line.wasModified = false;
+            route.EnableCollision();
+        }
+
         void IncreaseOffsets(StreetSegment segment, int lane, bool backward,
                              Route route, int startIdx, int endIdx,
                              Dictionary<Tuple<StreetSegment, int>, List<Vector3>> allPositionsMap,
-                             Dictionary<Tuple<Vector2, int>, int> offsetMap)
+                             Dictionary<Tuple<StreetSegment, Vector2, int>, int> offsetMap)
         {
             if (startIdx == endIdx)
             {
@@ -1275,225 +1619,273 @@ namespace Transidious
             var allPositions = allPositionsMap[allPositionsKey];
             for (var i = 0; i < allPositions.Count; ++i)
             {
-                var pos = allPositions[i];
+                Vector2 pos = allPositions[i];
                 var distance = segment.GetDistanceFromStartStopLine(pos, offsetPath);
 
-                if (!backward && startIdx == 0 && distance.Equals(startDistance))
+                if (distance >= startDistance && distance < endDistance)
                 {
-                    continue;
-                }
-                if (backward && startIdx == 0 && distance.Equals(endDistance))
-                {
-                    continue;
-                }
-
-                if (distance >= startDistance && distance <= endDistance)
-                {
-                    var key = new Tuple<Vector2, int>(pos, lane);
+                    var key = Tuple.Create(segment, pos, lane);
                     ++offsetMap[key];
                 }
             }
         }
 
-        void UpdateRouteMesh(Route route,
-                             Dictionary<Tuple<Vector2, int>, int> linesPerPositionMap,
+        void UpdateRouteMesh_Alt(Route route,
+                             Dictionary<Tuple<StreetSegment, Vector2, int>, int> linesPerPositionMap,
                              Dictionary<Tuple<StreetSegment, int>, List<Vector3>> allPositionsMap,
-                             Dictionary<Tuple<Vector2, int>, int> offsetMap)
+                             Dictionary<Tuple<StreetSegment, Vector2, int>, int> offsetMap)
         {
             var positions = route.positions;
             var currentPositions = route.CurrentPositions;
             var currentWidths = route.CurrentWidths;
 
-            var newPositions = new List<Vector3>();
-            var newWidths = new List<float>();
+            var newPositions = Enumerable.Repeat(Vector3.zero, positions.Count).ToList();
+            var newWidths = Enumerable.Repeat(0f, positions.Count).ToList();
 
-            var segments = new List<StreetSegment>();
-            var numLines = new List<int>();
-            var lineOffsets = new List<int>();
+            var segments = new Dictionary<int, StreetSegment>();
+            var numLines = new Dictionary<int, int>();
+            var lineOffsets = new Dictionary<int, int>();
 
-            var addedInfo = false;
-            var prevWasIntersection = true;
-
-            for (var i = 0; i < route.positions.Count;)
+            for (var i = 1; i <= route.positions.Count;)
             {
-                var startIdx = i;
-
-                var pathSegment = route.GetSegmentForPosition(i);
-                var isOrphaned = pathSegment != null && pathSegment.length == 1;
-
-                if (!isOrphaned && pathSegment != null && i < route.positions.Count - 1)
+                var pathSegment = route.GetSegmentForPosition(i - 1);
+                if (pathSegment == null)
                 {
-                    ++i;
-                }
+                    while (pathSegment == null)
+                    {
+                        ++i;
+                        if (i - 1 >= route.positions.Count)
+                        {
+                            break;
+                        }
 
-                var pos = route.positions[i];
-                var lane = pathSegment?.lane ?? 0;
-                var streetSeg = pathSegment?.segment;
+                        pathSegment = route.GetSegmentForPosition(i - 1);
+                    }
 
-                if (streetSeg?.name == "Hardenbergplatz (3) 3")
-                {
-                    Debug.Break();
-                }
-
-                var key = new Tuple<Vector2, int>(pos, lane);
-                var currentLines = linesPerPositionMap.GetOrPutDefault(key, 1);
-                var currentLineOffset = offsetMap.GetOrPutDefault(key, 0);
-
-                if (streetSeg != null && !addedInfo)
-                {
-                    segments.Add(streetSeg);
-                    numLines.Add(currentLines);
-                    lineOffsets.Add(currentLineOffset);
-                }
-
-                addedInfo = false;
-
-                if (isOrphaned)
-                {
-                    Debug.Assert(!pathSegment.direction.Equals(default(Vector2)));
-
-                    float offset, halfLineWidth;
-                    GetLineWidthAndOffset(route, streetSeg, currentLines, currentLineOffset,
-                                          out halfLineWidth, out offset);
-
-                    newPositions.Add(MeshBuilder.GetOffsetPoint(pos, offset, pathSegment.direction));
-                    newWidths.Add(halfLineWidth);
-
-                    prevWasIntersection = false;
-
-                    ++i;
                     continue;
                 }
 
-                var startOffset = 0;
-                var endOffset = 0;
+                Vector2 pos;
+                Vector2 nextPos;
 
-                if (streetSeg?.name == "Kurfürstendamm 16")
+                var startIdx = i - 1;
+                if (i == positions.Count)
                 {
-                    // Debug.Break();
+                    Debug.LogWarning("NEED THIS");
+
+                    pos = route.positions[i - 2];
+                    nextPos = route.positions[i - 1];
+
+                    Vector2 direction;
+                    if (pathSegment.length == 1)
+                    {
+                        direction = pathSegment.direction;
+                    }
+                    else
+                    {
+                        direction = nextPos - pos;
+                    }
+
+                    var lastKey = Tuple.Create(pathSegment.segment, pos, pathSegment.lane);
+                    var lastLineOffset = offsetMap.GetOrPutDefault(lastKey, 0);
+                    var lastLines = linesPerPositionMap[lastKey];
+
+                    float lastOffset, lastHalfLineWidth;
+                    GetLineWidthAndOffset(route, pathSegment.segment,
+                                          lastLines, lastLineOffset,
+                                          out lastHalfLineWidth, out lastOffset);
+
+                    var lastPt = MeshBuilder.GetOffsetPoint(nextPos, lastOffset, direction);
+                    newPositions[startIdx] = lastPt;
+                    newWidths[startIdx] = lastHalfLineWidth;
+
+                    segments.Add(startIdx, pathSegment.segment);
+                    numLines.Add(startIdx, lastLines);
+                    lineOffsets.Add(startIdx, lastLineOffset);
+
+                    break;
                 }
 
-                while (++i < route.positions.Count)
+                pos = route.positions[i - 1];
+                nextPos = route.positions[i];
+
+                var lane = pathSegment.lane;
+                var streetSeg = pathSegment.segment;
+
+                var key = new Tuple<StreetSegment, Vector2, int>(streetSeg, pos, lane);
+                var currentLineOffset = offsetMap.GetOrPutDefault(key, 0);
+                var currentLines = linesPerPositionMap[key];
+
+                ++i;
+                while ((i - 1) < positions.Count)
                 {
-                    var nextPos = route.positions[i];
-                    var nextSegment = route.GetSegmentForPosition(i);
-
-                    var nextIsOrphaned = nextSegment != null && nextSegment.length == 1;
-                    if (nextSegment != pathSegment && !nextIsOrphaned
-                    && nextSegment != null
-                    && i < route.positions.Count - 1)
-                    {
-                        nextPos = route.positions[i + 1];
-                        nextSegment = route.GetSegmentForPosition(i + 1);
-                    }
-                    
-                    var nextLane = nextSegment?.lane ?? 0;
-                    var nextStreetSeg = nextSegment?.segment;
-
-                    var nextKey = new Tuple<Vector2, int>(nextPos, nextLane);
-                    var nextLines = linesPerPositionMap.GetOrPutDefault(nextKey, 1);
-                    var nextLineOffset = offsetMap.GetOrPutDefault(nextKey, 0);
-
-                    if (nextSegment != null && !addedInfo)
-                    {
-                        segments.Add(nextStreetSeg);
-                        numLines.Add(nextLines);
-                        lineOffsets.Add(nextLineOffset);
-
-                        addedInfo = true;
-                    }
-
-                    if ((nextStreetSeg != streetSeg || nextLane != lane))
+                    var nextSegment = route.GetSegmentForPosition(i - 1);
+                    if (nextSegment?.segment != streetSeg && i != positions.Count)
                     {
                         break;
                     }
-                    if ((nextLines != currentLines || nextLineOffset != currentLineOffset))
-                    {
-                        break;
-                    }
+
+                    ++i;
                 }
 
-                var length = i - startIdx;
-                var excludeFirst = false;
-                var excludeLast = false;
+                segments.Add(startIdx, streetSeg);
+                numLines.Add(startIdx, currentLines);
+                lineOffsets.Add(startIdx, currentLineOffset);
 
-                // This can happen if there is a stop after the first position of the street.
+                var endIdx = i - 1;
+                IncreaseOffsets(streetSeg, lane, pathSegment.backward, route,
+                                startIdx, endIdx - 1, allPositionsMap, offsetMap);
+
+                float offset, halfLineWidth;
+                GetLineWidthAndOffset(route, streetSeg, currentLines, currentLineOffset,
+                                      out halfLineWidth, out offset);
+
+                var length = endIdx - startIdx;
                 if (length == 1)
                 {
-                    Debug.Log("-------");
-                    Debug.Log(route.name);
-                    Debug.Log(streetSeg?.name);
-                    Debug.Log(i + "/" + positions.Count);
-                    Debug.Log(currentLines);
-                    Debug.Log(pos);
-                    Debug.Log("-------");
-
-                    length = 2;
-                    if (i < positions.Count)
+                    Debug.LogWarning("NEED THIS 2");
+                    Vector2 direction;
+                    if (pathSegment.length == 1)
                     {
-                        excludeLast = true;
+                        direction = pathSegment.direction;
                     }
                     else
                     {
-                        excludeFirst = true;
-                        --startIdx;
-                    }
-                }
-
-                List<Vector3> range;
-                List<float> widthRange;
-
-                if (pathSegment != null && currentLines <= 1)
-                {
-                    range = currentPositions.GetRange(startIdx, length);
-                    if (currentWidths != null)
-                    {
-                        widthRange = currentWidths.GetRange(startIdx, length);
-                    }
-                    else
-                    {
-                        widthRange = Enumerable.Repeat(route.line.LineWidth, length).ToList();
+                        direction = nextPos - pos;
                     }
 
-                    prevWasIntersection = false;
-                    AddPositions(newPositions, range, newWidths, widthRange, excludeFirst, excludeLast);
-
-                    continue;
-                }
-
-                if (pathSegment != null)
-                {
-                    prevWasIntersection = false;
-                    IncreaseOffsets(streetSeg, lane, pathSegment.backward, route,
-                                    startIdx + startOffset, i - 1 - endOffset, allPositionsMap, offsetMap);
-
-                    float offset, halfLineWidth;
-                    GetLineWidthAndOffset(route, streetSeg, currentLines, currentLineOffset,
-                                          out halfLineWidth, out offset);
-
-                    range = MeshBuilder.GetOffsetPath(positions.GetRange(startIdx, length), offset);
-                    widthRange = Enumerable.Repeat(halfLineWidth, length).ToList();
+                    var offsetPt = MeshBuilder.GetOffsetPoint(pos, offset, direction);
+                    newPositions[startIdx] = offsetPt;
+                    newWidths[startIdx] = halfLineWidth;
                 }
                 else
                 {
-                    prevWasIntersection = true;
-                    for (var j = startIdx; j < i; ++j)
+                    var range = MeshBuilder.GetOffsetPath(
+                        positions.GetRange(startIdx, length), offset);
+
+                    for (var j = startIdx; j < endIdx; ++j)
                     {
-                        key = new Tuple<Vector2, int>(route.positions[j], lane);
-                        offsetMap.GetOrPutDefault(key, 0);
-                        ++offsetMap[key];
+                        newPositions[j] = range[j - startIdx];
+                        newWidths[j] = halfLineWidth;
+                    }
+                }
+            }
+
+            for (var i = 0; i < route.positions.Count;)
+            {
+                var pathSegment = route.GetSegmentForPosition(i);
+                if (pathSegment != null)
+                {
+                    ++i;
+                    continue;
+                }
+
+                var startIdx = i++;
+                while (i < positions.Count)
+                {
+                    var nextPathSegment = route.GetSegmentForPosition(i);
+                    if (nextPathSegment != null)
+                    {
+                        break;
                     }
 
-                    Debug.Assert(segments.Count >= 2, "path should not start with intersection");
+                    ++i;
+                }
 
-                    var prevSegment = segments[segments.Count - 2];
-                    var nextSegment = segments[segments.Count - 1];
+                var prevIdx = startIdx;
+                while (!segments.ContainsKey(prevIdx))
+                {
+                    --prevIdx;
 
-                    var prevLines = numLines[numLines.Count - 2];
-                    var nextLines = numLines[numLines.Count - 1];
+                    if (prevIdx < 0)
+                    {
+                        prevIdx = -1;
+                        break;
+                    }
+                }
 
-                    var prevLineOffset = lineOffsets[lineOffsets.Count - 2];
-                    var nextLineOffset = lineOffsets[lineOffsets.Count - 1];
+                var nextIdx = i - 1;
+                while (!segments.ContainsKey(nextIdx))
+                {
+                    ++nextIdx;
+
+                    if (nextIdx >= positions.Count)
+                    {
+                        nextIdx = -1;
+                        break;
+                    }
+                }
+
+                Debug.Assert(prevIdx != -1 || nextIdx != -1, "orphaned intersection?");
+                Debug.Assert(segments.Count >= 2, "path should not start with intersection");
+
+                if (prevIdx == -1 || nextIdx == -1)
+                {
+                    StreetSegment segment;
+                    int currentLines;
+                    int lineOffset;
+
+                    if (prevIdx != -1)
+                    {
+                        segment = segments[prevIdx];
+                        currentLines = numLines[prevIdx];
+                        lineOffset = lineOffsets[prevIdx];
+                    }
+                    else
+                    {
+                        segment = segments[nextIdx];
+                        currentLines = numLines[nextIdx];
+                        lineOffset = lineOffsets[nextIdx];
+                    }
+
+                    float offset, halfLineWidth;
+                    GetLineWidthAndOffset(route, segment, currentLines, lineOffset,
+                                          out halfLineWidth, out offset);
+
+                    var length = i - startIdx;
+                    if (length == 1)
+                    {
+                        Debug.LogWarning("NEED THIS 3");
+
+                        Vector2 direction;
+                        if (prevIdx != -1)
+                        {
+                            direction = positions[startIdx] - positions[startIdx - 1];
+                        }
+                        else
+                        {
+                            direction = positions[startIdx + 1] - positions[startIdx];
+                        }
+
+                        var offsetPt = MeshBuilder.GetOffsetPoint(
+                            positions[startIdx], offset, direction);
+
+                        newPositions[startIdx] = offsetPt;
+                        newWidths[startIdx] = halfLineWidth;
+                    }
+                    else
+                    {
+                        Debug.LogWarning("NEED THIS 4");
+                        var range = MeshBuilder.GetOffsetPath(
+                            positions.GetRange(startIdx, length), offset);
+
+                        for (var j = startIdx; j < startIdx + length; ++j)
+                        {
+                            newPositions[j] = range[j - startIdx];
+                            newWidths[j] = halfLineWidth;
+                        }
+                    }
+                }
+                else
+                {
+                    var prevSegment = segments[prevIdx];
+                    var nextSegment = segments[nextIdx];
+
+                    var prevLines = numLines[prevIdx];
+                    var nextLines = numLines[nextIdx];
+
+                    var prevLineOffset = lineOffsets[prevIdx];
+                    var nextLineOffset = lineOffsets[nextIdx];
 
                     float prevOffset, prevHalfLineWidth;
                     GetLineWidthAndOffset(route, prevSegment, prevLines, prevLineOffset,
@@ -1506,13 +1898,13 @@ namespace Transidious
                     var offsetDiff = nextOffset - prevOffset;
                     var widthDiff = nextHalfLineWidth - prevHalfLineWidth;
 
+                    var length = i - startIdx;
                     var offsetStep = offsetDiff / (length - 1);
                     var widthStep = widthDiff / (length - 1);
 
-                    widthRange = new List<float>();
                     for (var j = 0; j < length; ++j)
                     {
-                        widthRange.Add(prevHalfLineWidth + j * widthStep);
+                        newWidths[startIdx + j] = prevHalfLineWidth + j * widthStep;
                     }
 
                     var offsets = new List<float>();
@@ -1521,11 +1913,214 @@ namespace Transidious
                         offsets.Add(prevOffset + j * offsetStep);
                     }
 
-                    range = MeshBuilder.GetOffsetPath(positions.GetRange(startIdx, length), offsets);
-                }
+                    var range = MeshBuilder.GetOffsetPath(
+                        positions.GetRange(startIdx, length), offsets);
 
-                AddPositions(newPositions, range, newWidths, widthRange, excludeFirst, excludeLast);
+                    for (var j = startIdx; j < i; ++j)
+                    {
+                        newPositions[j] = range[j - startIdx];
+                    }
+                }
             }
+
+            // var addedInfo = false;
+            // for (var i = 0; i < route.positions.Count;)
+            // {
+            //     var startIdx = i;
+
+            //     var pathSegment = route.GetSegmentForPosition(i);
+            //     var isOrphaned = pathSegment != null && pathSegment.length == 1;
+
+            //     var pos = route.positions[i];
+            //     var lane = pathSegment?.lane ?? 0;
+            //     var streetSeg = pathSegment?.segment;
+
+            //     var key = new Tuple<Vector2, int>(pos, lane);
+            //     var currentLines = linesPerPositionMap.GetOrPutDefault(key, 1);
+            //     var currentLineOffset = offsetMap.GetOrPutDefault(key, 0);
+
+            //     if (streetSeg != null && !addedInfo)
+            //     {
+            //         segments.Add(streetSeg);
+            //         numLines.Add(currentLines);
+            //         lineOffsets.Add(currentLineOffset);
+            //     }
+
+            //     addedInfo = false;
+
+            //     if (isOrphaned)
+            //     {
+            //         Debug.Assert(!pathSegment.direction.Equals(default(Vector2)));
+
+            //         float offset, halfLineWidth;
+            //         GetLineWidthAndOffset(route, streetSeg, currentLines, currentLineOffset,
+            //                               out halfLineWidth, out offset);
+
+            //         newPositions.Add(MeshBuilder.GetOffsetPoint(pos, offset, pathSegment.direction));
+            //         newWidths.Add(halfLineWidth);
+
+            //         ++i;
+            //         continue;
+            //     }
+
+            //     var startOffset = 0;
+            //     var endOffset = 0;
+
+            //     if (streetSeg?.name == "Kurfürstendamm 16")
+            //     {
+            //         // Debug.Break();
+            //     }
+
+            //     while (++i < route.positions.Count)
+            //     {
+            //         var nextPos = route.positions[i];
+            //         var nextSegment = route.GetSegmentForPosition(i);
+
+            //         var nextIsOrphaned = nextSegment != null && nextSegment.length == 1;
+            //         if (nextSegment != pathSegment && !nextIsOrphaned
+            //         && nextSegment != null
+            //         && i < route.positions.Count - 1)
+            //         {
+            //             nextPos = route.positions[i + 1];
+            //             nextSegment = route.GetSegmentForPosition(i + 1);
+            //         }
+
+            //         var nextLane = nextSegment?.lane ?? 0;
+            //         var nextStreetSeg = nextSegment?.segment;
+
+            //         var nextKey = new Tuple<Vector2, int>(nextPos, nextLane);
+            //         var nextLines = linesPerPositionMap.GetOrPutDefault(nextKey, 1);
+            //         var nextLineOffset = offsetMap.GetOrPutDefault(nextKey, 0);
+
+            //         if (nextSegment != null && !addedInfo)
+            //         {
+            //             segments.Add(nextStreetSeg);
+            //             numLines.Add(nextLines);
+            //             lineOffsets.Add(nextLineOffset);
+
+            //             addedInfo = true;
+            //         }
+
+            //         if ((nextStreetSeg != streetSeg || nextLane != lane))
+            //         {
+            //             break;
+            //         }
+            //         if ((nextLines != currentLines || nextLineOffset != currentLineOffset))
+            //         {
+            //             break;
+            //         }
+            //     }
+
+            //     var length = i - startIdx;
+            //     var excludeFirst = false;
+            //     var excludeLast = false;
+
+            //     // This can happen if there is a stop after the first position of the street.
+            //     if (length == 1)
+            //     {
+            //         Debug.Log("-------");
+            //         Debug.Log(route.name);
+            //         Debug.Log(streetSeg?.name);
+            //         Debug.Log(i + "/" + positions.Count);
+            //         Debug.Log(currentLines);
+            //         Debug.Log(pos);
+            //         Debug.Log("-------");
+
+            //         length = 2;
+            //         if (i < positions.Count)
+            //         {
+            //             excludeLast = true;
+            //         }
+            //         else
+            //         {
+            //             excludeFirst = true;
+            //             --startIdx;
+            //         }
+            //     }
+
+            //     List<Vector3> range;
+            //     List<float> widthRange;
+
+            //     if (pathSegment != null && currentLines <= 1)
+            //     {
+            //         range = currentPositions.GetRange(startIdx, length);
+            //         if (currentWidths != null)
+            //         {
+            //             widthRange = currentWidths.GetRange(startIdx, length);
+            //         }
+            //         else
+            //         {
+            //             widthRange = Enumerable.Repeat(route.line.LineWidth, length).ToList();
+            //         }
+
+            //         AddPositions(newPositions, range, newWidths, widthRange, excludeFirst, excludeLast);
+
+            //         continue;
+            //     }
+
+            //     if (pathSegment != null)
+            //     {
+            //         IncreaseOffsets(streetSeg, lane, pathSegment.backward, route,
+            //                         startIdx + startOffset, i - 1 - endOffset, allPositionsMap, offsetMap);
+
+            //         float offset, halfLineWidth;
+            //         GetLineWidthAndOffset(route, streetSeg, currentLines, currentLineOffset,
+            //                               out halfLineWidth, out offset);
+
+            //         range = MeshBuilder.GetOffsetPath(positions.GetRange(startIdx, length), offset);
+            //         widthRange = Enumerable.Repeat(halfLineWidth, length).ToList();
+            //     }
+            //     else
+            //     {
+            //         for (var j = startIdx; j < i; ++j)
+            //         {
+            //             key = new Tuple<Vector2, int>(route.positions[j], lane);
+            //             offsetMap.GetOrPutDefault(key, 0);
+            //             ++offsetMap[key];
+            //         }
+
+            //         Debug.Assert(segments.Count >= 2, "path should not start with intersection");
+
+            //         var prevSegment = segments[segments.Count - 2];
+            //         var nextSegment = segments[segments.Count - 1];
+
+            //         var prevLines = numLines[numLines.Count - 2];
+            //         var nextLines = numLines[numLines.Count - 1];
+
+            //         var prevLineOffset = lineOffsets[lineOffsets.Count - 2];
+            //         var nextLineOffset = lineOffsets[lineOffsets.Count - 1];
+
+            //         float prevOffset, prevHalfLineWidth;
+            //         GetLineWidthAndOffset(route, prevSegment, prevLines, prevLineOffset,
+            //                               out prevHalfLineWidth, out prevOffset);
+
+            //         float nextOffset, nextHalfLineWidth;
+            //         GetLineWidthAndOffset(route, prevSegment, nextLines, nextLineOffset,
+            //                               out nextHalfLineWidth, out nextOffset);
+
+            //         var offsetDiff = nextOffset - prevOffset;
+            //         var widthDiff = nextHalfLineWidth - prevHalfLineWidth;
+
+            //         var offsetStep = offsetDiff / (length - 1);
+            //         var widthStep = widthDiff / (length - 1);
+
+            //         widthRange = new List<float>();
+            //         for (var j = 0; j < length; ++j)
+            //         {
+            //             widthRange.Add(prevHalfLineWidth + j * widthStep);
+            //         }
+
+            //         var offsets = new List<float>();
+            //         for (var j = 0; j < length; ++j)
+            //         {
+            //             offsets.Add(prevOffset + j * offsetStep);
+            //         }
+
+            //         range = MeshBuilder.GetOffsetPath(positions.GetRange(startIdx, length), offsets);
+            //     }
+
+            //     AddPositions(newPositions, range, newWidths, widthRange, excludeFirst, excludeLast);
+            // }
 
             var collider = route.GetComponent<PolygonCollider2D>();
             collider.pathCount = 0;

@@ -27,7 +27,7 @@ namespace Transidious
         Ferry,
     }
 
-    public class Line : MonoBehaviour
+    public class Line : MapObject
     {
 
         [System.Serializable]
@@ -44,7 +44,6 @@ namespace Transidious
             public List<int> routeIDs;
         }
 
-        public int id;
         public Map map;
 
         public TransitType type;
@@ -70,15 +69,15 @@ namespace Transidious
             {
                 switch (type)
                 {
-                    case TransitType.Bus: return 30.0f;
-                    case TransitType.Tram: return 30.0f;
-                    case TransitType.Subway: return 50.0f;
-                    case TransitType.LightRail: return 60.0f;
-                    case TransitType.IntercityRail: return 80.0f;
-                    case TransitType.Ferry: return 10.0f;
-                    default:
-                        Debug.LogError("Unknown transit type!");
-                        return 50.0f;
+                case TransitType.Bus: return 30.0f;
+                case TransitType.Tram: return 30.0f;
+                case TransitType.Subway: return 50.0f;
+                case TransitType.LightRail: return 60.0f;
+                case TransitType.IntercityRail: return 80.0f;
+                case TransitType.Ferry: return 10.0f;
+                default:
+                    Debug.LogError("Unknown transit type!");
+                    return 50.0f;
                 }
             }
         }
@@ -89,15 +88,15 @@ namespace Transidious
             {
                 switch (type)
                 {
-                    case TransitType.Bus: return 1.25f;
-                    case TransitType.Tram: return 1.25f;
-                    case TransitType.Subway: return 3f;
-                    case TransitType.LightRail: return 3f;
-                    case TransitType.IntercityRail: return 3f;
-                    case TransitType.Ferry: return 1.25f;
-                    default:
-                        Debug.LogError("Unknown transit type!");
-                        return 1.25f;
+                case TransitType.Bus: return 1.25f;
+                case TransitType.Tram: return 1.25f;
+                case TransitType.Subway: return 3f;
+                case TransitType.LightRail: return 3f;
+                case TransitType.IntercityRail: return 3f;
+                case TransitType.Ferry: return 1.25f;
+                default:
+                    Debug.LogError("Unknown transit type!");
+                    return 1.25f;
                 }
             }
         }
@@ -210,9 +209,9 @@ namespace Transidious
         public void Deserialize(SerializedLine line, Map map)
         {
             this.map = map;
-            stops = line.stopIDs.Select(id => map.transitStopIDMap[id]).ToList();
-            routes = line.routeIDs.Select(id => map.transitRouteIDMap[id]).ToList();
-            depot = map.transitStopIDMap[line.depotID];
+            stops = line.stopIDs.Select(id => map.GetMapObject<Stop>(id)).ToList();
+            routes = line.routeIDs.Select(id => map.GetMapObject<Route>(id)).ToList();
+            depot = map.GetMapObject<Stop>(line.depotID);
 
             foreach (var stop in stops)
             {

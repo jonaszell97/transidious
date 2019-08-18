@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -Wall")
 
 # include tblgen
-include_directories("~/tblgen/include")
+include_directories("$ENV{TBLGEN_PATH}/include")
 
 # find LLVM
 set(LLVM_DIR /usr/local/Cellar/llvm/6.0.0/lib/cmake/llvm)

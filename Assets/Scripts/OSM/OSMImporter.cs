@@ -30,6 +30,10 @@ namespace Transidious
         }
 
         public Map map;
+
+        public int thresholdTime = 500;
+        public bool loadGame = true;
+
         public Dictionary<long, Node> nodes = new Dictionary<long, Node>();
         public List<Tuple<Way, Street.Type>> streets = new List<Tuple<Way, Street.Type>>();
 
@@ -63,12 +67,16 @@ namespace Transidious
         public float height;
 
         public OSMImportHelper.Area area;
+        public string country;
 
         float cosCenterLat;
         static readonly float earthRadius = 6371000f * Map.Meters;
 
         async void Start()
         {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
             GameController.instance.status = GameController.GameStatus.Paused;
 
             var mapPrefab = Resources.Load("Prefabs/Map") as GameObject;
@@ -80,6 +88,9 @@ namespace Transidious
 
             await this.ImportArea();
             StartCoroutine(LoadFeatures());
+
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
 
         Vector3 Project(Node node)
@@ -102,7 +113,7 @@ namespace Transidious
 
             await Task.Factory.StartNew(() =>
             {
-                importHelper = new OSMImportHelper(this, areaName);
+                importHelper = new OSMImportHelper(this, areaName, country);
                 importHelper.ImportArea();
             });
 
@@ -130,13 +141,10 @@ namespace Transidious
             yield return LoadParks();
             Debug.Log("loaded natural features");
 
-            yield return LoadStreets(true);
-            Debug.Log("loaded paths");
-
             map.DoFinalize(false);
             SaveManager.SaveMapLayout(map);
 
-            yield return LoadStreets(false);
+            yield return LoadStreets();
             Debug.Log("loaded streets");
 
             yield return LoadTransitLines();
@@ -148,7 +156,10 @@ namespace Transidious
             SaveManager.SaveMapData(map);
             Debug.Log("Done!");
 
-            UnityEngine.SceneManagement.SceneManager.LoadScene("MainGame");
+            if (loadGame)
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("MainGame");
+            }
         }
 
         void FindMinLngAndLat()
@@ -327,7 +338,6 @@ namespace Transidious
             }
         }
 
-
         void LoadBoundary()
         {
             map.minX = 0;
@@ -337,7 +347,7 @@ namespace Transidious
             map.maxX = maxValues.x;
             map.maxY = maxValues.y;
 
-            Vector3[] boundaryPositions;
+            Vector2[] boundaryPositions;
             if (boundary != null)
             {
                 var positions = GetWayPositions(boundary, "outer", 0f);
@@ -346,21 +356,27 @@ namespace Transidious
                     positions.Add(positions.First());
                 }
 
-                boundaryPositions = MeshBuilder.RemoveDetail(positions, 20f).ToArray();
+                var positionsToKeep = new List<Vector2>();
+                LineUtility.Simplify(positions.Select(v => (Vector2)v).ToList(),
+                                     5f, positionsToKeep);
+
+                Debug.Log("reduced boundary from " + positions.Count + " to "
+                    + positionsToKeep.Count + " verts");
+
+                boundaryPositions = positionsToKeep.ToArray();
             }
             else
             {
-                boundaryPositions = new Vector3[]
+                boundaryPositions = new Vector2[]
                 {
-                    new Vector3(map.minX, map.maxY),
-                    new Vector3(map.maxX, map.maxY),
-                    new Vector3(map.minX, map.minY),
-                    new Vector3(map.maxX, map.minY)
+                    new Vector2(map.minX, map.minY), // bottom left
+                    new Vector2(map.minX, map.maxY), // top left
+                    new Vector2(map.maxX, map.maxY), // top right
+                    new Vector2(map.maxX, map.minY), // bottom right
                 };
             }
 
             map.UpdateBoundary(boundaryPositions);
-            map.boundaryOutlineObj.SetActive(false);
         }
 
         void AddStopToLine(Line l, Stop s, Stop previousStop, int i, List<List<Vector3>> wayPositions,
@@ -426,7 +442,7 @@ namespace Transidious
             if (stopMap.TryGetValue(stopNode.Id.Value, out Stop stop))
             {
                 return stop;
-            } 
+            }
 
             var loc = Project(stopNode);
             if (projectOntoStreet)
@@ -441,7 +457,7 @@ namespace Transidious
                 var closestPtAndPos = street.GetClosestPointAndPosition(loc);
                 var positions = GameController.instance.sim.trafficSim.GetPath(
                     street, (closestPtAndPos.Item2 == Math.PointPosition.Right || street.street.isOneWay)
-                        ? street.RightmostLane 
+                        ? street.RightmostLane
                         : street.LeftmostLane);
 
                 closestPtAndPos = StreetSegment.GetClosestPointAndPosition(loc, positions);
@@ -466,10 +482,11 @@ namespace Transidious
 
         IEnumerator LoadTransitLines()
         {
-            var counter = 0;
             foreach (var linePair in lines)
             {
-                if (linePair.Value.type != TransitType.Bus||linePair.Value.inbound.Tags.GetValue("ref")!="109")
+                if (linePair.Value.type != TransitType.Bus
+                /*|| (linePair.Value.inbound.Tags.GetValue("ref") != "M19"
+                && linePair.Value.inbound.Tags.GetValue("ref") != "M29")*/)
                 {
                     continue;
                 }
@@ -554,7 +571,7 @@ namespace Transidious
                     {
                         platform = FindWay(members[n + 1].Id);
                     }
-                    
+
                     if (l.type == TransitType.Bus && platform != null)
                     {
                         foreach (var nodeId in platform.Nodes)
@@ -572,7 +589,7 @@ namespace Transidious
                             }
                         }
                     }
-                    
+
                     if (s == null)
                     {
                         s = GetOrCreateStop(FindNode(member.Id));
@@ -595,10 +612,9 @@ namespace Transidious
 
                 Debug.Log("done");
 
-                if (counter++ == 300)
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
-                    counter = 0;
                 }
             }
         }
@@ -643,7 +659,7 @@ namespace Transidious
             }
         }
 
-        IEnumerator LoadStreets(bool onlyFootpaths)
+        IEnumerator LoadStreets()
         {
             var namelessStreets = 0;
             var partialStreets = new List<PartialStreet>();
@@ -651,26 +667,12 @@ namespace Transidious
             var intersections = new Dictionary<Node, StreetIntersection>();
 
             var totalVerts = 0;
-            var counter = 0;
 
             foreach (var street in streets)
             {
-                switch (street.Item2)
+                if (street.Item2 == Street.Type.FootPath)
                 {
-                case Street.Type.FootPath:
-                    if (!onlyFootpaths)
-                    {
-                        continue;
-                    }
-
-                    break;
-                default:
-                    if (onlyFootpaths)
-                    {
-                        continue;
-                    }
-
-                    break;
+                    continue;
                 }
 
                 var tags = street.Item1.Tags;
@@ -738,10 +740,9 @@ namespace Transidious
                 partialStreets.Add(ps);
                 Debug.Log("done");
 
-                if (counter++ == 300)
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
-                    counter = 0;
                 }
             }
 
@@ -758,8 +759,6 @@ namespace Transidious
                     });
                 }
             }
-
-            counter = 0;
 
             var streetSet = new HashSet<PartialStreet>();
             foreach (var street in partialStreets)
@@ -810,10 +809,9 @@ namespace Transidious
                     startIdx = i;
                 }
 
-                if (counter++ == 300)
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
-                    counter = 0;
                 }
             }
 
@@ -827,8 +825,6 @@ namespace Transidious
                     streetIntersectionMap.Add(position, intersection);
                 }
             }
-
-            counter = 0;
 
             var startingStreetCandidates = new HashSet<string>();
             foreach (var inter in intersections)
@@ -852,7 +848,7 @@ namespace Transidious
                     }
 
                     var segPositionsStream = startSeg.positions.Select(n => this.Project(n));
-                    var segPositions = MeshBuilder.RemoveDetail(segPositionsStream.ToArray(), 5f);
+                    var segPositions = MeshBuilder.RemoveDetailByAngle(segPositionsStream.ToArray(), 5f);
 
                     var street = map.CreateStreet(startSeg.name, startSeg.type, startSeg.lit,
                                                   startSeg.oneway, startSeg.maxspeed,
@@ -896,7 +892,7 @@ namespace Transidious
                             }
 
                             var nextSegPositionsStream = nextSeg.positions.Select(n => this.Project(n));
-                            var nextSegPositions = MeshBuilder.RemoveDetail(nextSegPositionsStream.ToArray(), 5f);
+                            var nextSegPositions = MeshBuilder.RemoveDetailByAngle(nextSegPositionsStream.ToArray(), 5f);
 
                             seg = street.AddSegment(nextSegPositions,
                                                     map.streetIntersectionMap[Project(nextSeg.start.position)],
@@ -918,15 +914,17 @@ namespace Transidious
 
                 startingStreetCandidates.Clear();
 
-                if (counter++ == 300)
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
-                    counter = 0;
                 }
             }
         }
 
-        public Mesh LoadPolygon(Relation rel, string outer = "outer", string inner = "inner")
+        public Mesh LoadPolygon(Relation rel,
+                                float simplificationThresholdAngle = 0f,
+                                string outer = "outer",
+                                string inner = "inner")
         {
             var pslg = new PSLG();
             foreach (var member in rel.Members)
@@ -940,6 +938,12 @@ namespace Transidious
                     }
 
                     var wayPositions = GetWayPositions(way);
+                    if (simplificationThresholdAngle > 0f)
+                    {
+                        wayPositions = MeshBuilder.RemoveDetailByAngle(
+                            wayPositions, simplificationThresholdAngle);
+                    }
+
                     pslg.AddVertexLoop(wayPositions);
                 }
                 else if (!String.IsNullOrEmpty(inner) && member.Role == inner)
@@ -953,6 +957,12 @@ namespace Transidious
                     var wayPositions = GetWayPositions(way);
                     if (wayPositions.Count == way.Nodes.Length)
                     {
+                        if (simplificationThresholdAngle > 0f)
+                        {
+                            wayPositions = MeshBuilder.RemoveDetailByAngle(
+                                wayPositions, simplificationThresholdAngle);
+                        }
+
                         pslg.AddHole(wayPositions);
                     }
                 }
@@ -964,21 +974,12 @@ namespace Transidious
             }
             else
             {
-                var polygon = map.triangleAPI.Triangulate(pslg);
-                var mesh = new Mesh
-                {
-                    vertices = polygon.vertices,
-                    triangles = polygon.triangles
-                };
-
-                MeshBuilder.FixWindingOrder(mesh);
-                return mesh;
+                return map.triangleAPI.CreateMesh(pslg);
             }
         }
 
         IEnumerator LoadParks()
         {
-            var counter = 0;
             foreach (var feature in naturalFeatures)
             {
                 var featureName = feature.Item1.Tags.GetValue("name");
@@ -1006,17 +1007,52 @@ namespace Transidious
                 map.CreateFeature(featureName, feature.Item2, mesh);
                 Debug.Log("done");
 
-                if (counter++ == 300)
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
-                    counter = 0;
                 }
             }
+
+            // yield return LoadFootpaths();
+        }
+
+        IEnumerator LoadFootpaths()
+        {
+            var verts = 0;
+            foreach (var street in streets)
+            {
+                if (street.Item2 != Street.Type.FootPath)
+                {
+                    continue;
+                }
+
+                var tags = street.Item1.Tags;
+                var name = tags.GetValue("name");
+                Debug.Log("loading path '" + name + "'...");
+
+                var positions = GetWayPositions(street.Item1);
+                positions = MeshBuilder.RemoveDetailByAngle(positions.ToArray(), 5f);
+
+                verts += positions.Count;
+
+                var mesh = MeshBuilder.CreateSmoothLine(positions,
+                                                        2 * StreetSegment.laneWidth * 0.3f,
+                                                        10);
+
+                map.CreateFeature(name, NaturalFeature.Type.Footpath, mesh);
+                Debug.Log("done");
+
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
+            }
+
+            Debug.Log("footpath verts: " + verts);
         }
 
         IEnumerator LoadBuildings()
         {
-            var counter = 0;
             foreach (var building in buildings)
             {
                 var buildingName = building.Item1.Tags.GetValue("name");
@@ -1086,10 +1122,9 @@ namespace Transidious
                 map.CreateBuilding(type, mesh, buildingName, numberStr, position);
                 Debug.Log("done");
 
-                if (counter++ == 300)
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
-                    counter = 0;
                 }
             }
         }

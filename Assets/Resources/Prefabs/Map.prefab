@@ -53,11 +53,13 @@ MonoBehaviour:
   maxX: 0
   minY: 0
   maxY: 0
+  boundaryPositions: []
   boundaryBackgroundObj: {fileID: 0}
   boundaryOutlineObj: {fileID: 0}
   boundarymaskObj: {fileID: 0}
-  streets: []
   streetSegments: []
+  streets: []
+  streetIntersections: []
   transitStops: []
   transitRoutes: []
   transitLines: []
@@ -75,6 +77,8 @@ MonoBehaviour:
   streetPrefab: {fileID: 6216374283189819706, guid: b2dd772e25ae64213b7cd2eace8a24a8,
     type: 3}
   streetSegmentPrefab: {fileID: 148497213348690520, guid: 767de93ca301b48e38ff6a2e63385aeb,
+    type: 3}
+  streetIntersectionPrefab: {fileID: 5758908007164098556, guid: 6e4364b15289e4b17a2612d19bbe8bb1,
     type: 3}
   stopPrefab: {fileID: 7249201573953522384, guid: fe99f6853c2564cf485ed2ac9d495b51,
     type: 3}

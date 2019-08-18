@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using UnityEditor;
 using UnityEngine;
+using ICSharpCode.SharpZipLib.GZip;
 
 namespace Transidious
 {
@@ -15,11 +17,10 @@ namespace Transidious
         [Serializable]
         public struct SerializedMap
         {
-            public SerializableVector3[] boundaryPositions;
+            public SerializableVector2[] boundaryPositions;
             public float minX, maxX, minY, maxY;
-            public ScreenShotMaker.ScreenShotInfo screenShotInfo;
             public SerializableVector3 cameraStartingPos;
-            public SerializableMesh[] boundaryMeshes;
+            public SerializableMesh2D[] boundaryMeshes;
             public NaturalFeature.SerializedFeature[] naturalFeatures;
         }
 
@@ -37,22 +38,22 @@ namespace Transidious
 
         public static Map loadedMap;
 
-        static SerializedMap GetSerializedMap(Map map, ScreenShotMaker.ScreenShotInfo screenShotInfo)
+        static SerializedMap GetSerializedMap(Map map)
         {
             return new SerializedMap
             {
-                boundaryPositions = map.boundaryPositions.Select(p => new SerializableVector3(p)).ToArray(),
+                boundaryPositions = map.boundaryPositions.Select(
+                    p => new SerializableVector2(p)).ToArray(),
                 minX = map.minX,
                 maxX = map.maxX,
                 minY = map.minY,
                 maxY = map.maxY,
-                screenShotInfo = screenShotInfo,
                 cameraStartingPos = new SerializableVector3(map.startingCameraPos),
-                boundaryMeshes = new SerializableMesh[]
+                boundaryMeshes = new SerializableMesh2D[]
                 {
-                    new SerializableMesh(map.boundaryBackgroundObj.GetComponent<MeshFilter>().mesh),
-                    new SerializableMesh(map.boundaryOutlineObj.GetComponent<MeshFilter>().mesh),
-                    new SerializableMesh(map.boundarymaskObj.GetComponent<MeshFilter>().mesh),
+                    new SerializableMesh2D(map.boundaryBackgroundObj.GetComponent<MeshFilter>().mesh),
+                    new SerializableMesh2D(map.boundaryOutlineObj.GetComponent<MeshFilter>().mesh),
+                    new SerializableMesh2D(map.boundarymaskObj.GetComponent<MeshFilter>().mesh),
                 },
                 naturalFeatures = map.naturalFeatures.Select(r => r.Serialize()).ToArray(),
             };
@@ -75,7 +76,8 @@ namespace Transidious
             {
                 tiles = stiles,
                 buildings = map.buildings.Select(r => r.Serialize()).ToArray(),
-                streets = map.streets.Where(s => s.type != Street.Type.FootPath).Select(s => s.Serialize()).ToArray(),
+                streets = map.streets.Where(s => s.type != Street.Type.FootPath).Select(
+                    s => s.Serialize()).ToArray(),
                 streetIntersections = map.streetIntersections.Select(s => s.Serialize()).ToArray(),
                 transitRoutes = map.transitRoutes.Select(r => r.Serialize()).ToArray(),
                 transitStops = map.transitStops.Select(r => r.Serialize()).ToArray(),
@@ -85,55 +87,47 @@ namespace Transidious
 
         static void SerializeToStream(Stream stream, object value)
         {
+            var formatter = new BinaryFormatter();
             using (var ms = new MemoryStream())
             {
-                var formatter = new BinaryFormatter();
                 formatter.Serialize(ms, value);
+                ms.Seek(0, SeekOrigin.Begin);
 
-                var b64str = Convert.ToBase64String(ms.ToArray());
-                var buffer = Encoding.ASCII.GetBytes(b64str);
-                stream.Write(buffer, 0, buffer.Length);
+                GZip.Compress(ms, stream, false);
             }
         }
 
-        static object DeserializeFromStream(TextAsset fileResource)
+        static T DeserializeFromStream<T>(TextAsset asset)
         {
-            var b64str = Encoding.ASCII.GetString(fileResource.bytes, 0, fileResource.bytes.Length);
-            var bytes = Convert.FromBase64String(b64str);
-
-            using (var stream = new MemoryStream())
+            var formatter = new BinaryFormatter();
+            using (var compressed = new MemoryStream(asset.bytes))
             {
-                stream.Write(bytes, 0, bytes.Length);
-                stream.Position = 0;
-
-                var formatter = new BinaryFormatter();
-                return formatter.Deserialize(stream);
+                using (var decompressed = new MemoryStream())
+                {
+                    GZip.Decompress(compressed, decompressed, false);
+                    decompressed.Seek(0, SeekOrigin.Begin);
+                    return (T)formatter.Deserialize(decompressed);
+                }
             }
         }
 
-        static void SaveMapToFile(Map map,
-                                  ScreenShotMaker.ScreenShotInfo screenShotInfo)
+        static void SaveMapToFile(Map map)
         {
             string fileName = "Assets/Resources/Maps/";
             fileName += map.name;
-            fileName += ".txt";
+            fileName += ".bytes";
 
             var formatter = new BinaryFormatter();
             using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
             {
-                SerializeToStream(stream, GetSerializedMap(map, screenShotInfo));
+                var serializedMap = GetSerializedMap(map);
+                SerializeToStream(stream, serializedMap);
             }
-        }
-
-        static ScreenShotMaker.ScreenShotInfo SaveMapScreenshot(Map map)
-        {
-            return ScreenShotMaker.Instance.MakeScreenshot(map);
         }
 
         public static void SaveMapLayout(Map map)
         {
-            // var screenShotInfo = SaveMapScreenshot(map);
-            SaveMapToFile(map, new ScreenShotMaker.ScreenShotInfo());
+            SaveMapToFile(map);
         }
 
         public static void SaveMapData(Map map)
@@ -142,9 +136,7 @@ namespace Transidious
             fileName += map.name;
             // fileName += "_";
             // fileName += (new DateTime()).ToString();
-            fileName += ".txt";
-
-            Debug.Log("serialized " + map.buildings.Count + " buildings");
+            fileName += ".bytes";
 
             using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
             {
@@ -160,15 +152,17 @@ namespace Transidious
             yield return asyncResource;
 
             var fileResource = (TextAsset)asyncResource.asset;
-            var serializedMap = (SerializedMap)DeserializeFromStream(fileResource);
+            var serializedMap = DeserializeFromStream<SerializedMap>(fileResource);
 
-            map.UpdateBoundary(serializedMap.boundaryMeshes[0].GetMesh(),
-                               serializedMap.boundaryMeshes[1].GetMesh(),
-                               serializedMap.boundaryMeshes[2].GetMesh(),
-                               serializedMap.minX, serializedMap.maxX,
-                               serializedMap.minY, serializedMap.maxY);
+            map.UpdateBoundary(
+                serializedMap.boundaryMeshes[0].GetMesh(Map.Layer(MapLayer.Boundary)),
+                serializedMap.boundaryMeshes[1].GetMesh(Map.Layer(MapLayer.Foreground)),
+                serializedMap.boundaryMeshes[2].GetMesh(Map.Layer(MapLayer.Boundary)),
+                serializedMap.minX, serializedMap.maxX,
+                serializedMap.minY, serializedMap.maxY);
 
-            map.boundaryPositions = serializedMap.boundaryPositions.Select(p => p.ToVector()).ToArray();
+            map.boundaryPositions = serializedMap.boundaryPositions.Select(
+                p => (Vector2)p).ToArray();
 
             Camera.main.transform.position = new Vector3(
                 serializedMap.minX + (serializedMap.maxX - serializedMap.minX) / 2f,
@@ -176,6 +170,12 @@ namespace Transidious
                 Camera.main.transform.position.z);
 
             map.startingCameraPos = Camera.main.transform.position;
+
+            // Deserialize natural features.
+            foreach (var feature in serializedMap.naturalFeatures)
+            {
+                map.CreateFeature(feature.name, feature.type, feature.mesh.GetMesh());
+            }
 
             // yield return LoadTiles(map, mapName, serializedMap.screenShotInfo);
         }
@@ -229,7 +229,7 @@ namespace Transidious
                 yield break;
             }
 
-            var saveFile = (SaveFile)DeserializeFromStream(fileResource);
+            var saveFile = DeserializeFromStream<SaveFile>(fileResource);
             var thresholdTime = 500; // 12;
 
             // Deserialize buildings.
@@ -278,7 +278,7 @@ namespace Transidious
             // Deserialize raw routes without routes.
             foreach (var stop in saveFile.transitStops)
             {
-                map.GetOrCreateStop(stop.name, stop.position.ToVector(), stop.id);
+                map.GetOrCreateStop(stop.name, stop.position, stop.id);
             }
 
             // Deserialize raw routes without stops or routes.
@@ -290,13 +290,13 @@ namespace Transidious
             // Connect stops with their lines.
             foreach (var stop in saveFile.transitStops)
             {
-                map.transitStopIDMap[stop.id].Deserialize(stop, map);
+                map.GetMapObject<Stop>(stop.id).Deserialize(stop, map);
             }
 
             // Connect routes with streets and initialize the meshes.
             foreach (var route in saveFile.transitRoutes)
             {
-                map.transitRouteIDMap[route.id].Deserialize(route, map);
+                map.GetMapObject<Route>(route.id).Deserialize(route, map);
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
@@ -307,14 +307,14 @@ namespace Transidious
             // Connect lines with their routes.
             foreach (var line in saveFile.transitLines)
             {
-                var createdLine = map.transitLineIDMap[line.id];
+                var createdLine = map.GetMapObject<Line>(line.id);
                 createdLine.Deserialize(line, map);
             }
 
             // Connect buildings to their streets.
             foreach (var building in map.buildings)
             {
-                building.street = map.streetSegmentIDMap[building.streetID];
+                building.street = map.GetMapObject<StreetSegment>(building.streetID);
             }
 
             // Initialize the map tiles.

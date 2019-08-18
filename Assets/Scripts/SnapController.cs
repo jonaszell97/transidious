@@ -225,7 +225,6 @@ namespace Transidious
             cursorObj.transform.position = new Vector3(closestPt.x, closestPt.y,
                                                        Map.Layer(MapLayer.Cursor));
 
-                Debug.Log("snapping");
             game.input.gameCursorPosition = cursorObj.transform.position;
         }
 

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Transidious
 {
-    public class Street : MonoBehaviour
+    public class Street : MapObject
     {
         public enum Type
         {
@@ -31,9 +31,6 @@ namespace Transidious
             public int maxspeed;
             public int lanes;
         }
-
-        /// ID of the street.
-        public int id;
 
         /// The display name of the street. If null, same as name.
         public string displayName;
@@ -482,9 +479,9 @@ namespace Transidious
         {
             foreach (var seg in s.segments)
             {
-                AddSegment(seg.positions.Select(v => v.ToVector()).ToList(),
-                           map.streetIntersectionIDMap[seg.startIntersectionID],
-                           map.streetIntersectionIDMap[seg.endIntersectionID],
+                AddSegment(seg.positions.Select(v => (Vector3)v).ToList(),
+                           map.GetMapObject<StreetIntersection>(seg.startIntersectionID),
+                            map.GetMapObject<StreetIntersection>(seg.endIntersectionID),
                            -1, seg.hasTramTracks, seg.id);
             }
 

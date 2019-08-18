@@ -193,7 +193,7 @@ namespace Transidious
 
         public bool IsPointerOverUIElement()
         {
-            if (EventSystem.current.IsPointerOverGameObject())
+            if (EventSystem.current?.IsPointerOverGameObject() ?? false)
             {
                 // Debug.Log(EventSystem.current.currentSelectedGameObject);
                 // if (EventSystem.current.currentSelectedGameObject != null)
@@ -243,7 +243,7 @@ namespace Transidious
             {
                 return;
             }
-            
+
             foreach (var listener in inputEventListeners[(int)InputEvent.MouseEnter])
             {
                 if (disabledListeners.Contains(listener.Key))
@@ -261,7 +261,7 @@ namespace Transidious
             {
                 return;
             }
-            
+
             foreach (var listener in inputEventListeners[(int)InputEvent.MouseExit])
             {
                 if (disabledListeners.Contains(listener.Key))
@@ -577,7 +577,7 @@ namespace Transidious
         Vector2 GetNewDesktopPosition(Vector2 position)
         {
             if (Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2))
-            {  
+            {
                 mouseOrigin = Input.mousePosition;
                 isPanning = true;
             }
@@ -662,7 +662,7 @@ namespace Transidious
 
             camera.transform.position = new Vector3(position.x, position.y,
                                                     camera.transform.position.z);
-        
+
             FireEvent(InputEvent.Pan);
         }
 

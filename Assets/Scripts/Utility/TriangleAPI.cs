@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using System;
 using System.IO;
 using System.Collections.Generic;
-using System;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Transidious
 {
@@ -33,6 +35,49 @@ namespace Transidious
             {
                 return vertices.Count == 0;
             }
+        }
+
+        public bool IsValidFloat(float val)
+        {
+            if (float.IsNaN(val))
+            {
+                return false;
+            }
+            if (float.IsInfinity(val))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool Validate()
+        {
+            foreach (var vert in vertices)
+            {
+                if (!IsValidFloat(vert.x))
+                {
+                    return false;
+                }
+                if (!IsValidFloat(vert.y))
+                {
+                    return false;
+                }
+                if (!IsValidFloat(vert.z))
+                {
+                    return false;
+                }
+            }
+
+            foreach (var hole in holes)
+            {
+                if (!hole.Validate())
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public void AddVertexLoop(List<Vector3> vertices)
@@ -241,33 +286,62 @@ namespace Transidious
     {
         string polyFilePath;
 
+        [DllImport("UnityTriangle", CallingConvention = CallingConvention.Cdecl)]
+        static extern int Triangulate(StringBuilder bin, StringBuilder args, StringBuilder file);
+
         // Use this for initialization
         public Polygon2D Triangulate(PSLG pslg)
         {
             if (pslg.vertices.Count == 0)
             {
-                Debug.LogError("No vertices passed to triangle. hole count: " + pslg.holes.Count + ", vert count: " + pslg.vertices.Count);
-                return new Polygon2D(new int[] { }, new Vector3[] { });
+                Debug.LogWarning("No vertices passed to triangle. hole count: "
+                    + pslg.holes.Count + ", vert count: " + pslg.vertices.Count);
+
+                return null;
             }
             else
             {
-                // Write poly file
-                WritePolyFile(pslg);
+                try
+                {
+                    if (!pslg.Validate())
+                    {
+                        Debug.LogError("Invalid points in PSLG!");
+                        return null;
+                    }
 
-                // Execute Triangle
-                ExecuteTriangle();
+                    // Write poly file
+                    WritePolyFile(pslg);
 
-                // Read outout
-                Vector3[] vertices = ReadVerticesFile(pslg.z);
-                int[] triangles = ReadTrianglesFile();
+                    // Execute Triangle
+                    var exitCode = ExecuteTriangle();
+                    if (exitCode != 0)
+                    {
+                        Debug.LogWarning("'triangle' failed with exit code " + exitCode);
+                        return null;
+                    }
 
-                return new Polygon2D(triangles, vertices);
+                    // Read output
+                    Vector3[] vertices = ReadVerticesFile(pslg.z);
+                    int[] triangles = ReadTrianglesFile();
+
+                    return new Polygon2D(triangles, vertices);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning(e.GetType().AssemblyQualifiedName + " " + e.Message);
+                    return null;
+                }
             }
         }
 
         public Mesh CreateMesh(PSLG pslg)
         {
             var polygon = Triangulate(pslg);
+            if (polygon == null)
+            {
+                return new Mesh();
+            }
+
             var mesh = new Mesh
             {
                 vertices = polygon.vertices,
@@ -363,46 +437,106 @@ namespace Transidious
             }
         }
 
-        void ExecuteTriangle()
+        int ExecuteTriangle()
         {
-            try
+            var process = new System.Diagnostics.Process
             {
-                System.Diagnostics.Process process = new System.Diagnostics.Process();
-                process.StartInfo.FileName = "/usr/local/bin/triangle";
-                process.StartInfo.Arguments = "-pPq0 " + polyFilePath;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.Start();
+                StartInfo =
+                {
+                    FileName = "/usr/local/bin/triangle",
+                    Arguments = "-pPq0 " + polyFilePath,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                },
+                EnableRaisingEvents = true
+            };
 
-                process.WaitForExit();
-                process.Close();
-            }
-            catch (System.Exception e)
+            process.Start();
+            process.WaitForExit();
+
+            return process.ExitCode;
+        }
+
+        int ExecuteTriangleInProcess()
+        {
+            if (polyFilePath == null)
             {
-                Debug.LogException(e);
+                throw new InvalidOperationException("no poly file path!");
             }
+
+            Debug.Log("calling triangle");
+            return Triangulate(new StringBuilder("/usr/local/bin/triangle"),
+                               new StringBuilder("-pPq0"),
+                               new StringBuilder(polyFilePath));
         }
 
         Vector3[] ReadVerticesFile(float z = 0)
         {
             Vector3[] vertices = null;
-            try
-            {
-                string outputVerticesFile = polyFilePath.Replace(".poly", ".1.node");
-                StreamReader sr = File.OpenText(outputVerticesFile);
+            string outputVerticesFile = polyFilePath.Replace(".poly", ".1.node");
+            StreamReader sr = File.OpenText(outputVerticesFile);
 
+            string line = sr.ReadLine();
+            int n = line.IndexOf("  ");
+            int nVerts = int.Parse(line.Substring(0, n));
+            vertices = new Vector3[nVerts];
+
+            while ((line = sr.ReadLine()) != null)
+            {
+                int index = -1;
+                float x = 0f;
+                float y = 0f;
+                int c = 0;
+                if (!line.Contains("#"))
+                {
+                    string[] stringBits = line.Split(' ');
+
+                    foreach (string s in stringBits)
+                    {
+                        if (s != "" && s != " ")
+                        {
+                            if (c == 0)
+                                index = int.Parse(s);
+                            else if (c == 1)
+                                x = float.Parse(s);
+                            else if (c == 2)
+                                y = float.Parse(s);
+
+                            c++;
+                        }
+                    }
+                }
+
+                if (index != -1)
+                {
+                    vertices[index - 1] = new Vector3(x, y, z);
+                }
+            }
+
+            sr.Close();
+            return vertices;
+        }
+
+        private int[] ReadTrianglesFile()
+        {
+            List<int> triList = null;
+            string outputTrianglesFile = polyFilePath.Replace(".poly", ".1.ele");
+
+            using (StreamReader sr = File.OpenText(outputTrianglesFile))
+            {
                 string line = sr.ReadLine();
                 int n = line.IndexOf("  ");
-                int nVerts = int.Parse(line.Substring(0, n));
-                vertices = new Vector3[nVerts];
+                int nTriangles = int.Parse(line.Substring(0, n));
+                //int[] triangles = new int[nTriangles * 3];
+                triList = new List<int>(nTriangles * 3);
 
                 while ((line = sr.ReadLine()) != null)
                 {
                     int index = -1;
-                    float x = 0f;
-                    float y = 0f;
                     int c = 0;
+                    int[] tri = new int[3];
                     if (!line.Contains("#"))
                     {
                         string[] stringBits = line.Split(' ');
@@ -414,9 +548,11 @@ namespace Transidious
                                 if (c == 0)
                                     index = int.Parse(s);
                                 else if (c == 1)
-                                    x = float.Parse(s);
+                                    tri[0] = int.Parse(s) - 1;
                                 else if (c == 2)
-                                    y = float.Parse(s);
+                                    tri[1] = int.Parse(s) - 1;
+                                else if (c == 3)
+                                    tri[2] = int.Parse(s) - 1;
 
                                 c++;
                             }
@@ -425,75 +561,11 @@ namespace Transidious
 
                     if (index != -1)
                     {
-                        vertices[index - 1] = new Vector3(x, y, z);
+                        triList.AddRange(tri);
                     }
                 }
 
                 sr.Close();
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                return new Vector3[0];
-            }
-
-            return vertices;
-        }
-
-        private int[] ReadTrianglesFile()
-        {
-            List<int> triList = null;
-            try
-            {
-                string outputTrianglesFile = polyFilePath.Replace(".poly", ".1.ele");
-                using (StreamReader sr = File.OpenText(outputTrianglesFile))
-                {
-                    string line = sr.ReadLine();
-                    int n = line.IndexOf("  ");
-                    int nTriangles = int.Parse(line.Substring(0, n));
-                    //int[] triangles = new int[nTriangles * 3];
-                    triList = new List<int>(nTriangles * 3);
-
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        int index = -1;
-                        int c = 0;
-                        int[] tri = new int[3];
-                        if (!line.Contains("#"))
-                        {
-                            string[] stringBits = line.Split(' ');
-
-                            foreach (string s in stringBits)
-                            {
-                                if (s != "" && s != " ")
-                                {
-                                    if (c == 0)
-                                        index = int.Parse(s);
-                                    else if (c == 1)
-                                        tri[0] = int.Parse(s) - 1;
-                                    else if (c == 2)
-                                        tri[1] = int.Parse(s) - 1;
-                                    else if (c == 3)
-                                        tri[2] = int.Parse(s) - 1;
-
-                                    c++;
-                                }
-                            }
-                        }
-
-                        if (index != -1)
-                        {
-                            triList.AddRange(tri);
-                        }
-                    }
-
-                    sr.Close();
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                return new int[0];
             }
 
             return triList.ToArray();

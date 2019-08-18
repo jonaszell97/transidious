@@ -4,12 +4,13 @@ using System.Linq;
 
 namespace Transidious
 {
-    public class Building : MonoBehaviour
+    public class Building : MapObject
     {
         [System.Serializable]
         public struct SerializableBuilding
         {
-            public SerializableMesh mesh;
+            public int id;
+            public SerializableMesh2D mesh;
             public int streetID;
             public string number;
             public string name;
@@ -26,6 +27,7 @@ namespace Transidious
             HighSchool,
             University,
             Hospital,
+            Stadium,
 
             GroceryStore,
         }
@@ -85,21 +87,21 @@ namespace Transidious
         {
             switch (type)
             {
-                case Type.Residential:
-                    return 100;
-                case Type.Office:
-                    return 30;
-                case Type.Shop:
-                case Type.GroceryStore:
-                    return 5;
-                case Type.ElementarySchool:
-                    return 250;
-                case Type.HighSchool:
-                    return 1000;
-                case Type.University:
-                    return 1000;
-                default:
-                    return 0;
+            case Type.Residential:
+                return 100;
+            case Type.Office:
+                return 30;
+            case Type.Shop:
+            case Type.GroceryStore:
+                return 5;
+            case Type.ElementarySchool:
+                return 250;
+            case Type.HighSchool:
+                return 1000;
+            case Type.University:
+                return 1000;
+            default:
+                return 0;
             }
         }
 
@@ -114,15 +116,16 @@ namespace Transidious
                 ySum += vert.y;
             }
 
-            this.position = new Vector3(xSum / vertices.Length, ySum / vertices.Length, 0);
+            this.position = new Vector3(xSum / vertices.Length, ySum / vertices.Length,
+                                        Map.Layer(MapLayer.Buildings));
         }
 
         Color GetColor()
         {
             switch (type)
             {
-                default:
-                    return new Color(223f / 255f, 226f / 255f, 231.8f / 255f);
+            default:
+                return new Color(223f / 255f, 226f / 255f, 231.8f / 255f);
             }
         }
 
@@ -136,9 +139,9 @@ namespace Transidious
             float layer = 0f;
             switch (type)
             {
-                default:
-                    layer = Map.Layer(MapLayer.Buildings);
-                    break;
+            default:
+                layer = Map.Layer(MapLayer.Buildings);
+                break;
             }
 
             var meshFilter = GetComponent<MeshFilter>();
@@ -155,7 +158,8 @@ namespace Transidious
         {
             return new SerializableBuilding
             {
-                mesh = new SerializableMesh(GetComponent<MeshFilter>().mesh),
+                id = id,
+                mesh = new SerializableMesh2D(GetComponent<MeshFilter>().mesh),
                 streetID = street?.id ?? 0,
                 number = number,
                 name = name,

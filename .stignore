@@ -1,0 +1,13 @@
+.git
+Library
+Logs
+.idea
+.vscode
+.vs
+iOS
+obj
+Packages
+ProjectSettings
+TableGen
+.history
+.DS_Store

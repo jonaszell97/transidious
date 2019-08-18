@@ -15,7 +15,7 @@ namespace Transidious
         {
             public int id;
             public int lineID;
-            public SerializableVector3[] positions;
+            public SerializableVector2[] positions;
             public Path.SerializedPath path;
             public Path.SerializedPath originalPath;
 
@@ -31,7 +31,6 @@ namespace Transidious
             public bool isBackRoute;
         }
 
-        public int id;
         public Line line;
 
         public List<Vector3> positions;
@@ -393,19 +392,21 @@ namespace Transidious
                 id = id,
                 lineID = line.id,
 
-                positions = positions?.Select(v => new SerializableVector3(v)).ToArray() ?? null,
+                positions = positions?.Select(v => new SerializableVector2(v)).ToArray() ?? null,
 
                 beginStopID = beginStop.id,
                 endStopID = endStop.id,
 
                 streetSegmentOffsetMap = new SerializableDictionary<Tuple<int, int>,
-                                                        TrafficSimulator.PathSegmentInfo.Serializable[]> {
+                                                        TrafficSimulator.PathSegmentInfo.Serializable[]>
+                {
                     keys = this.streetSegmentOffsetMap.Keys.Select(key => Tuple.Create(key.Item1.id, key.Item2)).ToArray(),
                     values = this.streetSegmentOffsetMap.Values.Select(
                         list => list.Select(info => info.Serialize()).ToArray()).ToArray(),
                 },
                 pathSegmentInfoMap = new SerializableDictionary<int,
-                                                        TrafficSimulator.PathSegmentInfo.Serializable> {
+                                                        TrafficSimulator.PathSegmentInfo.Serializable>
+                {
                     keys = this.pathSegmentInfoMap.Keys.ToArray(),
                     values = this.pathSegmentInfoMap.Values.Select(info => info.Serialize()).ToArray(),
                 },
@@ -417,9 +418,12 @@ namespace Transidious
 
         public void Deserialize(SerializedRoute route, Map map)
         {
-            Initialize(map.transitLineIDMap[route.lineID], map.transitStopIDMap[route.beginStopID],
-                       map.transitStopIDMap[route.endStopID],
-                       route.positions?.Select(v => v.ToVector()).ToList() ?? null,
+            Initialize(map.GetMapObject<Line>(route.lineID),
+                       map.GetMapObject<Stop>(route.beginStopID),
+                       map.GetMapObject<Stop>(route.endStopID),
+                       route.positions?.Select(
+                            v => new Vector3(v.x, v.y, Map.Layer(MapLayer.TransitLines))).ToList()
+                                ?? null,
                        route.isBackRoute);
 
             for (var i = 0; i < route.pathSegmentInfoMap.keys.Length; ++i)
@@ -436,7 +440,7 @@ namespace Transidious
                 var value = route.streetSegmentOffsetMap.values[i];
 
                 streetSegmentOffsetMap.Add(
-                    Tuple.Create(map.streetSegmentIDMap[key.Item1], key.Item2),
+                    Tuple.Create(map.GetMapObject<StreetSegment>(key.Item1), key.Item2),
                     value.Select(info => new TrafficSimulator.PathSegmentInfo(info)).ToList());
             }
 
@@ -452,7 +456,7 @@ namespace Transidious
         // Update is called once per frame
         void Update()
         {
-            
+
         }
 
         protected override void OnMouseEnter()
@@ -461,7 +465,7 @@ namespace Transidious
             {
                 return;
             }
-            
+
             if (line.map.Game.transitEditor.active || selectedLine == line)
             {
                 return;
@@ -521,7 +525,8 @@ namespace Transidious
             modal.SetLine(line, this);
 
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            this.RunNextFrame(() => {
+            this.RunNextFrame(() =>
+            {
                 modal.modal.PositionAt(pos);
             });
         }

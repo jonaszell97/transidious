@@ -4,8 +4,14 @@ namespace Transidious
 {
     public class MapObject : MonoBehaviour
     {
+        public int id;
         public InputController inputController;
         public bool highlighted = false;
+
+        public virtual bool ShouldRender(InputController.RenderingDistance dist)
+        {
+            return true;
+        }
 
         public void DisableCollision()
         {

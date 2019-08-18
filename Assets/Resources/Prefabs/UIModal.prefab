@@ -281,7 +281,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 100}
+  m_SizeDelta: {x: 0, y: 110}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &4220508798175196063
 CanvasRenderer:
@@ -349,6 +349,7 @@ GameObject:
   - component: {fileID: 34024041454646141}
   - component: {fileID: 8982965026232730927}
   - component: {fileID: 1988863874612130440}
+  - component: {fileID: 7692337385522770302}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -373,7 +374,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -100}
+  m_AnchoredPosition: {x: 0, y: -104}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &4220508798357194697
@@ -465,10 +466,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
+    m_Left: 50
+    m_Right: 50
+    m_Top: 50
+    m_Bottom: 50
   m_ChildAlignment: 0
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
@@ -491,6 +492,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalFit: 1
   m_VerticalFit: 1
+--- !u!114 &7692337385522770302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4220508798357194694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 0
+  m_MinWidth: 1920
+  m_MinHeight: 980
+  m_PreferredWidth: -1
+  m_PreferredHeight: -1
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!1 &4220508799504182149
 GameObject:
   m_ObjectHideFlags: 0
@@ -625,7 +646,7 @@ MonoBehaviour:
   initialized: 0
   visibleByDefault: 0
   baseScale: {x: 0, y: 0, z: 0}
-  baseOrthoSize: -1
+  baseOrthoSize: 3000
 --- !u!222 &6977532428433278924
 CanvasRenderer:
   m_ObjectHideFlags: 0

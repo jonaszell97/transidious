@@ -2,6 +2,9 @@
 .history/
 iOS/
 
+# ignore OSM files
+/Resources/OSM
+
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/

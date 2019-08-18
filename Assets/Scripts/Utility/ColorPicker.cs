@@ -125,7 +125,7 @@ namespace Transidious
             }
 
             tex.Apply();
-            System.IO.File.WriteAllBytes("/home/jonas/Downloads/hue_mask.png", tex.EncodeToPNG());
+            // System.IO.File.WriteAllBytes("/home/jonas/Downloads/hue_mask.png", tex.EncodeToPNG());
 
             return tex;
         }
@@ -168,7 +168,7 @@ namespace Transidious
             }
 
             tex.Apply();
-            System.IO.File.WriteAllBytes("/home/jonas/Downloads/satbright_mask.png", tex.EncodeToPNG());
+            // System.IO.File.WriteAllBytes("/home/jonas/Downloads/satbright_mask.png", tex.EncodeToPNG());
 
             return tex;
         }

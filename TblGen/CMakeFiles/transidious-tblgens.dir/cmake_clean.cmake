@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/transidious-tblgens.dir/Backends/OSMImportBackend.cpp.o"
   "libtransidious-tblgens.pdb"
-  "libtransidious-tblgens.so"
+  "libtransidious-tblgens.dylib"
 )
 
 # Per-language clean rules from dependency scanning.

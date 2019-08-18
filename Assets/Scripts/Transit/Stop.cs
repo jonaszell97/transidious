@@ -54,7 +54,7 @@ namespace Transidious
         public struct SerializedStop
         {
             public string name;
-            public SerializableVector3 position;
+            public SerializableVector2 position;
             public int id;
             public List<int> outgoingRouteIDs;
             public List<int> routeIDs;
@@ -256,8 +256,6 @@ namespace Transidious
         public Map map;
         public Appearance appearance;
 
-        public int id;
-
         public List<Route> outgoingRoutes;
         public List<Route> routes;
         public Dictionary<Line, LineData> lineData;
@@ -305,9 +303,8 @@ namespace Transidious
             this.smallRectSprite = Resources.Load("Sprites/stop_small_rect", typeof(Sprite)) as Sprite;
             this.largeRectSprite = Resources.Load("Sprites/stop_large_rect", typeof(Sprite)) as Sprite;
 
-            transform.position = new Vector3(position.x,
-                                             position.y,
-                                             Map.Layer(MapLayer.TransitStops));
+            this.transform.position = new Vector3(position.x, position.y,
+                                                  Map.Layer(MapLayer.TransitStops));
         }
 
         public Vector3 Location
@@ -463,48 +460,48 @@ namespace Transidious
             // Move to the correct side.
             switch (slot.direction)
             {
-                case CardinalDirection.North:
-                    if (width == 1)
-                    {
-                        return new Vector3(transform.position.x,
-                                           transform.position.y + halfHeight);
-                    }
+            case CardinalDirection.North:
+                if (width == 1)
+                {
+                    return new Vector3(transform.position.x,
+                                       transform.position.y + halfHeight);
+                }
 
-                    loc.y += halfHeight;
-                    loc.x -= halfWidth;
-                    break;
-                case CardinalDirection.South:
-                    if (width == 1)
-                    {
-                        return new Vector3(transform.position.x,
-                                           transform.position.y - halfHeight);
-                    }
+                loc.y += halfHeight;
+                loc.x -= halfWidth;
+                break;
+            case CardinalDirection.South:
+                if (width == 1)
+                {
+                    return new Vector3(transform.position.x,
+                                       transform.position.y - halfHeight);
+                }
 
-                    loc.y -= halfHeight;
-                    loc.x -= halfWidth;
-                    break;
-                case CardinalDirection.East:
-                    if (height == 1)
-                    {
-                        return new Vector3(transform.position.x + halfWidth,
-                                           transform.position.y);
-                    }
+                loc.y -= halfHeight;
+                loc.x -= halfWidth;
+                break;
+            case CardinalDirection.East:
+                if (height == 1)
+                {
+                    return new Vector3(transform.position.x + halfWidth,
+                                       transform.position.y);
+                }
 
-                    loc.x += halfWidth;
-                    loc.y -= halfHeight;
-                    vertical = true;
-                    break;
-                case CardinalDirection.West:
-                    if (height == 1)
-                    {
-                        return new Vector3(transform.position.x - halfWidth,
-                                           transform.position.y);
-                    }
+                loc.x += halfWidth;
+                loc.y -= halfHeight;
+                vertical = true;
+                break;
+            case CardinalDirection.West:
+                if (height == 1)
+                {
+                    return new Vector3(transform.position.x - halfWidth,
+                                       transform.position.y);
+                }
 
-                    loc.x -= halfWidth;
-                    loc.y -= halfHeight;
-                    vertical = true;
-                    break;
+                loc.x -= halfWidth;
+                loc.y -= halfHeight;
+                vertical = true;
+                break;
             }
 
             // Move up or down depending on the slot.
@@ -535,7 +532,7 @@ namespace Transidious
             spriteRenderer.sprite = circleSprite;
             spriteRenderer.drawMode = SpriteDrawMode.Simple;
             spriteRenderer.color = Color.white;
-            
+
             var collider = GetComponent<Collider2D>();
             if (collider != null)
             {
@@ -545,8 +542,8 @@ namespace Transidious
             this.transform.rotation = new Quaternion();
             this.transform.localScale = new Vector3(5f, 5f, 1f);
             this.transform.position = new Vector3(transform.position.x,
-                                                          transform.position.y,
-                                                          Map.Layer(MapLayer.TransitStops));
+                                                  transform.position.y,
+                                                  Map.Layer(MapLayer.TransitStops));
 
             this.gameObject.AddComponent<CircleCollider2D>();
             this.appearance = Appearance.Circle;
@@ -581,8 +578,8 @@ namespace Transidious
         {
             switch (stops)
             {
-                case 0: case 1: return .5f;
-                default: return map.input.stopWidth + stops * (map.input.stopWidth * 0.5f);
+            case 0: case 1: return .5f;
+            default: return map.input.stopWidth + stops * (map.input.stopWidth * 0.5f);
             }
         }
 
@@ -704,52 +701,52 @@ namespace Transidious
 
             switch (dir)
             {
-                case CardinalDirection.North:
-                    ++top;
-                    return new PendingSlotAssignment
-                    {
-                        direction = inbound ? Math.Reverse(dir) : dir,
-                        route = route,
-                        outRoute = outRoute,
-                        inbound = inbound,
-                        horizontal = false,
-                        oppositeDirections = opposite
-                    };
-                case CardinalDirection.South:
-                    ++bottom;
-                    return new PendingSlotAssignment
-                    {
-                        direction = inbound ? Math.Reverse(dir) : dir,
-                        route = route,
-                        outRoute = outRoute,
-                        inbound = inbound,
-                        horizontal = false,
-                        oppositeDirections = opposite
-                    };
-                case CardinalDirection.East:
-                    ++right;
-                    return new PendingSlotAssignment
-                    {
-                        direction = inbound ? Math.Reverse(dir) : dir,
-                        route = route,
-                        outRoute = outRoute,
-                        inbound = inbound,
-                        horizontal = true,
-                        oppositeDirections = opposite
-                    };
-                case CardinalDirection.West:
-                    ++left;
-                    return new PendingSlotAssignment
-                    {
-                        direction = inbound ? Math.Reverse(dir) : dir,
-                        route = route,
-                        outRoute = outRoute,
-                        inbound = inbound,
-                        horizontal = true,
-                        oppositeDirections = opposite
-                    };
-                default:
-                    throw new System.ArgumentException(string.Format("Illegal enum value {0}", dir));
+            case CardinalDirection.North:
+                ++top;
+                return new PendingSlotAssignment
+                {
+                    direction = inbound ? Math.Reverse(dir) : dir,
+                    route = route,
+                    outRoute = outRoute,
+                    inbound = inbound,
+                    horizontal = false,
+                    oppositeDirections = opposite
+                };
+            case CardinalDirection.South:
+                ++bottom;
+                return new PendingSlotAssignment
+                {
+                    direction = inbound ? Math.Reverse(dir) : dir,
+                    route = route,
+                    outRoute = outRoute,
+                    inbound = inbound,
+                    horizontal = false,
+                    oppositeDirections = opposite
+                };
+            case CardinalDirection.East:
+                ++right;
+                return new PendingSlotAssignment
+                {
+                    direction = inbound ? Math.Reverse(dir) : dir,
+                    route = route,
+                    outRoute = outRoute,
+                    inbound = inbound,
+                    horizontal = true,
+                    oppositeDirections = opposite
+                };
+            case CardinalDirection.West:
+                ++left;
+                return new PendingSlotAssignment
+                {
+                    direction = inbound ? Math.Reverse(dir) : dir,
+                    route = route,
+                    outRoute = outRoute,
+                    inbound = inbound,
+                    horizontal = true,
+                    oppositeDirections = opposite
+                };
+            default:
+                throw new System.ArgumentException(string.Format("Illegal enum value {0}", dir));
             }
         }
 
@@ -1208,32 +1205,32 @@ namespace Transidious
             var outDir = outgoingSlot.assignment.direction;
             switch (a.direction)
             {
-                case CardinalDirection.South:
+            case CardinalDirection.South:
+            case CardinalDirection.North:
+                switch (outDir)
+                {
                 case CardinalDirection.North:
-                    switch (outDir)
-                    {
-                        case CardinalDirection.North:
-                        case CardinalDirection.South:
-                            return System.Math.Min(width - 1, outgoingSlot.number);
-                        case CardinalDirection.East:
-                        case CardinalDirection.West:
-                            return Mathf.Clamp(width - outgoingSlot.number, 0, width - 1);
-                    }
-
-                    break;
+                case CardinalDirection.South:
+                    return System.Math.Min(width - 1, outgoingSlot.number);
                 case CardinalDirection.East:
                 case CardinalDirection.West:
-                    switch (outDir)
-                    {
-                        case CardinalDirection.East:
-                        case CardinalDirection.West:
-                            return System.Math.Min(height - 1, outgoingSlot.number);
-                        case CardinalDirection.North:
-                        case CardinalDirection.South:
-                            return Mathf.Clamp(height - outgoingSlot.number, 0, height - 1);
-                    }
+                    return Mathf.Clamp(width - outgoingSlot.number, 0, width - 1);
+                }
 
-                    break;
+                break;
+            case CardinalDirection.East:
+            case CardinalDirection.West:
+                switch (outDir)
+                {
+                case CardinalDirection.East:
+                case CardinalDirection.West:
+                    return System.Math.Min(height - 1, outgoingSlot.number);
+                case CardinalDirection.North:
+                case CardinalDirection.South:
+                    return Mathf.Clamp(height - outgoingSlot.number, 0, height - 1);
+                }
+
+                break;
             }
 
             throw new System.ArgumentException(string.Format("Illegal enum value {0}", a.direction));
@@ -1461,8 +1458,8 @@ namespace Transidious
                 spriteRenderer.size = new Vector2(map.input.lineWidth * 5f, map.input.lineWidth * 2f);
                 this.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
                 this.transform.position = new Vector3(this.transform.position.x,
-                                                              this.transform.position.y,
-                                                              Map.Layer(MapLayer.TransitStops));
+                                                      this.transform.position.y,
+                                                      Map.Layer(MapLayer.TransitStops));
             }
         }
 
@@ -1472,7 +1469,7 @@ namespace Transidious
             {
                 id = id,
                 name = name,
-                position = new SerializableVector3(transform.position),
+                position = new SerializableVector2(transform.position),
 
                 routeIDs = routes.Select(r => r.id).ToList(),
                 outgoingRouteIDs = outgoingRoutes.Select(r => r.id).ToList(),
@@ -1492,18 +1489,18 @@ namespace Transidious
         {
             foreach (var data in stop.lineDataSerial)
             {
-                lineData.Add(map.transitLineIDMap[data.lineID], new LineData
+                lineData.Add(map.GetMapObject<Line>(data.lineID), new LineData
                 {
-                    incomingRouteFromDepot = map.transitRouteIDMap[data.incomingRouteFromDepotID],
-                    incomingRouteToDepot = map.transitRouteIDMap[data.incomingRouteToDepotID],
-                    outgoingRouteFromDepot = map.transitRouteIDMap[data.outgoingRouteFromDepotID],
-                    outgoingRouteToDepot = map.transitRouteIDMap[data.outgoingRouteToDepotID],
+                    incomingRouteFromDepot = map.GetMapObject<Route>(data.incomingRouteFromDepotID),
+                    incomingRouteToDepot = map.GetMapObject<Route>(data.incomingRouteToDepotID),
+                    outgoingRouteFromDepot = map.GetMapObject<Route>(data.outgoingRouteFromDepotID),
+                    outgoingRouteToDepot = map.GetMapObject<Route>(data.outgoingRouteToDepotID),
                     intersectionInfo = data.intersectionInfo
                 });
             }
 
-            routes = stop.routeIDs.Select(id => map.transitRouteIDMap[id]).ToList();
-            outgoingRoutes = stop.outgoingRouteIDs.Select(id => map.transitRouteIDMap[id]).ToList();
+            routes = stop.routeIDs.Select(id => map.GetMapObject<Route>(id)).ToList();
+            outgoingRoutes = stop.outgoingRouteIDs.Select(id => map.GetMapObject<Route>(id)).ToList();
 
             wasModified = true;
         }
@@ -1513,16 +1510,22 @@ namespace Transidious
             this.spritePrefab = Resources.Load("Prefabs/SpritePrefab") as GameObject;
         }
 
-        // Use this for initialization
-        void Start()
+        protected override void OnMouseDown()
         {
+            if (GameController.instance.input.IsPointerOverUIElement())
+            {
+                return;
+            }
 
-        }
+            var modal = GameController.instance.transitEditor.stopInfoModal;
+            modal.modal.Enable();
+            modal.SetStop(this);
 
-        // Update is called once per frame
-        void Update()
-        {
-
+            var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            this.RunNextFrame(() =>
+            {
+                modal.modal.PositionAt(pos);
+            });
         }
     }
 }

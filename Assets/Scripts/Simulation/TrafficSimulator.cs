@@ -251,6 +251,8 @@ namespace Transidious
 
             public Serializable Serialize()
             {
+                Debug.Assert(length > 1);
+
                 return new Serializable
                 {
                     segmentID = segment.id,
@@ -266,7 +268,8 @@ namespace Transidious
 
             public PathSegmentInfo(Serializable data)
             {
-                segment = GameController.instance.loadedMap.streetSegmentIDMap[data.segmentID];
+                segment = GameController.instance.loadedMap.GetMapObject<StreetSegment>(
+                    data.segmentID);
                 lane = data.lane;
                 offset = data.offset;
                 length = data.length;
@@ -294,11 +297,13 @@ namespace Transidious
             int lane;
             bool finalStep;
 
+            var addFirstIntersectionPos = false;
             foreach (var step in result.steps)
             {
                 StreetSegment nextSegment;
-                GetStepPath(step, out nextSegment, out backward, out finalStep, out lane, out positions,
-                            out bool partialStart, out bool partialEnd, out Vector2 direction);
+                GetStepPath(step, out nextSegment, out backward, out finalStep, out lane,
+                            out positions, out bool partialStart, out bool partialEnd,
+                            out Vector2 direction);
 
                 if (segment != null && nextSegment != null)
                 {
@@ -318,22 +323,25 @@ namespace Transidious
                     var begin = 1;
                     var end = intersectionPath.Length - 1;
 
+                    if (addFirstIntersectionPos)
+                    {
+                        begin = 0;
+                    }
+
                     for (int i = begin; i < end; ++i)
                     {
                         path.Add(intersectionPath[i]);
                     }
                 }
 
+                addFirstIntersectionPos = false;
+
                 if (positions != null)
                 {
                     if (crossedSegments != null && nextSegment != null)
                     {
                         Debug.Assert(nextSegment.street.type != Street.Type.FootPath);
-                        if (positions.Count == 1 && direction.Equals(default(Vector2)))
-                        {
-                            GetStepPath(step, out nextSegment, out backward, out finalStep, out lane, out positions,
-                            out partialStart, out  partialEnd, out direction);
-                        }
+
                         crossedSegments.Add(new PathSegmentInfo
                         {
                             segment = nextSegment,
@@ -348,6 +356,27 @@ namespace Transidious
                     }
 
                     path.AddRange(positions);
+                }
+                else if (partialStart)
+                {
+                    addFirstIntersectionPos = true;
+                }
+                else if (partialEnd)
+                {
+                    StreetIntersection nextIntersection;
+                    if (backward)
+                    {
+                        nextIntersection = nextSegment.endIntersection;
+                    }
+                    else
+                    {
+                        nextIntersection = nextSegment.startIntersection;
+                    }
+
+                    var intersectionPath = GetPath(nextIntersection, segment,
+                                                   nextSegment, prevLane);
+
+                    path.Add(intersectionPath.Last());
                 }
 
                 segment = nextSegment;
@@ -655,6 +684,11 @@ namespace Transidious
                         else
                         {
                             currentPath.Add(p1_A);
+
+                            var dir = p0_B - p1_A;
+                            currentPath.Add(p1_A + (dir * .25f));
+                            currentPath.Add(p1_A + (dir * .75f));
+
                             currentPath.Add(p0_B);
                         }
 
@@ -973,7 +1007,8 @@ namespace Transidious
                 // crossed.
                 if (startPos.Equals(endPos))
                 {
-                    positions = new List<Vector3> { startPos };
+                    // positions = new List<Vector3> { startPos };
+                    positions = null;
 
                     if (startPos.Equals(path.First()))
                     {

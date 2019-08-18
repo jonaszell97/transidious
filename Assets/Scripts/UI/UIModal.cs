@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -50,6 +51,9 @@ namespace Transidious
         /// If true, this modal is visible by default.
         public bool visibleByDefault = false;
 
+        /// Static list of all modals. Used to ensure only one is active at a time.
+        static List<UIModal> modals;
+
         [SerializeField] Vector3 baseScale = Vector3.zero;
         [SerializeField] float baseOrthoSize = -1f;
 
@@ -62,6 +66,12 @@ namespace Transidious
 
         void Awake()
         {
+            if (modals == null)
+            {
+                modals = new List<UIModal>();
+            }
+
+            modals.Add(this);
             onClose = new UnityEvent();
             closeButton.onClick.AddListener(this.Disable);
 
@@ -115,7 +125,8 @@ namespace Transidious
             this.arrowImg.color = Math.ApplyTransparency(new Color(color.r, color.g, color.b), color.a);
         }
 
-        enum ArrowPosition {
+        enum ArrowPosition
+        {
             BottomLeft,
             TopLeft,
             TopRight,
@@ -135,7 +146,7 @@ namespace Transidious
                 {
                     return ArrowPosition.BottomLeft;
                 }
-                
+
                 return ArrowPosition.BottomRight;
             }
 
@@ -143,7 +154,7 @@ namespace Transidious
             {
                 return ArrowPosition.TopLeft;
             }
-            
+
             return ArrowPosition.TopRight;
         }
 
@@ -167,37 +178,37 @@ namespace Transidious
             float arrowX, arrowY, x, y;
             switch (arrowPos)
             {
-                case ArrowPosition.BottomLeft:
-                    flip = false;
-                    arrowX = width * arrowOffset;
-                    arrowY = 0;//-arrowHeight; // * .5f;
-                    x = pos.x - (width * arrowOffset) + (width * .5f) - (arrowWidth * .5f);
-                    y = pos.y + (height * .5f) + arrowHeight;
-                    break;
-                case ArrowPosition.TopLeft:
-                    flip = true;
-                    arrowX = width * arrowOffset;
-                    arrowY = height;
-                    x = pos.x - (width * arrowOffset) + (width * .5f) - (arrowWidth * .5f);
-                    y = pos.y - (height * .5f) + arrowHeight;
-                    break;
-                case ArrowPosition.BottomRight:
-                    flip = false;
-                    arrowX = width * (1f - arrowOffset);
-                    arrowY = 0;//-arrowHeight; // * .5f;
-                    x = pos.x + (width * arrowOffset) - (width * .5f) - (arrowWidth * .5f);
-                    y = pos.y + (height * .5f) + arrowHeight;
-                    break;
-                case ArrowPosition.TopRight:
-                    flip = true;
-                    arrowX = width * (1f - arrowOffset);
-                    arrowY = height;
-                    x = pos.x + (width * arrowOffset) - (width * .5f) - (arrowWidth * .5f);
-                    y = pos.y - (height * .5f) + arrowHeight;
-                    break;
-                default:
-                    Debug.Assert(false, "invalid arrow position");
-                    return;
+            case ArrowPosition.BottomLeft:
+                flip = false;
+                arrowX = width * arrowOffset;
+                arrowY = 0;//-arrowHeight; // * .5f;
+                x = pos.x - (width * arrowOffset) + (width * .5f) - (arrowWidth * .5f);
+                y = pos.y + (height * .5f) + arrowHeight;
+                break;
+            case ArrowPosition.TopLeft:
+                flip = true;
+                arrowX = width * arrowOffset;
+                arrowY = height;
+                x = pos.x - (width * arrowOffset) + (width * .5f) - (arrowWidth * .5f);
+                y = pos.y - (height * .5f) + arrowHeight;
+                break;
+            case ArrowPosition.BottomRight:
+                flip = false;
+                arrowX = width * (1f - arrowOffset);
+                arrowY = 0;//-arrowHeight; // * .5f;
+                x = pos.x + (width * arrowOffset) - (width * .5f) - (arrowWidth * .5f);
+                y = pos.y + (height * .5f) + arrowHeight;
+                break;
+            case ArrowPosition.TopRight:
+                flip = true;
+                arrowX = width * (1f - arrowOffset);
+                arrowY = height;
+                x = pos.x + (width * arrowOffset) - (width * .5f) - (arrowWidth * .5f);
+                y = pos.y - (height * .5f) + arrowHeight;
+                break;
+            default:
+                Debug.Assert(false, "invalid arrow position");
+                return;
             }
 
             if (flip)
@@ -213,7 +224,7 @@ namespace Transidious
             this.stickToPosition = stick;
 
             this.transform.position = new Vector3(x, y, this.transform.position.z);
-            arrow.transform.position = new Vector3(this.transform.position.x - (width * 0.5f) + arrowX, 
+            arrow.transform.position = new Vector3(this.transform.position.x - (width * 0.5f) + arrowX,
                                                    this.transform.position.y - (height * 0.5f) + arrowY,
                                                    arrow.transform.position.z);
         }
@@ -233,6 +244,22 @@ namespace Transidious
 
         public void Enable()
         {
+            if (active)
+            {
+                return;
+            }
+
+            // Close other modals.
+            foreach (var modal in modals)
+            {
+                if (modal == this)
+                {
+                    continue;
+                }
+
+                modal.Disable();
+            }
+
             if (zoomListenerID == -1)
             {
                 zoomListenerID = GameController.instance?.input?.RegisterEventListener(InputController.InputEvent.Zoom, (MapObject _) =>
@@ -255,10 +282,21 @@ namespace Transidious
 
         public void Disable()
         {
+            if (!active)
+            {
+                return;
+            }
+
             this.gameObject.SetActive(false);
             GameController.instance?.input?.DisableEventListener(zoomListenerID);
             this.onClose.Invoke();
             active = false;
+        }
+
+        public void SetTitle(string title, bool editable = false)
+        {
+            this.titleInput.text = title;
+            this.titleInput.interactable = editable;
         }
 
         void AdjustSize()
