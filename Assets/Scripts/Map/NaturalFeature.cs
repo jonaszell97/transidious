@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Transidious
 {
-    public class NaturalFeature
+    public class NaturalFeature : MapObject
     {
         public enum Type
         {
@@ -25,29 +25,20 @@ namespace Transidious
         [System.Serializable]
         public struct SerializedFeature
         {
-            public string name;
+            public SerializableMapObject mapObject;
             public Type type;
             public SerializableMesh2D mesh;
         }
 
-        /// <summary>
-        ///  The name of this feature.
-        /// </summary>
-        public string name;
-
-        /// <summary>
-        ///  The feature type.
-        /// </summary>
         public Type type;
-
         public Mesh mesh;
 
-        public void UpdateMesh(Mesh mesh, MultiMesh multiMesh)
+        public void UpdateMesh(Map map)
         {
-            this.mesh = mesh;
-            /*meshFilter.mesh = mesh;
-            meshRenderer.material.shader = map.input.defaultShader;
-            meshRenderer.material.color = GetColor();*/
+            if (mesh == null)
+            {
+                return;
+            }
 
             float layer = 0f;
             switch (type)
@@ -77,22 +68,19 @@ namespace Transidious
                 break;
             }
 
-            multiMesh.AddMesh(GetColor(), mesh, layer);
-            /*transform.position = new Vector3(transform.position.x,
-                                             transform.position.y,
-                                             layer);*/
+            foreach (var tile in map.GetTilesForObject(this))
+            {
+                tile.mesh.AddMesh(GetColor(), mesh, layer);
+            }
         }
 
-        public void Initialize(string name, Type type,
-                               Mesh mesh = null, MultiMesh multiMesh = null)
+        public void Initialize(Map map, string name, Type type, Mesh mesh = null, int id = -1)
         {
+            base.Initialize(Kind.NaturalFeature, id);
+
             this.name = name;
             this.type = type;
-
-            if (mesh != null)
-            {
-                UpdateMesh(mesh, multiMesh);
-            }
+            this.mesh = mesh;
         }
 
         Color GetColor()
@@ -126,14 +114,24 @@ namespace Transidious
             }
         }
 
-        public SerializedFeature Serialize()
+        public new SerializedFeature Serialize()
         {
             return new SerializedFeature
             {
-                name = name,
+                mapObject = base.Serialize(),
                 type = type,
                 mesh = new SerializableMesh2D(mesh),
             };
+        }
+
+        public static NaturalFeature Deserialize(Map map, SerializedFeature feature)
+        {
+            var newFeature = map.CreateFeature(
+                feature.mapObject.name, feature.type, feature.mesh,
+                feature.mapObject.id);
+
+            newFeature.Deserialize(feature.mapObject);
+            return newFeature;
         }
     }
 }

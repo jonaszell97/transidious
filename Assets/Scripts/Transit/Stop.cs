@@ -53,9 +53,8 @@ namespace Transidious
         [System.Serializable]
         public struct SerializedStop
         {
-            public string name;
+            public SerializableMapObject mapObject;
             public SerializableVector2 position;
-            public int id;
             public List<int> outgoingRouteIDs;
             public List<int> routeIDs;
             public List<SerializableLineData> lineDataSerial;
@@ -285,8 +284,10 @@ namespace Transidious
             get { return transform.position; }
         }
 
-        public void Initialize(Map map, string name, Vector3 position)
+        public void Initialize(Map map, string name, Vector3 position, int id)
         {
+            base.Initialize(Kind.Line, id);
+
             this.map = map;
             this.name = name;
             this.inputController = map.input;
@@ -1463,12 +1464,11 @@ namespace Transidious
             }
         }
 
-        public SerializedStop Serialize()
+        public new SerializedStop Serialize()
         {
             return new SerializedStop
             {
-                id = id,
-                name = name,
+                mapObject = base.Serialize(),
                 position = new SerializableVector2(transform.position),
 
                 routeIDs = routes.Select(r => r.id).ToList(),
@@ -1487,6 +1487,8 @@ namespace Transidious
 
         public void Deserialize(SerializedStop stop, Map map)
         {
+            base.Deserialize(stop.mapObject);
+
             foreach (var data in stop.lineDataSerial)
             {
                 lineData.Add(map.GetMapObject<Line>(data.lineID), new LineData

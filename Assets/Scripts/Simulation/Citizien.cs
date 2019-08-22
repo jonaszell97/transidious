@@ -202,10 +202,9 @@ namespace Transidious
             public PathPlanning.PathPlanningResult path;
             public ScheduledEvent nextEvent;
             public ScheduledEvent prevEvent;
-
-#if DEBUG
             public PointOfInterest place;
 
+#if DEBUG
             public override string ToString()
             {
                 var s = new System.Text.StringBuilder();
@@ -333,14 +332,14 @@ namespace Transidious
         {
             switch (age)
             {
-                case 7:
-                case 11:
-                case 18:
-                case 25:
-                case 67:
-                    return true;
-                default:
-                    return false;
+            case 7:
+            case 11:
+            case 18:
+            case 25:
+            case 67:
+                return true;
+            default:
+                return false;
             }
         }
 
@@ -388,27 +387,27 @@ namespace Transidious
 
             switch (occupation)
             {
-                case Occupation.Kindergarden:
-                case Occupation.Retired:
-                default:
-                    return;
-                case Occupation.ElementarySchoolStudent:
-                    buildingType = Building.Type.ElementarySchool;
-                    poiType = PointOfInterest.School;
-                    break;
-                case Occupation.HighSchoolStudent:
-                    buildingType = Building.Type.HighSchool;
-                    poiType = PointOfInterest.School;
-                    break;
-                case Occupation.UniversityStudent:
-                    buildingType = Building.Type.University;
-                    poiType = PointOfInterest.School;
-                    break;
-                case Occupation.Trainee:
-                case Occupation.Worker:
-                    buildingType = educated ? Building.Type.Office : Building.Type.Shop;
-                    poiType = PointOfInterest.Work;
-                    break;
+            case Occupation.Kindergarden:
+            case Occupation.Retired:
+            default:
+                return;
+            case Occupation.ElementarySchoolStudent:
+                buildingType = Building.Type.ElementarySchool;
+                poiType = PointOfInterest.School;
+                break;
+            case Occupation.HighSchoolStudent:
+                buildingType = Building.Type.HighSchool;
+                poiType = PointOfInterest.School;
+                break;
+            case Occupation.UniversityStudent:
+                buildingType = Building.Type.University;
+                poiType = PointOfInterest.School;
+                break;
+            case Occupation.Trainee:
+            case Occupation.Worker:
+                buildingType = educated ? Building.Type.Office : Building.Type.Shop;
+                poiType = PointOfInterest.Work;
+                break;
             }
 
             var place = sim.ClosestUnoccupiedBuilding(buildingType, Home.position);
@@ -424,48 +423,48 @@ namespace Transidious
             this.schedules = new AbstractSchedule[7];
             switch (this.occupation)
             {
-                default:
-                    break;
-                case Occupation.Worker:
-                    {
-                        var workSchedule = AbstractSchedule.WorkSchedule;
-                        schedules[0] = workSchedule;
-                        schedules[1] = workSchedule;
-                        schedules[2] = workSchedule;
-                        schedules[3] = workSchedule;
-                        schedules[4] = workSchedule;
-                    }
-                    break;
-                case Occupation.ElementarySchoolStudent:
-                    {
-                        var schedule = AbstractSchedule.ElementarySchoolSchedule;
-                        schedules[0] = schedule;
-                        schedules[1] = schedule;
-                        schedules[2] = schedule;
-                        schedules[3] = schedule;
-                        schedules[4] = schedule;
-                    }
-                    break;
-                case Occupation.HighSchoolStudent:
-                    {
-                        var schedule = AbstractSchedule.HighSchoolSchedule;
-                        schedules[0] = schedule;
-                        schedules[1] = schedule;
-                        schedules[2] = schedule;
-                        schedules[3] = schedule;
-                        schedules[4] = schedule;
-                    }
-                    break;
-                case Occupation.UniversityStudent:
-                    {
-                        var schedule = AbstractSchedule.UniversitySchedule;
-                        schedules[0] = schedule;
-                        schedules[1] = schedule;
-                        schedules[2] = schedule;
-                        schedules[3] = schedule;
-                        schedules[4] = schedule;
-                    }
-                    break;
+            default:
+                break;
+            case Occupation.Worker:
+                {
+                    var workSchedule = AbstractSchedule.WorkSchedule;
+                    schedules[0] = workSchedule;
+                    schedules[1] = workSchedule;
+                    schedules[2] = workSchedule;
+                    schedules[3] = workSchedule;
+                    schedules[4] = workSchedule;
+                }
+                break;
+            case Occupation.ElementarySchoolStudent:
+                {
+                    var schedule = AbstractSchedule.ElementarySchoolSchedule;
+                    schedules[0] = schedule;
+                    schedules[1] = schedule;
+                    schedules[2] = schedule;
+                    schedules[3] = schedule;
+                    schedules[4] = schedule;
+                }
+                break;
+            case Occupation.HighSchoolStudent:
+                {
+                    var schedule = AbstractSchedule.HighSchoolSchedule;
+                    schedules[0] = schedule;
+                    schedules[1] = schedule;
+                    schedules[2] = schedule;
+                    schedules[3] = schedule;
+                    schedules[4] = schedule;
+                }
+                break;
+            case Occupation.UniversityStudent:
+                {
+                    var schedule = AbstractSchedule.UniversitySchedule;
+                    schedules[0] = schedule;
+                    schedules[1] = schedule;
+                    schedules[2] = schedule;
+                    schedules[3] = schedule;
+                    schedules[4] = schedule;
+                }
+                break;
             }
         }
 
@@ -495,10 +494,7 @@ namespace Transidious
             {
                 startsAt = startTime,
                 path = (path?.steps?.Count ?? 0) < 2 ? null : path,
-
-#if DEBUG
                 place = e.place,
-#endif
             };
 
             if (prevEvent == null)
@@ -648,18 +644,18 @@ namespace Transidious
             var msg = "Driving ";
             switch (poi)
             {
-                case Citizien.PointOfInterest.Home:
-                    msg += "home";
-                    break;
-                case Citizien.PointOfInterest.School:
-                    msg += "to school";
-                    break;
-                case Citizien.PointOfInterest.Work:
-                    msg += "to work";
-                    break;
-                case Citizien.PointOfInterest.GroceryStore:
-                    msg += "to the grocery store";
-                    break;
+            case Citizien.PointOfInterest.Home:
+                msg += "home";
+                break;
+            case Citizien.PointOfInterest.School:
+                msg += "to school";
+                break;
+            case Citizien.PointOfInterest.Work:
+                msg += "to work";
+                break;
+            case Citizien.PointOfInterest.GroceryStore:
+                msg += "to the grocery store";
+                break;
             }
 
             return msg;
@@ -669,16 +665,16 @@ namespace Transidious
         {
             switch (poi)
             {
-                case Citizien.PointOfInterest.Home:
-                    return "home";
-                case Citizien.PointOfInterest.School:
-                    return "school";
-                case Citizien.PointOfInterest.Work:
-                    return "work";
-                case Citizien.PointOfInterest.GroceryStore:
-                    return "the grocery store";
-                default:
-                    return "";
+            case Citizien.PointOfInterest.Home:
+                return "home";
+            case Citizien.PointOfInterest.School:
+                return "school";
+            case Citizien.PointOfInterest.Work:
+                return "work";
+            case Citizien.PointOfInterest.GroceryStore:
+                return "the grocery store";
+            default:
+                return "";
             }
         }
 

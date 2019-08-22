@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,75 +37,17 @@ namespace Transidious
         Cursor,
     }
 
-    public class MapTile
-    {
-        [System.Serializable]
-        public struct SerializableMapTile
-        {
-            public int[] mapObjectIDs;
-        }
-
-        public readonly int x, y;
-        public HashSet<MapObject> mapObjects;
-
-        public IEnumerable<StreetSegment> streetSegments
-        {
-            get
-            {
-                return mapObjects.OfType<StreetSegment>();
-            }
-        }
-
-        public IEnumerable<Stop> transitStops
-        {
-            get
-            {
-                return mapObjects.OfType<Stop>();
-            }
-        }
-
-        public MapTile(int x, int y)
-        {
-            this.x = x;
-            this.y = y;
-            this.mapObjects = new HashSet<MapObject>();
-        }
-
-        public SerializableMapTile Serialize()
-        {
-            return new SerializableMapTile
-            {
-                mapObjectIDs = mapObjects.Select(obj => obj.id).ToArray(),
-            };
-        }
-
-        public void Deserialize(Map map, SerializableMapTile tile)
-        {
-            foreach (var id in tile.mapObjectIDs)
-            {
-                var obj = map.GetMapObject(id);
-                if (obj == null)
-                {
-                    Debug.LogWarning("missing map object with ID " + id);
-                    continue;
-                }
-
-                this.mapObjects.Add(obj);
-            }
-        }
-    }
-
     public class Map : MonoBehaviour
     {
         public static readonly Dictionary<TransitType, Color> defaultLineColors = new Dictionary<TransitType, Color>
-    {
-        { TransitType.Bus, new Color(0.58f, 0.0f, 0.83f)  },
-        { TransitType.Tram, new Color(1.0f, 0.0f, 0.0f)  },
-        { TransitType.Subway, new Color(0.09f, 0.02f, 0.69f)  },
-        { TransitType.LightRail, new Color(37f/255f, 102f/255f, 10f/255f)  },
-        { TransitType.IntercityRail, new Color(1.0f, 0.0f, 0.0f)  },
-        { TransitType.Ferry, new Color(0.14f, 0.66f, 0.79f)  }
-    };
+        {
+            { TransitType.Bus, new Color(0.58f, 0.0f, 0.83f)  },
+            { TransitType.Tram, new Color(1.0f, 0.0f, 0.0f)  },
+            { TransitType.Subway, new Color(0.09f, 0.02f, 0.69f)  },
+            { TransitType.LightRail, new Color(37f/255f, 102f/255f, 10f/255f)  },
+            { TransitType.IntercityRail, new Color(1.0f, 0.0f, 0.0f)  },
+            { TransitType.Ferry, new Color(0.14f, 0.66f, 0.79f)  }
+        };
 
         /// Reference to the input controller.
         public InputController input;
@@ -113,11 +56,13 @@ namespace Transidious
         public MapTile[][] tiles;
         public int tilesHeight, tilesWidth;
 
+        public bool isLoadedFromSaveFile;
+
         /// The width of the map (in meters).
-        public int width;
+        public float width;
 
         /// The height of the map (in meters).
-        public int height;
+        public float height;
 
         /// Starting position of the camera.
         public Vector3 startingCameraPos;
@@ -133,7 +78,13 @@ namespace Transidious
         public GameObject boundaryOutlineObj;
 
         /// The object carrying the boundary mask.
-        public GameObject boundarymaskObj;
+        public GameObject boundaryMaskObj;
+
+        /// The map background LOD sprite (day).
+        public GameObject backgroundSpriteDay;
+
+        /// The map background LOD sprite (night).
+        public GameObject backgroundSpriteNight;
 
         /// Map objects indexed by name.
         Dictionary<string, MapObject> mapObjectMap;
@@ -175,20 +126,14 @@ namespace Transidious
         /// The canvas covering the entire map.
         public Canvas canvas;
 
-        /// The 'triangle' API instance.
-        public TriangleAPI triangleAPI;
-
-        /// The street mesh builder.
-        public MultiMesh streetMesh;
-
-        /// The building mesh.
-        public MultiMesh buildingMesh;
-
-        /// The nature mesh.
-        public MultiMesh natureMesh;
+        /// Prefab for creating map tiles.
+        public GameObject mapTilePrefab;
 
         /// Prefab for creating buildings.
         public GameObject buildingPrefab;
+
+        /// Prefab for creating natural features.
+        public GameObject naturalFeaturePrefab;
 
         /// Prefab for creating multimesh objects.
         public GameObject multiMeshPrefab;
@@ -243,11 +188,8 @@ namespace Transidious
             }
         }
 
-        public void Initialize(int width, int height)
+        public void Initialize()
         {
-            this.width = width;
-            this.height = height;
-
             this.mapObjectMap = new Dictionary<string, MapObject>();
             this.mapObjectIDMap = new Dictionary<int, MapObject>();
 
@@ -262,30 +204,9 @@ namespace Transidious
             this.buildings = new List<Building>();
             this.buildingsByType = new Dictionary<Building.Type, List<Building>>();
 
+            this.tilesToShow = new HashSet<MapTile>();
+
             mapObjectIDMap[0] = null;
-
-            this.triangleAPI = new TriangleAPI();
-
-            var sm = Instantiate(multiMeshPrefab);
-            sm.transform.SetParent(this.transform);
-            sm.name = "Streets";
-
-            this.streetMesh = sm.GetComponent<MultiMesh>();
-            this.streetMesh.map = this;
-
-            var bm = Instantiate(multiMeshPrefab);
-            bm.transform.SetParent(this.transform);
-            bm.name = "Buildings";
-
-            this.buildingMesh = bm.GetComponent<MultiMesh>();
-            this.buildingMesh.map = this;
-
-            var nm = Instantiate(multiMeshPrefab);
-            nm.transform.SetParent(this.transform);
-            nm.name = "Nature";
-
-            this.natureMesh = nm.GetComponent<MultiMesh>();
-            this.natureMesh.map = this;
 
             this.canvas = this.gameObject.AddComponent<Canvas>();
             this.canvas.sortingLayerName = "Foreground";
@@ -304,25 +225,50 @@ namespace Transidious
 
         public void RegisterMapObject(MapObject obj, Vector3 position, int id = -1)
         {
-            var tile = GetTile(position);
-            if (tile != null)
+            if (!isLoadedFromSaveFile)
             {
-                tile.mapObjects.Add(obj);
+                var tile = GetTile(position);
+                if (tile != null)
+                {
+                    tile.mapObjects.Add(obj);
+
+                    // If the object belongs to a single map tile, parent it.
+                    obj.transform.SetParent(tile.transform);
+                    obj.uniqueTile = tile;
+                }
             }
 
             RegisterMapObject(obj, id);
         }
 
-        public void RegisterMapObject(MapObject obj, IEnumerable<Vector3> positions, int id = -1)
+        public void RegisterMapObject(MapObject obj, IEnumerable<Vector3> positions,
+                                      int id = -1)
         {
-            if (positions != null)
+            if (!isLoadedFromSaveFile && positions != null)
             {
+                var tiles = new HashSet<MapTile>();
                 foreach (var pos in positions)
                 {
                     var tile = GetTile(pos);
                     if (tile != null)
                     {
                         tile.mapObjects.Add(obj);
+                        tiles.Add(tile);
+                    }
+                }
+
+                // If the object belongs to a single map tile, parent it.
+                if (tiles.Count == 1)
+                {
+                    // If the object belongs to a single map tile, parent it.
+                    obj.transform.SetParent(tiles.First().transform);
+                    obj.uniqueTile = tiles.First();
+                }
+                else
+                {
+                    foreach (var tile in tiles)
+                    {
+                        tile.AddOrphanedObject(obj);
                     }
                 }
             }
@@ -335,15 +281,16 @@ namespace Transidious
             if (id == -1)
             {
                 id = lastAssignedMapObjectID++;
+                obj.id = id;
             }
             else if (id > lastAssignedMapObjectID)
             {
-                lastAssignedMapObjectID = id;
+                lastAssignedMapObjectID = id + 1;
             }
 
             mapObjectIDMap.Add(id, obj);
 
-            if (obj.name.EndsWith("Clone)"))
+            if (obj.name.Length == 0 || obj.name.EndsWith("Clone)"))
             {
                 return;
             }
@@ -425,6 +372,19 @@ namespace Transidious
             return null;
         }
 
+        public TileIterator GetTilesForObject(MapObject obj)
+        {
+            return new TileIterator(this, obj);
+        }
+
+        public TileIterator AllTiles
+        {
+            get
+            {
+                return new TileIterator(this);
+            }
+        }
+
         public static float Layer(MapLayer l, int orderInLayer = 0)
         {
             Debug.Assert(orderInLayer < 10, "invalid layer order");
@@ -453,7 +413,7 @@ namespace Transidious
             var pslg = new PSLG(Map.Layer(MapLayer.Boundary));
             pslg.AddOrderedVertices(positions3d);
 
-            var backgroundMesh = triangleAPI.CreateMesh(pslg);
+            var backgroundMesh = TriangleAPI.CreateMesh(pslg);
             var positionList = positions3d.ToList();
 
             var boundaryMesh = MeshBuilder.CreateSmoothLine(
@@ -478,7 +438,7 @@ namespace Transidious
 
             pslg.AddHole(positionList);
 
-            var maskMesh = triangleAPI.CreateMesh(pslg);
+            var maskMesh = TriangleAPI.CreateMesh(pslg);
             UpdateBoundary(backgroundMesh, boundaryMesh, maskMesh, this.minX, this.maxX,
                            this.minY, this.maxY);
         }
@@ -486,9 +446,18 @@ namespace Transidious
         public void UpdateBoundary(Mesh backgroundMesh, Mesh outlineMesh, Mesh maskMesh,
                                    float minX, float maxX, float minY, float maxY)
         {
+#if DEBUG
+            Debug.Log("background verts: " + backgroundMesh.triangles.Length);
+            Debug.Log("outline verts: " + outlineMesh.triangles.Length);
+            Debug.Log("mask verts: " + maskMesh.triangles.Length);
+#endif
+
             startingCameraPos = new Vector3(minX + (maxX - minX) / 2f,
                                             minY + (maxY - minY) / 2f,
                                             Camera.main.transform.position.z);
+
+            this.width = this.maxX - this.minX;
+            this.height = this.maxY - this.minY;
 
             Camera.main.transform.position = startingCameraPos;
 
@@ -504,21 +473,6 @@ namespace Transidious
             var canvasTransform = canvas.GetComponent<RectTransform>();
             canvasTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxX - minX);
             canvasTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxY - minY);
-
-            if (boundaryBackgroundObj == null)
-            {
-                boundaryBackgroundObj = Instantiate(meshPrefab);
-                // boundaryBackgroundObj.transform.SetParent(this.transform);
-                boundaryBackgroundObj.name = "Boundary Background";
-
-                boundaryOutlineObj = Instantiate(meshPrefab);
-                // boundaryOutlineObj.transform.SetParent(this.transform);
-                boundaryOutlineObj.name = "Boundary Outline";
-
-                boundarymaskObj = Instantiate(meshPrefab);
-                // boundarymaskObj.transform.SetParent(this.transform);
-                boundarymaskObj.name = "Boundary Mask";
-            }
 
             // Create the background mesh.
             {
@@ -548,14 +502,14 @@ namespace Transidious
 
             // Create the "mask" to make sure only things inside the boundary are visible.
             {
-                var filter = boundarymaskObj.GetComponent<MeshFilter>();
-                var meshRenderer = boundarymaskObj.GetComponent<MeshRenderer>();
+                var filter = boundaryMaskObj.GetComponent<MeshFilter>();
+                var meshRenderer = boundaryMaskObj.GetComponent<MeshRenderer>();
 
                 filter.mesh = maskMesh;
                 meshRenderer.material.color = Color.white;
-                boundarymaskObj.transform.position = new Vector3(
-                    boundarymaskObj.transform.position.x,
-                    boundarymaskObj.transform.position.y,
+                boundaryMaskObj.transform.position = new Vector3(
+                    boundaryMaskObj.transform.position.x,
+                    boundaryMaskObj.transform.position.y,
                     Layer(MapLayer.Foreground, 0));
             }
 
@@ -572,7 +526,8 @@ namespace Transidious
 
                 for (int y = 0; y < neededTilesY; ++y)
                 {
-                    tiles[x][y] = new MapTile(x, y);
+                    tiles[x][y] = Instantiate(mapTilePrefab).GetComponent<MapTile>();
+                    tiles[x][y].Initialize(this, x, y);
                 }
             }
 
@@ -611,15 +566,74 @@ namespace Transidious
             meshRenderer.material = GameController.GetUnlitMaterial(c);
         }
 
+        public void SetBorderColor(Color c)
+        {
+            var meshRenderer = boundaryOutlineObj.GetComponent<MeshRenderer>();
+            meshRenderer.material = GameController.GetUnlitMaterial(c);
+        }
+
+        public void SetMaskColor(Color c)
+        {
+            var meshRenderer = boundaryMaskObj.GetComponent<MeshRenderer>();
+            meshRenderer.material = GameController.GetUnlitMaterial(c);
+        }
+
         public void MakeBackgroundTransparent()
         {
             var meshRenderer = boundaryBackgroundObj.GetComponent<MeshRenderer>();
             meshRenderer.material = new Material(Shader.Find("Unlit/Transparent"));
         }
 
+        public Color GetDefaultBackgroundColor(MapDisplayMode mode)
+        {
+            switch (mode)
+            {
+            case MapDisplayMode.Day:
+            default:
+                return new Color(249f / 255f, 245f / 255f, 237f / 255f, 1);
+            case MapDisplayMode.Night:
+                return new Color(.167f, .178f, .183f);
+                // return new Color(.6f, .6f, .6f, 1f);
+            }
+        }
+
         public void ResetBackgroundColor()
         {
-            SetBackgroundColor(new Color(249f / 255f, 245f / 255f, 237f / 255f, 1));
+            SetBackgroundColor(GetDefaultBackgroundColor(Game.displayMode));
+        }
+
+        public Color GetDefaultBorderColor(MapDisplayMode mode)
+        {
+            switch (mode)
+            {
+            case MapDisplayMode.Day:
+            default:
+                return Color.black;
+            case MapDisplayMode.Night:
+                return new Color(255f / 255f, 59f / 126f, 0f / 255f, 1);
+            }
+        }
+
+        void ResetBorderColor()
+        {
+            SetBorderColor(GetDefaultBorderColor(Game.displayMode));
+        }
+
+        public Color GetDefaultMaskColor(MapDisplayMode mode)
+        {
+            switch (mode)
+            {
+            case MapDisplayMode.Day:
+            default:
+                return Color.white;
+            case MapDisplayMode.Night:
+                return new Color(.32f, .37f, .43f, 1);
+            }
+        }
+
+        void ResetMaskColor()
+        {
+            SetMaskColor(GetDefaultMaskColor(Game.displayMode));
         }
 
         public MapTile GetTile(Vector3 pos)
@@ -873,7 +887,7 @@ namespace Transidious
             GameObject lineObject = Instantiate(linePrefab);
             Line line = lineObject.GetComponent<Line>();
             line.transform.SetParent(this.transform);
-            line.Initialize(this, currentName, type, color);
+            line.Initialize(this, currentName, type, color, id);
 
             RegisterLine(line, id);
             return new LineBuilder(line);
@@ -987,7 +1001,7 @@ namespace Transidious
             GameObject stopObject = Instantiate(stopPrefab);
             var stop = stopObject.GetComponent<Stop>();
             stop.transform.SetParent(this.transform);
-            stop.Initialize(this, name, location);
+            stop.Initialize(this, name, location, id);
 
             RegisterStop(stop, id);
             return stop;
@@ -1018,16 +1032,16 @@ namespace Transidious
             streetObj.transform.SetParent(this.transform);
 
             var street = streetObj.GetComponent<Street>();
+            streets.Add(street);
+
             street.id = id;
             street.Initialize(this, type, currentName, lit, oneWay, maxspeed, lanes);
+            RegisterMapObject(street, id);
 
             if (modifiedName)
             {
                 street.displayName = name;
             }
-
-            streets.Add(street);
-            RegisterMapObject(street, id);
 
             return street;
         }
@@ -1043,10 +1057,10 @@ namespace Transidious
 
             var obj = Instantiate(streetIntersectionPrefab);
             var inter = obj.GetComponent<StreetIntersection>();
-            inter.Initialize(id, pos);
-
             streetIntersections.Add(inter);
             streetIntersectionMap.Add(pos, inter);
+
+            inter.Initialize(id, pos);
             RegisterMapObject(inter, pos, id);
 
             return inter;
@@ -1061,7 +1075,8 @@ namespace Transidious
             RegisterMapObject(s, s.positions, id);
         }
 
-        public Text CreateText(Vector3 position, string txt = "", Color c = default, float fontSize = 10f)
+        public Text CreateText(Vector3 position, string txt = "",
+                               Color c = default, float fontSize = 10f)
         {
             var obj = Instantiate(textPrefab);
             obj.transform.position = position;
@@ -1075,22 +1090,49 @@ namespace Transidious
             return t;
         }
 
-        public NaturalFeature CreateFeature(string name, NaturalFeature.Type type, Mesh mesh)
+        public NaturalFeature CreateFeature(string name, NaturalFeature.Type type,
+                                            Mesh mesh, int id = -1)
         {
-            var nf = new NaturalFeature();
-            nf.Initialize(name, type, mesh, natureMesh);
+            id = id == -1 ? lastAssignedMapObjectID++ : id;
+
+            var i = 1;
+            var currentName = name;
+            while (HasMapObject(currentName))
+            {
+                currentName = name + " (" + i.ToString() + ")";
+                ++i;
+            }
+
+            var obj = Instantiate(naturalFeaturePrefab);
+            var nf = obj.GetComponent<NaturalFeature>();
+            nf.Initialize(this, currentName, type, mesh, id);
+            RegisterMapObject(nf, mesh?.vertices, id);
 
             naturalFeatures.Add(nf);
             return nf;
         }
 
         public Building CreateBuilding(Building.Type type, Mesh mesh,
-                                       string name, string numberStr, Vector3? position)
+                                       string name, string numberStr, Vector3? position,
+                                       int id = -1)
         {
+            id = id == -1 ? lastAssignedMapObjectID++ : id;
+
+            var i = 1;
+            var currentName = name;
+            while (HasMapObject(currentName))
+            {
+                currentName = name + " (" + i.ToString() + ")";
+                ++i;
+            }
+
             var obj = Instantiate(this.buildingPrefab);
             var building = obj.GetComponent<Building>();
+
             building.Initialize(this, type, null, numberStr, mesh,
-                                name, position);
+                                currentName, position, id);
+
+            RegisterMapObject(building, mesh?.vertices, id);
 
             buildings.Add(building);
             if (!buildingsByType.TryGetValue(type, out List<Building> buildingList))
@@ -1105,7 +1147,7 @@ namespace Transidious
 
         public void UpdateTextScale()
         {
-            var renderingDistance = input?.renderingDistance ?? InputController.RenderingDistance.Near;
+            var renderingDistance = input?.renderingDistance ?? RenderingDistance.Near;
 
             foreach (var street in streets)
             {
@@ -1116,32 +1158,237 @@ namespace Transidious
             }
         }
 
+        Rect? prevCameraRect;
+
+        void GetTilePosition(Vector2 pos, out int tileX, out int tileY)
+        {
+            // We only need to update tiles if the camera rect crossed a new tile boundary.
+            float x = pos.x - minX;
+            float y = pos.y - minY;
+
+            if (x < 0 || y < 0)
+            {
+                tileX = -1;
+                tileY = -1;
+
+                return;
+            }
+
+            tileX = (int)Mathf.Floor(x / tileSize);
+            tileY = (int)Mathf.Floor(y / tileSize);
+        }
+
+        bool ShouldUpdateTiles(Rect prevRect, Rect newRect)
+        {
+            int prevX, prevY;
+            int newX, newY;
+
+            // Check if bottom left corner is in new tile.
+            GetTilePosition(new Vector2(prevRect.x, prevRect.y), out prevX, out prevY);
+            GetTilePosition(new Vector2(newRect.x, newRect.y), out newX, out newY);
+
+            if (prevX != newX || prevY != newY)
+            {
+                return true;
+            }
+
+            // Check if top left corner is in new tile.
+            GetTilePosition(new Vector2(prevRect.x, prevRect.y + prevRect.height),
+                out prevX, out prevY);
+            GetTilePosition(new Vector2(newRect.x, newRect.y + newRect.height),
+                out newX, out newY);
+
+            if (prevX != newX || prevY != newY)
+            {
+                return true;
+            }
+
+            // Check if top right corner is in new tile.
+            GetTilePosition(new Vector2(prevRect.x + prevRect.width, prevRect.y + prevRect.height),
+                out prevX, out prevY);
+            GetTilePosition(new Vector2(newRect.x + newRect.width, newRect.y + newRect.height),
+                out newX, out newY);
+
+            if (prevX != newX || prevY != newY)
+            {
+                return true;
+            }
+
+            // Check if bottom right corner is in new tile.
+            GetTilePosition(new Vector2(prevRect.x + prevRect.width, prevRect.y),
+                out prevX, out prevY);
+            GetTilePosition(new Vector2(newRect.x + newRect.width, newRect.y),
+                out newX, out newY);
+
+            if (prevX != newX || prevY != newY)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        HashSet<MapTile> tilesToShow;
+
+        public void UpdateVisibleTiles()
+        {
+            if (tiles == null)
+            {
+                return;
+            }
+
+            if (input.renderingDistance >= RenderingDistance.Far)
+            {
+                foreach (var tile in AllTiles)
+                {
+                    tile.Hide();
+                }
+
+                return;
+            }
+
+#if DEBUG
+            if (Game.ImportingMap)
+            {
+                foreach (var tile in AllTiles)
+                {
+                    tile.Show(RenderingDistance.Near);
+                }
+
+                return;
+            }
+#endif
+
+            var bottomLeft = Camera.main.ViewportToWorldPoint(new Vector3(0f, 0f));
+            var topRight = Camera.main.ViewportToWorldPoint(new Vector3(1f, 1f));
+            var cameraRect = new Rect(bottomLeft.x, bottomLeft.y,
+                                      topRight.x - bottomLeft.x,
+                                      topRight.y - bottomLeft.y);
+
+            if (prevCameraRect != null)
+            {
+                if (!ShouldUpdateTiles(prevCameraRect.Value, cameraRect))
+                {
+                    return;
+                }
+            }
+
+            var x = 0;
+            var y = 0;
+            tilesToShow.Clear();
+
+            var renderingDistance = input?.renderingDistance ?? RenderingDistance.Near;
+            foreach (var tileArr in tiles)
+            {
+                var endX = (x + 1) * tileSize;
+                if (cameraRect.x > endX)
+                {
+                    foreach (var tile in tileArr)
+                    {
+                        tile.Hide();
+                    }
+
+                    ++x;
+                    continue;
+                }
+
+                foreach (var tile in tileArr)
+                {
+                    var endY = (y + 1) * tileSize;
+                    if (cameraRect.y > endY)
+                    {
+                        ++y;
+                        tile.Hide();
+                        continue;
+                    }
+
+                    var tileRect = tile.rect;
+                    if (cameraRect.Overlaps(tileRect))
+                    {
+                        tile.Show(renderingDistance);
+                        tilesToShow.Add(tile);
+                    }
+                    else
+                    {
+                        tile.Hide();
+                    }
+
+                    ++y;
+                }
+
+                ++x;
+            }
+
+            foreach (var tile in tilesToShow)
+            {
+                if (tile.orphanedObjects == null)
+                {
+                    continue;
+                }
+
+                foreach (var obj in tile.orphanedObjects)
+                {
+                    obj.Show(renderingDistance);
+                }
+            }
+
+            prevCameraRect = cameraRect;
+        }
+
+        public void HideBackgroundSprite()
+        {
+            // Do it next frame to guarantee that the tiles are visible again.
+            this.RunNextFrame(() =>
+            {
+                backgroundSpriteDay?.SetActive(false);
+                backgroundSpriteNight?.SetActive(false);
+            });
+        }
+
+        public void ShowBackgroundSprite()
+        {
+            switch (Game.displayMode)
+            {
+            case MapDisplayMode.Day:
+                backgroundSpriteDay?.SetActive(true);
+                break;
+            case MapDisplayMode.Night:
+                backgroundSpriteNight?.SetActive(true);
+                break;
+            }
+
+            foreach (var tile in AllTiles)
+            {
+                tile.Hide();
+            }
+        }
+
         public void UpdateScale()
         {
-            var renderingDistance = input?.renderingDistance ?? InputController.RenderingDistance.Near;
-
-            buildingMesh.UpdateScale(renderingDistance);
-            natureMesh.UpdateScale(renderingDistance);
-
-            if (input != null)
+            foreach (var stop in transitStops)
             {
-                foreach (var stop in transitStops)
-                {
-                    stop.UpdateScale();
-                }
+                stop.UpdateScale();
             }
 
-            foreach (var route in transitRoutes)
+            foreach (var seg in streetSegments)
             {
-                route.UpdateScale();
+                seg.UpdateScale(input.renderingDistance);
             }
 
-            foreach (var street in streets)
+            var dist = input.renderingDistance;
+            switch (dist)
             {
-                foreach (var seg in street.segments)
-                {
-                    seg.UpdateScale(renderingDistance);
-                }
+            case RenderingDistance.Near:
+                UpdateVisibleTiles();
+                HideBackgroundSprite();
+                break;
+            case RenderingDistance.VeryFar:
+            case RenderingDistance.Farthest:
+            case RenderingDistance.Far:
+                ShowBackgroundSprite();
+                prevCameraRect = null;
+
+                break;
             }
         }
 
@@ -1168,95 +1415,85 @@ namespace Transidious
         // Use this for initialization
         void Awake()
         {
-            Initialize(1000, 1000);
+            Initialize();
         }
-
-        public bool done = false;
 
         // Use this for initialization
         void Start()
         {
-            /*Stop kaiserdamm = GetOrCreateStop("Kaiserdamm", new Vector2(0, 0));
-            Stop zoo = GetOrCreateStop("Zoologischer Garten", new Vector2(5f, -1f));
-            Stop uhlandstrasse = GetOrCreateStop("Uhlandstraße", new Vector2(2.5f, -1.5f));
-            Stop hbf = GetOrCreateStop("Hauptbahnhof", new Vector2(6.0f, 1.0f));
-            Stop friedrichstrasse = GetOrCreateStop("Friedrichstraße", new Vector2(7.0f, 0.8f));
-            Stop alexanderplatz = GetOrCreateStop("Alexanderplatz", new Vector2(8f, 0.4f));
-            Stop memhardstrasse = GetOrCreateStop("Memhardstraße", new Vector2(8.1f, 0.5f));
+            boundaryBackgroundObj = Instantiate(meshPrefab);
+            // boundaryBackgroundObj.transform.SetParent(this.transform);
+            boundaryBackgroundObj.name = "Boundary Background";
 
-            Stop bornholmerStrasse = GetOrCreateStop("Bornholmer Straße", new Vector2(5.75f, 2.5f));
-            Stop gesundbrunnen = GetOrCreateStop("Gesundbrunnen", new Vector2(5.0f, 2.0f));
-            Stop schoenhauserAllee = GetOrCreateStop("Schönhauser Allee", new Vector2(6.0f, 2.0f));
-            Stop prenzlauerAllee = GetOrCreateStop("Prenzlauer Allee", new Vector2(8.0f, 2.0f));
-            Stop landsbergerAllee = GetOrCreateStop("Landsberger Allee", new Vector2(10.0f, 2.0f));
+            boundaryOutlineObj = Instantiate(meshPrefab);
+            // boundaryOutlineObj.transform.SetParent(this.transform);
+            boundaryOutlineObj.name = "Boundary Outline";
 
-            Path erpZooPath = new Path(new List<PathSegment> {
-                new PathSegment(new Vector2(4.0f, 0), new Vector2(4.2f, 0)),
-                new PathSegment(new Vector2(4.2f, 0), new Vector2(5.0f, -1.0f)),
+            boundaryMaskObj = Instantiate(meshPrefab);
+            // boundarymaskObj.transform.SetParent(this.transform);
+            boundaryMaskObj.name = "Boundary Mask";
+
+            this.backgroundSpriteDay = Instantiate(GameController.instance.spritePrefab);
+            this.backgroundSpriteDay.transform.SetParent(this.transform);
+            this.backgroundSpriteNight = Instantiate(GameController.instance.spritePrefab);
+            this.backgroundSpriteNight.transform.SetParent(this.transform);
+
+            input.RegisterEventListener(InputEvent.Zoom, _ =>
+            {
+                this.UpdateVisibleTiles();
             });
 
-            CreateSTrainLine("S8", new Color(103f / 255f, 184f / 255f, 93f / 255f))
-                .AddStop(bornholmerStrasse)
-                .AddStop(schoenhauserAllee)
-                .AddStop(prenzlauerAllee)
-                .AddStop(landsbergerAllee);
-
-            CreateSTrainLine("S41", new Color(169f / 255f, 73f / 255f, 50f / 255f))
-                .AddStop(kaiserdamm, true)
-                .AddStop(gesundbrunnen, true)
-                .AddStop(schoenhauserAllee, true)
-                .AddStop(prenzlauerAllee, true)
-                .AddStop(landsbergerAllee, true);
-
-            CreateSTrainLine("S42", new Color(182f / 255f, 111f / 255f, 50f / 255f))
-                .AddStop(landsbergerAllee)
-                .AddStop(prenzlauerAllee, true)
-                .AddStop(schoenhauserAllee, true)
-                .AddStop(gesundbrunnen, true)
-                .AddStop(kaiserdamm, true);
-
-            CreateSubwayLine("U2", new Color(243f/255f, 87f/255f, 33f/255f))
-               .AddStop(kaiserdamm)
-               .AddStop("Sophie-Charlotte-Platz", new Vector2(1f, 0))
-               .AddStop("Bismarckstraße", new Vector2(2f, 0))
-               .AddStop("Deutsche Oper", new Vector2(2.3f, 0))
-               .AddStop("Ernst-Reuter-Platz", new Vector2(4f, 0))
-               .AddStop(zoo, false, erpZooPath)
-               .AddStop(schoenhauserAllee)
-               .AddStop("Pankow", new Vector2(6f, 3f));
-
-            CreateSubwayLine("U1", new Color(103f/255f, 184f/255f, 93f/255f))
-                .AddStop(uhlandstrasse)
-                .AddStop("Kurfürstendamm", new Vector2(3.75f, -1.5f))
-                .AddStop(zoo);
-
-            CreateRegionalTrainLine("RE1", new Color(236f / 255f, 124f / 255f, 102f / 255f))
-                .AddStop(zoo)
-                .AddStop(hbf)
-                .AddStop(friedrichstrasse)
-                .AddStop(alexanderplatz);
-
-            CreateSTrainLine("S3", new Color(3f / 255f, 110f / 255f, 178f / 255f))
-                .AddStop("Spandau", new Vector2(-3f, 1f))
-                .AddStop("Charlottenburg", new Vector2(0.3f, -1f))
-                .AddStop(zoo);
-
-            CreateTramLine("M2")
-                .AddStop(alexanderplatz)
-                .AddStop(memhardstrasse)
-                .AddStop(prenzlauerAllee);
-
-            var options = new PathPlanningOptions
+            input.RegisterEventListener(InputEvent.Pan, _ =>
             {
-                start = kaiserdamm,
-                goal = schoenhauserAllee,
-                time = DateTime.Now
-            };
+                this.UpdateVisibleTiles();
+            });
 
-            var planner = new PathPlanner(options);
-            //Debug.Log(planner.GetPath());
-            */
-            //done = true;
+            input.RegisterEventListener(InputEvent.ScaleChange, _ =>
+            {
+                this.UpdateScale();
+            });
+
+            input.RegisterEventListener(InputEvent.DisplayModeChange, _ =>
+            {
+                var mode = Game.displayMode;
+                switch (mode)
+                {
+                case MapDisplayMode.Day:
+                    if (backgroundSpriteNight?.activeSelf ?? false)
+                    {
+                        backgroundSpriteNight.SetActive(false);
+                        backgroundSpriteDay.SetActive(true);
+                    }
+
+                    break;
+                case MapDisplayMode.Night:
+                    if (backgroundSpriteDay?.activeSelf ?? false)
+                    {
+                        backgroundSpriteDay.SetActive(false);
+                        backgroundSpriteNight.SetActive(true);
+                    }
+
+                    break;
+                }
+
+                ResetBackgroundColor();
+                ResetMaskColor();
+                ResetBorderColor();
+
+                if (Game.Loading)
+                {
+                    return;
+                }
+
+                foreach (var building in buildings)
+                {
+                    building.UpdateColor(mode);
+                }
+                foreach (var seg in streetSegments)
+                {
+                    seg.UpdateColor(mode);
+                }
+            });
         }
 
         // Update is called once per frame
@@ -1279,29 +1516,59 @@ namespace Transidious
             }
         }
 
-        public bool saveOnExit = false;
-        public bool saveScene = false;
-
-        public void DoFinalize(bool needTrafficLights = true)
+        public IEnumerator DoFinalize(float thresholdTime = 50)
         {
-            streetMesh.CreateMeshes();
+            foreach (var building in buildings)
+            {
+                building.UpdateMesh(this);
 
-            buildingMesh.CreateMeshes();
-            buildingMesh.CopyData(InputController.RenderingDistance.Near,
-                                  InputController.RenderingDistance.Far);
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
+            }
 
-            natureMesh.CreateMeshes();
-            natureMesh.CopyData(InputController.RenderingDistance.Near,
-                                InputController.RenderingDistance.Far);
-            natureMesh.CopyData(InputController.RenderingDistance.Near,
-                                InputController.RenderingDistance.VeryFar);
-            natureMesh.CopyData(InputController.RenderingDistance.Near,
-                                InputController.RenderingDistance.Farthest);
+            foreach (var feature in naturalFeatures)
+            {
+                feature.UpdateMesh(this);
+
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
+            }
+
+            foreach (var seg in streetSegments)
+            {
+                seg.UpdateMesh();
+
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
+            }
+
+#if DEBUG
+            Debug.Log("street verts: " + StreetSegment.totalVerts);
+            Debug.Log("quad verts: " + MeshBuilder.quadVerts);
+            Debug.Log("circle verts: " + MeshBuilder.circleVerts);
+#endif
+
+            foreach (var tile in AllTiles)
+            {
+                tile.mesh.CreateMeshes();
+
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
+            }
 
             UpdateScale();
             UpdateTextScale();
+            UpdateVisibleTiles();
 
-            if (needTrafficLights)
+            if (isLoadedFromSaveFile)
             {
                 foreach (var i in streetIntersections)
                 {
@@ -1309,18 +1576,7 @@ namespace Transidious
                 }
             }
 
-            foreach (var street in streets)
-            {
-                foreach (var seg in street.segments)
-                {
-                    if (seg.hasTramTracks)
-                    {
-                        seg.AddTramTracks();
-                    }
-                }
-            }
-
-            if (needTrafficLights)
+            if (isLoadedFromSaveFile)
             {
                 Game.transitEditor.InitOverlappingRoutes();
             }

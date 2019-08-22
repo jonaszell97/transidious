@@ -100,6 +100,11 @@ namespace Transidious
                     return 4;
                 case 2:
                     return 10;
+
+#if DEBUG
+                case 3:
+                    return 100;
+#endif
                 }
             }
         }
@@ -112,6 +117,18 @@ namespace Transidious
             gameTime = gameTime.AddMinutes(minutesPerFrame);
             game.gameTimeText.text = gameTime.ToShortDateString()
                 + " " + gameTime.ToShortTimeString();
+
+            var hour = gameTime.Hour;
+            if (hour == 7)
+            {
+                game.displayMode = MapDisplayMode.Day;
+                game.input.FireEvent(InputEvent.DisplayModeChange);
+            }
+            else if (hour == 19)
+            {
+                game.displayMode = MapDisplayMode.Night;
+                game.input.FireEvent(InputEvent.DisplayModeChange);
+            }
 
             var newDay = gameTime.DayOfYear;
             return prevDay != newDay;
@@ -219,10 +236,9 @@ namespace Transidious
 
         bool measuring = false;
         Vector2? firstMeasurePos;
-#endif
+
         public void OnGUI()
         {
-#if DEBUG
             if (GUI.Button(new Rect(25, 25, 100, 30), "Spawn Cars"))
             {
                 SpawnTestCars();
@@ -235,7 +251,6 @@ namespace Transidious
             {
                 game.input.debugRouteTest = true;
             }
-#endif
             if (GUI.Button(new Rect(350, 25, 100, 30), "Save"))
             {
                 SaveManager.SaveMapData(game.loadedMap);
@@ -256,7 +271,6 @@ namespace Transidious
                     GameController.instance.SetLanguage("en_US");
                 }
             }
-
             if (GUI.Button(new Rect(650, 25, 100, 30), "Measure"))
             {
                 if (!measuring)
@@ -264,6 +278,11 @@ namespace Transidious
                     measuring = true;
                 }
             }
+            if (GUI.Button(new Rect(25, 35, 100, 30), "MOPSGESCHWINDIGKEIT"))
+            {
+                this.simulationSpeed = 3;
+            }
         }
+#endif
     }
 }

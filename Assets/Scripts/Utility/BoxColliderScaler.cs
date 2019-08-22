@@ -9,14 +9,16 @@ namespace Transidious
 
         void Awake()
         {
+#if UNITY_EDITOR
             this.runInEditMode = true;
+#endif
 
             this.boxCollider = this.gameObject.GetComponent<BoxCollider2D>();
             this.rectTransform = this.gameObject.GetComponent<RectTransform>();
 
             Vector3 min = rectTransform.TransformPoint(rectTransform.rect.min);
             Vector3 max = rectTransform.TransformPoint(rectTransform.rect.max);
-            
+
             float width = max.x - min.x;
             float height = max.y - min.y;
 

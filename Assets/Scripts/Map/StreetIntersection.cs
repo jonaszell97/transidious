@@ -125,7 +125,7 @@ namespace Transidious
         [System.Serializable]
         public struct SerializedStreetIntersection
         {
-            public int id;
+            public SerializableMapObject mapObject;
             public SerializableVector2 position;
         }
 
@@ -169,29 +169,38 @@ namespace Transidious
 
         public void Initialize(int id, Vector3 pos)
         {
+            base.Initialize(Kind.StreetIntersection, id);
+
             this.id = id;
             this.position = pos;
             this.intersectingStreets = new List<StreetSegment>();
             this.streetAngles = new Dictionary<StreetSegment, float>();
+
+            this.transform.localScale = new Vector3(14, 14, 0);
+            this.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.StreetOutlines));
         }
 
-        public SerializedStreetIntersection Serialize()
+        public new SerializedStreetIntersection Serialize()
         {
             return new SerializedStreetIntersection
             {
-                id = id,
+                mapObject = base.Serialize(),
                 position = new SerializableVector2(position),
             };
+        }
+
+        public static StreetIntersection Deserialize(Map map, SerializedStreetIntersection inter)
+        {
+            var obj = map.CreateIntersection(inter.position.ToVector(),
+                                             inter.mapObject.id);
+
+            obj.Deserialize(inter.mapObject);
+            return obj;
         }
 
         public void DeleteSegment(StreetSegment seg)
         {
             intersectingStreets.Remove(seg);
-        }
-
-        public override bool ShouldRender(InputController.RenderingDistance dist)
-        {
-            return false;
         }
 
         public Vector3 Location
@@ -206,11 +215,7 @@ namespace Transidious
         {
             get
             {
-#if UNITY_EDITOR
-                return intersectingStreets.Where(s => s.street.type != Street.Type.FootPath).Select(s => s as IRoute);
-#else
                 return intersectingStreets.Select(s => s as IRoute);
-#endif
             }
         }
 
@@ -313,7 +318,7 @@ namespace Transidious
         {
             // Get the angle that this street connects to the intersection with.
             var p0 = GetTrafficLightPosition(seg);
-            var angle = Math.PointAngle(p0, position);
+            var angle = Math.PointAngleDeg(p0, position);
 
             streetAngles.Add(seg, angle);
 

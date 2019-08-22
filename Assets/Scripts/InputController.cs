@@ -6,38 +6,40 @@ using System.Collections.Generic;
 
 namespace Transidious
 {
+    public enum RenderingDistance
+    {
+        Near,
+        Far,
+        VeryFar,
+        Farthest,
+    }
+
+    public enum InputEvent
+    {
+        MouseOver = 0,
+        MouseEnter,
+        MouseExit,
+        MouseDown,
+        Zoom,
+        Pan,
+        ScaleChange,
+        DisplayModeChange,
+        _EventCount,
+    }
+
+    public enum ControlType
+    {
+        ZoomOut,
+        ZoomIn,
+
+        PanUp,
+        PanDown,
+        PanRight,
+        PanLeft,
+    }
+
     public class InputController : MonoBehaviour
     {
-        public enum ControlType
-        {
-            ZoomOut,
-            ZoomIn,
-
-            PanUp,
-            PanDown,
-            PanRight,
-            PanLeft,
-        }
-
-        public enum RenderingDistance
-        {
-            Near,
-            Far,
-            VeryFar,
-            Farthest,
-        }
-
-        public enum InputEvent
-        {
-            MouseOver = 0,
-            MouseEnter,
-            MouseExit,
-            MouseDown,
-            Zoom,
-            Pan,
-            _EventCount,
-        }
-
         public GameController controller;
         public RenderingDistance renderingDistance = RenderingDistance.Near;
 
@@ -48,7 +50,7 @@ namespace Transidious
 
         public delegate void KeyboardEventListener(KeyCode keyCode);
         Dictionary<KeyCode, List<KeyboardEventListener>> keyboardEventListeners;
-        bool controlListenersEnabled = true;
+        public bool controlListenersEnabled = true;
 
         bool zooming = false;
 
@@ -435,8 +437,6 @@ namespace Transidious
             panSensitivityY = camera.orthographicSize * 0.1f;
             zoomSensitivity = camera.orthographicSize * 0.5f;
 
-            UpdateStopWidth();
-            UpdateLineWidth();
             UpdateBoundaryWidth();
             UpdateScaleBar();
 
@@ -445,7 +445,7 @@ namespace Transidious
             if (currRenderingDist == renderingDistance)
                 return;
 
-            controller?.loadedMap?.UpdateScale();
+            FireEvent(InputEvent.ScaleChange);
         }
 
         void FadeScaleBar()
@@ -546,7 +546,7 @@ namespace Transidious
 
         public void UpdateRenderingDistance()
         {
-            if (controller?.Editing ?? false)
+            if (controller.ImportingMap || controller.Editing)
             {
                 renderingDistance = RenderingDistance.Near;
                 return;

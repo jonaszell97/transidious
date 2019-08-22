@@ -13,7 +13,7 @@ namespace Transidious
         {
             public SerializableMesh[] meshes;
             public SerializableColor color;
-            public InputController.RenderingDistance distance;
+            public RenderingDistance distance;
         }
 
         [System.Serializable]
@@ -33,20 +33,21 @@ namespace Transidious
 
         class MeshData
         {
-            internal Dictionary<Color, MutableMesh> meshMap = new Dictionary<Color, MutableMesh>();
+            internal Dictionary<Color, MutableMesh> meshMap =
+                new Dictionary<Color, MutableMesh>();
         }
 
         /// <summary>
         ///  Reference to the map.
         /// </summary>
         public Map map;
-        Dictionary<InputController.RenderingDistance, MeshData> meshData;
+        Dictionary<RenderingDistance, MeshData> meshData;
 
         public GameObject[] renderingObjects;
 
         private static GameObject prefab;
 
-        public static MultiMesh Create(string name, Transform parent = null)
+        public static MultiMesh Create(Map map, string name, Transform parent = null)
         {
             if (prefab == null)
             {
@@ -57,50 +58,26 @@ namespace Transidious
             multiMesh.name = name;
             multiMesh.transform.SetParent(parent);
 
-            return multiMesh.GetComponent<MultiMesh>();
-        }
+            var mm = multiMesh.GetComponent<MultiMesh>();
+            mm.map = map;
 
-        public void AddStreetSegment(InputController.RenderingDistance renderingDistance,
-                                     List<Vector3> positions,
-                                     float width, float borderWidth,
-                                     Color color, Color borderColor,
-                                     bool connectStart, bool connectEnd,
-                                     float meshZ, float outlineZ)
-        {
-            if (!meshData.TryGetValue(renderingDistance, out MeshData data))
-            {
-                data = new MeshData();
-                meshData.Add(renderingDistance, data);
-            }
-
-            if (!data.meshMap.TryGetValue(color, out MutableMesh streetMesh))
-            {
-                streetMesh = new MutableMesh();
-                data.meshMap.Add(color, streetMesh);
-            }
-            if (!data.meshMap.TryGetValue(borderColor, out MutableMesh outlineMesh))
-            {
-                outlineMesh = new MutableMesh();
-                data.meshMap.Add(borderColor, outlineMesh);
-            }
-
-            MeshBuilder.CreateSmoothLine(positions, width, connectStart, connectEnd,
-                                         streetMesh.vertices, streetMesh.triangles,
-                                         streetMesh.uv, 10, meshZ);
-
-            MeshBuilder.CreateSmoothLine(positions, width + borderWidth, connectStart, connectEnd,
-                                         outlineMesh.vertices, outlineMesh.triangles,
-                                         outlineMesh.uv, 10, outlineZ);
-
-            streetMesh.positions.AddRange(positions);
+            return mm;
         }
 
         public void AddMesh(Color c, Mesh mesh, float z = 0f)
         {
-            if (!meshData.TryGetValue(InputController.RenderingDistance.Near, out MeshData data))
+            AddMesh(c, mesh, RenderingDistance.Near, z);
+            AddMesh(c, mesh, RenderingDistance.Far, z);
+            AddMesh(c, mesh, RenderingDistance.VeryFar, z);
+            AddMesh(c, mesh, RenderingDistance.Farthest, z);
+        }
+
+        public void AddMesh(Color c, Mesh mesh, RenderingDistance dist, float z = 0f)
+        {
+            if (!meshData.TryGetValue(dist, out MeshData data))
             {
                 data = new MeshData();
-                meshData.Add(InputController.RenderingDistance.Near, data);
+                meshData.Add(dist, data);
             }
             if (!data.meshMap.TryGetValue(c, out MutableMesh mutableMesh))
             {
@@ -185,9 +162,15 @@ namespace Transidious
                         var triangleRange = triangles.GetRange(triangleIdx, usedTriangles);
                         var minIdx = triangleRange.Min();
                         var maxIdx = triangleRange.Max();
-                        var vertexRange = vertices.GetRange(minIdx, maxIdx - minIdx + 1);
 
+                        var vertexRange = vertices.GetRange(minIdx, maxIdx - minIdx + 1);
                         var adjustedTriangleRange = triangleRange.Select(i => i - minIdx).ToArray();
+
+                        Vector2[] uvRange = null;
+                        if (uv.Count > 0)
+                        {
+                            uvRange = uv.GetRange(minIdx, maxIdx - minIdx + 1).ToArray();
+                        }
 
                         Mesh mesh;
                         if (uv.Count > 0)
@@ -196,7 +179,7 @@ namespace Transidious
                             {
                                 vertices = vertexRange.ToArray(),
                                 triangles = adjustedTriangleRange,
-                                uv = uv.GetRange(minIdx, maxIdx - minIdx + 1).ToArray()
+                                uv = uvRange,
                             };
                         }
                         else
@@ -235,8 +218,8 @@ namespace Transidious
             }
         }
 
-        public void CopyData(InputController.RenderingDistance fromDistance,
-                             InputController.RenderingDistance toDistance)
+        public void CopyData(RenderingDistance fromDistance,
+                             RenderingDistance toDistance)
         {
             if (!meshData.TryGetValue(fromDistance, out MeshData data))
             {
@@ -246,7 +229,7 @@ namespace Transidious
             meshData.Add(toDistance, data);
         }
 
-        public void UpdateScale(InputController.RenderingDistance distance)
+        public void UpdateScale(RenderingDistance distance)
         {
             int i = 0;
             if (meshData.TryGetValue(distance, out MeshData data))
@@ -355,20 +338,7 @@ namespace Transidious
 
         void Awake()
         {
-            this.meshData = new Dictionary<InputController.RenderingDistance, MeshData>();
-        }
-
-        // Use this for initialization
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
+            this.meshData = new Dictionary<RenderingDistance, MeshData>();
         }
     }
-
 }

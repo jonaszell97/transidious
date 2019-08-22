@@ -446,7 +446,7 @@ PrefabInstance:
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
       propertyPath: status
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2155688493315652350, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
@@ -714,6 +714,11 @@ PrefabInstance:
     - target: {fileID: 6804257222978547323, guid: 3c274954abc024b19b23bce01b48de33,
         type: 3}
       propertyPath: debugClickTest
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6804257222978547323, guid: 3c274954abc024b19b23bce01b48de33,
+        type: 3}
+      propertyPath: controlListenersEnabled
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

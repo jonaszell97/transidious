@@ -8,31 +8,10 @@ namespace Transidious
 {
     public abstract class MeshBuilder
     {
-        public static Mesh CreateQuad(Vector3 bl, Vector3 tr, Vector3 br, Vector3 tl)
-        {
-            Mesh mesh = new Mesh
-            {
-                vertices = new Vector3[] { bl, tr, br, tl },
-                normals = new Vector3[] {
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward
-            },
-                triangles = new int[]
-                {
-                0, 1, 2, 1, 0, 3
-                },
-                uv = new Vector2[] {
-                new Vector2(0, 0),
-                new Vector2(1, 1),
-                new Vector2(1, 0),
-                new Vector2(0, 1)
-            }
-            };
-
-            return mesh;
-        }
+#if DEBUG
+        public static int quadVerts = 0;
+        public static int circleVerts = 0;
+#endif
 
         public static void AddQuad(List<Vector3> vertices,
                                    List<int> triangles,
@@ -43,159 +22,38 @@ namespace Transidious
             int baseIndex = vertices.Count;
 
             vertices.Add(bl);
+            vertices.Add(tl);
             vertices.Add(tr);
             vertices.Add(br);
-            vertices.Add(tl);
 
             normals.Add(-Vector3.forward);
             normals.Add(-Vector3.forward);
             normals.Add(-Vector3.forward);
             normals.Add(-Vector3.forward);
 
+            // We need a clockwise winding order.
             triangles.Add(0 + baseIndex);
             triangles.Add(1 + baseIndex);
             triangles.Add(2 + baseIndex);
-            triangles.Add(1 + baseIndex);
-            triangles.Add(0 + baseIndex);
+            triangles.Add(2 + baseIndex);
             triangles.Add(3 + baseIndex);
+            triangles.Add(0 + baseIndex);
+
+#if DEBUG
+            quadVerts += 6;
+#endif
 
             uvs.Add(new Vector2(0, 0));
+            uvs.Add(new Vector2(0, 1));
             uvs.Add(new Vector2(1, 1));
             uvs.Add(new Vector2(1, 0));
-            uvs.Add(new Vector2(0, 1));
-        }
-
-        public static void AddQuad(List<Vector3> vertices,
-                                   List<int> triangles,
-                                   List<Vector2> uvs,
-                                   Vector3 bl, int trIndex,
-                                   int brIndex, Vector3 tl)
-        {
-            int baseIndex = vertices.Count;
-
-            vertices.Add(bl);
-            vertices.Add(tl);
-
-            triangles.Add(0 + baseIndex);
-            triangles.Add(trIndex);
-            triangles.Add(brIndex);
-            triangles.Add(trIndex);
-            triangles.Add(0 + baseIndex);
-            triangles.Add(1 + baseIndex);
-
-            uvs.Add(new Vector2(0, 0));
-            uvs.Add(new Vector2(0, 1));
-        }
-
-        public static void AddCircle(List<Vector3> vertices,
-                                     List<int> triangles,
-                                     List<Vector3> normals,
-                                     List<Vector2> uvs,
-                                     Vector3 center, float radius)
-        {
-            Vector3 bl = new Vector3(center.x - radius, center.y - radius, center.z);
-            Vector3 tl = new Vector3(center.x - radius, center.y + radius, center.z);
-            Vector3 tr = new Vector3(center.x + radius, center.y + radius, center.z);
-            Vector3 br = new Vector3(center.x + radius, center.y - radius, center.z);
-
-            MeshBuilder.AddQuad(vertices, triangles,
-                                normals, uvs,
-                                bl, tr, br, tl);
-        }
-
-        public static void CreateLineMesh(List<Vector3> positions,
-                                           float width,
-                                           bool connectStart,
-                                           bool connectEnd,
-                                           List<Vector3> vertices,
-                                           List<int> triangles,
-                                           List<Vector2> uv,
-                                           List<Vector3> jointVertices,
-                                           List<int> jointTriangles,
-                                           List<Vector2> jointUv,
-                                           float z = 0f)
-        {
-            var normals = new List<Vector3>();
-            var jointNormals = new List<Vector3>();
-            var useZ = !z.Equals(0f);
-
-            for (int i = 1; i < positions.Count; ++i)
-            {
-                var p0 = positions[i - 1];
-                var p1 = positions[i];
-
-                if (useZ)
-                {
-                    p0 = new Vector3(p0.x, p0.y, z);
-                    p1 = new Vector3(p1.x, p1.y, z);
-                }
-
-                if (i == 1 && connectStart)
-                {
-                    AddCircle(jointVertices, jointTriangles, jointNormals, jointUv,
-                              p0, width);
-                }
-
-                {
-                    Vector3 line = p0 - p1;
-                    Vector3 normal = new Vector3(-line.y, line.x, 0.0f).normalized;
-
-                    Vector3 bl = p1 - width * normal;
-                    Vector3 tl = p1 + width * normal;
-                    Vector3 tr = p0 + width * normal;
-                    Vector3 br = p0 - width * normal;
-
-                    MeshBuilder.AddQuad(vertices, triangles, normals,
-                                        uv, bl, tr, br, tl);
-                }
-
-                if (i < positions.Count - 1 || connectEnd)
-                {
-                    AddCircle(jointVertices, jointTriangles, jointNormals, jointUv,
-                              p1, width);
-                }
-            }
-        }
-
-        public static Tuple<Mesh, Mesh> CreateLineMesh(List<Vector3> positions,
-                                                       float width,
-                                                       bool connectStart = false,
-                                                       bool connectEnd = false)
-        {
-            var vertices = new List<Vector3>();
-            var triangles = new List<int>();
-            var uv = new List<Vector2>();
-
-            var jointVertices = new List<Vector3>();
-            var jointTriangles = new List<int>();
-            var jointUv = new List<Vector2>();
-
-            CreateLineMesh(positions, width, connectStart, connectEnd, vertices,
-                          triangles, uv, jointVertices, jointTriangles, jointUv);
-
-            var mesh = new Mesh
-            {
-                vertices = vertices.ToArray(),
-                triangles = triangles.ToArray(),
-                uv = uv.ToArray(),
-            };
-
-            var jointMesh = new Mesh
-            {
-                vertices = jointVertices.ToArray(),
-                triangles = jointTriangles.ToArray(),
-                uv = jointUv.ToArray(),
-            };
-
-            mesh.RecalculateNormals();
-            jointMesh.RecalculateNormals();
-
-            return new Tuple<Mesh, Mesh>(mesh, jointMesh);
         }
 
         public static void AddQuadraticBezierCurve(List<Vector3> points,
-                                                   Vector2 startPt, Vector2 endPt, Vector2 controlPt,
-                                                   int segments = 15)
+                                                   Vector2 startPt, Vector2 endPt,
+                                                   Vector2 controlPt,
+                                                   int segments = 15,
+                                                   float z = 0f)
         {
             Debug.Assert(segments > 0, "segment count must be positive!");
             points.Add(startPt);
@@ -203,10 +61,12 @@ namespace Transidious
             var tStep = 1f / segments;
             for (float t = tStep; t < 1f; t += tStep)
             {
-                var x = (1 - t) * (1 - t) * startPt.x + 2 * (1 - t) * t * controlPt.x + t * t * endPt.x;
-                var y = (1 - t) * (1 - t) * startPt.y + 2 * (1 - t) * t * controlPt.y + t * t * endPt.y;
+                var x = (1 - t) * (1 - t) * startPt.x + 2 * (1 - t) * t * controlPt.x
+                    + t * t * endPt.x;
+                var y = (1 - t) * (1 - t) * startPt.y + 2 * (1 - t) * t * controlPt.y
+                    + t * t * endPt.y;
 
-                points.Add(new Vector3(x, y));
+                points.Add(new Vector3(x, y, z));
             }
 
             points.Add(endPt);
@@ -215,7 +75,7 @@ namespace Transidious
         public static void AddCubicBezierCurve(List<Vector3> points,
                                                Vector2 startPt, Vector2 endPt,
                                                Vector2 controlPt1, Vector2 controlPt2,
-                                               int segments = 15)
+                                               int segments = 15, float z = 0f)
         {
             Debug.Assert(segments > 0, "segment count must be positive!");
             points.Add(startPt);
@@ -228,64 +88,238 @@ namespace Transidious
                 var B2_t = 3 * Mathf.Pow(t, 2) * (1 - t);
                 var B3_t = Mathf.Pow(t, 3);
 
-                var x = (B0_t * startPt.x) + (B1_t * controlPt1.x) + (B2_t * controlPt2.x) + (B3_t * endPt.x);
-                var y = (B0_t * startPt.y) + (B1_t * controlPt1.y) + (B2_t * controlPt2.y) + (B3_t * endPt.y);
+                var x = (B0_t * startPt.x) + (B1_t * controlPt1.x) + (B2_t * controlPt2.x)
+                    + (B3_t * endPt.x);
+                var y = (B0_t * startPt.y) + (B1_t * controlPt1.y) + (B2_t * controlPt2.y)
+                    + (B3_t * endPt.y);
 
-                points.Add(new Vector3(x, y));
+                points.Add(new Vector3(x, y, z));
             }
 
             points.Add(endPt);
         }
 
+        public static int AddSmoothIntersection(IReadOnlyList<Vector3> positions,
+                                                int i,
+                                                List<Vector3> vertices,
+                                                List<int> triangles,
+                                                List<Vector2> uvs,
+                                                float radius,
+                                                int segments,
+                                                float z,
+                                                bool useZ,
+                                                int connectionOffset)
+        {
+            var baseIndex = vertices.Count;
+            var p0 = positions[i - 2];
+            var p1 = positions[i - 1];
+            var p2 = positions[i];
+
+            var angleDeg = Vector2.SignedAngle(p1 - p0, p2 - p1);
+
+            var cmp = angleDeg.CompareTo(0f);
+            if (cmp == 0)
+            {
+                return 0;
+            }
+
+            var goesRight = cmp < 0;
+
+            int fromIdx, toIdx;
+            if (goesRight)
+            {
+                // Bottom left of current quad.
+                toIdx = baseIndex - 4;
+
+                // Top left of previous quad.
+                fromIdx = baseIndex - 4 - connectionOffset - 3;
+            }
+            else
+            {
+                // Bottom right of current quad.
+                toIdx = baseIndex - 1;
+
+                // Top right of previous quad.
+                fromIdx = baseIndex - 4 - connectionOffset - 2;
+            }
+
+            var circleSegmentWidth = 2.5f;
+            var totalCircumference = 2 * Mathf.PI * radius;
+            var angleDiffDeg = Vector2.Angle(p1 - p0, p2 - p1);
+            var circumference = totalCircumference * (angleDiffDeg / 360f);
+            var neededSegments = (int)Mathf.Floor(circumference / circleSegmentWidth);
+
+            var center = p1;
+            var centerIdx = vertices.Count;
+            vertices.Add(new Vector3(center.x, center.y, useZ ? z : 0f));
+
+            // Just add a straight line, the connection is too short to notice.
+            if (true || neededSegments <= 1)
+            {
+                // Clockwise
+                triangles.Add(centerIdx);
+
+                if (goesRight)
+                {
+                    triangles.Add(fromIdx);
+                    triangles.Add(toIdx);
+                }
+                else
+                {
+                    triangles.Add(toIdx);
+                    triangles.Add(fromIdx);
+                }
+
+#if DEBUG
+                circleVerts += 3;
+#endif
+
+                return 1;
+            }
+
+            var prevAngleRad = Math.toRadians(Vector2.Angle(Vector2.right, p1 - p0));
+            var stepDeg = angleDiffDeg / neededSegments;
+            var stepRad = Math.toRadians(stepDeg);
+            baseIndex = vertices.Count;
+
+            for (var j = 1; j < neededSegments; ++j)
+            {
+                // x = cx + r * cos(a)
+                // y = cy + r * sin(a)
+                var nextAngle = prevAngleRad + j * stepRad;
+                var x = center.x + radius * Mathf.Cos(nextAngle);
+                var y = center.y + radius * Mathf.Sin(nextAngle);
+
+                vertices.Add(new Vector3(x, y, z));
+            }
+
+            for (var j = 0; j < neededSegments; ++j)
+            {
+                int idx0, idx1;
+                if (j == 0)
+                {
+                    idx0 = fromIdx;
+                    idx1 = baseIndex + j;
+                }
+                else if (j == neededSegments - 1)
+                {
+                    idx0 = baseIndex + j;
+                    idx1 = toIdx;
+                }
+                else
+                {
+                    idx0 = baseIndex + j;
+                    idx1 = baseIndex + j + 1;
+                }
+
+                triangles.Add(centerIdx);
+
+                if (goesRight)
+                {
+                    triangles.Add(idx0);
+                    triangles.Add(idx1);
+                }
+                else
+                {
+                    triangles.Add(idx1);
+                    triangles.Add(idx0);
+                }
+
+#if DEBUG
+                circleVerts += 3;
+#endif
+            }
+
+            return neededSegments;
+
+            // var fromAngle = Math.toRadians(Math.Angle(from, center));
+            // var toAngle = Math.toRadians(Math.Angle(center, to));
+
+            // var step = (toAngle - fromAngle) / segments;
+            // var steps = (int)((toAngle - fromAngle) / step);
+
+            //             var dir = to - from;
+            //             var middle = from + (dir * .5f);
+            //             var extendedMiddle = middle + (dir.normalized * radius);
+
+            //             var centerIdx = vertices.Count;
+            //             vertices.Add(center);
+
+            //             AddQuadraticBezierCurve(vertices, from, to, extendedMiddle, segments);
+
+            //             for (var i = centerIdx + 2; i < vertices.Count; ++i)
+            //             {
+            //                 triangles.Add(centerIdx);
+            //                 triangles.Add(i);
+            //                 triangles.Add(i - 1);
+
+            // #if DEBUG
+            //                 circleVerts += 3;
+            // #endif
+            //             }
+        }
+
         public static void AddCirclePart(List<Vector3> vertices,
                                          List<int> triangles,
                                          List<Vector2> uvs,
-                                         Vector3 from, Vector3 to,
-                                         float radius, Vector3 center,
-                                         int segments, float z, bool useZ)
+                                         Vector3 center,
+                                         float radius,
+                                         Vector2 direction,
+                                         int segments, float z)
         {
-            /*var fromAngle = Math.toRadians(Math.Angle(from, center));
-            var toAngle = Math.toRadians(Math.Angle(center, to));
-
-            float step = (toAngle - fromAngle) / segments;
-            int steps = (int)((toAngle - fromAngle) / step);*/
-
-            Vector3 p0 = Vector3.zero;
-            Vector3 p1 = Vector3.zero;
-
             var centerIdx = vertices.Count;
             vertices.Add(center);
-            uvs.Add(new Vector2(0, 0));
 
-            var lastIdx = 0;
+            var left = Vector2.Perpendicular(direction).normalized * radius;
+            var right = -left;
 
-            float twicePI = Mathf.PI * 2f;
-            for (int i = 0; i <= segments; ++i)
+            var leftIdx = vertices.Count;
+            vertices.Add(center + (Vector3)left);
+
+            var rightIdx = vertices.Count;
+            vertices.Add(center + (Vector3)right);
+
+            var beginAngleRad = Math.toRadians(Vector2.Angle(Vector2.right, left));
+            var stepRad = Mathf.PI / segments;
+            var baseIndex = vertices.Count;
+
+            for (var i = 1; i < segments; ++i)
             {
-                var x = center.x + (radius * Mathf.Cos(i * twicePI / segments));
-                var y = center.y + (radius * Mathf.Sin(i * twicePI / segments));
+                // x = cx + r * cos(a)
+                // y = cy + r * sin(a)
+                var nextAngle = beginAngleRad + i * stepRad;
+                var x = center.x + radius * Mathf.Cos(nextAngle);
+                var y = center.y + radius * Mathf.Sin(nextAngle);
 
-                p0 = p1;
-                p1 = new Vector3(x, y, useZ ? z : 0f);
+                vertices.Add(new Vector3(x, y, z));
+            }
 
+            for (var i = 0; i < segments; ++i)
+            {
+                int idx0, idx1;
                 if (i == 0)
                 {
-                    lastIdx = vertices.Count;
-                    vertices.Add(p1);
-                    uvs.Add(new Vector2(0, 0));
-
-                    continue;
+                    idx0 = leftIdx;
+                    idx1 = baseIndex + i;
+                }
+                else if (i == segments - 1)
+                {
+                    idx0 = baseIndex + i - 1;
+                    idx1 = rightIdx;
+                }
+                else
+                {
+                    idx0 = baseIndex + i - 1;
+                    idx1 = baseIndex + i;
                 }
 
-                var nextIdx = vertices.Count;
-                vertices.Add(p1);
-                uvs.Add(new Vector2(0, 0));
-
                 triangles.Add(centerIdx);
-                triangles.Add(nextIdx);
-                triangles.Add(lastIdx);
+                triangles.Add(idx1);
+                triangles.Add(idx0);
 
-                lastIdx = nextIdx;
+#if DEBUG
+                circleVerts += 3;
+#endif
             }
         }
 
@@ -304,13 +338,16 @@ namespace Transidious
                                             bool useZ,
                                             PolygonCollider2D collider,
                                             Vector2[] colliderPath,
-                                            float offset)
+                                            float offset,
+                                            ref int connectionOffset,
+                                            ref int quads)
         {
             var p0 = positions[i - 1];
             var p1 = positions[i];
 
             if (p0.Equals(Vector3.positiveInfinity) || p1.Equals(Vector3.positiveInfinity))
             {
+                connectionOffset = 0;
                 return;
             }
 
@@ -323,10 +360,10 @@ namespace Transidious
             Vector3 line = p0 - p1;
             Vector3 normal = new Vector3(-line.y, line.x, 0f).normalized;
 
-            Vector3 bl = p1 - endWidth * normal;
-            Vector3 tl = p1 + endWidth * normal;
-            Vector3 tr = p0 + startWidth * normal;
-            Vector3 br = p0 - startWidth * normal;
+            Vector3 tr = p1 + endWidth * normal;
+            Vector3 tl = p1 - endWidth * normal;
+            Vector3 br = p0 + startWidth * normal;
+            Vector3 bl = p0 - startWidth * normal;
 
             if (!offset.Equals(0f))
             {
@@ -348,12 +385,12 @@ namespace Transidious
                     colliderPath[i - 1] = br;
 
                     // Add left side to backward path.
-                    colliderPath[colliderPath.Length - i] = tr;
+                    colliderPath[colliderPath.Length - i] = bl;
 
                     if (i == positions.Count - 1)
                     {
                         // Add right side to forward path.
-                        colliderPath[i] = bl;
+                        colliderPath[i] = tr;
 
                         // Add left side to backward path.
                         colliderPath[i + 1] = tl;
@@ -363,17 +400,117 @@ namespace Transidious
 
             if (i == 1 && startCap)
             {
-                AddCirclePart(vertices, triangles, uv, br, tr, startWidth, p0,
-                              cornerVertices, z, useZ);
+                AddCirclePart(vertices, triangles, uv, p0, startWidth, -line, 10, z);
             }
 
-            MeshBuilder.AddQuad(vertices, triangles, normals,
-                                uv, bl, tr, br, tl);
+            AddQuad(vertices, triangles, normals, uv, bl, tr, br, tl);
+            ++quads;
 
-            if (i < positions.Count - 1 || endCap)
+            if (i > 1 && i < positions.Count - 1 && quads > 1)
             {
-                AddCirclePart(vertices, triangles, uv, bl, tl, endWidth, p1,
-                              cornerVertices, z, useZ);
+                connectionOffset = AddSmoothIntersection(positions, i, vertices, triangles, uv,
+                                                         endWidth, cornerVertices,
+                                                         z, useZ, connectionOffset);
+            }
+            else if (i == positions.Count - 1 && endCap)
+            {
+                AddCirclePart(vertices, triangles, uv, p1, endWidth, line, 10, z);
+            }
+        }
+
+        static void CreateSmoothLine_AddQuadNew(IReadOnlyList<Vector3> positions,
+                                                int i,
+                                                float startWidth,
+                                                float endWidth,
+                                                bool startCap,
+                                                bool endCap,
+                                                List<Vector3> vertices,
+                                                List<int> triangles,
+                                                List<Vector2> uv,
+                                                List<Vector3> normals,
+                                                int cornerVertices,
+                                                float z,
+                                                bool useZ,
+                                                PolygonCollider2D collider,
+                                                Vector2[] colliderPath,
+                                                float offset)
+        {
+            var p0 = positions[i - 1];
+            var p1 = positions[i];
+
+            if (p0.Equals(Vector3.positiveInfinity) || p1.Equals(Vector3.positiveInfinity))
+            {
+                return;
+            }
+
+            if (useZ)
+            {
+                p0 = new Vector3(p0.x, p0.y, z);
+                p1 = new Vector3(p1.x, p1.y, z);
+            }
+
+            var baseIndex = vertices.Count;
+            Vector3 line = p0 - p1;
+            Vector3 normal = new Vector3(-line.y, line.x, 0f).normalized;
+
+            Vector3 tr = p1 + endWidth * normal;
+            Vector3 tl = p1 - endWidth * normal;
+
+            Vector3 bl, br;
+            if (baseIndex == 0)
+            {
+                br = p0 + startWidth * normal;
+                bl = p0 - startWidth * normal;
+            }
+            else
+            {
+                br = vertices[baseIndex - 2];
+                bl = vertices[baseIndex - 3];
+            }
+
+            if (!offset.Equals(0f))
+            {
+                p0 += offset * normal;
+                p1 += offset * normal;
+
+                bl += offset * normal;
+                tl += offset * normal;
+                tr += offset * normal;
+                br += offset * normal;
+            }
+
+            if (colliderPath != null)
+            {
+                var angle = Math.Angle(Vector2.down, normal);
+                if (!angle.Equals(0f))
+                {
+                    // Add right side to forward path.
+                    colliderPath[i - 1] = br;
+
+                    // Add left side to backward path.
+                    colliderPath[colliderPath.Length - i] = bl;
+
+                    if (i == positions.Count - 1)
+                    {
+                        // Add right side to forward path.
+                        colliderPath[i] = tr;
+
+                        // Add left side to backward path.
+                        colliderPath[i + 1] = tl;
+                    }
+                }
+            }
+
+            if (i == 1 && startCap)
+            {
+                // AddCirclePart(vertices, triangles, uv, p0, startWidth, -line, 10, z);
+            }
+
+            AddQuad(vertices, triangles, normals, uv, bl, tr, br, tl);
+
+            if (i == positions.Count - 1 && endCap)
+            {
+                // AddCirclePart(vertices, triangles, uv, p1, endWidth, line, 10, z);
             }
         }
 
@@ -395,14 +532,20 @@ namespace Transidious
             Vector2[] colliderPath = null;
             if (collider != null)
             {
-                colliderPath = Enumerable.Repeat(Vector2.positiveInfinity, positions.Count * 2).ToArray();
+                colliderPath = Enumerable.Repeat(
+                    Vector2.positiveInfinity, positions.Count * 2).ToArray();
             }
+
+            var connectionOffset = 0;
+            var quads = 0;
 
             for (int i = 1; i < positions.Count; ++i)
             {
-                CreateSmoothLine_AddQuad(positions, i, width, width, startCap, endCap, vertices,
-                                         triangles, uv, normals, cornerVertices, z, useZ,
-                                         collider, colliderPath, offset);
+                CreateSmoothLine_AddQuad(positions, i, width, width,
+                                         startCap, endCap, vertices,
+                                         triangles, uv, normals, cornerVertices, z,
+                                         useZ, collider, colliderPath, offset,
+                                         ref connectionOffset, ref quads);
             }
 
             if (collider != null)
@@ -430,19 +573,25 @@ namespace Transidious
 
             var normals = new List<Vector3>();
             var useZ = !z.Equals(float.NaN);
+            z = useZ ? z : 0f;
 
             Vector2[] colliderPath = null;
             if (collider != null)
             {
-                colliderPath = Enumerable.Repeat(Vector2.positiveInfinity, positions.Count * 2).ToArray();
+                colliderPath = Enumerable.Repeat(
+                    Vector2.positiveInfinity, positions.Count * 2).ToArray();
             }
+
+            var connectionOffset = 0;
+            var quads = 0;
 
             for (int i = 1; i < positions.Count; ++i)
             {
                 CreateSmoothLine_AddQuad(positions, i, widths[i - 1], widths[i],
                                          startCap, endCap, vertices,
-                                         triangles, uv, normals, cornerVertices, z, useZ,
-                                         collider, colliderPath, offset);
+                                         triangles, uv, normals, cornerVertices, z,
+                                         useZ, collider, colliderPath, offset,
+                                         ref connectionOffset, ref quads);
             }
 
             if (collider != null)
@@ -471,7 +620,7 @@ namespace Transidious
             {
                 vertices = vertices.ToArray(),
                 triangles = triangles.ToArray(),
-                uv = uv.ToArray(),
+                // uv = uv.ToArray(),
             };
 
             mesh.RecalculateNormals();
@@ -496,11 +645,110 @@ namespace Transidious
             {
                 vertices = vertices.ToArray(),
                 triangles = triangles.ToArray(),
-                uv = uv.ToArray(),
+                // uv = uv.ToArray(),
             };
 
             mesh.RecalculateNormals();
             return mesh;
+        }
+
+        static void AddColliderPart(IReadOnlyList<Vector3> positions,
+                                    Vector2[] colliderPath, int i,
+                                    float startWidth, float endWidth,
+                                    float offset)
+        {
+            var p0 = positions[i - 1];
+            var p1 = positions[i];
+
+            if (p0.Equals(Vector3.positiveInfinity) || p1.Equals(Vector3.positiveInfinity))
+            {
+                return;
+            }
+
+            Vector3 line = p0 - p1;
+            Vector3 normal = new Vector3(-line.y, line.x, 0f).normalized;
+
+            var tr = p1 + endWidth * normal;
+            var tl = p1 - endWidth * normal;
+            var br = p0 + startWidth * normal;
+            var bl = p0 - startWidth * normal;
+
+            if (!offset.Equals(0f))
+            {
+                p0 += offset * normal;
+                p1 += offset * normal;
+
+                bl += offset * normal;
+                tl += offset * normal;
+                tr += offset * normal;
+                br += offset * normal;
+            }
+
+            var angle = Math.Angle(Vector2.down, normal);
+            if (!angle.Equals(0f))
+            {
+                // Add right side to forward path.
+                colliderPath[i - 1] = br;
+
+                // Add left side to backward path.
+                colliderPath[colliderPath.Length - i] = bl;
+
+                if (i == positions.Count - 1)
+                {
+                    // Add right side to forward path.
+                    colliderPath[i] = tr;
+
+                    // Add left side to backward path.
+                    colliderPath[i + 1] = tl;
+                }
+            }
+        }
+
+        public static void CreateLineCollider(IReadOnlyList<Vector3> positions,
+                                              IReadOnlyList<float> widths,
+                                              PolygonCollider2D collider,
+                                              float offset = 0f)
+        {
+            var colliderPath = Enumerable.Repeat(
+                Vector2.positiveInfinity, positions.Count * 2).ToArray();
+
+            for (int i = 1; i < positions.Count; ++i)
+            {
+                var startWidth = widths[i - 1];
+                var endWidth = widths[i];
+
+                AddColliderPart(positions, colliderPath, i, startWidth, endWidth, offset);
+            }
+
+            if (collider != null)
+            {
+                var prevPathCount = collider.pathCount;
+                collider.pathCount = prevPathCount + 1;
+                collider.SetPath(prevPathCount,
+                    colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray());
+            }
+        }
+
+        public static void CreateLineCollider(IReadOnlyList<Vector3> positions,
+                                              float width,
+                                              PolygonCollider2D collider,
+                                              float offset = 0f)
+        {
+            var colliderPath = Enumerable.Repeat(
+                Vector2.positiveInfinity, positions.Count * 2).ToArray();
+
+            for (int i = 1; i < positions.Count; ++i)
+            {
+                AddColliderPart(positions, colliderPath, i, width, width, offset);
+            }
+
+            if (collider != null)
+            {
+                var prevPathCount = collider.pathCount;
+                collider.pathCount = prevPathCount + 1;
+                collider.SetPath(prevPathCount,
+                    colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray());
+            }
         }
 
         static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
@@ -617,7 +865,7 @@ namespace Transidious
                 var p2 = positions[i];
                 var p1 = positions[i - 1];
 
-                var angle = Math.PointAngle(p2, p1);
+                var angle = Math.PointAngleDeg(p2, p1);
                 if (i == 1)
                 {
                     prevAngle = angle;
@@ -728,11 +976,11 @@ namespace Transidious
         }
 
         public static List<Vector3> RemoveDetailByDistance(IReadOnlyList<Vector3> positions,
-                                                           float minDistance = -1f)
+                                                           float minDistance = 5f)
         {
-            if (minDistance.Equals(-1f))
+            if (positions.Count <= 2)
             {
-                minDistance = 5f * Map.Meters;
+                return positions.ToList();
             }
 
             float dist = 0f;
@@ -756,123 +1004,7 @@ namespace Transidious
             return newPositions;
         }
 
-        public static Mesh _CreateLine(List<Vector3> positions, float width)
-        {
-            var vertices = new List<Vector3>();
-            var triangles = new List<int>();
-            var normals = new List<Vector3>();
-            var uvs = new List<Vector2>();
-
-            var first = true;
-            Vector3 prevNormal = Vector3.zero;
-            Vector3 p0 = Vector3.zero;
-            Vector3 p1 = Vector3.zero;
-
-            for (var i = 1; i < positions.Count; ++i)
-            {
-                var pos = positions[i];
-                var prev = positions[i - 1];
-                var vec = pos - prev;
-
-                var normal = new Vector3(vec.y, -vec.x, 0f).normalized * width;
-                Vector3 realNormal;
-
-                if (first)
-                {
-                    p0 = prev + normal;
-                    p1 = prev - normal;
-                    realNormal = normal;
-                }
-                else
-                {
-                    realNormal = (normal.normalized + prevNormal.normalized).normalized * width;
-                }
-
-                var p2 = pos + realNormal;
-                var p3 = pos - realNormal;
-
-                AddQuad(vertices, triangles, normals, uvs, p3, p0, p1, p2);
-
-                first = false;
-                prevNormal = normal;
-                p0 = p2;
-                p1 = p3;
-            }
-
-            return new Mesh
-            {
-                vertices = vertices.ToArray(),
-                triangles = triangles.ToArray(),
-                normals = normals.ToArray(),
-                uv = uvs.ToArray()
-            };
-        }
-
-        public static Mesh CreateLine(List<Vector3> m_Points, float width)
-        {
-            Vector3 localViewPos = new Vector3(0f, 0f, 1f);
-            Vector3[] vertices = new Vector3[m_Points.Count * 2];
-            Vector3[] normals = new Vector3[m_Points.Count * 2];
-
-            Vector3 oldTangent = Vector3.zero;
-            Vector3 oldDir = Vector3.zero;
-
-            for (int i = 0; i < m_Points.Count - 1; i++)
-            {
-                Vector3 faceNormal = (localViewPos - m_Points[i]).normalized;
-                Vector3 dir = (m_Points[i + 1] - m_Points[i]);
-                Vector3 tangent = Vector3.Cross(dir, faceNormal).normalized;
-                Vector3 offset;
-                if (i == 0)
-                {
-                    offset = (oldTangent + tangent).normalized * width / 2.0f;
-                }
-                else
-                {
-                    float alpha = (Mathf.PI - Mathf.Acos(Vector3.Dot(oldDir.normalized, dir.normalized))) / 2;
-                    float d = width / 2.0f / Mathf.Sin(alpha);
-                    d *= -Mathf.Sign(Vector3.Dot(tangent.normalized, oldDir.normalized));
-                    offset = ((dir.normalized - oldDir.normalized) / 2).normalized * d;
-                }
-                vertices[i * 2] = m_Points[i] - offset;
-                vertices[i * 2 + 1] = m_Points[i] + offset;
-                normals[i * 2] = normals[i * 2 + 1] = faceNormal;
-
-                if (i == m_Points.Count - 2)
-                {
-                    // last two points
-                    vertices[i * 2 + 2] = m_Points[i + 1] - tangent * width / 2.0f;
-                    vertices[i * 2 + 3] = m_Points[i + 1] + tangent * width / 2.0f;
-                    normals[i * 2 + 2] = normals[i * 2 + 3] = faceNormal;
-                }
-
-                oldDir = dir;
-                oldTangent = tangent;
-            }
-
-            var m_Indices = new int[m_Points.Count * 2];
-            var m_UVs = new Vector2[m_Points.Count * 2];
-            for (int i = 0; i < m_Points.Count; i++)
-            {
-                m_Indices[i * 2] = i * 2;
-                m_Indices[i * 2 + 1] = i * 2 + 1;
-                m_UVs[i * 2] = m_UVs[i * 2 + 1] = new Vector2((float)i / (m_Points.Count - 1), 0);
-                m_UVs[i * 2 + 1].y = 1.0f;
-            }
-
-            var m_Mesh = new Mesh
-            {
-                vertices = vertices,
-                normals = normals,
-                uv = m_UVs,
-                triangles = m_Indices
-            };
-
-            m_Mesh.RecalculateBounds();
-            return m_Mesh;
-        }
-
-        public static Mesh PointsToMesh(Vector3[] points)
+        public static Mesh PointsToMeshFast(Vector3[] points)
         {
             int pointCount = points.Length;
             if (points.Last() == points.First())
@@ -893,6 +1025,14 @@ namespace Transidious
             msh.RecalculateBounds();
 
             return msh;
+        }
+
+        public static Mesh PointsToMesh(Vector3[] points)
+        {
+            var pslg = new PSLG();
+            pslg.AddOrderedVertices(points);
+
+            return TriangleAPI.CreateMesh(pslg);
         }
 
         public static Mesh ScaleMesh(Mesh mesh, float scale)
@@ -953,6 +1093,7 @@ namespace Transidious
                 var cross = Vector3.Cross(b - a, c - a);
                 if (cross.z > 0f)
                 {
+                    Debug.Log("had to fix");
                     int bIndex = triangles[i + 1];
                     triangles[i + 1] = triangles[i + 2];
                     triangles[i + 2] = bIndex;

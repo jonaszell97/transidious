@@ -51,9 +51,20 @@ namespace Transidious
             return degrees / (180f / Mathf.PI);
         }
 
-        public static float PointAngle(Vector3 p0, Vector3 p3)
+        public static float PointAngleDeg(Vector3 p0, Vector3 p3)
         {
             return Math.toDegrees((float)System.Math.Atan2(p3.y - p0.y, p3.x - p0.x));
+        }
+
+        public static float PointAngleRad(Vector3 p0, Vector3 p3)
+        {
+            return (float)System.Math.Atan2(p3.y - p0.y, p3.x - p0.x);
+        }
+
+        public static float AngleFromHorizontalAxis(Vector2 v)
+        {
+            var signedAngle = Vector2.SignedAngle(Vector2.right, v);
+            return (signedAngle + 360) % 360;
         }
 
         public static float Angle(Vector2 v1, Vector2 v2)
@@ -88,16 +99,16 @@ namespace Transidious
         {
             switch (dir)
             {
-                case CardinalDirection.North:
-                    return Vector3.up;
-                case CardinalDirection.South:
-                    return Vector3.down;
-                case CardinalDirection.East:
-                    return Vector3.right;
-                case CardinalDirection.West:
-                    return Vector3.left;
-                default:
-                    throw new System.ArgumentException(string.Format("Illegal enum value {0}", dir));
+            case CardinalDirection.North:
+                return Vector3.up;
+            case CardinalDirection.South:
+                return Vector3.down;
+            case CardinalDirection.East:
+                return Vector3.right;
+            case CardinalDirection.West:
+                return Vector3.left;
+            default:
+                throw new System.ArgumentException(string.Format("Illegal enum value {0}", dir));
             }
         }
 
@@ -105,16 +116,16 @@ namespace Transidious
         {
             switch (dir)
             {
-                case CardinalDirection.North:
-                    return CardinalDirection.South;
-                case CardinalDirection.South:
-                    return CardinalDirection.North;
-                case CardinalDirection.East:
-                    return CardinalDirection.West;
-                case CardinalDirection.West:
-                    return CardinalDirection.East;
-                default:
-                    throw new System.ArgumentException(string.Format("Illegal enum value {0}", dir));
+            case CardinalDirection.North:
+                return CardinalDirection.South;
+            case CardinalDirection.South:
+                return CardinalDirection.North;
+            case CardinalDirection.East:
+                return CardinalDirection.West;
+            case CardinalDirection.West:
+                return CardinalDirection.East;
+            default:
+                throw new System.ArgumentException(string.Format("Illegal enum value {0}", dir));
             }
         }
 
@@ -264,8 +275,8 @@ namespace Transidious
         public static bool EquivalentAngles(Vector2 A1, Vector2 A2, Vector2 B1, Vector2 B2,
                                             float tolerance = 0f)
         {
-            var angle1 = NormalizeAngle(PointAngle(A1, A2));
-            var angle2 = NormalizeAngle(PointAngle(B1, B2));
+            var angle1 = NormalizeAngle(PointAngleDeg(A1, A2));
+            var angle2 = NormalizeAngle(PointAngleDeg(B1, B2));
 
             var angleDiff = Mathf.Abs(angle1 - angle2);
             return angleDiff <= tolerance;

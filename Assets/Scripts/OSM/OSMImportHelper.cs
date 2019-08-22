@@ -320,14 +320,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -553,14 +545,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -786,14 +770,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -1019,14 +995,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -1252,14 +1220,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -1485,14 +1445,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -1718,14 +1670,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -1951,14 +1895,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -2184,14 +2120,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -2417,14 +2345,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -2650,14 +2570,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -2883,14 +2795,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -3116,14 +3020,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -3349,14 +3245,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -3582,14 +3470,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }
@@ -3815,14 +3695,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary));
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link));
-} else if (tags.Contains("highway", "path")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "service")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
-} else if (tags.Contains("highway", "footway")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.FootPath));
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River));
 }

@@ -44,14 +44,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12b8d10b407984cf7a8557c321d257d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  id: 0
   inputController: {fileID: 0}
   highlighted: 0
-  id: 0
   street: {fileID: 0}
   position: 0
   positions: []
+  drivablePositions: []
   cumulativeDistances: []
+  startIntersection: {fileID: 0}
+  endIntersection: {fileID: 0}
   length: 0
+  hasTramTracks: 0
   streetName: {fileID: 0}
   directionArrow: {fileID: 0}
   outlineMeshObj: {fileID: 0}

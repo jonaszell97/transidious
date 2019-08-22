@@ -21,8 +21,6 @@ enum StreetType {
     Link,
     Path,
     River,
-
-    FootPath,
 }
 
 class StreetInfo<let type: StreetType,
@@ -107,18 +105,18 @@ class DefaultArea : Area
         StreetInfo<.Link, [
             Tag<"highway", "tertiary_link">
         ]>,
-        StreetInfo<.FootPath, [
-            Tag<"highway", "path">
-        ]>,
-        StreetInfo<.FootPath, [
-            Tag<"highway", "service">
-        ]>,
-        StreetInfo<.FootPath, [
-            Tag<"highway", "track">
-        ]>,
-        StreetInfo<.FootPath, [
-            Tag<"highway", "footway">
-        ]>,
+        // StreetInfo<.Path, [
+        //     Tag<"highway", "path">
+        // ]>,
+        // StreetInfo<.Path, [
+        //     Tag<"highway", "service">
+        // ]>,
+        // StreetInfo<.Path, [
+        //     Tag<"highway", "track">
+        // ]>,
+        // StreetInfo<.Path, [
+        //     Tag<"highway", "footway">
+        // ]>,
         StreetInfo<.River, [
             Tag<"waterway", "river">
         ]>,

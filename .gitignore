@@ -1,6 +1,7 @@
 .idea/
 .history/
 iOS/
+Assets/NuGet
 
 # ignore OSM files
 /Resources/OSM

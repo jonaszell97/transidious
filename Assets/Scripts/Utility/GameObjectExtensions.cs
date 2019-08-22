@@ -49,6 +49,19 @@ namespace Transidious
             behaviour.StartCoroutine(RunNextFrameImpl(behaviour, callback));
         }
 
+#if DEBUG
+        public static void RunTimer(this MonoBehaviour behaviour,
+                                    string description,
+                                    System.Action callback)
+        {
+            var startTime = FrameTimer.instance.FrameDuration;
+            callback();
+
+            Debug.Log("Timer [" + description + "]: "
+                + (FrameTimer.instance.FrameDuration - startTime) + "ms");
+        }
+#endif
+
         public static void RemoveAllChildren(this GameObject obj)
         {
             for (int i = obj.transform.childCount - 1; i >= 0; --i)
@@ -87,7 +100,6 @@ namespace Transidious
 
     public static class Utility
     {
-
         public static T RandomElement<T>(System.Collections.Generic.List<T> coll)
         {
             return coll[UnityEngine.Random.Range(0, coll.Count)];

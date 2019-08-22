@@ -22,6 +22,7 @@ namespace Transidious
             public SerializableVector3 cameraStartingPos;
             public SerializableMesh2D[] boundaryMeshes;
             public NaturalFeature.SerializedFeature[] naturalFeatures;
+            public byte[] backgroundImage;
         }
 
         [Serializable]
@@ -38,7 +39,7 @@ namespace Transidious
 
         public static Map loadedMap;
 
-        static SerializedMap GetSerializedMap(Map map)
+        static SerializedMap GetSerializedMap(Map map, byte[] backgroundImage)
         {
             return new SerializedMap
             {
@@ -53,9 +54,10 @@ namespace Transidious
                 {
                     new SerializableMesh2D(map.boundaryBackgroundObj.GetComponent<MeshFilter>().mesh),
                     new SerializableMesh2D(map.boundaryOutlineObj.GetComponent<MeshFilter>().mesh),
-                    new SerializableMesh2D(map.boundarymaskObj.GetComponent<MeshFilter>().mesh),
+                    new SerializableMesh2D(map.boundaryMaskObj.GetComponent<MeshFilter>().mesh),
                 },
                 naturalFeatures = map.naturalFeatures.Select(r => r.Serialize()).ToArray(),
+                backgroundImage = backgroundImage,
             };
         }
 
@@ -76,9 +78,9 @@ namespace Transidious
             {
                 tiles = stiles,
                 buildings = map.buildings.Select(r => r.Serialize()).ToArray(),
-                streets = map.streets.Where(s => s.type != Street.Type.FootPath).Select(
+                streets = map.streets.Select(s => s.Serialize()).ToArray(),
+                streetIntersections = map.streetIntersections.Select(
                     s => s.Serialize()).ToArray(),
-                streetIntersections = map.streetIntersections.Select(s => s.Serialize()).ToArray(),
                 transitRoutes = map.transitRoutes.Select(r => r.Serialize()).ToArray(),
                 transitStops = map.transitStops.Select(r => r.Serialize()).ToArray(),
                 transitLines = map.transitLines.Select(r => r.Serialize()).ToArray(),
@@ -111,7 +113,7 @@ namespace Transidious
             }
         }
 
-        static void SaveMapToFile(Map map)
+        static void SaveMapToFile(Map map, byte[] backgroundImage)
         {
             string fileName = "Assets/Resources/Maps/";
             fileName += map.name;
@@ -120,14 +122,14 @@ namespace Transidious
             var formatter = new BinaryFormatter();
             using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
             {
-                var serializedMap = GetSerializedMap(map);
+                var serializedMap = GetSerializedMap(map, backgroundImage);
                 SerializeToStream(stream, serializedMap);
             }
         }
 
-        public static void SaveMapLayout(Map map)
+        public static void SaveMapLayout(Map map, byte[] backgroundImage = null)
         {
-            SaveMapToFile(map);
+            SaveMapToFile(map, backgroundImage);
         }
 
         public static void SaveMapData(Map map)
@@ -154,6 +156,11 @@ namespace Transidious
             var fileResource = (TextAsset)asyncResource.asset;
             var serializedMap = DeserializeFromStream<SerializedMap>(fileResource);
 
+            map.minX = serializedMap.minX;
+            map.maxX = serializedMap.maxX;
+            map.minY = serializedMap.minY;
+            map.maxY = serializedMap.maxY;
+
             map.UpdateBoundary(
                 serializedMap.boundaryMeshes[0].GetMesh(Map.Layer(MapLayer.Boundary)),
                 serializedMap.boundaryMeshes[1].GetMesh(Map.Layer(MapLayer.Foreground)),
@@ -174,10 +181,81 @@ namespace Transidious
             // Deserialize natural features.
             foreach (var feature in serializedMap.naturalFeatures)
             {
-                map.CreateFeature(feature.name, feature.type, feature.mesh.GetMesh());
+                NaturalFeature.Deserialize(map, feature);
             }
 
+            LoadBackgroundSprite(map, serializedMap.backgroundImage,
+                                 MapDisplayMode.Day,
+                                 ref map.backgroundSpriteDay);
+
+            LoadBackgroundSprite(map, serializedMap.backgroundImage,
+                                 MapDisplayMode.Night,
+                                 ref map.backgroundSpriteNight);
+
             // yield return LoadTiles(map, mapName, serializedMap.screenShotInfo);
+        }
+
+        static void LoadBackgroundSprite(Map map, byte[] bytes,
+                                         MapDisplayMode mode,
+                                         ref GameObject gameObject)
+        {
+            var tex = new Texture2D(0, 0, TextureFormat.RGB24, false);
+            if (!tex.LoadImage(bytes))
+            {
+                Debug.LogError("corrupted PNG file!");
+                return;
+            }
+
+            var buildingColor = Building.DefaultColor(mode);
+            var bgColor = map.GetDefaultBackgroundColor(mode);
+            var streetColor = StreetSegment.GetStreetColor(Street.Type.Primary,
+                RenderingDistance.Near, mode);
+            var streetOutlineColor = StreetSegment.GetBorderColor(Street.Type.Primary,
+                RenderingDistance.Near, mode);
+
+            for (var x = 0; x < tex.width; ++x)
+            {
+                for (var y = 0; y < tex.height; ++y)
+                {
+                    var pixel = tex.GetPixel(x, y);
+                    if (pixel.Equals(Color.white))
+                    {
+                        tex.SetPixel(x, y, bgColor);
+                    }
+                    else if (pixel.Equals(Color.black))
+                    {
+                        tex.SetPixel(x, y, buildingColor);
+                    }
+                    else if (pixel.Equals(Color.blue))
+                    {
+                        tex.SetPixel(x, y, streetColor);
+                    }
+                    else if (pixel.Equals(Color.red))
+                    {
+                        tex.SetPixel(x, y, streetOutlineColor);
+                    }
+                }
+            }
+
+            tex.Apply();
+
+            var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height),
+                                       new Vector2(0, 0), 100f);
+
+            gameObject.GetComponent<SpriteRenderer>().sprite = sprite;
+            gameObject.name = "LOD Background (" + mode.ToString() + ")";
+
+            var transform = gameObject.transform;
+            var spriteBounds = sprite.bounds;
+            var desiredWidth = map.width;
+            var desiredHeight = map.height;
+
+            transform.position = new Vector3(map.minX, map.minY, Map.Layer(MapLayer.Parks));
+            transform.localScale = new Vector3(desiredWidth / spriteBounds.size.x,
+                                               desiredHeight / spriteBounds.size.y,
+                                               1f);
+
+            gameObject.SetActive(false);
         }
 
         static IEnumerator LoadTiles(Map map, string mapName,
@@ -225,22 +303,21 @@ namespace Transidious
             var fileResource = (TextAsset)asyncResource.asset;
             if (fileResource == null)
             {
-                map.DoFinalize();
+                yield return map.DoFinalize();
                 yield break;
             }
 
             var saveFile = DeserializeFromStream<SaveFile>(fileResource);
-            var thresholdTime = 500; // 12;
+#if UNITY_EDITOR
+            var thresholdTime = 500;
+#else
+            var thresholdTime = 30;
+#endif
 
             // Deserialize buildings.
             foreach (var b in saveFile.buildings)
             {
-                Mesh mesh = b.mesh.GetMesh();
-                var building = map.CreateBuilding(b.type, mesh, b.name, b.number,
-                                                  b.position.ToVector());
-
-                building.streetID = b.streetID;
-                building.number = b.number;
+                Building.Deserialize(map, b);
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
@@ -251,17 +328,13 @@ namespace Transidious
             // Deserialize raw intersections without their intersecting streets.
             foreach (var inter in saveFile.streetIntersections)
             {
-                map.CreateIntersection(inter.position.ToVector(), inter.id);
+                StreetIntersection.Deserialize(map, inter);
             }
 
             // Deserialize streets along with their segments.
             foreach (var street in saveFile.streets)
             {
-                var s = map.CreateStreet(street.name, street.type, street.lit,
-                                         street.oneway, street.maxspeed,
-                                         street.lanes, street.id);
-
-                s.Deserialize(street);
+                Street.Deserialize(map, street);
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
@@ -272,31 +345,33 @@ namespace Transidious
             // Deserialize raw routes without stops or lines.
             foreach (var route in saveFile.transitRoutes)
             {
-                map.CreateRoute(route.id);
+                map.CreateRoute(route.mapObject.id);
             }
 
             // Deserialize raw routes without routes.
             foreach (var stop in saveFile.transitStops)
             {
-                map.GetOrCreateStop(stop.name, stop.position, stop.id);
+                map.GetOrCreateStop(stop.mapObject.name, stop.position,
+                                    stop.mapObject.id);
             }
 
             // Deserialize raw routes without stops or routes.
             foreach (var line in saveFile.transitLines)
             {
-                map.CreateLine(line.type, line.name, line.color.ToColor(), line.id).Finish();
+                map.CreateLine(line.type, line.mapObject.name, line.color,
+                               line.mapObject.id).Finish();
             }
 
             // Connect stops with their lines.
             foreach (var stop in saveFile.transitStops)
             {
-                map.GetMapObject<Stop>(stop.id).Deserialize(stop, map);
+                map.GetMapObject<Stop>(stop.mapObject.id).Deserialize(stop, map);
             }
 
             // Connect routes with streets and initialize the meshes.
             foreach (var route in saveFile.transitRoutes)
             {
-                map.GetMapObject<Route>(route.id).Deserialize(route, map);
+                map.GetMapObject<Route>(route.mapObject.id).Deserialize(route, map);
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
@@ -307,7 +382,7 @@ namespace Transidious
             // Connect lines with their routes.
             foreach (var line in saveFile.transitLines)
             {
-                var createdLine = map.GetMapObject<Line>(line.id);
+                var createdLine = map.GetMapObject<Line>(line.mapObject.id);
                 createdLine.Deserialize(line, map);
             }
 
@@ -326,10 +401,8 @@ namespace Transidious
                 }
             }
 
-            yield return null;
-
             // Finalize the map.
-            map.DoFinalize();
+            yield return map.DoFinalize(thresholdTime);
         }
 
         public static IEnumerator LoadSave(GameController game, string saveName)
@@ -343,6 +416,7 @@ namespace Transidious
 
             var map = mapObj.GetComponent<Map>();
             map.input = game.input;
+            map.isLoadedFromSaveFile = true;
             loadedMap = map;
 
             yield return LoadMap(map, saveName);

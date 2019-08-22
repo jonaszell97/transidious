@@ -33,8 +33,7 @@ namespace Transidious
         [System.Serializable]
         public struct SerializedLine
         {
-            public string name;
-            public int id;
+            public SerializableMapObject mapObject;
 
             public TransitType type;
             public SerializableColor color;
@@ -101,8 +100,9 @@ namespace Transidious
             }
         }
 
-        public void Initialize(Map map, string name, TransitType type, Color color)
+        public void Initialize(Map map, string name, TransitType type, Color color, int id)
         {
+            base.Initialize(Kind.Line, id);
             this.map = map;
             this.name = name;
             this.color = color;
@@ -190,12 +190,11 @@ namespace Transidious
             wasModified = false;
         }
 
-        public SerializedLine Serialize()
+        public new SerializedLine Serialize()
         {
             return new SerializedLine
             {
-                id = id,
-                name = name,
+                mapObject = base.Serialize(),
 
                 type = type,
                 color = new SerializableColor(color),
@@ -208,6 +207,8 @@ namespace Transidious
 
         public void Deserialize(SerializedLine line, Map map)
         {
+            base.Deserialize(line.mapObject);
+
             this.map = map;
             stops = line.stopIDs.Select(id => map.GetMapObject<Stop>(id)).ToList();
             routes = line.routeIDs.Select(id => map.GetMapObject<Route>(id)).ToList();

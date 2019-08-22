@@ -13,7 +13,7 @@ namespace Transidious
         [System.Serializable]
         public struct SerializedRoute
         {
-            public int id;
+            public SerializableMapObject mapObject;
             public int lineID;
             public SerializableVector2[] positions;
             public Path.SerializedPath path;
@@ -57,9 +57,11 @@ namespace Transidious
         MeshFilter meshFilter;
         public MeshRenderer meshRenderer;
 
-        public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector3> positions, bool isBackRoute = false)
+        public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector3> positions,
+                               bool isBackRoute = false, int id = -1)
         {
-            base.inputController = line.map.input;
+            base.Initialize(Kind.Line, id);
+
             this.line = line;
             this.positions = positions;
             this.beginStop = beginStop;
@@ -91,6 +93,11 @@ namespace Transidious
 
         void OnDestroy()
         {
+            if (streetSegmentOffsetMap == null)
+            {
+                return;
+            }
+
             foreach (var entry in streetSegmentOffsetMap)
             {
                 foreach (var seg in entry.Value)
@@ -171,9 +178,10 @@ namespace Transidious
 
         public void UpdateMesh(Mesh mesh, List<Vector3> newPositions, List<float> newWidths)
         {
-            GetComponent<MeshFilter>().mesh = mesh;
+            this.mesh = mesh;
             overlapAwarePositions = newPositions;
             overlapAwareWidths = newWidths;
+            UpdateMesh();
         }
 
         public DateTime NextDeparture(DateTime after)
@@ -362,21 +370,50 @@ namespace Transidious
 
         void UpdateMesh()
         {
+            return;
             if (isBackRoute && !line.map.input.renderBackRoutes)
             {
                 return;
             }
 
-            meshFilter.mesh = mesh;
-            meshRenderer.sharedMaterial = line.material;
-            transform.position = new Vector3(transform.position.x,
-                                             transform.position.y,
-                                             Map.Layer(MapLayer.TransitLines));
-        }
+            if (!name.Contains("M45") && !name.Contains("309"))
+            {
+                return;
+            }
 
-        public void UpdateScale()
-        {
+            var lineRenderer = GetComponent<LineRenderer>();
+            lineRenderer.enabled = true;
+            lineRenderer.numCornerVertices = 5;
+            lineRenderer.sharedMaterial = line.material;
+            lineRenderer.positionCount = CurrentPositions.Count;
+            lineRenderer.SetPositions(CurrentPositions.Select(
+                v => new Vector3(v.x, v.y, Map.Layer(MapLayer.TransitLines))).ToArray());
 
+            if (true || CurrentWidths == null)
+            {
+                lineRenderer.startWidth = line.LineWidth * 2f;
+                lineRenderer.endWidth = line.LineWidth * 2f;
+
+                return;
+            }
+
+            var curve = new AnimationCurve();
+            var time = 0f;
+            var timeStep = 1f / (CurrentWidths.Count - 1);
+
+            foreach (var width in CurrentWidths)
+            {
+                curve.AddKey(time, width);
+                time += timeStep;
+            }
+
+            lineRenderer.widthCurve = curve;
+
+            // meshFilter.mesh = mesh;
+            // meshRenderer.sharedMaterial = line.material;
+            // transform.position = new Vector3(transform.position.x,
+            //                                  transform.position.y,
+            //                                  Map.Layer(MapLayer.TransitLines));
         }
 
         void Awake()
@@ -385,11 +422,11 @@ namespace Transidious
             meshRenderer = GetComponent<MeshRenderer>();
         }
 
-        public SerializedRoute Serialize()
+        public new SerializedRoute Serialize()
         {
             return new SerializedRoute
             {
-                id = id,
+                mapObject = base.Serialize(),
                 lineID = line.id,
 
                 positions = positions?.Select(v => new SerializableVector2(v)).ToArray() ?? null,
@@ -418,6 +455,8 @@ namespace Transidious
 
         public void Deserialize(SerializedRoute route, Map map)
         {
+            base.Deserialize(route.mapObject);
+
             Initialize(map.GetMapObject<Line>(route.lineID),
                        map.GetMapObject<Stop>(route.beginStopID),
                        map.GetMapObject<Stop>(route.endStopID),

@@ -9,11 +9,10 @@ namespace Transidious
         [System.Serializable]
         public struct SerializableBuilding
         {
-            public int id;
+            public SerializableMapObject mapObject;
             public SerializableMesh2D mesh;
             public int streetID;
             public string number;
-            public string name;
             public Type type;
             public SerializableVector2 position;
         }
@@ -32,6 +31,7 @@ namespace Transidious
             GroceryStore,
         }
 
+        public Mesh mesh;
         public StreetSegment street;
         public int streetID;
         public string number;
@@ -43,8 +43,11 @@ namespace Transidious
         public Vector3 position;
 
         public void Initialize(Map map, Type type, StreetSegment street, string numberStr,
-                               Mesh mesh, string name = "", Vector3? position = null)
+                               Mesh mesh, string name = "", Vector3? position = null,
+                               int id = -1)
         {
+            base.Initialize(Kind.Building, id);
+
             this.type = type;
 
             if (position.HasValue)
@@ -61,6 +64,7 @@ namespace Transidious
             this.occupants = 0;
             this.capacity = GetDefaultCapacity(type);
             this.number = numberStr;
+            this.mesh = mesh;
 
             if (string.IsNullOrEmpty(name) && street != null)
             {
@@ -70,8 +74,6 @@ namespace Transidious
             {
                 this.name = name;
             }
-
-            UpdateMesh(map, mesh);
         }
 
         public void UpdateStreet(Map map)
@@ -120,22 +122,41 @@ namespace Transidious
                                         Map.Layer(MapLayer.Buildings));
         }
 
-        Color GetColor()
+        public Color GetColor()
+        {
+            return GetColor(type);
+        }
+
+        public static Color GetColor(Type type, MapDisplayMode mode = MapDisplayMode.Day)
         {
             switch (type)
             {
             default:
-                return new Color(223f / 255f, 226f / 255f, 231.8f / 255f);
+                return DefaultColor(mode);
             }
         }
 
-        public void UpdateMesh(Map map, Mesh mesh)
+        public static Color DefaultColor(MapDisplayMode mode)
         {
-            if (mesh == null)
+#if DEBUG
+            if (GameController.instance.ImportingMap)
             {
-                return;
+                return Color.black;
             }
+#endif
 
+            switch (mode)
+            {
+            case MapDisplayMode.Day:
+            default:
+                return new Color(.87f, .89f, .91f);
+            case MapDisplayMode.Night:
+                return new Color(.20f, .21f, .22f);
+            }
+        }
+
+        public void UpdateMesh(Map map)
+        {
             float layer = 0f;
             switch (type)
             {
@@ -144,28 +165,40 @@ namespace Transidious
                 break;
             }
 
-            var meshFilter = GetComponent<MeshFilter>();
-            var meshRenderer = GetComponent<MeshRenderer>();
-
-            meshFilter.mesh = mesh;
-            meshRenderer.material = GameController.GetUnlitMaterial(GetColor());
-            meshRenderer.transform.position = new Vector3(meshRenderer.transform.position.x,
-                                                          meshRenderer.transform.position.y,
-                                                          layer);
+            foreach (var tile in map.GetTilesForObject(this))
+            {
+                tile.mesh.AddMesh(GetColor(), mesh, layer);
+            }
         }
 
-        public SerializableBuilding Serialize()
+        public void UpdateColor(MapDisplayMode mode)
+        {
+        }
+
+        public new SerializableBuilding Serialize()
         {
             return new SerializableBuilding
             {
-                id = id,
-                mesh = new SerializableMesh2D(GetComponent<MeshFilter>().mesh),
+                mapObject = base.Serialize(),
+                mesh = new SerializableMesh2D(mesh),
                 streetID = street?.id ?? 0,
                 number = number,
-                name = name,
                 type = type,
                 position = new SerializableVector2(position),
             };
+        }
+
+        public static Building Deserialize(Map map, SerializableBuilding b)
+        {
+            Mesh mesh = b.mesh.GetMesh();
+            var building = map.CreateBuilding(b.type, mesh, b.mapObject.name, b.number,
+                                              b.position.ToVector(), b.mapObject.id);
+
+            building.streetID = b.streetID;
+            building.number = b.number;
+            building.Deserialize(b.mapObject);
+
+            return building;
         }
 
         public override string ToString()

@@ -6,6 +6,12 @@ using System.Linq;
 
 namespace Transidious
 {
+    public enum MapDisplayMode
+    {
+        Day,
+        Night,
+    }
+
     public class GameController : MonoBehaviour
     {
         public enum GameStatus
@@ -24,6 +30,12 @@ namespace Transidious
             ///  The game is currently paused.
             /// </summary>
             Paused,
+
+            /// The map is being loaded.
+            Loading,
+
+            /// A map is being imported.
+            ImportingMap,
 
             /// The game controller is disabled.
             Disabled,
@@ -45,6 +57,9 @@ namespace Transidious
 
         /// The current game status.
         public GameStatus status;
+
+        /// The current map display mode.
+        public MapDisplayMode displayMode;
 
         /// The current game play mode.
         public MapEditorMode editorMode;
@@ -169,21 +184,7 @@ namespace Transidious
         public Sprite[] carSprites;
 
         /// The street direction arrow sprite.
-        public static Sprite _streetArrowSprite;
-        public static Sprite streetArrowSprite
-        {
-            get
-            {
-                if (_streetArrowSprite == null)
-                {
-                    var tex = Resources.Load("Sprites/arrow") as Texture2D;
-                    _streetArrowSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(tex.width / 2, tex.height / 2));
-
-                }
-
-                return _streetArrowSprite;
-            }
-        }
+        public Sprite streetArrowSprite;
 
         public Sprite squareSprite;
         public Sprite roundedRectSprite;
@@ -310,11 +311,36 @@ namespace Transidious
             }
         }
 
+        public bool ImportingMap
+        {
+            get
+            {
+                return status == GameStatus.ImportingMap;
+            }
+        }
+
+        public bool Loading
+        {
+            get
+            {
+                return status == GameStatus.Loading;
+            }
+        }
+
         public System.Collections.IEnumerator LoadMap(OSMImportHelper.Area area)
         {
+            this.status = GameStatus.Loading;
             yield return SaveManager.LoadSave(this, area.ToString());
             this.status = GameStatus.Playing;
             loadingScreen.gameObject.SetActive(false);
+
+            // #if UNITY_EDITOR
+            //             UnityEditor.EditorApplication.ExitPlaymode();
+            //             UnityEditor.SceneManagement.EditorSceneManager.SaveScene(
+            //                 UnityEngine.SceneManagement.SceneManager.GetActiveScene(), "Assets/Scenes/" +
+            //                 loadedMap.name + ".unity", true);
+            //             UnityEditor.EditorApplication.EnterPlaymode();
+            // #endif
         }
 
         void RegisterUICallbacks()
@@ -331,13 +357,12 @@ namespace Transidious
         {
             GameController._instance = this;
 
-            if (status == GameStatus.Disabled)
+            if (status == GameStatus.Disabled || status == GameStatus.ImportingMap)
             {
                 gameObject.SetActive(false);
                 return;
             }
 
-            this.status = GameStatus.MainMenu;
             this.lang = new Translator("en_US");
             this.editorMode = MapEditorMode.ViewMode;
             this.mapEditor.gameObject.SetActive(false);
@@ -387,13 +412,13 @@ namespace Transidious
         {
             switch (system)
             {
-                default:
-                case TransitType.Bus: return Translator.Get("transit:bus");
-                case TransitType.Tram: return Translator.Get("transit:tram");
-                case TransitType.Subway: return Translator.Get("transit:subway");
-                case TransitType.LightRail: return Translator.Get("transit:lightrail");
-                case TransitType.IntercityRail: return Translator.Get("transit:intercity");
-                case TransitType.Ferry: return Translator.Get("transit:ferry");
+            default:
+            case TransitType.Bus: return Translator.Get("transit:bus");
+            case TransitType.Tram: return Translator.Get("transit:tram");
+            case TransitType.Subway: return Translator.Get("transit:subway");
+            case TransitType.LightRail: return Translator.Get("transit:lightrail");
+            case TransitType.IntercityRail: return Translator.Get("transit:intercity");
+            case TransitType.Ferry: return Translator.Get("transit:ferry");
             }
         }
 
@@ -401,14 +426,14 @@ namespace Transidious
         {
             switch (editorMode)
             {
-                case MapEditorMode.BulldozeMode:
-                    ExitBulldozeMode();
-                    break;
-                case MapEditorMode.EditMode:
-                    ExitEditMode();
-                    break;
-                default:
-                    break;
+            case MapEditorMode.BulldozeMode:
+                ExitBulldozeMode();
+                break;
+            case MapEditorMode.EditMode:
+                ExitEditMode();
+                break;
+            default:
+                break;
             }
 
             this.editorMode = MapEditorMode.ViewMode;
@@ -463,8 +488,6 @@ namespace Transidious
             this.mapEditor.gameObject.SetActive(true);
             this.mapEditor.Activate();
             this.loadedMap.SetBackgroundColor(new Color(148f / 255f, 213f / 255f, 255f / 255f));
-            this.loadedMap.buildingMesh.gameObject.SetActive(false);
-            this.loadedMap.natureMesh.gameObject.SetActive(false);
 
             var dist = input.renderingDistance;
             this.input.UpdateRenderingDistance();
@@ -487,8 +510,6 @@ namespace Transidious
             this.mapEditor.gameObject.SetActive(false);
             this.mapEditor.Deactivate();
             this.loadedMap.ResetBackgroundColor();
-            this.loadedMap.buildingMesh.gameObject.SetActive(true);
-            this.loadedMap.natureMesh.gameObject.SetActive(true);
 
             var dist = input.renderingDistance;
             this.input.UpdateRenderingDistance();
@@ -584,14 +605,14 @@ namespace Transidious
         {
             switch (this.editorMode)
             {
-                case MapEditorMode.ViewMode:
-                    EnterTransitMode();
-                    break;
-                case MapEditorMode.TransitMode:
-                    ExitTransitMode();
-                    break;
-                default:
-                    break;
+            case MapEditorMode.ViewMode:
+                EnterTransitMode();
+                break;
+            case MapEditorMode.TransitMode:
+                ExitTransitMode();
+                break;
+            default:
+                break;
             }
         }
 

@@ -262,12 +262,12 @@ namespace Transidious
 
             if (zoomListenerID == -1)
             {
-                zoomListenerID = GameController.instance?.input?.RegisterEventListener(InputController.InputEvent.Zoom, (MapObject _) =>
+                zoomListenerID = GameController.instance?.input?.RegisterEventListener(InputEvent.Zoom, (MapObject _) =>
                 {
                     AdjustSize();
                     AdjustPosition();
                 }) ?? -1;
-                panListenerID = GameController.instance?.input?.RegisterEventListener(InputController.InputEvent.Pan, (MapObject _) =>
+                panListenerID = GameController.instance?.input?.RegisterEventListener(InputEvent.Pan, (MapObject _) =>
                 {
                     AdjustPosition();
                 }) ?? -1;

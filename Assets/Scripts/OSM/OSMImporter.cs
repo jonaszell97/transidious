@@ -77,8 +77,6 @@ namespace Transidious
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
-            GameController.instance.status = GameController.GameStatus.Paused;
-
             var mapPrefab = Resources.Load("Prefabs/Map") as GameObject;
             var mapObj = Instantiate(mapPrefab);
 
@@ -141,17 +139,19 @@ namespace Transidious
             yield return LoadParks();
             Debug.Log("loaded natural features");
 
-            map.DoFinalize(false);
-            SaveManager.SaveMapLayout(map);
+            yield return LoadBuildings();
+            Debug.Log("loaded buildings");
 
             yield return LoadStreets();
             Debug.Log("loaded streets");
 
+            yield return map.DoFinalize();
+
+            var backgroundBytes = ScreenShotMaker.Instance.MakeScreenshotSingle(map);
+            SaveManager.SaveMapLayout(map, backgroundBytes);
+
             yield return LoadTransitLines();
             Debug.Log("loaded transit lines");
-
-            yield return LoadBuildings();
-            Debug.Log("loaded buildings");
 
             SaveManager.SaveMapData(map);
             Debug.Log("Done!");
@@ -402,7 +402,8 @@ namespace Transidious
                     if (result != null)
                     {
                         segmentInfo = new List<TrafficSimulator.PathSegmentInfo>();
-                        positions = GameController.instance.sim.trafficSim.GetCompletePath(result, segmentInfo);
+                        positions = GameController.instance.sim.trafficSim.GetCompletePath(
+                            result, segmentInfo);
                     }
                     else
                     {
@@ -666,15 +667,8 @@ namespace Transidious
             var nodeCount = new Dictionary<Node, int>();
             var intersections = new Dictionary<Node, StreetIntersection>();
 
-            var totalVerts = 0;
-
             foreach (var street in streets)
             {
-                if (street.Item2 == Street.Type.FootPath)
-                {
-                    continue;
-                }
-
                 var tags = street.Item1.Tags;
                 var streetName = tags.GetValue("name");
                 Debug.Log("loading street '" + streetName + "'...");
@@ -695,9 +689,6 @@ namespace Transidious
                 }
 
                 // GetWayPositions(street.Item1, positions);
-                // positions = MeshBuilder.RemoveDetail(positions.ToArray(), 5f);
-
-                totalVerts += positions.Count;
 
                 // Find intersections.
                 foreach (var pos in positions)
@@ -745,8 +736,6 @@ namespace Transidious
                     yield return null;
                 }
             }
-
-            Debug.Log(totalVerts.ToString() + " total verts");
 
             foreach (var node in nodeCount)
             {
@@ -826,6 +815,8 @@ namespace Transidious
                 }
             }
 
+            var removedVerts = 0;
+
             var startingStreetCandidates = new HashSet<string>();
             foreach (var inter in intersections)
             {
@@ -848,15 +839,22 @@ namespace Transidious
                     }
 
                     var segPositionsStream = startSeg.positions.Select(n => this.Project(n));
-                    var segPositions = MeshBuilder.RemoveDetailByAngle(segPositionsStream.ToArray(), 5f);
+                    var segPositions = MeshBuilder.RemoveDetailByDistance(
+                        segPositionsStream.ToArray(), 2.5f);
+
+                    segPositions = MeshBuilder.RemoveDetailByAngle(segPositions, 5f);
+
+                    removedVerts += startSeg.positions.Count - segPositions.Count;
 
                     var street = map.CreateStreet(startSeg.name, startSeg.type, startSeg.lit,
                                                   startSeg.oneway, startSeg.maxspeed,
                                                   startSeg.lanes);
 
                     var seg = street.AddSegment(segPositions,
-                                                map.streetIntersectionMap[Project(startSeg.start.position)],
-                                                map.streetIntersectionMap[Project(startSeg.end.position)]);
+                                                map.streetIntersectionMap[Project(
+                                                    startSeg.start.position)],
+                                                map.streetIntersectionMap[Project(
+                                                    startSeg.end.position)]);
 
                     UpdateSegmentPositions(seg);
                     streetSet.Remove(startSeg);
@@ -892,7 +890,13 @@ namespace Transidious
                             }
 
                             var nextSegPositionsStream = nextSeg.positions.Select(n => this.Project(n));
-                            var nextSegPositions = MeshBuilder.RemoveDetailByAngle(nextSegPositionsStream.ToArray(), 5f);
+                            var nextSegPositions = MeshBuilder.RemoveDetailByDistance(
+                                nextSegPositionsStream.ToArray(), 2.5f);
+
+                            nextSegPositions = MeshBuilder.RemoveDetailByAngle(
+                                nextSegPositions, 5f);
+
+                            removedVerts += nextSeg.positions.Count - nextSegPositions.Count;
 
                             seg = street.AddSegment(nextSegPositions,
                                                     map.streetIntersectionMap[Project(nextSeg.start.position)],
@@ -919,6 +923,8 @@ namespace Transidious
                     yield return null;
                 }
             }
+
+            Debug.Log("removed " + removedVerts + " street verts");
         }
 
         public Mesh LoadPolygon(Relation rel,
@@ -974,12 +980,13 @@ namespace Transidious
             }
             else
             {
-                return map.triangleAPI.CreateMesh(pslg);
+                return TriangleAPI.CreateMesh(pslg);
             }
         }
 
         IEnumerator LoadParks()
         {
+            var totalVerts = 0;
             foreach (var feature in naturalFeatures)
             {
                 var featureName = feature.Item1.Tags.GetValue("name");
@@ -1000,9 +1007,11 @@ namespace Transidious
                         continue;
                     }
 
-                    mesh = MeshBuilder.PointsToMesh(wayPositions.ToArray());
+                    mesh = MeshBuilder.PointsToMeshFast(wayPositions.ToArray());
                     MeshBuilder.FixWindingOrder(mesh);
                 }
+
+                totalVerts += mesh?.triangles.Length ?? 0;
 
                 map.CreateFeature(featureName, feature.Item2, mesh);
                 Debug.Log("done");
@@ -1013,6 +1022,7 @@ namespace Transidious
                 }
             }
 
+            Debug.Log("feature verts: " + totalVerts);
             // yield return LoadFootpaths();
         }
 
@@ -1021,11 +1031,6 @@ namespace Transidious
             var verts = 0;
             foreach (var street in streets)
             {
-                if (street.Item2 != Street.Type.FootPath)
-                {
-                    continue;
-                }
-
                 var tags = street.Item1.Tags;
                 var name = tags.GetValue("name");
                 Debug.Log("loading path '" + name + "'...");
@@ -1053,6 +1058,7 @@ namespace Transidious
 
         IEnumerator LoadBuildings()
         {
+            var totalVerts = 0;
             foreach (var building in buildings)
             {
                 var buildingName = building.Item1.Tags.GetValue("name");
@@ -1115,9 +1121,11 @@ namespace Transidious
                         continue;
                     }
 
-                    mesh = MeshBuilder.PointsToMesh(wayPositions.ToArray());
+                    mesh = MeshBuilder.PointsToMeshFast(wayPositions.ToArray());
                     MeshBuilder.FixWindingOrder(mesh);
                 }
+
+                totalVerts += mesh?.triangles.Length ?? 0;
 
                 map.CreateBuilding(type, mesh, buildingName, numberStr, position);
                 Debug.Log("done");
@@ -1127,6 +1135,8 @@ namespace Transidious
                     yield return null;
                 }
             }
+
+            Debug.Log("building verts: " + totalVerts);
         }
     }
 }

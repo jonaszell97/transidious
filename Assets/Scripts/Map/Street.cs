@@ -16,14 +16,12 @@ namespace Transidious
             Link,
             Path,
             River,
-            FootPath,
         }
 
         [System.Serializable]
         public struct SerializedStreet
         {
-            public int id;
-            public string name;
+            public SerializableMapObject mapObject;
             public Type type;
             public StreetSegment.SerializedStreetSegment[] segments;
             public bool lit;
@@ -65,7 +63,8 @@ namespace Transidious
         /// The length of this street.
         public float length;
 
-        public void Initialize(Map map, Type type, string name, bool lit, bool isOneWay, int maxspeed, int lanes)
+        public void Initialize(Map map, Type type, string name, bool lit,
+                               bool isOneWay, int maxspeed, int lanes)
         {
             this.map = map;
             this.type = type;
@@ -110,7 +109,6 @@ namespace Transidious
             case Type.Residential:
                 return 2;
             case Type.Path:
-            case Type.FootPath:
                 return 2;// return isOneWay ? 1 : 2;
             case Type.River:
                 return 2;
@@ -175,13 +173,13 @@ namespace Transidious
             if (seg.length < minWidth)
                 return null;
 
-            Vector3 pos = Vector3.zero;
+            var pos = Vector3.zero;
             var halfWidth = minWidth / 2f;
             var len = 0f;
             var middle = seg.length / 2f;
             var angle = 0f;
             var thresholdAngle = 7f;
-            bool isPositionUsable = false;
+            var isPositionUsable = false;
             var direction = Vector3.zero;
 
             for (int i = 1; i < seg.positions.Count; ++i)
@@ -203,7 +201,7 @@ namespace Transidious
 
                     while (j >= 0)
                     {
-                        var pointAngle = Math.PointAngle(p0, seg.positions[j]);
+                        var pointAngle = Math.PointAngleDeg(p0, seg.positions[j]);
                         if (Mathf.Abs(pointAngle) > thresholdAngle)
                         {
                             break;
@@ -225,7 +223,7 @@ namespace Transidious
 
                     while (j < seg.positions.Count)
                     {
-                        var pointAngle = Math.PointAngle(p1, seg.positions[j]);
+                        var pointAngle = Math.PointAngleDeg(p1, seg.positions[j]);
                         if (Mathf.Abs(pointAngle) > thresholdAngle)
                         {
                             break;
@@ -242,7 +240,7 @@ namespace Transidious
                     }
 
                     isPositionUsable = true;
-                    angle = GetEffectiveAngle(Math.PointAngle(leftPoint, rightPoint));
+                    angle = GetEffectiveAngle(Math.PointAngleDeg(leftPoint, rightPoint));
                     direction = p1 - p0;
 
                     break;
@@ -274,11 +272,15 @@ namespace Transidious
             if (seg.directionArrow == null)
             {
                 seg.directionArrow = map.Game.CreateSprite(
-                    GameController.streetArrowSprite);
+                    map.Game.streetArrowSprite);
 
-                seg.directionArrow.GetComponent<SpriteRenderer>().color = new Color(0.9f, 0.9f, 0.9f, 1f);
+                seg.directionArrow.transform.localScale = new Vector3(5f, 5f, 1f);
+
+                seg.directionArrow.GetComponent<SpriteRenderer>().color =
+                    new Color(0.9f, 0.9f, 0.9f, 1f);
             }
 
+            seg.directionArrow.transform.SetParent(seg.transform);
             seg.directionArrow.transform.position = new Vector3(posOnStreet.pos.x, posOnStreet.pos.y,
                                                                 Map.Layer(MapLayer.StreetMarkings));
 
@@ -293,7 +295,7 @@ namespace Transidious
                 return;
             }
 
-            var sprite = GameController.streetArrowSprite;
+            var sprite = map.Game.streetArrowSprite;
             var neededWidth = sprite.bounds.extents.y;
             var posAndAngle = GetPositionAndAngle(seg, neededWidth);
 
@@ -415,6 +417,16 @@ namespace Transidious
             return seg;
         }
 
+        public void AddSegment(StreetSegment.SerializedStreetSegment seg)
+        {
+            var newSeg = AddSegment(seg.positions.Select(v => (Vector3)v).ToList(),
+                                    map.GetMapObject<StreetIntersection>(seg.startIntersectionID),
+                                    map.GetMapObject<StreetIntersection>(seg.endIntersectionID),
+                                    -1, seg.hasTramTracks, seg.mapObject.id);
+
+            newSeg.Deserialize(seg.mapObject);
+        }
+
         public Tuple<StreetSegment, StreetSegment>
         SplitSegment(StreetSegment seg, StreetIntersection newIntersection)
         {
@@ -459,12 +471,11 @@ namespace Transidious
             }
         }
 
-        public SerializedStreet Serialize()
+        public new SerializedStreet Serialize()
         {
             return new SerializedStreet
             {
-                id = id,
-                name = name,
+                mapObject = base.Serialize(),
                 type = type,
 
                 segments = segments.Select(s => s.Serialize()).ToArray(),
@@ -475,18 +486,23 @@ namespace Transidious
             };
         }
 
-        public void Deserialize(SerializedStreet s)
+        public static Street Deserialize(Map map, SerializedStreet street)
         {
-            foreach (var seg in s.segments)
+            var s = map.CreateStreet(street.mapObject.name, street.type, street.lit,
+                                     street.oneway, street.maxspeed,
+                                     street.lanes, street.mapObject.id);
+
+            s.Deserialize(street.mapObject);
+
+            foreach (var seg in street.segments)
             {
-                AddSegment(seg.positions.Select(v => (Vector3)v).ToList(),
-                           map.GetMapObject<StreetIntersection>(seg.startIntersectionID),
-                            map.GetMapObject<StreetIntersection>(seg.endIntersectionID),
-                           -1, seg.hasTramTracks, seg.id);
+                s.AddSegment(seg);
             }
 
-            CalculateLength();
-            CreateTextMeshes();
+            s.CalculateLength();
+            s.CreateTextMeshes();
+
+            return s;
         }
     }
 }

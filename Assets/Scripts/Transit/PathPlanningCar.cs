@@ -376,7 +376,7 @@ namespace Transidious.PathPlanning
             //     {
             //         var drive = step as DriveStep;
             //         var lanes = drive.driveSegment.segment.street.lanes;
-            //         var offset = drive.driveSegment.segment.GetStreetWidth(InputController.RenderingDistance.Near) / lanes;
+            //         var offset = drive.driveSegment.segment.GetStreetWidth(RenderingDistance.Near) / lanes;
             //         var segPositions = drive.driveSegment.segment.positions.ToArray();
 
             //         if (drive.driveSegment.backward)
@@ -402,7 +402,7 @@ namespace Transidious.PathPlanning
             //     {
             //         var drive = step as PartialDriveStep;
             //         var lanes = drive.driveSegment.segment.street.lanes;
-            //         var offset = drive.driveSegment.segment.GetStreetWidth(InputController.RenderingDistance.Near) / lanes;
+            //         var offset = drive.driveSegment.segment.GetStreetWidth(RenderingDistance.Near) / lanes;
 
             //         for (int i = 1; i < drive.positions.Length; i += 2)
             //         {

@@ -50,7 +50,6 @@ namespace Transidious
             renderCamera.aspect = 1.0f;
             renderCamera.targetDisplay = 2;
             renderCamera.backgroundColor = new Color(249f / 255f, 245f / 255f, 237f / 255f, 1);
-            // renderCamera.gameObject.AddComponent<MSAA
 
             // Account for border thickness.
             var minX = map.minX - 100f;
@@ -129,8 +128,14 @@ namespace Transidious
             };
         }
 
-        public void MakeScreenshotSingle(Map map, int resolution = 1028)
+        public byte[] MakeScreenshotSingle(Map map, int resolution = 1024)
         {
+            map.boundaryOutlineObj.SetActive(false);
+
+            var prevMaterial = map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial;
+            map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial =
+                GameController.GetUnlitMaterial(Color.white);
+
             float cameraDistance = map.input.camera.transform.position.z;
 
             Camera renderCamera = GetComponent<Camera>();
@@ -143,7 +148,7 @@ namespace Transidious
             renderCamera.cameraType = CameraType.Game;
             renderCamera.forceIntoRenderTexture = true;
             renderCamera.orthographic = true;
-            renderCamera.orthographicSize = 300f;
+            renderCamera.orthographicSize = 650f;
             renderCamera.aspect = 1.0f;
             renderCamera.targetDisplay = 2;
 
@@ -155,14 +160,14 @@ namespace Transidious
             var minY = map.minY;
             var maxY = map.maxY;
 
-            var directory = "Assets/Resources/Maps/" + map.name;
-            System.IO.Directory.CreateDirectory(directory);
+            // var directory = "Assets/Resources/Maps/" + map.name;
+            // System.IO.Directory.CreateDirectory(directory);
 
-            var di = new System.IO.DirectoryInfo(directory);
-            foreach (var file in di.GetFiles())
-            {
-                file.Delete();
-            }
+            // var di = new System.IO.DirectoryInfo(directory);
+            // foreach (var file in di.GetFiles())
+            // {
+            //     file.Delete();
+            // }
 
             int xRes = Mathf.RoundToInt(resolution * ((maxX - minX) / (renderCamera.aspect * renderCamera.orthographicSize * 2 * renderCamera.aspect)));
             int yRes = Mathf.RoundToInt(resolution * ((maxY - minY) / (renderCamera.aspect * renderCamera.orthographicSize * 2 / renderCamera.aspect)));
@@ -170,34 +175,37 @@ namespace Transidious
             Texture2D virtualPhoto = new Texture2D(xRes, yRes, TextureFormat.RGB24, false);
             RenderTexture.active = renderTexture;
 
-            for (float i = minX, xPos = 0; i < maxX; i += renderCamera.aspect * renderCamera.orthographicSize * 2, xPos++)
+            for (float i = minX, xPos = 0; i < maxX;
+                 i += renderCamera.aspect * renderCamera.orthographicSize * 2, xPos++)
             {
-                for (float j = minY, yPos = 0; j < maxY; j += renderCamera.aspect * renderCamera.orthographicSize * 2, yPos++)
+                for (float j = minY, yPos = 0; j < maxY;
+                     j += renderCamera.aspect * renderCamera.orthographicSize * 2, yPos++)
                 {
-                    gameObject.transform.position = new Vector3(i + renderCamera.aspect * renderCamera.orthographicSize, j + renderCamera.aspect * renderCamera.orthographicSize, cameraDistance);
+                    gameObject.transform.position = new Vector3(i + renderCamera.aspect *
+                        renderCamera.orthographicSize, j + renderCamera.aspect *
+                        renderCamera.orthographicSize, cameraDistance);
 
                     renderCamera.Render();
-                    virtualPhoto.ReadPixels(new Rect(0, 0, resolution, resolution), (int)xPos * resolution, (int)yPos * resolution);
+                    virtualPhoto.ReadPixels(new Rect(0, 0, resolution, resolution),
+                        (int)xPos * resolution, (int)yPos * resolution);
                 }
             }
 
             RenderTexture.active = null;
             renderCamera.targetTexture = null;
 
-            // Color32[] colors = virtualPhoto.GetPixels32();
-            // for (int i = 0; i < colors.Length; i++)
-            // {
-            //     if (colors[i] == Color.white)
-            //     {
-            //         colors[i] = Color.clear;
-            //     }
-            // }
+            var bytes = virtualPhoto.EncodeToPNG();
 
-            // virtualPhoto.SetPixels32(colors);
-            // virtualPhoto.Apply();
+#if DEBUG
+            System.IO.File.WriteAllBytes("/Users/Jonas/Downloads/" + map.name + ".png", bytes);
+            System.IO.File.WriteAllBytes("/Users/Jonas/Downloads/" + map.name + ".jpg",
+                virtualPhoto.EncodeToJPG());
+#endif
 
-            byte[] bytes = virtualPhoto.EncodeToPNG();
-            System.IO.File.WriteAllBytes("Assets/Resources/Maps/" + map.name + ".png", bytes);
+            map.boundaryBackgroundObj.SetActive(true);
+            map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial = prevMaterial;
+
+            return bytes;
         }
     }
 }

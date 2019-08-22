@@ -162,7 +162,7 @@ namespace Transidious
 #if DEBUG
             if (manualTrafficLightControl)
             {
-                sim.game.input.RegisterEventListener(InputController.InputEvent.MouseDown, (MapObject obj) =>
+                sim.game.input.RegisterEventListener(InputEvent.MouseDown, (MapObject obj) =>
                 {
                     var seg = obj as StreetSegment;
                     if (seg == null)
@@ -340,8 +340,6 @@ namespace Transidious
                 {
                     if (crossedSegments != null && nextSegment != null)
                     {
-                        Debug.Assert(nextSegment.street.type != Street.Type.FootPath);
-
                         crossedSegments.Add(new PathSegmentInfo
                         {
                             segment = nextSegment,
@@ -388,8 +386,6 @@ namespace Transidious
 
         public Vector3[] GetPath(StreetSegment seg, int lane)
         {
-            Debug.Assert(seg.street.type != Street.Type.FootPath, "footpaths are purely decorational!");
-
             if (!computedPaths.TryGetValue(seg, out Vector3[][] paths))
             {
                 paths = ComputePaths(seg);
@@ -403,7 +399,7 @@ namespace Transidious
         {
             var lanes = seg.street.lanes;
             var halfLanes = lanes / 2;
-            var offset = seg.GetStreetWidth(InputController.RenderingDistance.Near) / lanes;
+            var offset = seg.GetStreetWidth(RenderingDistance.Near) / lanes;
             var isLeftLane = lane < halfLanes;
 
             int laneOffset = seg.LanePositionFromMiddle(lane, true);
@@ -493,7 +489,7 @@ namespace Transidious
             var paths = new Vector3[seg.street.lanes][];
             var lanes = seg.street.lanes;
             var halfLanes = lanes / 2;
-            var offset = seg.GetStreetWidth(InputController.RenderingDistance.Near) / lanes;
+            var offset = seg.GetStreetWidth(RenderingDistance.Near) / lanes;
             var segPositions = seg.drivablePositions;
 
             var positions = new List<Vector3>();
@@ -540,7 +536,8 @@ namespace Transidious
                                  StreetSegment from, StreetSegment to,
                                  int lane)
         {
-            if (!computedIntersectionPaths.TryGetValue(intersection, out Vector3[][][][] paths))
+            if (!computedIntersectionPaths.TryGetValue(intersection,
+                                                       out Vector3[][][][] paths))
             {
                 paths = ComputeIntersectionPaths(intersection);
                 computedIntersectionPaths.Add(intersection, paths);
@@ -558,11 +555,6 @@ namespace Transidious
 
             foreach (var from in intersection.IncomingStreets)
             {
-                if (from.street.type == Street.Type.FootPath)
-                {
-                    continue;
-                }
-
                 var fromLanes = from.street.lanes;
                 var fromLanesPerDirection = from.street.LanesPerDirection;
 
@@ -589,11 +581,6 @@ namespace Transidious
 
                     foreach (var to in intersection.OutgoingStreets)
                     {
-                        if (to.street.type == Street.Type.FootPath)
-                        {
-                            continue;
-                        }
-
                         var uturn = false;
                         if (from == to)
                         {
@@ -666,20 +653,25 @@ namespace Transidious
                             p1_B = outgoingPath[outgoingPath.Length - 2];
                         }
 
-                        // If the streets are almost parallel, an intersection point might not make sense.
+                        // If the streets are almost parallel, an intersection point 
+                        // might not make sense.
                         if (uturn)
                         {
                             var controlPt1 = p1_A + (p1_A - p0_A).normalized * 5f * Map.Meters;
                             var controlPt2 = p0_B + (p0_B - p1_B).normalized * 5f * Map.Meters;
 
-                            MeshBuilder.AddCubicBezierCurve(currentPath, p1_A, p0_B, controlPt1, controlPt2);
+                            MeshBuilder.AddCubicBezierCurve(currentPath,
+                                p1_A, p0_B, controlPt1, controlPt2, 4);
                         }
                         else if (!Math.EquivalentAngles(p0_A, p1_A, p0_B, p1_B, 10f))
                         {
-                            var intPt = Math.GetIntersectionPoint(p0_A, p1_A, p0_B, p1_B, out bool found);
+                            var intPt = Math.GetIntersectionPoint(
+                                p0_A, p1_A, p0_B, p1_B, out bool found);
+
                             Debug.Assert(found, "streets do not intersect!");
 
-                            MeshBuilder.AddQuadraticBezierCurve(currentPath, p1_A, p0_B, intPt);
+                            MeshBuilder.AddQuadraticBezierCurve(
+                                currentPath, p1_A, p0_B, intPt, 4);
                         }
                         else
                         {
@@ -1114,7 +1106,7 @@ namespace Transidious
             if (step is DriveStep)
             {
                 var drive = step as DriveStep;
-                offset = drive.driveSegment.segment.GetStreetWidth(InputController.RenderingDistance.Near) / drive.driveSegment.segment.street.lanes;
+                offset = drive.driveSegment.segment.GetStreetWidth(RenderingDistance.Near) / drive.driveSegment.segment.street.lanes;
 
                 if (drive.driveSegment.backward)
                 {
@@ -1131,7 +1123,7 @@ namespace Transidious
             else if (step is PartialDriveStep)
             {
                 var drive = step as PartialDriveStep;
-                offset = drive.driveSegment.segment.GetStreetWidth(InputController.RenderingDistance.Near) / drive.driveSegment.segment.street.lanes;
+                offset = drive.driveSegment.segment.GetStreetWidth(RenderingDistance.Near) / drive.driveSegment.segment.street.lanes;
 
                 if (drive.driveSegment.backward)
                 {

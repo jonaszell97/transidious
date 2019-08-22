@@ -52,12 +52,12 @@ namespace Transidious
             this.activeSnaps = new List<ActiveSnap>();
             this.disabledSnaps = new HashSet<int>();
 
-            game.input.RegisterEventListener(InputController.InputEvent.MouseOver,
+            game.input.RegisterEventListener(InputEvent.MouseOver,
                                              (MapObject obj) =>
                                              {
                                                  this.HandleMouseOver(obj);
                                              });
-            game.input.RegisterEventListener(InputController.InputEvent.MouseExit,
+            game.input.RegisterEventListener(InputEvent.MouseExit,
                                              (MapObject obj) =>
                                              {
                                                  this.HandleMouseExit(obj);

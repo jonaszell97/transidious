@@ -167,24 +167,24 @@ namespace Transidious
             }
 
             this.listenerIDs = new int[] {
-                game.input.RegisterEventListener(InputController.InputEvent.MouseOver, (MapObject obj) => {
+                game.input.RegisterEventListener(InputEvent.MouseOver, (MapObject obj) => {
                     this.MapObjectHovered(obj);
                 }, false),
-                game.input.RegisterEventListener(InputController.InputEvent.MouseExit, (MapObject obj) => {
+                game.input.RegisterEventListener(InputEvent.MouseExit, (MapObject obj) => {
                     this.MapObjectHoverExit(obj);
                 }, false),
-                game.input.RegisterEventListener(InputController.InputEvent.MouseDown, (MapObject obj) => {
+                game.input.RegisterEventListener(InputEvent.MouseDown, (MapObject obj) => {
                     this.MapObjectClicked(obj);
                 }, false),
             };
 
-            game.input.RegisterEventListener(InputController.InputEvent.MouseEnter,
+            game.input.RegisterEventListener(InputEvent.MouseEnter,
                                              (MapObject obj) =>
             {
                 this.MapObjectEntered(obj);
             });
 
-            game.input.RegisterEventListener(InputController.InputEvent.MouseExit,
+            game.input.RegisterEventListener(InputEvent.MouseExit,
                                              (MapObject obj) =>
             {
                 this.MapObjectExited(obj);
@@ -1262,7 +1262,7 @@ namespace Transidious
                 int lanes = streetSeg?.street.lanes ?? 2;
                 float width = StreetSegment.GetStreetWidth(
                     streetSeg?.street.type ?? Street.Type.Secondary,
-                    lanes, InputController.RenderingDistance.Near);
+                    lanes, RenderingDistance.Near);
 
                 availableSpace = width * .7f;
             }
@@ -1581,7 +1581,9 @@ namespace Transidious
             var collider = route.GetComponent<PolygonCollider2D>();
             collider.pathCount = 0;
 
-            var mesh = MeshBuilder.CreateSmoothLine(newPositions, newWidths, 20, float.NaN, collider);
+            var mesh = MeshBuilder.CreateSmoothLine(
+                newPositions, newWidths, 20, float.NaN, collider);
+
             route.UpdateMesh(mesh, newPositions, newWidths);
             route.line.wasModified = false;
             route.EnableCollision();
