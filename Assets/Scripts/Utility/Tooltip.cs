@@ -7,7 +7,7 @@ namespace Transidious
     {
         GameController game;
         public Text text;
-        MapObject attachedObject;
+        DynamicMapObject attachedObject;
         SpriteRenderer spriteRenderer;
 
         public Text Text
@@ -20,7 +20,7 @@ namespace Transidious
 
         public void Initialize(GameController game, Text text,
                                Color backgroundColor,
-                               MapObject attachedObject = null)
+                               DynamicMapObject attachedObject = null)
         {
             this.game = game;
             this.attachedObject = attachedObject;

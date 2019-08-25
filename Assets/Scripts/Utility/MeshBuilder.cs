@@ -941,10 +941,49 @@ namespace Transidious
         {
             if (positions.Count <= 3)
             {
-                return new List<Vector3>(positions);
+                return positions.ToList();
             }
 
             var newPositions = new List<Vector3>(positions.Count);
+            newPositions.Add(positions.First());
+
+            var p2 = positions[2];
+            var p1 = positions[1];
+            var p0 = positions[0];
+
+            for (int i = 2; i < positions.Count - 1; ++i)
+            {
+                p2 = positions[i];
+
+                if (IsSharpAngle(p0, p1, p2, thresholdAngle))
+                {
+                    newPositions.Add(p1);
+                    newPositions.Add(p2);
+
+                    ++i;
+                    p0 = p2;
+                    p1 = positions[i];
+
+                    continue;
+                }
+
+                p0 = p1;
+                p1 = p2;
+            }
+
+            newPositions.Add(positions.Last());
+            return newPositions;
+        }
+
+        public static List<Vector2> RemoveDetailByAngle(IReadOnlyList<Vector2> positions,
+                                                        float thresholdAngle = 5f)
+        {
+            if (positions.Count <= 3)
+            {
+                return positions.ToList();
+            }
+
+            var newPositions = new List<Vector2>(positions.Count);
             newPositions.Add(positions.First());
 
             var p2 = positions[2];
@@ -985,6 +1024,35 @@ namespace Transidious
 
             float dist = 0f;
             var newPositions = new List<Vector3>(positions.Count);
+            for (int i = 1; i < positions.Count; ++i)
+            {
+                var p1 = positions[i];
+                var p0 = positions[i - 1];
+
+                var currDist = (p1 - p0).magnitude;
+                dist += currDist;
+
+                if (dist >= minDistance)
+                {
+                    newPositions.Add(p0);
+                    dist = 0;
+                }
+            }
+
+            newPositions.Add(positions.Last());
+            return newPositions;
+        }
+
+        public static List<Vector2> RemoveDetailByDistance(IReadOnlyList<Vector2> positions,
+                                                           float minDistance = 5f)
+        {
+            if (positions.Count <= 2)
+            {
+                return positions.ToList();
+            }
+
+            float dist = 0f;
+            var newPositions = new List<Vector2>(positions.Count);
             for (int i = 1; i < positions.Count; ++i)
             {
                 var p1 = positions[i];
@@ -1121,6 +1189,103 @@ namespace Transidious
 
             mesh.CombineMeshes(combine);
             return mesh;
+        }
+
+        public static Rect GetCollisionRect(Mesh mesh)
+        {
+            var bounds = mesh.bounds;
+            return new Rect(bounds.min.x, bounds.min.y, bounds.size.x, bounds.size.y);
+        }
+
+        static Vector2 RotateToXAxis(Vector2 v, float angle)
+        {
+            var newX = v.x * Mathf.Cos(angle) - v.y * Mathf.Sin(angle);
+            var newY = v.x * Mathf.Sin(angle) + v.y * Mathf.Cos(angle);
+
+            return new Vector2(newX, newY);
+        }
+
+        public static Vector2[] GetSmallestSurroundingRect(Mesh mesh)
+        {
+            return GetSmallestSurroundingRect(mesh.vertices.Select(v => (Vector2)v).ToList());
+        }
+
+        public static Vector2[] GetSmallestSurroundingRect(IList<Vector2> points)
+        {
+            var hull = Math.MakeHull(points);
+
+            // Go through each edge of the convex hull and rotate the bounding rect
+            // according to that edge. Return the smallest area found.
+            Rect? minRect = null;
+            var minArea = float.MaxValue;
+            var minAngle = 0f;
+
+            for (var i = 1; i < hull.Count; ++i)
+            {
+                var p0 = hull[i - 1];
+                var p1 = hull[i];
+                var edge = p0 - p1;
+                var angle = -Mathf.Atan(edge.y / edge.x);
+
+                var maxY = float.MinValue;
+                var minY = float.MaxValue;
+                var maxX = float.MinValue;
+                var minX = float.MaxValue;
+
+                foreach (var p in hull)
+                {
+                    var rotatedPoint = RotateToXAxis(p, angle);
+
+                    maxY = Mathf.Max(maxY, rotatedPoint.y);
+                    minY = Mathf.Min(minY, rotatedPoint.y);
+
+                    minX = Mathf.Min(minX, rotatedPoint.x);
+                    maxX = Mathf.Max(maxX, rotatedPoint.x);
+                }
+
+                var width = maxX - minX;
+                var height = maxY - minY;
+                var area = width * height;
+
+                if (minRect == null || area < minArea)
+                {
+                    minRect = new Rect(minX, minY, maxX - minX, maxY - minY);
+                    minArea = area;
+                    minAngle = angle;
+                }
+            }
+
+            var rect = minRect.Value;
+            return new Vector2[]
+            {
+                RotateToXAxis(new Vector2(rect.x, rect.y),                            -minAngle),
+                RotateToXAxis(new Vector2(rect.x, rect.y + rect.height),              -minAngle),
+                RotateToXAxis(new Vector2(rect.x + rect.width, rect.y + rect.height), -minAngle),
+                RotateToXAxis(new Vector2(rect.x + rect.width, rect.y),               -minAngle),
+            };
+        }
+
+        public static Color IncreaseBrightness(Color c, float increase)
+        {
+            float h, s, v;
+            Color.RGBToHSV(c, out h, out s, out v);
+
+            return Color.HSVToRGB(h, s, Mathf.Clamp(v + increase, 0f, 1f));
+        }
+
+        public static Color IncreaseOrDecreaseBrightness(Color c, float increase)
+        {
+            float h, s, v;
+            Color.RGBToHSV(c, out h, out s, out v);
+
+            if (v < (1f - increase))
+            {
+                return Color.HSVToRGB(h, s, v + increase);
+            }
+            else
+            {
+                return Color.HSVToRGB(h, s, v - increase);
+            }
         }
 
         public static void MeshCollider(Mesh mesh, PolygonCollider2D polygonCollider)

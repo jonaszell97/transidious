@@ -120,7 +120,7 @@ namespace Transidious
         }
     }
 
-    public class StreetIntersection : MapObject, IStop
+    public class StreetIntersection : StaticMapObject, IStop
     {
         [System.Serializable]
         public struct SerializedStreetIntersection
@@ -169,15 +169,13 @@ namespace Transidious
 
         public void Initialize(int id, Vector3 pos)
         {
-            base.Initialize(Kind.StreetIntersection, id);
+            base.Initialize(MapObjectKind.StreetIntersection, id);
 
             this.id = id;
+            this.name = "";
             this.position = pos;
             this.intersectingStreets = new List<StreetSegment>();
             this.streetAngles = new Dictionary<StreetSegment, float>();
-
-            this.transform.localScale = new Vector3(14, 14, 0);
-            this.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.StreetOutlines));
         }
 
         public new SerializedStreetIntersection Serialize()

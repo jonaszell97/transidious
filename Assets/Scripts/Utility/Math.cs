@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Transidious
@@ -249,8 +251,15 @@ namespace Transidious
             var v2 = b - a;
             var v3 = new Vector2(-d.y, d.x);
 
-            var t1 = Vector3.Cross(v2, v1).magnitude / Vector2.Dot(v2, v3);
-            var t2 = Vector2.Dot(v1, v3) / Vector2.Dot(v2, v3);
+            var dot = Vector2.Dot(v2, v3);
+            if (Mathf.Abs(dot) < 0.000001)
+            {
+                found = false;
+                return Vector2.zero;
+            }
+
+            var t1 = Vector3.Cross(v2, v1).magnitude / dot;
+            var t2 = Vector2.Dot(v1, v3) / dot;
 
             found = t1 >= 0f && 0f <= t2 && t2 <= 1f;
             return o + d * t1;
@@ -323,6 +332,323 @@ namespace Transidious
                                 transformedSize.x - baseSize.x,
                                 transformedSize.y - baseSize.y);
             }
+        }
+
+        public static Rect GetBoundingRect(List<Vector2> points)
+        {
+            Debug.Assert(points.Count >= 2);
+
+            var minX = float.MaxValue;
+            var maxX = float.MinValue;
+            var minY = float.MaxValue;
+            var maxY = float.MinValue;
+
+            foreach (var pt in points)
+            {
+                minX = Mathf.Min(minX, pt.x);
+                maxX = Mathf.Max(maxX, pt.x);
+                minY = Mathf.Min(minY, pt.y);
+                maxY = Mathf.Max(maxY, pt.y);
+            }
+
+            return new Rect(minX, minY, maxX - minX, maxY - minY);
+        }
+
+        // Returns a new list of points representing the convex hull of
+        // the given set of points. The convex hull excludes collinear points.
+        // This algorithm runs in O(n log n) time.
+        public static IList<Vector2> MakeHull(IList<Vector2> points)
+        {
+            List<Vector2> newVector2s = new List<Vector2>(points);
+            newVector2s.Sort((a, b) => a.x == b.x ? a.y.CompareTo(b.y) : (a.x > b.x ? 1 : -1));
+
+            return MakeHullPresorted(newVector2s);
+        }
+
+        public static IList<Vector2> MakeHull(IList<Vector3> points)
+        {
+            List<Vector2> newVector2s = points.Select(v => (Vector2)v).ToList();
+            newVector2s.Sort((a, b) => a.x == b.x ? a.y.CompareTo(b.y) : (a.x > b.x ? 1 : -1));
+
+            return MakeHullPresorted(newVector2s);
+        }
+
+
+        // Returns the convex hull, assuming that each points[i] <= points[i + 1]. Runs in O(n) time.
+        public static IList<Vector2> MakeHullPresorted(IList<Vector2> points)
+        {
+            if (points.Count <= 1)
+                return new List<Vector2>(points);
+
+            // Andrew's monotone chain algorithm. Positive y coordinates correspond to "up"
+            // as per the mathematical convention, instead of "down" as per the computer
+            // graphics convention. This doesn't affect the correctness of the result.
+
+            List<Vector2> upperHull = new List<Vector2>();
+            foreach (Vector2 p in points)
+            {
+                while (upperHull.Count >= 2)
+                {
+                    Vector2 q = upperHull[upperHull.Count - 1];
+                    Vector2 r = upperHull[upperHull.Count - 2];
+                    if ((q.x - r.x) * (p.y - r.y) >= (q.y - r.y) * (p.x - r.x))
+                        upperHull.RemoveAt(upperHull.Count - 1);
+                    else
+                        break;
+                }
+                upperHull.Add(p);
+            }
+            upperHull.RemoveAt(upperHull.Count - 1);
+
+            IList<Vector2> lowerHull = new List<Vector2>();
+            for (int i = points.Count - 1; i >= 0; i--)
+            {
+                Vector2 p = points[i];
+                while (lowerHull.Count >= 2)
+                {
+                    Vector2 q = lowerHull[lowerHull.Count - 1];
+                    Vector2 r = lowerHull[lowerHull.Count - 2];
+                    if ((q.x - r.x) * (p.y - r.y) >= (q.y - r.y) * (p.x - r.x))
+                        lowerHull.RemoveAt(lowerHull.Count - 1);
+                    else
+                        break;
+                }
+                lowerHull.Add(p);
+            }
+
+            lowerHull.RemoveAt(lowerHull.Count - 1);
+
+            if (!(upperHull.Count == 1 && Enumerable.SequenceEqual(upperHull, lowerHull)))
+                upperHull.AddRange(lowerHull);
+
+            return upperHull;
+        }
+
+        public static bool IsPointInPolygon(Vector2 pt, Vector2[] poly)
+        {
+            Debug.Assert(poly.Length >= 3, "invalid polygon");
+
+            var inside = false;
+            var j = poly.Length - 1;
+            for (int i = 0; i < poly.Length; j = i++)
+            {
+                // what the fuck
+                inside ^= poly[i].y > pt.y ^ poly[j].y > pt.y
+                    && pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y)
+                        + poly[i].x;
+            }
+
+            return inside;
+        }
+
+        public static float GetAreaOfPolygon(IReadOnlyList<Vector2> poly)
+        {
+            var sum = 0f;
+            for (var i = 1; i <= poly.Count; ++i)
+            {
+                var p0 = poly[i - 1];
+                Vector2 p1;
+                if (i == poly.Count)
+                {
+                    p1 = poly[0];
+                }
+                else
+                {
+                    p1 = poly[i];
+                }
+
+                sum += (p0.x * p1.y - p0.y * p1.x);
+            }
+
+            return sum * .5f;
+        }
+
+        public static float GetAreaOfPolygon(IReadOnlyList<Vector3> poly)
+        {
+            var sum = 0f;
+            for (var i = 0; i < poly.Count; ++i)
+            {
+                var p0 = poly[i];
+
+                Vector2 p1;
+                if (i == poly.Count - 1)
+                {
+                    p1 = poly[0];
+                }
+                else
+                {
+                    p1 = poly[i + 1];
+                }
+
+                sum += (p0.x * p1.y - p0.y * p1.x);
+            }
+
+            return Mathf.Abs(sum * .5f);
+        }
+
+        public static Vector2 GetCentroid(IReadOnlyList<Vector2> poly)
+        {
+            var accumulatedArea = 0.0f;
+            var centerX = 0.0f;
+            var centerY = 0.0f;
+
+            for (int i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
+            {
+                float temp = poly[i].x * poly[j].y - poly[j].x * poly[i].y;
+                accumulatedArea += temp;
+                centerX += (poly[i].x + poly[j].x) * temp;
+                centerY += (poly[i].y + poly[j].y) * temp;
+            }
+
+            if (Mathf.Abs(accumulatedArea) < 1E-7f)
+                return Vector2.zero;
+
+            accumulatedArea *= 3f;
+            return new Vector2(centerX / accumulatedArea, centerY / accumulatedArea);
+        }
+
+        public static Vector2 GetCentroid(IReadOnlyList<Vector3> poly)
+        {
+            var accumulatedArea = 0.0f;
+            var centerX = 0.0f;
+            var centerY = 0.0f;
+
+            for (int i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
+            {
+                float temp = poly[i].x * poly[j].y - poly[j].x * poly[i].y;
+                accumulatedArea += temp;
+                centerX += (poly[i].x + poly[j].x) * temp;
+                centerY += (poly[i].y + poly[j].y) * temp;
+            }
+
+            if (Mathf.Abs(accumulatedArea) < 1E-7f)
+                return Vector2.zero;
+
+            accumulatedArea *= 3f;
+            return new Vector2(centerX / accumulatedArea, centerY / accumulatedArea);
+        }
+
+        static void DBSCAN_RangeQuery(ref List<Vector2> neighbors,
+                                      IList<Vector2> points,
+                                      Vector2 Q,
+                                      float eps)
+        {
+            // RangeQuery(DB, distFunc, Q, eps) {
+            //     Neighbors = empty list
+            //     for each point P in database DB {   /* Scan all points in the database */
+            //         if distFunc(Q, P) ≤ eps then {  /* Compute distance and check epsilon */
+            //             Neighbors = Neighbors ∪ {P} /* Add to result */
+            //         }
+            //     }
+            //     return Neighbors
+            // }
+
+            foreach (var P in points)
+            {
+                var magnitude = (P - Q).magnitude;
+                if (magnitude > 0f && magnitude <= eps)
+                {
+                    neighbors.Add(P);
+                }
+            }
+        }
+
+        public static List<List<Vector2>> Cluster_DBSCAN(IList<Vector2> points, float eps, int minPts)
+        {
+            //  DBSCAN(DB, distFunc, eps, minPts) {
+            // C = 0 /* Cluster counter */
+            var C = 0;
+            var labelMap = new Dictionary<Vector2, int>();
+            var neighbors = new List<Vector2>();
+            var innerNeighbors = new List<Vector2>();
+
+            // for each point P in database DB {
+            foreach (var P in points)
+            {
+                //  if label(P) ≠ undefined then continue /* Previously processed in inner loop */
+                if (labelMap.ContainsKey(P))
+                {
+                    continue;
+                }
+
+                // Neighbors N = RangeQuery(DB, distFunc, P, eps) /* Find neighbors */
+                neighbors.Clear();
+                DBSCAN_RangeQuery(ref neighbors, points, P, eps);
+
+                // if |N| < minPts then { /* Density check */
+                //   label(P) = Noise /* Label as Noise */
+                //   continue
+                //  }
+                if (neighbors.Count + 1 < minPts)
+                {
+                    labelMap.Add(P, -1);
+                    continue;
+                }
+
+                // C = C + 1 /* next cluster label */
+                ++C;
+
+                // label(P) = C /* Label initial point */
+                labelMap.Add(P, C);
+
+                // Seed set S = N \ {P} /* Neighbors to expand */
+                // (implicitly done)
+
+                // for each point Q in S { /* Process every seed point */
+                for (var i = 0; i < neighbors.Count; ++i)
+                {
+                    var Q = neighbors[i];
+
+                    // if label(Q) = Noise then label(Q) = C /* Change Noise to border point */
+                    var hasKey = labelMap.ContainsKey(Q);
+                    if (hasKey && labelMap[Q] == -1)
+                    {
+                        labelMap[Q] = C;
+                    }
+                    // if label(Q) ≠ undefined then continue /* Previously processed */
+                    else if (hasKey)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        // label(Q) = C /* Label neighbor */
+                        labelMap.Add(Q, C);
+                    }
+
+                    // Neighbors N = RangeQuery(DB, distFunc, Q, eps)   /* Find neighbors */
+                    innerNeighbors.Clear();
+                    DBSCAN_RangeQuery(ref innerNeighbors, points, Q, eps);
+
+                    // if |N| ≥ minPts then {                          /* Density check */
+                    //   S = S ∪ N                                    /* Add new neighbors to seed set */
+                    // }
+                    if (innerNeighbors.Count >= minPts)
+                    {
+                        neighbors.AddRange(innerNeighbors);
+                    }
+                }
+            }
+
+            var clusters = new List<List<Vector2>>();
+            for (var i = 0; i < C; ++i)
+            {
+                clusters.Add(new List<Vector2>());
+            }
+
+            foreach (var P in points)
+            {
+                var cluster = labelMap[P];
+                if (cluster == -1)
+                {
+                    clusters.Add(new List<Vector2> { P });
+                    continue;
+                }
+
+                clusters[C - 1].Add(P);
+            }
+
+            return clusters;
         }
     }
 }

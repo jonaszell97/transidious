@@ -8,7 +8,7 @@ using Transidious.PathPlanning;
 
 namespace Transidious
 {
-    public class StreetSegment : MapObject, IRoute
+    public class StreetSegment : DynamicMapObject, IRoute
     {
         [System.Serializable]
         public struct SerializedStreetSegment
@@ -89,7 +89,7 @@ namespace Transidious
                                StreetIntersection endIntersection,
                                bool hasTramTracks = false, int id = -1)
         {
-            base.Initialize(Kind.StreetSegment, id);
+            base.Initialize(MapObjectKind.StreetSegment, id);
 
             this.street = street;
             this.position = position;
@@ -106,8 +106,6 @@ namespace Transidious
             {
                 endIntersection.AddIntersectingStreet(this);
             }
-
-            // this.gameObject.SetActive(false);
         }
 
         public void CalculateLength()
@@ -897,6 +895,9 @@ namespace Transidious
             outlineLine.startWidth = borderWidth;
             outlineLine.endWidth = outlineLine.startWidth;
 
+            streetLine.numCornerVertices = 5;
+            outlineLine.numCornerVertices = 5;
+
             if (startIntersection.RelativePosition(this) == 0
             || endIntersection.RelativePosition(this) == 0)
             {
@@ -1296,7 +1297,11 @@ namespace Transidious
             if (setTextActive)
             {
                 streetName.gameObject.SetActive(true);
-                streetName.textMesh.fontSize = GetFontSize(Camera.main.orthographicSize);
+
+                var newFontSize = GetFontSize(Camera.main.orthographicSize);
+                var scale = newFontSize / streetName.textMesh.fontSize;
+                streetName.transform.localScale = new Vector3(scale, scale, 1f);
+                // streetName.textMesh.fontSize = GetFontSize(Camera.main.orthographicSize);
             }
             else
             {

@@ -17,6 +17,12 @@ namespace Transidious
             textMesh.text = Translator.Get(localizationKey);
         }
 
+        public void SetKey(string key)
+        {
+            this.localizationKey = key;
+            textMesh.text = Translator.Get(localizationKey);
+        }
+
         void OnLanguageChange()
         {
             textMesh.text = Translator.Get(localizationKey);

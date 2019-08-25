@@ -128,8 +128,10 @@ namespace Transidious
             };
         }
 
-        public byte[] MakeScreenshotSingle(Map map, int resolution = 1024)
+        public Texture2D MakeScreenshotSingle(Map map, int resolution = 1024)
         {
+            var prevRenderingDist = GameController.instance.input.renderingDistance;
+            GameController.instance.input.SetRenderingDistance(RenderingDistance.Near);
             map.boundaryOutlineObj.SetActive(false);
 
             var prevMaterial = map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial;
@@ -160,15 +162,6 @@ namespace Transidious
             var minY = map.minY;
             var maxY = map.maxY;
 
-            // var directory = "Assets/Resources/Maps/" + map.name;
-            // System.IO.Directory.CreateDirectory(directory);
-
-            // var di = new System.IO.DirectoryInfo(directory);
-            // foreach (var file in di.GetFiles())
-            // {
-            //     file.Delete();
-            // }
-
             int xRes = Mathf.RoundToInt(resolution * ((maxX - minX) / (renderCamera.aspect * renderCamera.orthographicSize * 2 * renderCamera.aspect)));
             int yRes = Mathf.RoundToInt(resolution * ((maxY - minY) / (renderCamera.aspect * renderCamera.orthographicSize * 2 / renderCamera.aspect)));
 
@@ -194,18 +187,16 @@ namespace Transidious
             RenderTexture.active = null;
             renderCamera.targetTexture = null;
 
-            var bytes = virtualPhoto.EncodeToPNG();
-
 #if DEBUG
+            var bytes = virtualPhoto.EncodeToPNG();
             System.IO.File.WriteAllBytes("/Users/Jonas/Downloads/" + map.name + ".png", bytes);
-            System.IO.File.WriteAllBytes("/Users/Jonas/Downloads/" + map.name + ".jpg",
-                virtualPhoto.EncodeToJPG());
 #endif
 
             map.boundaryBackgroundObj.SetActive(true);
             map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial = prevMaterial;
+            GameController.instance.input.SetRenderingDistance(prevRenderingDist);
 
-            return bytes;
+            return virtualPhoto;
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Transidious
 {
-    public class Street : MapObject
+    public class Street : DynamicMapObject
     {
         public enum Type
         {
@@ -22,6 +22,7 @@ namespace Transidious
         public struct SerializedStreet
         {
             public SerializableMapObject mapObject;
+            public string displayName;
             public Type type;
             public StreetSegment.SerializedStreetSegment[] segments;
             public bool lit;
@@ -64,8 +65,10 @@ namespace Transidious
         public float length;
 
         public void Initialize(Map map, Type type, string name, bool lit,
-                               bool isOneWay, int maxspeed, int lanes)
+                               bool isOneWay, int maxspeed, int lanes, int id = -1)
         {
+            base.Initialize(MapObjectKind.Street, id);
+
             this.map = map;
             this.type = type;
             this.name = name;
@@ -81,7 +84,7 @@ namespace Transidious
         {
             get
             {
-                if (displayName != null)
+                if (!string.IsNullOrEmpty(displayName))
                 {
                     return displayName;
                 }
@@ -318,11 +321,11 @@ namespace Transidious
             }
 
             var txt = map.CreateText(Vector3.zero, DisplayName, new Color(0.3f, 0.3f, 0.3f, 1f));
-            txt.UseDefaultCanvas(map);
             txt.textMesh.autoSizeTextContainer = true;
             txt.textMesh.fontSize = segments.First().GetFontSize(InputController.maxZoom);
             txt.textMesh.alignment = TMPro.TextAlignmentOptions.Center;
             txt.textMesh.ForceMeshUpdate();
+            txt.gameObject.SetActive(false);
 
             float neededWidth = txt.textMesh.preferredWidth * 1.1f;
             float spaceBetweenLabels = 2f * neededWidth;
@@ -352,6 +355,7 @@ namespace Transidious
                 }
 
                 placedText = true;
+                txt.transform.SetParent(seg.transform);
                 txt.transform.position = new Vector3(posAndAngle.pos.x,
                                                      posAndAngle.pos.y,
                                                      Map.Layer(MapLayer.StreetNames));
@@ -410,7 +414,9 @@ namespace Transidious
                 segments.Insert(pos, seg);
             }
 
-            seg.Initialize(this, pos, path, startIntersection, endIntersection, hasTramTracks);
+            seg.Initialize(this, pos, path, startIntersection, endIntersection, hasTramTracks,
+                           segId);
+
             seg.name = this.name + " " + this.segments.Count;
 
             map.RegisterSegment(seg, segId);
@@ -476,6 +482,7 @@ namespace Transidious
             return new SerializedStreet
             {
                 mapObject = base.Serialize(),
+                displayName = displayName,
                 type = type,
 
                 segments = segments.Select(s => s.Serialize()).ToArray(),
@@ -501,6 +508,7 @@ namespace Transidious
 
             s.CalculateLength();
             s.CreateTextMeshes();
+            s.displayName = street.displayName;
 
             return s;
         }

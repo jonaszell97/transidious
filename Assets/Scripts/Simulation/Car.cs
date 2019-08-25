@@ -16,6 +16,7 @@ namespace Transidious
         public bool isFocused;
 
         public static Car focusedCar;
+        static GameObject carOutlineObj;
 
         public void Initialize(SimulationController sim, Citizien driver, Color c, int carModel = -1)
         {
@@ -24,39 +25,41 @@ namespace Transidious
 
             if (carModel == -1)
             {
-                carModel = UnityEngine.Random.Range(0, sim.game.carSprites.Length - 1);
+                carModel = 0;
+                // carModel = UnityEngine.Random.Range(0, sim.game.carSprites.Length - 1);
             }
 
             renderer.sprite = sim.game.carSprites[carModel];
 
             switch (carModel)
             {
-                default:
-                case 0:
-                    this.maxVelocity = 33.333f * Map.Meters; // 120 km/h
-                    this.acceleration = 2.5f * Map.Meters;
-                    break;
-                case 1:
-                    this.maxVelocity = 19.444f * Map.Meters; // 70 km/h
-                    this.acceleration = 2.5f * Map.Meters;
-                    break;
-                case 2:
-                    this.maxVelocity = 27.777f * Map.Meters; // 100 km/h
-                    this.acceleration = 2.5f * Map.Meters;
-                    break;
-                case 3:
-                    this.maxVelocity = 27.777f * Map.Meters; // 100 km/h
-                    this.acceleration = 2.5f * Map.Meters;
-                    break;
-                case 4:
-                    this.maxVelocity = 22.222f * Map.Meters; // 80 km/h
-                    this.acceleration = 2.5f * Map.Meters;
-                    break;
+            default:
+            case 0:
+                this.maxVelocity = 33.333f * Map.Meters; // 120 km/h
+                this.acceleration = 2.5f * Map.Meters;
+                break;
+            case 1:
+                this.maxVelocity = 19.444f * Map.Meters; // 70 km/h
+                this.acceleration = 2.5f * Map.Meters;
+                break;
+            case 2:
+                this.maxVelocity = 27.777f * Map.Meters; // 100 km/h
+                this.acceleration = 2.5f * Map.Meters;
+                break;
+            case 3:
+                this.maxVelocity = 27.777f * Map.Meters; // 100 km/h
+                this.acceleration = 2.5f * Map.Meters;
+                break;
+            case 4:
+                this.maxVelocity = 22.222f * Map.Meters; // 80 km/h
+                this.acceleration = 2.5f * Map.Meters;
+                break;
             }
 
             this.sim = sim;
             this.driver = driver;
             this.length = renderer.bounds.size.y;
+            this.transform.SetLayer(MapLayer.Cars, 1);
 
             var collider = GetComponent<BoxCollider2D>();
             collider.size = renderer.bounds.size;
@@ -98,7 +101,6 @@ namespace Transidious
                 return;
 
             pathFollow.velocity = velocity;
-            // Debug.Log("velocity: " + velocity);
         }
 
         /// Total time elapsed while driving.
@@ -118,11 +120,6 @@ namespace Transidious
 
         void Update()
         {
-            if (isFocused)
-            {
-                UpdateUIPosition();
-            }
-
             if (!sim.game.Paused && pathFollow != null)
             {
                 var elapsedTime = Time.deltaTime * sim.SpeedMultiplier;
@@ -158,6 +155,32 @@ namespace Transidious
                     drivingCar.exactPosition,
                     drivingCar.lane);
             }
+
+            if (isFocused)
+            {
+                UpdateUIPosition();
+                carOutlineObj.transform.SetPositionInLayer(transform.position.x, transform.position.y);
+                carOutlineObj.transform.rotation = transform.rotation;
+            }
+        }
+
+        public void Highlight()
+        {
+            if (carOutlineObj == null)
+            {
+                carOutlineObj = Instantiate(GameController.instance.spritePrefab);
+                carOutlineObj.transform.SetLayer(MapLayer.Cars, 0);
+            }
+
+            var outlineSpriteRenderer = carOutlineObj.GetComponent<SpriteRenderer>();
+            var sprite = this.GetComponent<SpriteRenderer>().sprite;
+
+            outlineSpriteRenderer.sprite = sprite;
+            outlineSpriteRenderer.color = Color.black;
+
+            carOutlineObj.transform.ScaleBy(transform.localScale.x * 1.05f);
+            carOutlineObj.transform.SetPositionInLayer(transform.position.x, transform.position.y);
+            carOutlineObj.transform.rotation = transform.rotation;
         }
 
         void UpdateUIPosition()
@@ -171,6 +194,8 @@ namespace Transidious
 
         void OnMouseDown()
         {
+            this.Highlight();
+
             var game = sim.game;
             var ui = game.citizienUI;
             isFocused = !isFocused;

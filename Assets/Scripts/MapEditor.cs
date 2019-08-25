@@ -78,7 +78,7 @@ namespace Transidious
 
         void Start()
         {
-            game.input.RegisterEventListener(InputEvent.MouseDown, (MapObject obj) =>
+            game.input.RegisterEventListener(InputEvent.MouseDown, (DynamicMapObject obj) =>
             {
                 if (game.editorMode != GameController.MapEditorMode.BulldozeMode)
                 {

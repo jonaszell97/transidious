@@ -15,17 +15,6 @@ namespace Transidious
         public float AngleMultiplier = 1.0f;
         public float SpeedMultiplier = 1.0f;
         public float CurveScale = 1.0f;
-        static GameObject canvasObj;
-
-        public void UseDefaultCanvas(Map map)
-        {
-            if (canvasObj == null)
-            {
-                canvasObj = Instantiate(map.canvasPrefab);
-            }
-
-            transform.SetParent(canvasObj.transform);
-        }
 
         public void SetText(string txt)
         {

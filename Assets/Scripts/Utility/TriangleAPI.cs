@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -34,6 +35,56 @@ namespace Transidious
             get
             {
                 return vertices.Count == 0;
+            }
+        }
+
+        public Vector2[][] Outlines
+        {
+            get
+            {
+                var outlines = new Vector2[1 + holes.Count][];
+                var i = 0;
+
+                var verts = vertices.Select(v => (Vector2)v);
+                outlines[i++] = verts.ToArray();
+
+                foreach (var hole in holes)
+                {
+                    verts = hole.vertices.Select(v => (Vector2)v);
+                    outlines[i++] = verts.ToArray();
+                }
+
+                return outlines;
+            }
+        }
+
+        public float Area
+        {
+            get
+            {
+                var baseArea = Math.GetAreaOfPolygon(vertices);
+                var area = baseArea;
+
+                foreach (var hole in holes)
+                {
+                    area -= Math.GetAreaOfPolygon(hole.vertices);
+                }
+
+                // Can happen with nested holes etc, just ignore it, this isn't a perfect science.
+                if (area <= 0f)
+                {
+                    return baseArea;
+                }
+
+                return area;
+            }
+        }
+
+        public Vector2 Centroid
+        {
+            get
+            {
+                return Math.GetCentroid(vertices);
             }
         }
 

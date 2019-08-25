@@ -9,6 +9,12 @@
     },
     "decimalSeparator": ",",
     "thousandsSeparator": ".",
+    "dateFormat": {
+        "hours": 24,
+        "AM": false,
+        "PM": false,
+        "maxTimeStringLength": 5
+    },
     "items": [
         {
             "key": "ui:happiness",

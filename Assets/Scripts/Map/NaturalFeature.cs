@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Transidious
 {
-    public class NaturalFeature : MapObject
+    public class NaturalFeature : StaticMapObject
     {
         public enum Type
         {
@@ -32,6 +32,8 @@ namespace Transidious
 
         public Type type;
         public Mesh mesh;
+        public int visitors;
+        public int capacity;
 
         public void UpdateMesh(Map map)
         {
@@ -71,19 +73,44 @@ namespace Transidious
             foreach (var tile in map.GetTilesForObject(this))
             {
                 tile.mesh.AddMesh(GetColor(), mesh, layer);
+
+                if (outlinePositions != null)
+                {
+                    tile.AddCollider(this, outlinePositions[0],
+                                     MeshBuilder.GetCollisionRect(mesh), true);
+                }
+                else
+                {
+                    Debug.Log("using simple bounding box for '" + name + "'");
+                    tile.AddCollider(this, MeshBuilder.GetSmallestSurroundingRect(mesh),
+                                     MeshBuilder.GetCollisionRect(mesh), true);
+                }
             }
         }
 
-        public void Initialize(Map map, string name, Type type, Mesh mesh = null, int id = -1)
+        public void Initialize(Map map, string name, Type type,
+                               Mesh mesh = null, float area = 0f,
+                               Vector2? centroid = null, int id = -1)
         {
-            base.Initialize(Kind.NaturalFeature, id);
+
+#if DEBUG
+            if (name.Length == 0)
+            {
+                name = "#" + id.ToString();
+            }
+#endif
+
+            base.Initialize(MapObjectKind.NaturalFeature, id, area, centroid);
 
             this.name = name;
             this.type = type;
             this.mesh = mesh;
+
+            this.visitors = 0;
+            this.capacity = GetDefaultCapacity();
         }
 
-        Color GetColor()
+        public override Color GetColor()
         {
             switch (type)
             {
@@ -114,6 +141,36 @@ namespace Transidious
             }
         }
 
+        public int GetDefaultCapacity()
+        {
+            return GetDefaultCapacity(type, area);
+        }
+
+        public static int GetDefaultCapacity(Type type, float area)
+        {
+            switch (type)
+            {
+            case Type.Park:
+            case Type.Green:
+            case Type.Beach:
+            default:
+                return (int)Mathf.Ceil(area / 10f);
+            case Type.Forest:
+            case Type.Lake:
+                return (int)Mathf.Ceil(area / 50f);
+            case Type.SportsPitch:
+                return (int)Mathf.Ceil(area / 5f);
+            case Type.Allotment:
+            case Type.Cemetery:
+                return (int)Mathf.Ceil(area / 25f);
+            case Type.FootpathArea:
+            case Type.Footpath:
+                return (int)Mathf.Ceil(area / 5f);
+            case Type.Parking:
+                return (int)Mathf.Ceil(area / 5f);
+            }
+        }
+
         public new SerializedFeature Serialize()
         {
             return new SerializedFeature
@@ -128,10 +185,25 @@ namespace Transidious
         {
             var newFeature = map.CreateFeature(
                 feature.mapObject.name, feature.type, feature.mesh,
+                feature.mapObject.area, feature.mapObject.centroid,
                 feature.mapObject.id);
 
             newFeature.Deserialize(feature.mapObject);
             return newFeature;
+        }
+
+        public override void OnMouseDown()
+        {
+            if (GameController.instance.input.IsPointerOverUIElement())
+            {
+                return;
+            }
+
+            var modal = GameController.instance.sim.featureModal;
+            modal.SetFeature(this);
+
+            modal.modal.PositionAt(centroid);
+            modal.modal.Enable();
         }
     }
 }

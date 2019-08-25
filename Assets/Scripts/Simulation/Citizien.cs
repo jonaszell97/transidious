@@ -322,7 +322,7 @@ namespace Transidious
                 pointsOfInterest.Add(PointOfInterest.GroceryStore, groceryStore);
             }
 
-            this.currentPosition = home.position;
+            this.currentPosition = home.centroid;
             UpdateDailySchedule(sim.MinuteOfDay);
 
             Debug.Log(dailySchedule?.ToString());
@@ -410,7 +410,7 @@ namespace Transidious
                 break;
             }
 
-            var place = sim.ClosestUnoccupiedBuilding(buildingType, Home.position);
+            var place = sim.ClosestUnoccupiedBuilding(buildingType, Home.centroid);
             if (place != null)
             {
                 ++place.occupants;
@@ -546,7 +546,7 @@ namespace Transidious
 
                 var pathOptions = new PathPlanning.PathPlanningOptions();
                 var planner = new PathPlanning.PathPlanner(pathOptions);
-                var path = planner.FindClosestDrive(sim.game.loadedMap, currentPosition, poi.position);
+                var path = planner.FindClosestDrive(sim.game.loadedMap, currentPosition, poi.centroid);
                 var pathDuration = (int)Mathf.Ceil(path.duration * 60);
 
                 // Schedule immediately after preceding event.

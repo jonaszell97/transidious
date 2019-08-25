@@ -71,6 +71,34 @@ namespace Transidious
             }
         }
 
+        public static GameObject InstantiateInactive(this MonoBehaviour obj, GameObject prefab)
+        {
+            var prevActive = prefab.activeSelf;
+            prefab.SetActive(false);
+
+            var inst = GameObject.Instantiate(prefab);
+            prefab.SetActive(prevActive);
+
+            return inst;
+        }
+
+        public static void SetPositionInLayer(this Transform transform, float x = 0f, float y = 0f)
+        {
+            transform.position = new Vector3(x, y, transform.position.z);
+        }
+
+        public static void SetLayer(this Transform transform, MapLayer layer, int positionInLayer = 0)
+        {
+            transform.position = new Vector3(transform.position.x,
+                                             transform.position.y,
+                                             Map.Layer(layer, positionInLayer));
+        }
+
+        public static void ScaleBy(this Transform transform, float scale = 1f)
+        {
+            transform.localScale = new Vector3(scale, scale, 1f);
+        }
+
         public static void DrawCircle(this GameObject container, float radius, float lineWidth, Color c)
         {
             var segments = 360;
@@ -120,6 +148,17 @@ namespace Transidious
                     UnityEngine.Random.Range(0f, 1f)
                 );
             }
+        }
+
+        public static Vector2[] Points(this Rect rect)
+        {
+            return new Vector2[]
+            {
+                new Vector2(rect.x, rect.y),
+                new Vector2(rect.x, rect.y + rect.height),
+                new Vector2(rect.x + rect.width, rect.y + rect.height),
+                new Vector2(rect.x + rect.width, rect.y),
+            };
         }
     }
 }

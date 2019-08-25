@@ -26,6 +26,15 @@ namespace Transidious
         /// The traffic simulator.
         public TrafficSimulator trafficSim;
 
+        /// The building modal.
+        public UIBuildingInfoModal buildingInfoModal;
+
+        /// The natural feature modal.
+        public UIFeatureInfoModal featureModal;
+
+        /// scratch buffer used for time string building.
+        char[] timeStringBuffer;
+
         public int MinuteOfDay
         {
             get
@@ -39,6 +48,12 @@ namespace Transidious
             this.gameTime = new DateTime(2000, 1, 1, 7, 0, 0);
             this.simulationSpeed = 0;
             this.citiziens = new List<Citizien>();
+        }
+
+        void Start()
+        {
+            this.timeStringBuffer = new char[Translator.MaxTimeStringLength];
+            EventManager.current.RegisterEventListener(this);
         }
 
         void Update()
@@ -65,11 +80,12 @@ namespace Transidious
 #if DEBUG
             if (measuring)
             {
-                if (Input.GetMouseButton(0))
+                if (Input.GetMouseButtonDown(0))
                 {
                     if (firstMeasurePos == null)
                     {
                         firstMeasurePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                        return;
                     }
                     else
                     {
@@ -77,6 +93,7 @@ namespace Transidious
                         Debug.Log("distance: " + (firstMeasurePos.Value - otherPos).magnitude);
 
                         measuring = false;
+                        firstMeasurePos = null;
                     }
                 }
             }
@@ -109,14 +126,35 @@ namespace Transidious
             }
         }
 
+        void OnLanguageChange()
+        {
+            if (this.timeStringBuffer.Length != Translator.MaxTimeStringLength)
+            {
+                this.timeStringBuffer = new char[Translator.MaxTimeStringLength];
+            }
+
+            UpdateGameTimeString();
+        }
+
+        void UpdateGameTimeString()
+        {
+            Translator.FormatTime(gameTime, ref timeStringBuffer);
+            game.gameTimeText.SetCharArray(timeStringBuffer);
+        }
+
         bool UpdateGameTime()
         {
-            float minutesPerFrame = 0.02f * SpeedMultiplier;
+            var minutesPerFrame = 0.02f * SpeedMultiplier;
             var prevDay = gameTime.DayOfYear;
+            var prevMinute = gameTime.Minute;
 
             gameTime = gameTime.AddMinutes(minutesPerFrame);
-            game.gameTimeText.text = gameTime.ToShortDateString()
-                + " " + gameTime.ToShortTimeString();
+            if (gameTime.Minute == prevMinute)
+            {
+                return false;
+            }
+
+            UpdateGameTimeString();
 
             var hour = gameTime.Hour;
             if (hour == 7)
@@ -137,7 +175,7 @@ namespace Transidious
         public Car CreateCar(Citizien driver, Vector3 pos, Color c, int carModel = -1)
         {
             var obj = Instantiate(carPrefab);
-            obj.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.Cars));
+            obj.transform.position = new Vector3(pos.x, pos.y);
             obj.transform.SetParent(this.transform);
 
             var car = obj.GetComponent<Car>();
@@ -166,7 +204,7 @@ namespace Transidious
 
             var idx = UnityEngine.Random.Range(0, buildings.Count);
             var building = buildings[idx];
-            int tries = 0;
+            var tries = 0;
 
             while (building.capacity - building.occupants == 0)
             {
@@ -184,7 +222,7 @@ namespace Transidious
             return building;
         }
 
-        public Building ClosestUnoccupiedBuilding(Building.Type type, Vector3 pos)
+        public Building ClosestUnoccupiedBuilding(Building.Type type, Vector2 pos)
         {
             if (!game.loadedMap.buildingsByType.TryGetValue(type, out List<Building> buildings))
             {
@@ -196,7 +234,7 @@ namespace Transidious
 
             foreach (var building in buildings)
             {
-                var distance = (building.position - pos).sqrMagnitude;
+                var distance = (building.centroid - pos).sqrMagnitude;
                 if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -217,8 +255,8 @@ namespace Transidious
                 var goal = RandomBuilding();
 
                 var planner = new PathPlanning.PathPlanner(options);
-                var result = planner.FindClosestDrive(game.loadedMap, start.position,
-                                                      goal.position);
+                var result = planner.FindClosestDrive(game.loadedMap, start.centroid,
+                                                      goal.centroid);
 
                 trafficSim.SpawnCar(result, new Citizien(this));
             }
@@ -278,7 +316,7 @@ namespace Transidious
                     measuring = true;
                 }
             }
-            if (GUI.Button(new Rect(25, 35, 100, 30), "MOPSGESCHWINDIGKEIT"))
+            if (GUI.Button(new Rect(25, 60, 100, 30), "MOPSGESCHWINDIGKEIT"))
             {
                 this.simulationSpeed = 3;
             }

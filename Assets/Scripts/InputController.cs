@@ -43,7 +43,7 @@ namespace Transidious
         public GameController controller;
         public RenderingDistance renderingDistance = RenderingDistance.Near;
 
-        public delegate void InputEventListener(MapObject mapObject);
+        public delegate void InputEventListener(DynamicMapObject mapObject);
         Dictionary<int, InputEventListener>[] inputEventListeners;
         int eventListenerCount;
         HashSet<int> disabledListeners;
@@ -79,7 +79,6 @@ namespace Transidious
 
         public float lineWidth;
         public float stopWidth;
-        public float boundaryWidth;
 
         static readonly float farThreshold = 650f * Map.Meters;
         static readonly float veryFarThreshold = 2000f * Map.Meters;
@@ -174,7 +173,7 @@ namespace Transidious
             disabledListeners.Remove(id);
         }
 
-        public void FireEvent(InputEvent type, MapObject target = null)
+        public void FireEvent(InputEvent type, DynamicMapObject target = null)
         {
             var eventListeners = inputEventListeners[(int)type];
             foreach (var listener in eventListeners)
@@ -221,7 +220,7 @@ namespace Transidious
             }
         }
 
-        public void MouseOverMapObject(MapObject obj)
+        public void MouseOverMapObject(DynamicMapObject obj)
         {
             if (IsPointerOverUIElement())
             {
@@ -239,7 +238,7 @@ namespace Transidious
             }
         }
 
-        public void MouseEnterMapObject(MapObject obj)
+        public void MouseEnterMapObject(DynamicMapObject obj)
         {
             if (IsPointerOverUIElement())
             {
@@ -257,7 +256,7 @@ namespace Transidious
             }
         }
 
-        public void MouseExitMapObject(MapObject obj)
+        public void MouseExitMapObject(DynamicMapObject obj)
         {
             if (IsPointerOverUIElement())
             {
@@ -275,7 +274,7 @@ namespace Transidious
             }
         }
 
-        public void MouseDownMapObject(MapObject obj)
+        public void MouseDownMapObject(DynamicMapObject obj)
         {
             if (IsPointerOverUIElement())
             {
@@ -302,51 +301,6 @@ namespace Transidious
         public float GetScreenSpaceFontScale()
         {
             return camera.orthographicSize / minZoom;
-        }
-
-        void UpdateStopWidth()
-        {
-            stopWidth = 10f;
-        }
-
-        void UpdateLineWidth()
-        {
-            switch (renderingDistance)
-            {
-            case RenderingDistance.VeryFar:
-            case RenderingDistance.Farthest:
-                lineWidth = 2.5f * Map.Meters;
-                break;
-            case RenderingDistance.Far:
-                lineWidth = 3f * Map.Meters;
-                break;
-            case RenderingDistance.Near:
-                lineWidth = 5f * Map.Meters;
-                break;
-            default:
-                throw new System.ArgumentException(string.Format("Illegal enum value {0}", renderingDistance));
-            }
-        }
-
-        void UpdateBoundaryWidth()
-        {
-            switch (renderingDistance)
-            {
-            case RenderingDistance.VeryFar:
-            case RenderingDistance.Farthest:
-                boundaryWidth = 40f * Map.Meters;
-                break;
-            case RenderingDistance.Far:
-                boundaryWidth = 20f * Map.Meters;
-                break;
-            case RenderingDistance.Near:
-                boundaryWidth = 10f * Map.Meters;
-                break;
-            default:
-                throw new System.ArgumentException(string.Format("Illegal enum value {0}", renderingDistance));
-            }
-
-            boundaryWidth = 20f * Map.Meters;
         }
 
         void ZoomOrthoCamera(Vector3 zoomTowards, float amount)
@@ -431,13 +385,12 @@ namespace Transidious
                 return;
             }
 
-            controller?.loadedMap?.UpdateTextScale();
+            // controller?.loadedMap?.UpdateTextScale();
 
             panSensitivityX = camera.orthographicSize * 0.1f;
             panSensitivityY = camera.orthographicSize * 0.1f;
             zoomSensitivity = camera.orthographicSize * 0.5f;
 
-            UpdateBoundaryWidth();
             UpdateScaleBar();
 
             FireEvent(InputEvent.Zoom);
@@ -446,6 +399,17 @@ namespace Transidious
                 return;
 
             FireEvent(InputEvent.ScaleChange);
+        }
+
+        public void SetRenderingDistance(RenderingDistance dist)
+        {
+            var currRenderingDist = renderingDistance;
+            this.renderingDistance = dist;
+
+            if (currRenderingDist != renderingDistance)
+            {
+                FireEvent(InputEvent.ScaleChange);
+            }
         }
 
         void FadeScaleBar()
@@ -719,9 +683,6 @@ namespace Transidious
             camera.orthographicSize = 5000f * Map.Meters;
 
             UpdateRenderingDistance();
-            UpdateStopWidth();
-            UpdateLineWidth();
-            UpdateBoundaryWidth();
 
             if (aspectRatio > 1.0f)
             {

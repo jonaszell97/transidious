@@ -147,10 +147,10 @@ namespace Transidious
 
             yield return map.DoFinalize();
 
-            var backgroundBytes = ScreenShotMaker.Instance.MakeScreenshotSingle(map);
-            SaveManager.SaveMapLayout(map, backgroundBytes);
+            var backgroundTex = ScreenShotMaker.Instance.MakeScreenshotSingle(map);
+            SaveManager.SaveMapLayout(map, backgroundTex.EncodeToPNG());
 
-            yield return LoadTransitLines();
+            // yield return LoadTransitLines();
             Debug.Log("loaded transit lines");
 
             SaveManager.SaveMapData(map);
@@ -927,12 +927,11 @@ namespace Transidious
             Debug.Log("removed " + removedVerts + " street verts");
         }
 
-        public Mesh LoadPolygon(Relation rel,
+        public Mesh LoadPolygon(PSLG pslg, Relation rel,
                                 float simplificationThresholdAngle = 0f,
                                 string outer = "outer",
                                 string inner = "inner")
         {
-            var pslg = new PSLG();
             foreach (var member in rel.Members)
             {
                 if (!String.IsNullOrEmpty(outer) && member.Role == outer)
@@ -984,42 +983,85 @@ namespace Transidious
             }
         }
 
+        public Mesh LoadPolygon(Relation rel,
+                                float simplificationThresholdAngle = 0f,
+                                string outer = "outer",
+                                string inner = "inner")
+        {
+            var pslg = new PSLG();
+            return LoadPolygon(pslg, rel, simplificationThresholdAngle, outer, inner);
+        }
+
         IEnumerator LoadParks()
         {
             var totalVerts = 0;
             foreach (var feature in naturalFeatures)
             {
-                var featureName = feature.Item1.Tags.GetValue("name");
-                Debug.Log("loading natural feature '" + featureName + "'...");
-
-                Mesh mesh;
-                if (feature.Item1.Type == OsmGeoType.Relation)
+                try
                 {
-                    mesh = LoadPolygon(feature.Item1 as Relation);
-                }
-                else
-                {
-                    var way = feature.Item1 as Way;
-                    var wayPositions = GetWayPositions(way);
+                    var featureName = feature.Item1.Tags.GetValue("name");
+                    Vector2[][] outlinePositions = null;
+                    float area = 0f;
+                    Vector2 centroid = Vector2.zero;
 
-                    if (wayPositions.Count < 3)
+                    Debug.Log("loading natural feature '" + featureName + "'...");
+
+                    Mesh mesh;
+                    if (feature.Item1.Type == OsmGeoType.Relation)
                     {
-                        continue;
+                        var pslg = new PSLG();
+                        mesh = LoadPolygon(pslg, feature.Item1 as Relation);
+                        outlinePositions = pslg?.Outlines;
+                        area = pslg?.Area ?? 0f;
+                        centroid = pslg?.Centroid ?? Vector2.zero;
+                    }
+                    else
+                    {
+                        var way = feature.Item1 as Way;
+                        var wayPositions = GetWayPositions(way);
+
+                        if (wayPositions.Count < 3)
+                        {
+                            continue;
+                        }
+
+                        var wayPositionsArr = wayPositions.ToArray();
+                        mesh = MeshBuilder.PointsToMeshFast(wayPositionsArr);
+                        MeshBuilder.FixWindingOrder(mesh);
+
+                        outlinePositions = new Vector2[][]
+                        {
+                        wayPositionsArr.Select(v => (Vector2)v).ToArray(),
+                        };
+
+                        area = Math.GetAreaOfPolygon(wayPositionsArr);
+                        centroid = Math.GetCentroid(wayPositionsArr);
                     }
 
-                    mesh = MeshBuilder.PointsToMeshFast(wayPositions.ToArray());
-                    MeshBuilder.FixWindingOrder(mesh);
+                    totalVerts += mesh?.triangles.Length ?? 0;
+
+                    var f = map.CreateFeature(featureName, feature.Item2, mesh, area, centroid);
+                    if (outlinePositions != null)
+                    {
+                        outlinePositions = outlinePositions.Select(
+                            arr => MeshBuilder.RemoveDetailByDistance(arr, 1f).ToArray()).ToArray();
+
+                        f.outlinePositions = outlinePositions;
+                    }
+
+                    Debug.Log("done");
                 }
-
-                totalVerts += mesh?.triangles.Length ?? 0;
-
-                map.CreateFeature(featureName, feature.Item2, mesh);
-                Debug.Log("done");
+                catch (Exception e)
+                {
+                    Debug.LogWarning(e.Message);
+                    continue;
+                }
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
                 }
+
             }
 
             Debug.Log("feature verts: " + totalVerts);
@@ -1044,7 +1086,7 @@ namespace Transidious
                                                         2 * StreetSegment.laneWidth * 0.3f,
                                                         10);
 
-                map.CreateFeature(name, NaturalFeature.Type.Footpath, mesh);
+                map.CreateFeature(name, NaturalFeature.Type.Footpath, mesh, 0f, Vector2.zero);
                 Debug.Log("done");
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
@@ -1061,74 +1103,118 @@ namespace Transidious
             var totalVerts = 0;
             foreach (var building in buildings)
             {
-                var buildingName = building.Item1.Tags.GetValue("name");
-                Debug.Log("loading building '" + buildingName + "'...");
-
-                var numberStr = building.Item1.Tags.GetValue("addr:housenumber");
-                var type = building.Item2;
-
-                Vector3? position = null;
-
-                Mesh mesh;
-                if (building.Item1.Type == OsmGeoType.Relation)
+                try
                 {
-                    mesh = LoadPolygon(building.Item1 as Relation);
-                }
-                else
-                {
-                    var way = building.Item1 as Way;
-                    var wayPositions = new List<Vector3>();
+                    var buildingName = building.Item1.Tags.GetValue("name");
+                    var numberStr = building.Item1.Tags.GetValue("addr:housenumber");
 
-                    foreach (var nodeId in way.Nodes)
+                    if (string.IsNullOrEmpty(buildingName))
                     {
-                        var node = FindNode(nodeId);
-                        if (node == null)
+                        var streetName = building.Item1.Tags.GetValue("addr:street");
+                        buildingName = streetName;
+
+                        if (!string.IsNullOrEmpty(numberStr))
+                        {
+                            buildingName += " ";
+                            buildingName += numberStr;
+                        }
+                    }
+
+                    Debug.Log("loading building '" + buildingName + "'...");
+
+                    var type = building.Item2;
+                    Vector3? position = null;
+                    Vector2[][] outlinePositions = null;
+                    float area = 0f;
+                    Vector2 centroid = Vector2.zero;
+
+                    Mesh mesh;
+                    if (building.Item1.Type == OsmGeoType.Relation)
+                    {
+                        var pslg = new PSLG();
+                        mesh = LoadPolygon(pslg, building.Item1 as Relation);
+                        outlinePositions = pslg?.Outlines;
+                        area = pslg?.Area ?? 0f;
+                        centroid = pslg?.Centroid ?? Vector2.zero;
+                    }
+                    else
+                    {
+                        var way = building.Item1 as Way;
+                        var wayPositions = new List<Vector3>();
+
+                        foreach (var nodeId in way.Nodes)
+                        {
+                            var node = FindNode(nodeId);
+                            if (node == null)
+                            {
+                                continue;
+                            }
+
+                            var loc = Project(node);
+                            wayPositions.Add(loc);
+
+                            if (node.Tags != null)
+                            {
+                                if (string.IsNullOrEmpty(numberStr))
+                                {
+                                    numberStr = node.Tags.GetValue("addr:housenumber");
+                                }
+
+                                if (node.Tags.ContainsKey("shop"))
+                                {
+                                    var val = node.Tags.GetValue("shop");
+                                    if (val == "convenience" || val == "supermarket")
+                                    {
+                                        type = Building.Type.GroceryStore;
+                                    }
+                                    else
+                                    {
+                                        type = Building.Type.Shop;
+                                    }
+                                }
+                                else if (node.Tags.ContainsKey("office"))
+                                {
+                                    type = Building.Type.Office;
+                                }
+                            }
+                        }
+
+                        if (wayPositions.Count < 3)
                         {
                             continue;
                         }
 
-                        var loc = Project(node);
-                        wayPositions.Add(loc);
+                        var wayPositionsArr = wayPositions.ToArray();
+                        mesh = MeshBuilder.PointsToMeshFast(wayPositionsArr);
+                        MeshBuilder.FixWindingOrder(mesh);
 
-                        if (node.Tags != null)
+                        outlinePositions = new Vector2[][]
                         {
-                            if (string.IsNullOrEmpty(numberStr))
-                            {
-                                numberStr = node.Tags.GetValue("addr:housenumber");
-                            }
+                        wayPositionsArr.Select(v => (Vector2)v).ToArray(),
+                        };
 
-                            if (node.Tags.ContainsKey("shop"))
-                            {
-                                var val = node.Tags.GetValue("shop");
-                                if (val == "convenience" || val == "supermarket")
-                                {
-                                    type = Building.Type.GroceryStore;
-                                }
-                                else
-                                {
-                                    type = Building.Type.Shop;
-                                }
-                            }
-                            else if (node.Tags.ContainsKey("office"))
-                            {
-                                type = Building.Type.Office;
-                            }
-                        }
+                        area = Math.GetAreaOfPolygon(wayPositionsArr);
+                        centroid = Math.GetCentroid(wayPositionsArr);
                     }
 
-                    if (wayPositions.Count < 3)
+                    totalVerts += mesh?.triangles.Length ?? 0;
+
+                    var b = map.CreateBuilding(type, mesh, buildingName, numberStr, area, centroid);
+                    if (outlinePositions != null)
                     {
-                        continue;
+                        outlinePositions = outlinePositions.Select(
+                            arr => MeshBuilder.RemoveDetailByDistance(arr, 1f).ToArray()).ToArray();
+
+                        b.outlinePositions = outlinePositions;
                     }
 
-                    mesh = MeshBuilder.PointsToMeshFast(wayPositions.ToArray());
-                    MeshBuilder.FixWindingOrder(mesh);
+                    Debug.Log("done");
                 }
-
-                totalVerts += mesh?.triangles.Length ?? 0;
-
-                map.CreateBuilding(type, mesh, buildingName, numberStr, position);
-                Debug.Log("done");
+                catch (Exception e)
+                {
+                    Debug.LogWarning(e.Message);
+                    continue;
+                }
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {

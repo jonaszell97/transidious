@@ -8,7 +8,7 @@ using Transidious.PathPlanning;
 
 namespace Transidious
 {
-    public class Route : MapObject, IRoute
+    public class Route : DynamicMapObject, IRoute
     {
         [System.Serializable]
         public struct SerializedRoute
@@ -60,7 +60,7 @@ namespace Transidious
         public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector3> positions,
                                bool isBackRoute = false, int id = -1)
         {
-            base.Initialize(Kind.Line, id);
+            base.Initialize(MapObjectKind.Line, id);
 
             this.line = line;
             this.positions = positions;

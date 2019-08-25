@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 
 namespace Transidious
 {
@@ -102,6 +103,9 @@ namespace Transidious
         public GameObject mapPrefab;
         public GameObject tooltipPrefab;
 
+        /// Prefab for line renderers.
+        public GameObject lineRendererPrefab;
+
         // Only for debugging.
         public OSMImportHelper.Area areaToLoad;
 
@@ -163,7 +167,7 @@ namespace Transidious
         public Sprite uiButtonSprite;
 
         /// The game time text.
-        public UnityEngine.UI.Text gameTimeText;
+        public TMP_Text gameTimeText;
 
         /// The simulation speed button.
         public Button simSpeedButton;
@@ -175,7 +179,7 @@ namespace Transidious
         public GameObject scaleBar;
 
         /// The scale text.
-        public UnityEngine.UI.Text scaleText;
+        public TMP_Text scaleText;
 
         /// The traffic light sprites.
         public Sprite[] trafficLightSprites;
@@ -249,7 +253,7 @@ namespace Transidious
         }
 
         public Tooltip CreateTooltip(Text text, Color backgroundColor,
-                                     MapObject attachedObject = null)
+                                     DynamicMapObject attachedObject = null)
         {
             var obj = Instantiate(tooltipPrefab);
             var tooltip = obj.GetComponent<Tooltip>();

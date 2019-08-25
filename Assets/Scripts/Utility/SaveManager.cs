@@ -191,8 +191,6 @@ namespace Transidious
             LoadBackgroundSprite(map, serializedMap.backgroundImage,
                                  MapDisplayMode.Night,
                                  ref map.backgroundSpriteNight);
-
-            // yield return LoadTiles(map, mapName, serializedMap.screenShotInfo);
         }
 
         static void LoadBackgroundSprite(Map map, byte[] bytes,
@@ -205,8 +203,9 @@ namespace Transidious
                 Debug.LogError("corrupted PNG file!");
                 return;
             }
+            // var tex = ScreenShotMaker.Instance.MakeScreenshotSingle(map);
 
-            var buildingColor = Building.DefaultColor(mode);
+            var buildingColor = Building.GetColor(Building.Type.Residential, mode);
             var bgColor = map.GetDefaultBackgroundColor(mode);
             var streetColor = StreetSegment.GetStreetColor(Street.Type.Primary,
                 RenderingDistance.Near, mode);
@@ -403,6 +402,17 @@ namespace Transidious
 
             // Finalize the map.
             yield return map.DoFinalize(thresholdTime);
+
+            // GameController.instance.RunTimer("creating LOD sprites", () =>
+            // {
+            //     LoadBackgroundSprite(map, null,
+            //                         MapDisplayMode.Day,
+            //                         ref map.backgroundSpriteDay);
+
+            //     LoadBackgroundSprite(map, null,
+            //                          MapDisplayMode.Night,
+            //                          ref map.backgroundSpriteNight);
+            // });
         }
 
         public static IEnumerator LoadSave(GameController game, string saveName)

@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4416406968466351570}
-  - component: {fileID: 7321080744412482081}
   m_Layer: 0
   m_Name: Building
   m_TagString: Untagged
@@ -31,25 +30,3 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7321080744412482081
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6846618925097531575}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f555418e08a3a4cbbba071df04b243c0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  id: 0
-  inputController: {fileID: 0}
-  highlighted: 0
-  street: {fileID: 0}
-  streetID: 0
-  number: 
-  type: 0
-  capacity: 0
-  occupants: 0
-  position: {x: 0, y: 0, z: 0}

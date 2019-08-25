@@ -53,7 +53,6 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
-  hidden: 0
   mesh: {fileID: 1060823748927563578}
 --- !u!114 &1060823748927563578
 MonoBehaviour:

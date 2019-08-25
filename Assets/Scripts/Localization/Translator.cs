@@ -24,6 +24,15 @@ namespace Transidious
     }
 
     [Serializable]
+    struct DateFormat
+    {
+        public int hours;
+        public bool AM;
+        public bool PM;
+        public int maxTimeStringLength;
+    }
+
+    [Serializable]
     class Language
     {
         public string lang_id;
@@ -31,6 +40,7 @@ namespace Transidious
         public string decimalSeparator;
         public string thousandsSeparator;
         public Currency currency;
+        public DateFormat dateFormat;
         public LanguageItem[] items;
     }
 
@@ -63,7 +73,7 @@ namespace Transidious
         {
             if (!items.TryGetValue(key, out string text))
             {
-                Debug.LogError("language is missing item '" + key + "'");
+                Debug.LogWarning("language is missing item '" + key + "'");
 #if DEBUG
                 return key;
 #else
@@ -176,6 +186,73 @@ namespace Transidious
             }
 
             return str.ToString();
+        }
+
+        public static int MaxTimeStringLength
+        {
+            get
+            {
+                return current.loadedLanguage.dateFormat.maxTimeStringLength;
+            }
+        }
+
+        public static string FormatTime(DateTime time)
+        {
+            var bytes = new char[MaxTimeStringLength];
+            FormatTime(time, ref bytes);
+
+            return new string(bytes);
+        }
+
+        public static void FormatTime(DateTime time, ref char[] bytes)
+        {
+            Debug.Assert(bytes.Length >= MaxTimeStringLength);
+
+            var i = 0;
+
+            var dateFormat = current.loadedLanguage.dateFormat;
+            var hour = time.Hour;
+            var isAM = hour <= 12;
+
+            hour %= dateFormat.hours;
+
+            if (hour >= 10)
+            {
+                bytes[i++] = (char)('0' + (hour / 10));
+                bytes[i++] = (char)('0' + (hour % 10));
+            }
+            else
+            {
+                bytes[i++] = '0';
+                bytes[i++] = (char)('0' + hour);
+            }
+
+            bytes[i++] = ':';
+
+            var min = time.Minute;
+            if (min >= 10)
+            {
+                bytes[i++] = (char)('0' + (min / 10));
+                bytes[i++] = (char)('0' + (min % 10));
+            }
+            else
+            {
+                bytes[i++] = '0';
+                bytes[i++] = (char)('0' + min);
+            }
+
+            if (isAM && dateFormat.AM)
+            {
+                bytes[i++] = ' ';
+                bytes[i++] = 'A';
+                bytes[i++] = 'M';
+            }
+            else if (!isAM && dateFormat.PM)
+            {
+                bytes[i++] = ' ';
+                bytes[i++] = 'P';
+                bytes[i++] = 'M';
+            }
         }
     }
 }

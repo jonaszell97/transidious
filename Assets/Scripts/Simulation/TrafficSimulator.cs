@@ -162,7 +162,7 @@ namespace Transidious
 #if DEBUG
             if (manualTrafficLightControl)
             {
-                sim.game.input.RegisterEventListener(InputEvent.MouseDown, (MapObject obj) =>
+                sim.game.input.RegisterEventListener(InputEvent.MouseDown, (DynamicMapObject obj) =>
                 {
                     var seg = obj as StreetSegment;
                     if (seg == null)
@@ -320,17 +320,24 @@ namespace Transidious
                     var intersectionPath = GetPath(nextIntersection, segment,
                                                    nextSegment, prevLane);
 
-                    var begin = 1;
-                    var end = intersectionPath.Length - 1;
-
-                    if (addFirstIntersectionPos)
+                    if (intersectionPath == null)
                     {
-                        begin = 0;
+                        Debug.LogWarning("missing intersection path");
                     }
-
-                    for (int i = begin; i < end; ++i)
+                    else
                     {
-                        path.Add(intersectionPath[i]);
+                        var begin = 1;
+                        var end = intersectionPath.Length - 1;
+
+                        if (addFirstIntersectionPos)
+                        {
+                            begin = 0;
+                        }
+
+                        for (int i = begin; i < end; ++i)
+                        {
+                            path.Add(intersectionPath[i]);
+                        }
                     }
                 }
 

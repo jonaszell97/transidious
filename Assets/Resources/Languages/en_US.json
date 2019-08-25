@@ -9,6 +9,12 @@
     },
     "decimalSeparator": ".",
     "thousandsSeparator": ",",
+    "dateFormat": {
+        "hours": 12,
+        "AM": true,
+        "PM": true,
+        "maxTimeStringLength": 8
+    },
     "items": [
         {
             "key": "ui:happiness",
@@ -62,6 +68,128 @@
         {
             "key": "ui:transit:line_color",
             "text": "Line Color"
+        },
+
+        {
+            "key": "ui:building:occupants",
+            "text": "Occupants"
+        },
+        {
+            "key": "ui:building:residents",
+            "text": "Residents"
+        },
+        {
+            "key": "ui:building:workers",
+            "text": "Workers"
+        },
+        {
+            "key": "ui:building:students",
+            "text": "Students"
+        },
+        {
+            "key": "ui:building:visitors",
+            "text": "Visitors"
+        },
+        {
+            "key": "ui:building:type",
+            "text": "Type"
+        },
+        {
+            "key": "ui:building:type:Residential",
+            "text": "Residential"
+        },
+        {
+            "key": "ui:building:type:Shop",
+            "text": "Shop"
+        },
+        {
+            "key": "ui:building:type:Office",
+            "text": "Office"
+        },
+        {
+            "key": "ui:building:type:ElementarySchool",
+            "text": "Elementary School"
+        },
+        {
+            "key": "ui:building:type:HighSchool",
+            "text": "High School"
+        },
+        {
+            "key": "ui:building:type:University",
+            "text": "University"
+        },
+        {
+            "key": "ui:building:type:Hospital",
+            "text": "Hospital"
+        },
+        {
+            "key": "ui:building:type:Stadium",
+            "text": "Stadium"
+        },
+        {
+            "key": "ui:building:type:GroceryStore",
+            "text": "Grocery Store"
+        },
+        {
+            "key": "ui:building:area",
+            "text": "Area"
+        },
+
+        {
+            "key": "ui:feature:visitors",
+            "text": "Visitors"
+        },
+        {
+            "key": "ui:feature:type",
+            "text": "Type"
+        },
+        {
+            "key": "ui:feature:area",
+            "text": "Area"
+        },
+        {
+            "key": "ui:feature:type:Park",
+            "text": "Park"
+        },
+        {
+            "key": "ui:feature:type:Green",
+            "text": "Green"
+        },
+        {
+            "key": "ui:feature:type:Lake",
+            "text": "Lake"
+        },
+        {
+            "key": "ui:feature:type:SportsPitch",
+            "text": "Sports Pitch"
+        },
+        {
+            "key": "ui:feature:type:Allotment",
+            "text": "Allotments"
+        },
+        {
+            "key": "ui:feature:type:FootpathArea",
+            "text": "Footpath"
+        },
+        {
+            "key": "ui:feature:type:Footpath",
+            "text": "Footpath"
+        },
+        {
+            "key": "ui:feature:type:Beach",
+            "text": "Beach"
+        },
+        {
+            "key": "ui:feature:type:Forest",
+            "text": "Forest"
+        },
+        {
+            "key": "ui:feature:type:Parking",
+            "text": "Parking"
+        },
+        {
+            "key": "ui:feature:type:Cemetery",
+            "text": "Cemetery"
         },
 
         {

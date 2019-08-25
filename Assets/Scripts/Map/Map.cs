@@ -87,10 +87,10 @@ namespace Transidious
         public GameObject backgroundSpriteNight;
 
         /// Map objects indexed by name.
-        Dictionary<string, MapObject> mapObjectMap;
+        Dictionary<string, IMapObject> mapObjectMap;
 
         /// Map objects indexed by ID.
-        Dictionary<int, MapObject> mapObjectIDMap;
+        Dictionary<int, IMapObject> mapObjectIDMap;
 
         int lastAssignedMapObjectID = 1;
 
@@ -129,12 +129,6 @@ namespace Transidious
         /// Prefab for creating map tiles.
         public GameObject mapTilePrefab;
 
-        /// Prefab for creating buildings.
-        public GameObject buildingPrefab;
-
-        /// Prefab for creating natural features.
-        public GameObject naturalFeaturePrefab;
-
         /// Prefab for creating multimesh objects.
         public GameObject multiMeshPrefab;
 
@@ -146,9 +140,6 @@ namespace Transidious
 
         /// Prefab for creating street segments.
         public GameObject streetSegmentPrefab;
-
-        /// Prefab for creating street intersections.
-        public GameObject streetIntersectionPrefab;
 
         /// Prefab for creating stops.
         public GameObject stopPrefab;
@@ -190,8 +181,8 @@ namespace Transidious
 
         public void Initialize()
         {
-            this.mapObjectMap = new Dictionary<string, MapObject>();
-            this.mapObjectIDMap = new Dictionary<int, MapObject>();
+            this.mapObjectMap = new Dictionary<string, IMapObject>();
+            this.mapObjectIDMap = new Dictionary<int, IMapObject>();
 
             this.streets = new List<Street>();
             this.streetSegments = new List<StreetSegment>();
@@ -208,7 +199,6 @@ namespace Transidious
 
             mapObjectIDMap[0] = null;
 
-            this.canvas = this.gameObject.AddComponent<Canvas>();
             this.canvas.sortingLayerName = "Foreground";
         }
 
@@ -223,7 +213,7 @@ namespace Transidious
             return mm;
         }
 
-        public void RegisterMapObject(MapObject obj, Vector3 position, int id = -1)
+        public void RegisterMapObject(IMapObject obj, Vector3 position, int id = -1)
         {
             if (!isLoadedFromSaveFile)
             {
@@ -233,15 +223,15 @@ namespace Transidious
                     tile.mapObjects.Add(obj);
 
                     // If the object belongs to a single map tile, parent it.
-                    obj.transform.SetParent(tile.transform);
-                    obj.uniqueTile = tile;
+                    obj.transform?.SetParent(tile.transform);
+                    obj.UniqueTile = tile;
                 }
             }
 
             RegisterMapObject(obj, id);
         }
 
-        public void RegisterMapObject(MapObject obj, IEnumerable<Vector3> positions,
+        public void RegisterMapObject(IMapObject obj, IEnumerable<Vector3> positions,
                                       int id = -1)
         {
             if (!isLoadedFromSaveFile && positions != null)
@@ -261,8 +251,8 @@ namespace Transidious
                 if (tiles.Count == 1)
                 {
                     // If the object belongs to a single map tile, parent it.
-                    obj.transform.SetParent(tiles.First().transform);
-                    obj.uniqueTile = tiles.First();
+                    obj.transform?.SetParent(tiles.First().transform);
+                    obj.UniqueTile = tiles.First();
                 }
                 else
                 {
@@ -276,12 +266,12 @@ namespace Transidious
             RegisterMapObject(obj, id);
         }
 
-        public void RegisterMapObject(MapObject obj, int id = -1)
+        public void RegisterMapObject(IMapObject obj, int id = -1)
         {
             if (id == -1)
             {
                 id = lastAssignedMapObjectID++;
-                obj.id = id;
+                obj.Id = id;
             }
             else if (id > lastAssignedMapObjectID)
             {
@@ -290,26 +280,27 @@ namespace Transidious
 
             mapObjectIDMap.Add(id, obj);
 
-            if (obj.name.Length == 0 || obj.name.EndsWith("Clone)"))
+            var name = obj.Name;
+            if (name.Length == 0 || name.EndsWith("Clone)"))
             {
                 return;
             }
 
 #if DEBUG
-            if (mapObjectMap.ContainsKey(obj.name))
+            if (mapObjectMap.ContainsKey(name))
             {
-                Debug.LogWarning("duplicate map object name " + obj.name);
+                Debug.LogWarning("duplicate map object name " + name);
                 return;
             }
 #endif
 
-            mapObjectMap.Add(obj.name, obj);
+            mapObjectMap.Add(name, obj);
         }
 
-        public void DeleteMapObject(MapObject obj)
+        public void DeleteMapObject(IMapObject obj)
         {
-            mapObjectIDMap.Remove(obj.id);
-            mapObjectMap.Remove(obj.name);
+            mapObjectIDMap.Remove(obj.Id);
+            mapObjectMap.Remove(obj.Name);
 
             foreach (var tileArr in tiles)
             {
@@ -319,7 +310,7 @@ namespace Transidious
                 }
             }
 
-            Destroy(obj.gameObject);
+            Destroy(obj.transform?.gameObject);
         }
 
         public bool HasMapObject(int id)
@@ -332,9 +323,9 @@ namespace Transidious
             return mapObjectMap.ContainsKey(name);
         }
 
-        public MapObject GetMapObject(int id)
+        public IMapObject GetMapObject(int id)
         {
-            if (mapObjectIDMap.TryGetValue(id, out MapObject val))
+            if (mapObjectIDMap.TryGetValue(id, out IMapObject val))
             {
                 return val;
             }
@@ -342,9 +333,9 @@ namespace Transidious
             return null;
         }
 
-        public T GetMapObject<T>(int id) where T : MapObject
+        public T GetMapObject<T>(int id) where T : class, IMapObject
         {
-            if (mapObjectIDMap.TryGetValue(id, out MapObject val))
+            if (mapObjectIDMap.TryGetValue(id, out IMapObject val))
             {
                 return val as T;
             }
@@ -352,9 +343,9 @@ namespace Transidious
             return null;
         }
 
-        public MapObject GetMapObject(string name)
+        public IMapObject GetMapObject(string name)
         {
-            if (mapObjectMap.TryGetValue(name, out MapObject val))
+            if (mapObjectMap.TryGetValue(name, out IMapObject val))
             {
                 return val;
             }
@@ -362,9 +353,9 @@ namespace Transidious
             return null;
         }
 
-        public T GetMapObject<T>(string name) where T : MapObject
+        public T GetMapObject<T>(string name) where T : class, IMapObject
         {
-            if (mapObjectMap.TryGetValue(name, out MapObject val))
+            if (mapObjectMap.TryGetValue(name, out IMapObject val))
             {
                 return val as T;
             }
@@ -372,7 +363,7 @@ namespace Transidious
             return null;
         }
 
-        public TileIterator GetTilesForObject(MapObject obj)
+        public TileIterator GetTilesForObject(IMapObject obj)
         {
             return new TileIterator(this, obj);
         }
@@ -539,25 +530,6 @@ namespace Transidious
         {
             return pt.x >= minX && pt.x <= maxX
                 && pt.y >= minY && pt.y <= maxY;
-
-            // var b = new Vector2(pt.x, maxY);
-            // var ray = new Ray2D(pt, Vector2.right);
-            // var intersections = 0;
-
-            // for (var i = 1; i < boundaryPositions.Length; ++i)
-            // {
-            //     var p0 = boundaryPositions[i - 1];
-            //     var p1 = boundaryPositions[i];
-
-            //     Math.GetIntersectionPoint(pt, b, p0, p1, out bool found);
-
-            //     if (found)
-            //     {
-            //         ++intersections;
-            //     }
-            // }
-
-            // return (intersections & 1) == 1;
         }
 
         public void SetBackgroundColor(Color c)
@@ -1034,8 +1006,7 @@ namespace Transidious
             var street = streetObj.GetComponent<Street>();
             streets.Add(street);
 
-            street.id = id;
-            street.Initialize(this, type, currentName, lit, oneWay, maxspeed, lanes);
+            street.Initialize(this, type, currentName, lit, oneWay, maxspeed, lanes, id);
             RegisterMapObject(street, id);
 
             if (modifiedName)
@@ -1055,8 +1026,7 @@ namespace Transidious
 
             id = id == -1 ? lastAssignedMapObjectID++ : id;
 
-            var obj = Instantiate(streetIntersectionPrefab);
-            var inter = obj.GetComponent<StreetIntersection>();
+            var inter = new StreetIntersection();
             streetIntersections.Add(inter);
             streetIntersectionMap.Add(pos, inter);
 
@@ -1091,7 +1061,8 @@ namespace Transidious
         }
 
         public NaturalFeature CreateFeature(string name, NaturalFeature.Type type,
-                                            Mesh mesh, int id = -1)
+                                            Mesh mesh, float area,
+                                            Vector2 centroid, int id = -1)
         {
             id = id == -1 ? lastAssignedMapObjectID++ : id;
 
@@ -1103,9 +1074,8 @@ namespace Transidious
                 ++i;
             }
 
-            var obj = Instantiate(naturalFeaturePrefab);
-            var nf = obj.GetComponent<NaturalFeature>();
-            nf.Initialize(this, currentName, type, mesh, id);
+            var nf = new NaturalFeature();
+            nf.Initialize(this, currentName, type, mesh, area, centroid, id);
             RegisterMapObject(nf, mesh?.vertices, id);
 
             naturalFeatures.Add(nf);
@@ -1113,7 +1083,8 @@ namespace Transidious
         }
 
         public Building CreateBuilding(Building.Type type, Mesh mesh,
-                                       string name, string numberStr, Vector3? position,
+                                       string name, string numberStr,
+                                       float area, Vector2 centroid,
                                        int id = -1)
         {
             id = id == -1 ? lastAssignedMapObjectID++ : id;
@@ -1126,11 +1097,9 @@ namespace Transidious
                 ++i;
             }
 
-            var obj = Instantiate(this.buildingPrefab);
-            var building = obj.GetComponent<Building>();
-
+            var building = new Building();
             building.Initialize(this, type, null, numberStr, mesh,
-                                currentName, position, id);
+                                area, currentName, centroid, id);
 
             RegisterMapObject(building, mesh?.vertices, id);
 
@@ -1151,8 +1120,18 @@ namespace Transidious
 
             foreach (var street in streets)
             {
+                if (!street.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
                 foreach (var seg in street.segments)
                 {
+                    if (!seg.gameObject.activeSelf)
+                    {
+                        continue;
+                    }
+
                     seg.UpdateTextScale(renderingDistance);
                 }
             }
@@ -1556,7 +1535,7 @@ namespace Transidious
 
             foreach (var tile in AllTiles)
             {
-                tile.mesh.CreateMeshes();
+                tile.FinalizeTile();
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {

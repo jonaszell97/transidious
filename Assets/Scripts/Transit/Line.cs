@@ -27,7 +27,7 @@ namespace Transidious
         Ferry,
     }
 
-    public class Line : MapObject
+    public class Line : DynamicMapObject
     {
 
         [System.Serializable]
@@ -102,7 +102,7 @@ namespace Transidious
 
         public void Initialize(Map map, string name, TransitType type, Color color, int id)
         {
-            base.Initialize(Kind.Line, id);
+            base.Initialize(MapObjectKind.Line, id);
             this.map = map;
             this.name = name;
             this.color = color;

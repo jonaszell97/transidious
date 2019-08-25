@@ -53,12 +53,12 @@ namespace Transidious
             this.disabledSnaps = new HashSet<int>();
 
             game.input.RegisterEventListener(InputEvent.MouseOver,
-                                             (MapObject obj) =>
+                                             (DynamicMapObject obj) =>
                                              {
                                                  this.HandleMouseOver(obj);
                                              });
             game.input.RegisterEventListener(InputEvent.MouseExit,
-                                             (MapObject obj) =>
+                                             (DynamicMapObject obj) =>
                                              {
                                                  this.HandleMouseExit(obj);
                                              });
@@ -110,7 +110,7 @@ namespace Transidious
             disabledSnaps.Add(id);
         }
 
-        ActiveSnap GetSnapForObject(MapObject obj)
+        ActiveSnap GetSnapForObject(DynamicMapObject obj)
         {
             foreach (var snap in activeSnaps)
             {
@@ -129,7 +129,7 @@ namespace Transidious
             return null;
         }
 
-        public void HandleMouseOver(MapObject obj)
+        public void HandleMouseOver(DynamicMapObject obj)
         {
             var snap = GetSnapForObject(obj);
             if (snap == null)
@@ -152,7 +152,7 @@ namespace Transidious
             }
         }
 
-        public void HandleMouseExit(MapObject obj)
+        public void HandleMouseExit(DynamicMapObject obj)
         {
             Unsnap();
         }
@@ -228,7 +228,7 @@ namespace Transidious
             game.input.gameCursorPosition = cursorObj.transform.position;
         }
 
-        void SnapToMapObject(MapObjectSnap snapSettings, MapObject obj)
+        void SnapToMapObject(MapObjectSnap snapSettings, DynamicMapObject obj)
         {
             var cursorObj = game.CreateCursorSprite;
             var spriteRenderer = cursorObj.GetComponent<SpriteRenderer>();

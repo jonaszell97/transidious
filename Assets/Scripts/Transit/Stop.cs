@@ -8,7 +8,7 @@ using Transidious.PathPlanning;
 
 namespace Transidious
 {
-    public class Stop : MapObject, IStop
+    public class Stop : DynamicMapObject, IStop
     {
         [System.Serializable]
         public class LineIntersectionInfo
@@ -286,11 +286,10 @@ namespace Transidious
 
         public void Initialize(Map map, string name, Vector3 position, int id)
         {
-            base.Initialize(Kind.Line, id);
+            base.Initialize(MapObjectKind.Line, id);
 
             this.map = map;
             this.name = name;
-            this.inputController = map.input;
             this.appearance = Appearance.None;
             this.outgoingRoutes = new List<Route>();
             this.routes = new List<Route>();

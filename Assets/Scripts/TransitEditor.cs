@@ -35,7 +35,7 @@ namespace Transidious
         public Tooltip tooltip;
 
         TemporaryLine currentLine;
-        MapObject previousStop;
+        DynamicMapObject previousStop;
         List<Vector3> currentPath;
         List<TrafficSimulator.PathSegmentInfo> currentSegments;
         GameObject existingPathMesh;
@@ -167,25 +167,25 @@ namespace Transidious
             }
 
             this.listenerIDs = new int[] {
-                game.input.RegisterEventListener(InputEvent.MouseOver, (MapObject obj) => {
+                game.input.RegisterEventListener(InputEvent.MouseOver, (DynamicMapObject obj) => {
                     this.MapObjectHovered(obj);
                 }, false),
-                game.input.RegisterEventListener(InputEvent.MouseExit, (MapObject obj) => {
+                game.input.RegisterEventListener(InputEvent.MouseExit, (DynamicMapObject obj) => {
                     this.MapObjectHoverExit(obj);
                 }, false),
-                game.input.RegisterEventListener(InputEvent.MouseDown, (MapObject obj) => {
+                game.input.RegisterEventListener(InputEvent.MouseDown, (DynamicMapObject obj) => {
                     this.MapObjectClicked(obj);
                 }, false),
             };
 
             game.input.RegisterEventListener(InputEvent.MouseEnter,
-                                             (MapObject obj) =>
+                                             (DynamicMapObject obj) =>
             {
                 this.MapObjectEntered(obj);
             });
 
             game.input.RegisterEventListener(InputEvent.MouseExit,
-                                             (MapObject obj) =>
+                                             (DynamicMapObject obj) =>
             {
                 this.MapObjectExited(obj);
             });
@@ -416,17 +416,17 @@ namespace Transidious
             plannedPathMesh.SetActive(true);
         }
 
-        public void MapObjectEntered(MapObject obj)
+        public void MapObjectEntered(DynamicMapObject obj)
         {
 
         }
 
-        public void MapObjectExited(MapObject obj)
+        public void MapObjectExited(DynamicMapObject obj)
         {
 
         }
 
-        public void MapObjectHovered(MapObject obj)
+        public void MapObjectHovered(DynamicMapObject obj)
         {
             var s = obj as StreetSegment;
             if (s != null)
@@ -450,7 +450,7 @@ namespace Transidious
             }
         }
 
-        public void MapObjectHoverExit(MapObject obj)
+        public void MapObjectHoverExit(DynamicMapObject obj)
         {
             var s = obj as StreetSegment;
             if (s != null)
@@ -474,7 +474,7 @@ namespace Transidious
             }
         }
 
-        public void MapObjectClicked(MapObject obj)
+        public void MapObjectClicked(DynamicMapObject obj)
         {
             var s = obj as StreetSegment;
             if (s != null)
@@ -726,7 +726,7 @@ namespace Transidious
             {
                 name = Translator.Get("tooltip:new_line",
                                       game.GetSystemName(selectedSystem.Value)),
-                stops = new List<MapObject>(),
+                stops = new List<DynamicMapObject>(),
                 completePath = new List<Vector3>(),
                 paths = new List<int>(),
                 streetSegments = new List<List<TrafficSimulator.PathSegmentInfo>>(),
