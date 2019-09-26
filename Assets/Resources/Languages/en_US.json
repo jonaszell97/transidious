@@ -17,20 +17,77 @@
     },
     "items": [
         {
-            "key": "ui:happiness",
+            "key": "ui:citizien:happiness",
             "text": "Happiness"
         },
         {
-            "key": "ui:happiness_happy",
+            "key": "ui:citizien:happiness_happy",
             "text": "Happy"
         },
         {
-            "key": "ui:happiness_med_happy",
+            "key": "ui:citizien:happiness_med_happy",
             "text": "Content"
         },
         {
-            "key": "ui:happiness_unhappy",
+            "key": "ui:citizien:happiness_unhappy",
             "text": "Unhappy"
+        },
+        {
+            "key": "ui:citizien:money",
+            "text": "Money"
+        },
+        {
+            "key": "ui:citizien:occupation",
+            "text": "Occupation"
+        },
+        {
+            "key": "ui:citizien:occupation:Worker",
+            "text": "Worker"
+        },
+        {
+            "key": "ui:citizien:occupation:Retired",
+            "text": "Retired"
+        },
+        {
+            "key": "ui:citizien:occupation:Kindergarden",
+            "text": "Kindergardener"
+        },
+        {
+            "key": "ui:citizien:occupation:ElementarySchoolStudent",
+            "text": "Elementaryschool Student"
+        },
+        {
+            "key": "ui:citizien:occupation:HighSchoolStudent",
+            "text": "Highschool Student"
+        },
+        {
+            "key": "ui:citizien:occupation:UniversityStudent",
+            "text": "University Student"
+        },
+        {
+            "key": "ui:citizien:occupation:Trainee",
+            "text": "Trainee"
+        },
+
+        {
+            "key": "ui:citizien:destination",
+            "text": "Destination"
+        },
+        {
+            "key": "ui:citizien:destination:Home",
+            "text": "Home"
+        },
+        {
+            "key": "ui:citizien:destination:Work",
+            "text": "Work"
+        },
+        {
+            "key": "ui:citizien:destination:School",
+            "text": "School"
+        },
+        {
+            "key": "ui:citizien:destination:GroceryStore",
+            "text": "GroceryStore"
         },
 
         {

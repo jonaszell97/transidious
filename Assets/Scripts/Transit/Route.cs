@@ -370,50 +370,49 @@ namespace Transidious
 
         void UpdateMesh()
         {
-            return;
-            if (isBackRoute && !line.map.input.renderBackRoutes)
-            {
-                return;
-            }
+            // if (isBackRoute && !line.map.input.renderBackRoutes)
+            // {
+            //     return;
+            // }
 
-            if (!name.Contains("M45") && !name.Contains("309"))
-            {
-                return;
-            }
+            // if (!name.Contains("M45") && !name.Contains("309"))
+            // {
+            //     return;
+            // }
 
-            var lineRenderer = GetComponent<LineRenderer>();
-            lineRenderer.enabled = true;
-            lineRenderer.numCornerVertices = 5;
-            lineRenderer.sharedMaterial = line.material;
-            lineRenderer.positionCount = CurrentPositions.Count;
-            lineRenderer.SetPositions(CurrentPositions.Select(
-                v => new Vector3(v.x, v.y, Map.Layer(MapLayer.TransitLines))).ToArray());
+            // var lineRenderer = GetComponent<LineRenderer>();
+            // lineRenderer.enabled = true;
+            // lineRenderer.numCornerVertices = 5;
+            // lineRenderer.sharedMaterial = line.material;
+            // lineRenderer.positionCount = CurrentPositions.Count;
+            // lineRenderer.SetPositions(CurrentPositions.Select(
+            //     v => new Vector3(v.x, v.y, Map.Layer(MapLayer.TransitLines))).ToArray());
 
-            if (true || CurrentWidths == null)
-            {
-                lineRenderer.startWidth = line.LineWidth * 2f;
-                lineRenderer.endWidth = line.LineWidth * 2f;
+            // if (true || CurrentWidths == null)
+            // {
+            //     lineRenderer.startWidth = line.LineWidth * 2f;
+            //     lineRenderer.endWidth = line.LineWidth * 2f;
 
-                return;
-            }
+            //     return;
+            // }
 
-            var curve = new AnimationCurve();
-            var time = 0f;
-            var timeStep = 1f / (CurrentWidths.Count - 1);
+            // var curve = new AnimationCurve();
+            // var time = 0f;
+            // var timeStep = 1f / (CurrentWidths.Count - 1);
 
-            foreach (var width in CurrentWidths)
-            {
-                curve.AddKey(time, width);
-                time += timeStep;
-            }
+            // foreach (var width in CurrentWidths)
+            // {
+            //     curve.AddKey(time, width);
+            //     time += timeStep;
+            // }
 
-            lineRenderer.widthCurve = curve;
+            // lineRenderer.widthCurve = curve;
 
-            // meshFilter.mesh = mesh;
-            // meshRenderer.sharedMaterial = line.material;
-            // transform.position = new Vector3(transform.position.x,
-            //                                  transform.position.y,
-            //                                  Map.Layer(MapLayer.TransitLines));
+            meshFilter.mesh = mesh;
+            meshRenderer.sharedMaterial = line.material;
+            transform.position = new Vector3(transform.position.x,
+                                             transform.position.y,
+                                             Map.Layer(MapLayer.TransitLines));
         }
 
         void Awake()

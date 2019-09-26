@@ -4,6 +4,7 @@ import platform
 import requests
 import subprocess
 import sys
+import io
 from xml.etree import ElementTree
 
 api = "https://api.openstreetmap.org/"
@@ -27,7 +28,8 @@ if len(results) > 1:
 
     i = 0
     for result in results:
-        print('   ' + str(i) + ' ' + result['osm_id'] + ' ' + result['display_name'])
+        print('   ' + str(i) + ' ' +
+              result['osm_id'] + ' ' + result['display_name'])
         i += 1
 
     idx = input('choice: ')
@@ -48,9 +50,24 @@ polyResult = requests.get("http://polygons.openstreetmap.fr/get_poly.py", params
     'params': 0,
 })
 
+polyData = polyResult.text.replace('\t', '  ')
+# vertices = list()
+
+# polyLines = polyData.split("\n")[2:-2]
+# for line in polyLines:
+
+# with io.StringIO(polyData) as polyBuf:
+#     line = polyBuf.readline()
+#     lineNo = 0
+#     while line:
+
+#         line = polyBuf.readline()
+#         lineNo += 1
+
+
 polyFileName = '../Resources/Poly/' + searchTerm + '.poly'
 polyFile = open(polyFileName, 'w')
-polyFile.write(polyResult.text.replace('\t', '  '))
+polyFile.write(polyData)
 polyFile.close()
 
 # generate pbf file from polygon
@@ -66,11 +83,12 @@ if not os.path.isfile(pbfFileName):
             '--read-pbf', '../Resources/OSM/' + country + '.osm.pbf',
             '--bounding-polygon', 'file=' + os.path.abspath(polyFileName) + '',
             '--write-pbf', pbfFileName,
-        ] #, stdout=FNULL, stderr=subprocess.STDOUT
+        ]  # , stdout=FNULL, stderr=subprocess.STDOUT
     )
 
 # output tblgen suggestion
-infoResult = requests.get('https://www.openstreetmap.org/api/0.6/relation/' + id)
+infoResult = requests.get(
+    'https://www.openstreetmap.org/api/0.6/relation/' + id)
 tree = ElementTree.fromstring(infoResult.content)
 
 admin_level = 0
@@ -122,7 +140,7 @@ def {name} : DefaultArea {{
         Tag<"admin_level", "{admin_level}">
     ]>
 }}\
-""".format(name=searchTerm, country=country, boundary=boundary, 
+""".format(name=searchTerm, country=country, boundary=boundary,
            admin_level=admin_level)
 
 if tgContent[-1] != '\n':

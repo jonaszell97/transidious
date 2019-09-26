@@ -335,7 +335,11 @@ namespace Transidious
 
     public static class TriangleAPI
     {
+#if UNITY_EDITOR_OSX
         [DllImport("UnityTriangle", CallingConvention = CallingConvention.Cdecl)]
+#else
+        [DllImport("unitytriangle", EntryPoint = "Triangulate", CallingConvention = CallingConvention.Cdecl)]
+#endif
         static extern int Triangulate(StringBuilder bin, StringBuilder args, StringBuilder file);
 
         // Use this for initialization
@@ -498,7 +502,10 @@ namespace Transidious
             };
 
             process.Start();
-            process.WaitForExit();
+            if (!process.WaitForExit(10000))
+            {
+                return 124;
+            }
 
             return process.ExitCode;
         }

@@ -1,5 +1,4 @@
-﻿using mattatz.Triangulation2DSystem;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -1161,7 +1160,6 @@ namespace Transidious
                 var cross = Vector3.Cross(b - a, c - a);
                 if (cross.z > 0f)
                 {
-                    Debug.Log("had to fix");
                     int bIndex = triangles[i + 1];
                     triangles[i + 1] = triangles[i + 2];
                     triangles[i + 2] = bIndex;

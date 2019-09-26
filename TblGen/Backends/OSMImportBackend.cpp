@@ -10,7 +10,8 @@
 
 using namespace tblgen;
 
-namespace {
+namespace
+{
 
 class OSMImportBackend
 {
@@ -29,70 +30,69 @@ class OSMImportBackend
    }
 
    template <class CallbackFn>
-   static void CheckTags(llvm::raw_ostream & OS, llvm::ArrayRef<Value *> tags, const CallbackFn &fn)
-      {
-         OS << "if (";
+   static void CheckTags(llvm::raw_ostream &OS, llvm::ArrayRef<Value *> tags, const CallbackFn &fn)
+   {
+      OS << "if (";
 
-         int i = 0;
-         for (auto *tagVal : tags)
+      int i = 0;
+      for (auto *tagVal : tags)
+      {
+         if (i++ != 0)
+            OS << " && ";
+
+         auto *tag = llvm::cast<RecordVal>(tagVal)->getRecord();
+         auto value = llvm::cast<StringLiteral>(
+                          tag->getFieldValue("value"))
+                          ->getVal();
+
+         if (value.empty())
          {
-            if (i++ != 0)
-               OS << " && ";
-
-            auto *tag = llvm::cast<RecordVal>(tagVal)->getRecord();
-            auto value = llvm::cast<StringLiteral>(
-                             tag->getFieldValue("value"))
-                             ->getVal();
-
-            if (value.empty())
-            {
-               OS
-                   << "tags.ContainsKey(\""
-                   << llvm::cast<StringLiteral>(tag->getFieldValue("key"))->getVal()
-                   << "\")";
-            }
-            else
-            {
-               OS
-                   << "tags.Contains(\""
-                   << llvm::cast<StringLiteral>(tag->getFieldValue("key"))->getVal()
-                   << "\", \"" << value << "\")";
-            }
+            OS
+                << "tags.ContainsKey(\""
+                << llvm::cast<StringLiteral>(tag->getFieldValue("key"))->getVal()
+                << "\")";
          }
-
-         OS << ") {\n";
-         fn();
-         OS << "\n}";
-      }
-
-      template <class CallbackFn>
-      void ForEachArea(const CallbackFn &fn)
-      {
-         OS << "switch (this.area) {\n";
-         for (Record *area : areas)
+         else
          {
-            OS << "    case Area." << area->getName() << ": {\n";
-            fn(area);
-            OS << "        }\n        break;";
+            OS
+                << "tags.Contains(\""
+                << llvm::cast<StringLiteral>(tag->getFieldValue("key"))->getVal()
+                << "\", \"" << value << "\")";
          }
-
-         OS << "}\n";
       }
 
-      void EmitImportTransitLines(Record *area);
-      void EmitImportStreets(Record *area);
-      void EmitBoundary(Record *area);
-      void EmitRivers(Record *area);
-      void EmitParks(Record *area);
-      void EmitBuildings(Record *area);
+      OS << ") {\n";
+      fn();
+      OS << "\n}";
+   }
 
-    public:
-      OSMImportBackend(llvm::raw_ostream & os, RecordKeeper & rk)
-          : OS(os), RK(rk)
+   template <class CallbackFn>
+   void ForEachArea(const CallbackFn &fn)
+   {
+      OS << "switch (this.area) {\n";
+      for (Record *area : areas)
       {
+         OS << "    case Area." << area->getName() << ": {\n";
+         fn(area);
+         OS << "        }\n        break;";
       }
 
-      void Emit();
+      OS << "}\n";
+   }
+
+   void EmitImportTransitLines(Record *area);
+   void EmitImportStreets(Record *area);
+   void EmitBoundary(Record *area);
+   void EmitParks(Record *area);
+   void EmitBuildings(Record *area);
+
+public:
+   OSMImportBackend(llvm::raw_ostream &os, RecordKeeper &rk)
+       : OS(os), RK(rk)
+   {
+   }
+
+   void Emit();
 };
 
 } // anonymous namespace
@@ -135,9 +135,34 @@ public class OSMImportHelper {
     Stream input = null;
     PBFOsmStreamSource sourceStream = null;
 
+    HashSet<long> referencedGeos;
+
+    void AddGeoReference(OsmGeo geo)
+    {
+       if (geo.Type == OsmGeoType.Node)
+       {
+          if (geo.Id.HasValue)
+            referencedGeos.Add(geo.Id.Value);
+       }
+       else if (geo.Type == OsmGeoType.Way)
+       {
+          if (geo.Id.HasValue)
+            referencedGeos.Add(geo.Id.Value);
+       }
+       else
+       {
+          var rel = geo as Relation;
+          foreach (var member in rel.Members)
+          {
+             referencedGeos.Add(member.Id);
+          }
+       }
+    }
+
     public OSMImportHelper(OSMImporter importer, string area, string country)
     {
          this.importer = importer;
+         this.referencedGeos = new HashSet<long>();
 
          string fileName;
          fileName = "Resources/OSM/";
@@ -170,7 +195,8 @@ public class OSMImportHelper {
          OS << R"__(
                string allNodesFileName;
                allNodesFileName = "Resources/OSM/";
-               allNodesFileName += ")__" << allNodesFile << R"__(";
+               allNodesFileName += ")__"
+            << allNodesFile << R"__(";
                allNodesFileName += ".osm.pbf";
 
                var allNodesInput = File.OpenRead(allNodesFileName);
@@ -186,29 +212,11 @@ public class OSMImportHelper {
    });
 
    OS << R"__(
-         foreach (var geo in allNodes)
-         {
-            var tags = geo.Tags;
-            if (tags == null)
-            {
-                  continue;
-            }
 
-            switch (geo.Type)
-            {
-               case OsmGeoType.Relation:
-                  break;
-               case OsmGeoType.Way:
-                  if (geo.Id.HasValue) importer.ways.Add(geo.Id.Value, geo as Way);
-                  break;
-               case OsmGeoType.Node:
-                  if (geo.Id.HasValue) importer.nodes.Add(geo.Id.Value, geo as Node);
-                  break;
-            }
-         }
+       this.ImportArea(allNodes);
     }
 
-    public void ImportArea()
+    void ImportArea(PBFOsmStreamSource allNodes)
     {
 )__";
 
@@ -216,7 +224,6 @@ public class OSMImportHelper {
       EmitBoundary(area);
       EmitImportTransitLines(area);
       EmitImportStreets(area);
-      EmitRivers(area);
       EmitParks(area);
       EmitBuildings(area);
 
@@ -298,6 +305,39 @@ public class OSMImportHelper {
    });
 
    OS << R"__(
+
+      foreach (var way in allNodes.OfType<Way>())
+         {
+            if (!way.Id.HasValue || !referencedGeos.Contains(way.Id.Value))
+            {
+                  continue;
+            }
+
+            foreach (var nodeId in way.Nodes)
+            {
+               referencedGeos.Add(nodeId);
+            }
+         }
+
+         foreach (var geo in allNodes)
+         {
+            if (!geo.Id.HasValue || !referencedGeos.Contains(geo.Id.Value))
+            {
+                  continue;
+            }
+
+            switch (geo.Type)
+            {
+               case OsmGeoType.Relation:
+                  break;
+               case OsmGeoType.Way:
+                  importer.ways.Add(geo.Id.Value, geo as Way);
+                  break;
+               case OsmGeoType.Node:
+                  importer.nodes.Add(geo.Id.Value, geo as Node);
+                  break;
+            }
+         }
    }
 }
 }
@@ -310,9 +350,16 @@ void OSMImportBackend::EmitBoundary(Record *area)
    llvm::raw_string_ostream REL(relation);
 
    auto boundary = llvm::cast<RecordVal>(area->getFieldValue("boundary"))->getRecord();
-   auto name = llvm::cast<StringLiteral>(boundary->getFieldValue("name"))->getVal();
    auto tags = llvm::cast<ListLiteral>(boundary->getFieldValue("tags"))->getValues();
    auto wayTags = llvm::cast<ListLiteral>(boundary->getFieldValue("wayTags"))->getValues();
+
+   auto name = llvm::cast<StringLiteral>(boundary->getFieldValue("name"))->getVal();
+   auto relationName = llvm::cast<StringLiteral>(boundary->getFieldValue("relationName"))->getVal();
+
+   if (!relationName.empty())
+   {
+      name = relationName;
+   }
 
    if (name.empty())
    {
@@ -321,7 +368,7 @@ void OSMImportBackend::EmitBoundary(Record *area)
 
    REL << "if (tags.Contains(\"name\", \"" << name << "\")) {";
    CheckTags(REL, tags, [&]() {
-      REL << "                importer.boundary = geo as Relation; break;\n";
+      REL << "                importer.boundary = geo as Relation; AddGeoReference(geo); break;\n";
    });
    REL << "}";
 }
@@ -341,15 +388,17 @@ void OSMImportBackend::EmitImportTransitLines(Record *area)
    int i = 0;
    for (auto *val : lines)
    {
-      if (i++ != 0) REL << " else ";
-      
+      if (i++ != 0)
+         REL << " else ";
+
       auto *line = llvm::cast<RecordVal>(val)->getRecord();
       auto tags = llvm::cast<ListLiteral>(line->getFieldValue("tags"))
                       ->getValues();
 
       auto type = llvm::cast<EnumVal>(
-                       line->getFieldValue("type"))
-                       ->getCase()->caseName;
+                      line->getFieldValue("type"))
+                      ->getCase()
+                      ->caseName;
 
       CheckTags(REL, tags, [&]() {
          REL << "type = TransitType." << type << ";";
@@ -366,6 +415,8 @@ void OSMImportBackend::EmitImportTransitLines(Record *area)
                      {
                         break;
                      }
+
+                     AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
                      if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
@@ -390,7 +441,8 @@ void OSMImportBackend::EmitImportTransitLines(Record *area)
    i = 0;
    for (auto *val : stops)
    {
-      if (i++ != 0) NODE << " else ";
+      if (i++ != 0)
+         NODE << " else ";
 
       auto *stop = llvm::cast<RecordVal>(val)->getRecord();
       auto tags = llvm::cast<ListLiteral>(stop->getFieldValue("tags"))
@@ -398,7 +450,7 @@ void OSMImportBackend::EmitImportTransitLines(Record *area)
 
       CheckTags(NODE, tags, [&]() {
          NODE << "Debug.Assert(geo.Id.HasValue, \"stop does not have an ID\");"
-                 "importer.stops.Add(geo.Id.Value, node);";
+                 "importer.stops.Add(geo.Id.Value, node); AddGeoReference(geo);";
       });
    }
 }
@@ -414,7 +466,8 @@ void OSMImportBackend::EmitImportStreets(Record *area)
    int i = 0;
    for (auto *val : streets)
    {
-      if (i++ != 0) WAY << " else ";
+      if (i++ != 0)
+         WAY << " else ";
       auto *street = llvm::cast<RecordVal>(val)->getRecord();
       auto type = llvm::cast<EnumVal>(street->getFieldValue("type"))->getCase()->caseName;
       auto tags = llvm::cast<ListLiteral>(street->getFieldValue("tags"))
@@ -422,30 +475,9 @@ void OSMImportBackend::EmitImportStreets(Record *area)
 
       CheckTags(WAY, tags, [&]() {
          WAY << "importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type."
-             << type << "));";
+             << type << ")); AddGeoReference(way);";
       });
    }
-}
-
-void OSMImportBackend::EmitRivers(Record *area)
-{
-   /*std::string &relation = relationCode.emplace_back();
-   llvm::raw_string_ostream REL(relation);
-
-   auto rivers = llvm::cast<ListLiteral>(area->getFieldValue("rivers"))->getValues();
-   int i = 0;
-
-   for (auto *val : rivers)
-   {
-      if (i++ != 0) REL << " else ";
-      auto *river = llvm::cast<RecordVal>(val)->getRecord();
-      auto tags = llvm::cast<ListLiteral>(river->getFieldValue("relationTags"))
-                      ->getValues();
-
-      CheckTags(REL, tags, [&]() {
-         REL << "importer.rivers.Add(rel);";
-      });
-   }*/
 }
 
 void OSMImportBackend::EmitParks(Record *area)
@@ -473,13 +505,15 @@ void OSMImportBackend::EmitParks(Record *area)
          if (name == "Relation")
          {
             CheckTags(REL, tags, [&]() {
-               REL << "importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type." << type << "));";
+               REL << "importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type." << type << "));\n"
+                   << "AddGeoReference(rel);";
             });
          }
          else if (name == "Way")
          {
             CheckTags(WAY, tags, [&]() {
-               WAY << "importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type." << type << "));";
+               WAY << "importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type." << type << "));\n"
+                   << "AddGeoReference(way);";
             });
          }
       }
@@ -511,21 +545,25 @@ void OSMImportBackend::EmitBuildings(Record *area)
          if (name == "Relation")
          {
             CheckTags(REL, tags, [&]() {
-               REL << "importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(rel, Building.Type." << type << "));";
+               REL << "importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(rel, Building.Type." << type << "));\n"
+                   << "AddGeoReference(rel);";
             });
          }
          else if (name == "Way")
          {
             CheckTags(WAY, tags, [&]() {
-               WAY << "importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(way, Building.Type." << type << "));";
+               WAY << "importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(way, Building.Type." << type << "));\n"
+                   << "AddGeoReference(way);";
             });
          }
       }
    }
 }
 
-extern "C" {
-   void EmitOSMImport(llvm::raw_ostream & OS, RecordKeeper &RK){
+extern "C"
+{
+   void EmitOSMImport(llvm::raw_ostream &OS, RecordKeeper &RK)
+   {
       OSMImportBackend(OS, RK).Emit();
    }
 };

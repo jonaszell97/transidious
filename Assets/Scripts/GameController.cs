@@ -185,6 +185,8 @@ namespace Transidious
         public Sprite[] trafficLightSprites;
 
         /// The car sprites.
+        public Sprite[] carSpritesOutlined;
+
         public Sprite[] carSprites;
 
         /// The street direction arrow sprite.

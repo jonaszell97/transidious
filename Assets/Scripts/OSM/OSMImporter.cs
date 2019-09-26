@@ -31,7 +31,7 @@ namespace Transidious
 
         public Map map;
 
-        public int thresholdTime = 500;
+        public int thresholdTime = 1000;
         public bool loadGame = true;
 
         public Dictionary<long, Node> nodes = new Dictionary<long, Node>();
@@ -68,15 +68,18 @@ namespace Transidious
 
         public OSMImportHelper.Area area;
         public string country;
+        public int tileX, tileY;
+        public int tilesX, tilesY;
+        public bool singleTile;
+        public bool done;
 
         float cosCenterLat;
         static readonly float earthRadius = 6371000f * Map.Meters;
 
+        public static readonly float maxTileSize = 999999f; // 6000f;
+
         async void Start()
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-
             var mapPrefab = Resources.Load("Prefabs/Map") as GameObject;
             var mapObj = Instantiate(mapPrefab);
 
@@ -85,10 +88,133 @@ namespace Transidious
             map.input = GameController.instance.input;
 
             await this.ImportArea();
-            StartCoroutine(LoadFeatures());
 
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            tilesX = (int)Mathf.Ceil(width / maxTileSize);
+            tilesY = (int)Mathf.Ceil(height / maxTileSize);
+            singleTile = tilesX == 1 && tilesY == 1;
+
+            if (singleTile)
+            {
+
+                StartCoroutine(LoadFeatures());
+                return;
+            }
+
+            StartCoroutine(LoadTiles());
+        }
+
+        IEnumerator LoadTiles()
+        {
+            for (var x = 0; x < tilesX; ++x)
+            {
+                for (var y = 0; y < tilesY; ++y)
+                {
+                    tileX = x;
+                    tileY = y;
+                    done = false;
+
+                    StartCoroutine(LoadFeatures());
+
+                    while (!done)
+                    {
+                        yield return null;
+                    }
+
+                    map.ResetAll();
+                }
+            }
+
+            Debug.Log("Done!");
+        }
+
+        bool IsMainImporter
+        {
+            get
+            {
+                return tileX == 0 && tileY == 0;
+            }
+        }
+
+        bool ShouldImport(Node node)
+        {
+            if (singleTile)
+            {
+                return true;
+            }
+
+            var pos = Project(node);
+            var x = (int)Mathf.Floor(pos.x / maxTileSize);
+            var y = (int)Mathf.Floor(pos.y / maxTileSize);
+
+            return x == tileX && y == tileY;
+        }
+
+        bool ShouldImport(Way way)
+        {
+            if (singleTile)
+            {
+                return true;
+            }
+
+            foreach (var nodeId in way.Nodes)
+            {
+                var node = FindNode(nodeId);
+                if (node != null)
+                {
+                    return ShouldImport(node);
+                }
+            }
+
+            return false;
+        }
+
+        bool ShouldImport(Relation relation)
+        {
+            if (singleTile)
+            {
+                return true;
+            }
+
+            foreach (var member in relation.Members)
+            {
+                if (member.Type == OsmGeoType.Node)
+                {
+                    var node = FindNode(member.Id);
+                    if (node != null)
+                    {
+                        return ShouldImport(node);
+                    }
+                }
+                else if (member.Type == OsmGeoType.Way)
+                {
+                    var way = FindWay(member.Id);
+                    if (way != null)
+                    {
+                        return ShouldImport(way);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        bool ShouldImport(OsmGeo geo)
+        {
+            if (singleTile)
+            {
+                return true;
+            }
+
+            if (geo.Type == OsmGeoType.Node)
+            {
+                return ShouldImport(geo as Node);
+            }
+            if (geo.Type == OsmGeoType.Way)
+            {
+                return ShouldImport(geo as Way);
+            }
+
+            return ShouldImport(geo as Relation);
         }
 
         Vector3 Project(Node node)
@@ -107,12 +233,9 @@ namespace Transidious
         public async Task ImportArea()
         {
             var areaName = area.ToString();
-            OSMImportHelper importHelper = null;
-
             await Task.Factory.StartNew(() =>
             {
-                importHelper = new OSMImportHelper(this, areaName, country);
-                importHelper.ImportArea();
+                var _ = new OSMImportHelper(this, areaName, country);
             });
 
             FindMinLngAndLat();
@@ -131,10 +254,12 @@ namespace Transidious
 
         IEnumerator LoadFeatures()
         {
-            LoadBoundary();
-            Debug.Log("loaded boundary");
-
-            yield return null;
+            if (IsMainImporter)
+            {
+                LoadBoundary();
+                Debug.Log("loaded boundary");
+                yield return null;
+            }
 
             yield return LoadParks();
             Debug.Log("loaded natural features");
@@ -145,18 +270,54 @@ namespace Transidious
             yield return LoadStreets();
             Debug.Log("loaded streets");
 
-            yield return map.DoFinalize();
-
-            var backgroundTex = ScreenShotMaker.Instance.MakeScreenshotSingle(map);
-            SaveManager.SaveMapLayout(map, backgroundTex.EncodeToPNG());
+            if (singleTile)
+            {
+                yield return map.DoFinalize(thresholdTime);
+            }
+            else
+            {
+                yield return map.DoFinalize(thresholdTime, tileX, tileY);
+            }
 
             // yield return LoadTransitLines();
-            Debug.Log("loaded transit lines");
+            // Debug.Log("loaded transit lines");
 
-            SaveManager.SaveMapData(map);
-            Debug.Log("Done!");
+            Texture2D backgroundTex;
+            if (singleTile)
+            {
+                backgroundTex = ScreenShotMaker.Instance.MakeScreenshotSingle(map);
+                SaveManager.SaveMapLayout(map, backgroundTex.EncodeToPNG());
+            }
+            else
+            {
+                backgroundTex = ScreenShotMaker.Instance.MakeScreenshotSingle(map, tileX, tileY);
+                SaveManager.SaveMapLayout(map, backgroundTex.EncodeToPNG(), tileX, tileY);
+            }
 
-            if (loadGame)
+            Destroy(backgroundTex);
+            Resources.UnloadUnusedAssets();
+
+            if (singleTile)
+            {
+                SaveManager.SaveMapData(map);
+            }
+            else
+            {
+                SaveManager.SaveMapData(map, tileX, tileY);
+            }
+
+            if (singleTile)
+            {
+                Debug.Log("Done!");
+            }
+            else
+            {
+                Debug.Log("Done with tile " + tileX + ", " + tileY + "!");
+            }
+
+            done = true;
+
+            if (loadGame && singleTile)
             {
                 UnityEngine.SceneManagement.SceneManager.LoadScene("MainGame");
             }
@@ -230,7 +391,8 @@ namespace Transidious
         }
 
         List<Vector3> GetWayPositions(Relation relation, string role = "",
-                                      float z = 0f, bool stopAfterFirst = false)
+                                      float z = 0f, bool stopAfterFirst = false,
+                                      bool reportMissing = false)
         {
             var wayNodes = new HashSet<WayNode>();
             foreach (var member in relation.Members)
@@ -241,6 +403,11 @@ namespace Transidious
                 Way way = FindWay(member.Id);
                 if (way == null)
                 {
+                    if (reportMissing)
+                    {
+                        Debug.LogWarning("missing way " + member.Id);
+                    }
+
                     continue;
                 }
 
@@ -249,6 +416,11 @@ namespace Transidious
                 {
                     if (!nodes.TryGetValue(nodeId, out Node node))
                     {
+                        if (reportMissing)
+                        {
+                            Debug.LogWarning("missing node " + nodeId);
+                        }
+
                         continue;
                     }
 
@@ -258,10 +430,14 @@ namespace Transidious
 
                 if (wayNode.positions.Count > 0)
                 {
-                    wayNodes.Add(wayNode);
+                    // Some borders have disjointed exclaves (e.g. Berlin), exclude those.
+                    if (!wayNode.positions.First().Equals(wayNode.positions.Last()))
+                    {
+                        wayNodes.Add(wayNode);
 
-                    if (stopAfterFirst)
-                        break;
+                        if (stopAfterFirst)
+                            break;
+                    }
                 }
             }
 
@@ -350,7 +526,7 @@ namespace Transidious
             Vector2[] boundaryPositions;
             if (boundary != null)
             {
-                var positions = GetWayPositions(boundary, "outer", 0f);
+                var positions = GetWayPositions(boundary, "outer", 0f, false, true);
                 if (!positions.First().Equals(positions.Last()))
                 {
                     positions.Add(positions.First());
@@ -364,6 +540,18 @@ namespace Transidious
                     + positionsToKeep.Count + " verts");
 
                 boundaryPositions = positionsToKeep.ToArray();
+                // boundaryPositions = positions.Select(v => (Vector2)v).ToArray();
+
+#if true
+                var i = 0;
+                foreach (var pos in boundaryPositions)
+                {
+                    var txt = map.CreateText(new Vector3(pos.x, pos.y, Map.Layer(MapLayer.Cursor)), i.ToString(), Color.red, 20);
+                    ++i;
+                }
+
+                // Debug.Break();
+#endif
             }
             else
             {
@@ -373,10 +561,37 @@ namespace Transidious
                     new Vector2(map.minX, map.maxY), // top left
                     new Vector2(map.maxX, map.maxY), // top right
                     new Vector2(map.maxX, map.minY), // bottom right
+                    new Vector2(map.minX, map.minY), // bottom left
                 };
             }
 
             map.UpdateBoundary(boundaryPositions);
+        }
+
+        void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.red;
+
+            for (int x = 0; x < tilesX; ++x)
+            {
+                for (int y = 0; y < tilesY; ++y)
+                {
+                    var baseX = map.minX + x * maxTileSize;
+                    var baseY = map.minY + y * maxTileSize;
+
+                    Gizmos.DrawLine(new Vector3(baseX, baseY, -13f),
+                                    new Vector3(baseX + maxTileSize, baseY, -13f));
+
+                    Gizmos.DrawLine(new Vector3(baseX, baseY, -13f),
+                                    new Vector3(baseX, baseY + maxTileSize, -13f));
+
+                    Gizmos.DrawLine(new Vector3(baseX, baseY + maxTileSize, -13f),
+                                    new Vector3(baseX + maxTileSize, baseY + maxTileSize, -13f));
+
+                    Gizmos.DrawLine(new Vector3(baseX + maxTileSize, baseY, -13f),
+                                    new Vector3(baseX + maxTileSize, baseY + maxTileSize, -13f));
+                }
+            }
         }
 
         void AddStopToLine(Line l, Stop s, Stop previousStop, int i, List<List<Vector3>> wayPositions,
@@ -476,7 +691,6 @@ namespace Transidious
 
             var s = map.CreateStop(stopName, loc);
             stopMap.Add(stopNode.Id.Value, s);
-            Debug.Log("done");
 
             return s;
         }
@@ -611,8 +825,6 @@ namespace Transidious
                     AddStopToLine(l, l.stops.First(), previousStop, i, wayPositions);
                 }
 
-                Debug.Log("done");
-
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
@@ -666,9 +878,15 @@ namespace Transidious
             var partialStreets = new List<PartialStreet>();
             var nodeCount = new Dictionary<Node, int>();
             var intersections = new Dictionary<Node, StreetIntersection>();
+            streetSegmentMap.Clear();
 
             foreach (var street in streets)
             {
+                if (!ShouldImport(street.Item1))
+                {
+                    continue;
+                }
+
                 var tags = street.Item1.Tags;
                 var streetName = tags.GetValue("name");
                 Debug.Log("loading street '" + streetName + "'...");
@@ -729,7 +947,6 @@ namespace Transidious
                 };
 
                 partialStreets.Add(ps);
-                Debug.Log("done");
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
@@ -997,6 +1214,11 @@ namespace Transidious
             var totalVerts = 0;
             foreach (var feature in naturalFeatures)
             {
+                if (!ShouldImport(feature.Item1))
+                {
+                    continue;
+                }
+
                 try
                 {
                     var featureName = feature.Item1.Tags.GetValue("name");
@@ -1048,8 +1270,6 @@ namespace Transidious
 
                         f.outlinePositions = outlinePositions;
                     }
-
-                    Debug.Log("done");
                 }
                 catch (Exception e)
                 {
@@ -1087,7 +1307,6 @@ namespace Transidious
                                                         10);
 
                 map.CreateFeature(name, NaturalFeature.Type.Footpath, mesh, 0f, Vector2.zero);
-                Debug.Log("done");
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
@@ -1098,11 +1317,60 @@ namespace Transidious
             Debug.Log("footpath verts: " + verts);
         }
 
+        void BuildEquivalenceClass(Building building,
+                                   HashSet<Building> equivalenceClass,
+                                   HashSet<Building> checkedBuildings,
+                                   Dictionary<long, HashSet<Building>> nodeMap,
+                                   Dictionary<Building, long[]> nodesMap)
+        {
+            if (!checkedBuildings.Add(building))
+            {
+                return;
+            }
+            if (!nodesMap.TryGetValue(building, out long[] nodeIds))
+            {
+                return;
+            }
+
+            equivalenceClass.Add(building);
+
+            foreach (var nodeId in nodeIds)
+            {
+                if (!nodeMap.TryGetValue(nodeId, out HashSet<Building> buildings))
+                {
+                    continue;
+                }
+
+                foreach (var nextBuilding in buildings)
+                {
+                    BuildEquivalenceClass(nextBuilding, equivalenceClass, checkedBuildings, nodeMap, nodesMap);
+                }
+            }
+        }
+
         IEnumerator LoadBuildings()
         {
             var totalVerts = 0;
+            // var nodeMap = new Dictionary<long, HashSet<Building>>();
+            // var nodesMap = new Dictionary<Building, long[]>();
+            // Action<long, Building> addNode = (long nodeId, Building b) =>
+            // {
+            //     if (!nodeMap.TryGetValue(nodeId, out HashSet<Building> list))
+            //     {
+            //         list = new HashSet<Building>();
+            //         nodeMap.Add(nodeId, list);
+            //     }
+
+            //     list.Add(b);
+            // };
+
             foreach (var building in buildings)
             {
+                if (!ShouldImport(building.Item1))
+                {
+                    continue;
+                }
+
                 try
                 {
                     var buildingName = building.Item1.Tags.GetValue("name");
@@ -1123,7 +1391,6 @@ namespace Transidious
                     Debug.Log("loading building '" + buildingName + "'...");
 
                     var type = building.Item2;
-                    Vector3? position = null;
                     Vector2[][] outlinePositions = null;
                     float area = 0f;
                     Vector2 centroid = Vector2.zero;
@@ -1190,7 +1457,7 @@ namespace Transidious
 
                         outlinePositions = new Vector2[][]
                         {
-                        wayPositionsArr.Select(v => (Vector2)v).ToArray(),
+                            wayPositionsArr.Select(v => (Vector2)v).ToArray(),
                         };
 
                         area = Math.GetAreaOfPolygon(wayPositionsArr);
@@ -1208,7 +1475,16 @@ namespace Transidious
                         b.outlinePositions = outlinePositions;
                     }
 
-                    Debug.Log("done");
+                    // if (building.Item1.Type == OsmGeoType.Way)
+                    // {
+                    //     var nodes = (building.Item1 as Way).Nodes;
+                    //     nodesMap.Add(b, nodes);
+
+                    //     foreach (var nodeId in nodes)
+                    //     {
+                    //         addNode(nodeId, b);
+                    //     }
+                    // }
                 }
                 catch (Exception e)
                 {
@@ -1221,6 +1497,32 @@ namespace Transidious
                     yield return null;
                 }
             }
+
+            // var equivalenceClass = new HashSet<Building>();
+            // var checkedBuildings = new HashSet<Building>();
+
+            // foreach (var building in map.buildings)
+            // {
+            //     equivalenceClass.Clear();
+            //     BuildEquivalenceClass(building, equivalenceClass, checkedBuildings, nodeMap, nodesMap);
+
+            //     if (equivalenceClass.Count <= 1)
+            //     {
+            //         continue;
+            //     }
+
+            //     var name = "";
+            //     foreach (var b in equivalenceClass)
+            //     {
+            //         if (!string.IsNullOrEmpty(b.name))
+            //         {
+            //             name = b.name;
+            //             break;
+            //         }
+            //     }
+
+
+            // }
 
             Debug.Log("building verts: " + totalVerts);
         }

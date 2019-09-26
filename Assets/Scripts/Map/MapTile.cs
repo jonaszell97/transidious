@@ -10,6 +10,7 @@ namespace Transidious
         [System.Serializable]
         public struct SerializableMapTile
         {
+            public int x, y;
             public int[] mapObjectIDs;
             public int[] orphanedObjectIDs;
         }
@@ -26,7 +27,7 @@ namespace Transidious
         public int x, y;
         public HashSet<IMapObject> mapObjects;
         public Rect rect;
-        RenderingDistance currentRenderingDist;
+        RenderingDistance? currentRenderingDist;
         public MultiMesh mesh;
         public HashSet<IMapObject> orphanedObjects;
 
@@ -65,6 +66,12 @@ namespace Transidious
                                  Map.tileSize, Map.tileSize);
 
             this.gameObject.SetActive(false);
+        }
+
+        public void Reset()
+        {
+            this.mapObjects.Clear();
+            this.colliderInfo.Clear();
         }
 
         public void AddOrphanedObject(IMapObject obj)
@@ -130,6 +137,7 @@ namespace Transidious
         {
             CreateColliders();
             mesh.CreateMeshes();
+            currentRenderingDist = null;
         }
 
         public void CreateColliders()
@@ -203,7 +211,7 @@ namespace Transidious
 
         public void Show(RenderingDistance dist)
         {
-            if (gameObject.activeSelf && currentRenderingDist == dist)
+            if (gameObject.activeSelf && currentRenderingDist.HasValue && currentRenderingDist.Value == dist)
             {
                 return;
             }
@@ -357,6 +365,8 @@ namespace Transidious
         {
             return new SerializableMapTile
             {
+                x = x,
+                y = y,
                 mapObjectIDs = mapObjects.Select(obj => obj.Id).ToArray(),
                 orphanedObjectIDs = orphanedObjects?.Select(obj => obj.Id).ToArray(),
             };

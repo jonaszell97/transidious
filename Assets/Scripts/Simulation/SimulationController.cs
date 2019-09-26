@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Transidious
 {
@@ -31,6 +31,9 @@ namespace Transidious
 
         /// The natural feature modal.
         public UIFeatureInfoModal featureModal;
+
+        /// The citizien modal.
+        public UICitizienInfoModal citizienModal;
 
         /// scratch buffer used for time string building.
         char[] timeStringBuffer;
@@ -246,7 +249,7 @@ namespace Transidious
         }
 
 #if DEBUG
-        public void SpawnTestCars(int amount = 100)
+        public IEnumerator SpawnTestCars(int amount = 100)
         {
             var options = new PathPlanning.PathPlanningOptions();
             for (int i = 0; i < amount; ++i)
@@ -259,17 +262,31 @@ namespace Transidious
                                                       goal.centroid);
 
                 trafficSim.SpawnCar(result, new Citizien(this));
+
+                if (FrameTimer.instance.FrameDuration >= 8)
+                {
+                    yield return null;
+                }
             }
+
+            yield break;
         }
 
-        public void SpawnTestCitiziens(int amount = 1000)
+        public IEnumerator SpawnTestCitiziens(int amount = 1000)
         {
             for (int i = 0; i < amount; ++i)
             {
                 var citizien = new Citizien(this);
-                Debug.Log(citizien.ToString());
+                citizien.car = CreateCar(citizien, Vector3.zero, Utility.RandomColor);
                 citiziens.Add(citizien);
+
+                if (FrameTimer.instance.FrameDuration >= 8)
+                {
+                    yield return null;
+                }
             }
+
+            yield break;
         }
 
         bool measuring = false;
@@ -279,11 +296,11 @@ namespace Transidious
         {
             if (GUI.Button(new Rect(25, 25, 100, 30), "Spawn Cars"))
             {
-                SpawnTestCars();
+                StartCoroutine(SpawnTestCars());
             }
             if (GUI.Button(new Rect(250, 25, 100, 30), "Spawn Citiziens"))
             {
-                SpawnTestCitiziens();
+                StartCoroutine(SpawnTestCitiziens());
             }
             if (GUI.Button(new Rect(150, 25, 100, 30), "Spawn Car"))
             {

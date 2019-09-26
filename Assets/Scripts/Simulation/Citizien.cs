@@ -288,7 +288,7 @@ namespace Transidious
 
         public static readonly float UniversityProbability = 0.7f;
 
-        public Citizien(SimulationController sim)
+        public Citizien(SimulationController sim, Car car = null)
         {
             this.sim = sim;
             this.lastName = RandomNameGenerator.LastName;
@@ -300,9 +300,6 @@ namespace Transidious
             this.birthday = (short)Random.Range(0, 365);
             this.age = (short)genderAndAge.Item2;
             this.happiness = 100;
-
-            this.car = sim.CreateCar(this, Vector3.zero, Utility.RandomColor);
-            this.car.gameObject.SetActive(false);
             this.money = Random.Range(0f, 1000000f);
 
             this.pointsOfInterest = new Dictionary<PointOfInterest, Building>();

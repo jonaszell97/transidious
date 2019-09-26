@@ -32,6 +32,26 @@ namespace Transidious
             }
         }
 
+        public void HideItem(string name)
+        {
+            var item = GetItem(name);
+            if (item.Item1 != null)
+            {
+                item.Item1.gameObject.SetActive(false);
+                item.Item2.gameObject.SetActive(false);
+            }
+        }
+
+        public void ShowItem(string name)
+        {
+            var item = GetItem(name);
+            if (item.Item1 != null)
+            {
+                item.Item1.gameObject.SetActive(true);
+                item.Item2.gameObject.SetActive(true);
+            }
+        }
+
         public Tuple<UIText, TMP_Text> GetItem(string name)
         {
             return Tuple.Create(GetTitle(name), GetValue(name));

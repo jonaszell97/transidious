@@ -87,6 +87,11 @@ namespace Transidious
             transform.position = new Vector3(x, y, transform.position.z);
         }
 
+        public static void SetPositionInLayer(this Transform transform, Vector2 vec)
+        {
+            transform.position = new Vector3(vec.x, vec.y, transform.position.z);
+        }
+
         public static void SetLayer(this Transform transform, MapLayer layer, int positionInLayer = 0)
         {
             transform.position = new Vector3(transform.position.x,

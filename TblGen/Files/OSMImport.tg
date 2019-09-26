@@ -29,7 +29,10 @@ class StreetInfo<let type: StreetType,
                  let onewayTag: string = "oneway",
                  let maxspeedTag: string = "maxspeed">
 
-class BoundaryInfo<let name: string, let tags: list<Tag>, let wayTags: list<Tag> >
+class BoundaryInfo<let name: string,
+                   let tags: list<Tag>,
+                   let wayTags: list<Tag>,
+                   let relationName: string = "">
 
 class RiverInfo<let relationTags: list<Tag>, let wayTags: list<Tag> >
 
@@ -280,7 +283,8 @@ def Berlin : DefaultArea {
 }
 
 def Charlottenburg : DefaultArea {
-    nodeFile = "Deutschland/CharlottenburgWilmersdorf"
+    nodeFile = "Deutschland/Berlin"
+    //nodeFile = "Deutschland/CharlottenburgWilmersdorf"
 
     boundary = BoundaryInfo<"Charlottenburg", [
         Tag<"type", "boundary">,
@@ -367,7 +371,7 @@ def Freiburg : DefaultArea {
     ], [
         Tag<"boundary", "administrative">,
         Tag<"admin_level", "6">
-    ]>
+    ], "Freiburg im Breisgau">
 }
 
 def Frankfurt : DefaultArea {
@@ -378,7 +382,7 @@ def Frankfurt : DefaultArea {
     ], [
         Tag<"boundary", "administrative">,
         Tag<"admin_level", "6">
-    ]>
+    ], "Frankfurt am Main">
 }
 
 def London : DefaultArea {

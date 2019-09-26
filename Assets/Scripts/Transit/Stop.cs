@@ -1511,13 +1511,8 @@ namespace Transidious
             this.spritePrefab = Resources.Load("Prefabs/SpritePrefab") as GameObject;
         }
 
-        protected override void OnMouseDown()
+        public void ActivateModal()
         {
-            if (GameController.instance.input.IsPointerOverUIElement())
-            {
-                return;
-            }
-
             var modal = GameController.instance.transitEditor.stopInfoModal;
             modal.modal.Enable();
             modal.SetStop(this);
@@ -1527,6 +1522,16 @@ namespace Transidious
             {
                 modal.modal.PositionAt(pos);
             });
+        }
+
+        protected override void OnMouseDown()
+        {
+            if (GameController.instance.input.IsPointerOverUIElement())
+            {
+                return;
+            }
+
+            ActivateModal();
         }
     }
 }

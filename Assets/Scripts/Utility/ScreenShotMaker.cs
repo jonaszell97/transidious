@@ -128,10 +128,48 @@ namespace Transidious
             };
         }
 
+        public Texture2D MakeScreenshotSingle(Map map, int tileX, int tileY, int resolution = 1024)
+        {
+            var minX = tileX * OSMImporter.maxTileSize;
+            var maxX = Mathf.Min(map.maxX, minX + OSMImporter.maxTileSize);
+            var minY = tileY * OSMImporter.maxTileSize;
+            var maxY = Mathf.Min(map.maxY, minY + OSMImporter.maxTileSize);
+
+            var tex = MakeScreenshotSingle(map, minX, maxX, minY, maxY, resolution);
+
+#if DEBUG
+            var bytes = tex.EncodeToPNG();
+            var path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+            System.IO.File.WriteAllBytes(path + "/" + map.name + tileX + "_" + tileY + ".png", bytes);
+#endif
+
+            return tex;
+        }
+
         public Texture2D MakeScreenshotSingle(Map map, int resolution = 1024)
         {
+            var minX = map.minX;
+            var maxX = map.maxX;
+            var minY = map.minY;
+            var maxY = map.maxY;
+
+            var tex = MakeScreenshotSingle(map, minX, maxX, minY, maxY, resolution);
+
+#if DEBUG
+            var bytes = tex.EncodeToPNG();
+            var path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+            System.IO.File.WriteAllBytes(path + "/" + map.name + ".png", bytes);
+#endif
+
+            return tex;
+        }
+
+        Texture2D MakeScreenshotSingle(Map map,
+                                       float minX, float maxX, float minY, float maxY,
+                                       int resolution)
+        {
             var prevRenderingDist = GameController.instance.input.renderingDistance;
-            GameController.instance.input.SetRenderingDistance(RenderingDistance.Near);
+            GameController.instance.input.SetRenderingDistance(RenderingDistance.Near, true);
             map.boundaryOutlineObj.SetActive(false);
 
             var prevMaterial = map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial;
@@ -154,16 +192,31 @@ namespace Transidious
             renderCamera.aspect = 1.0f;
             renderCamera.targetDisplay = 2;
 
+            int xRes, yRes;
+            var maxSize = 8192;
+
+            while (true)
+            {
+                xRes = Mathf.RoundToInt(resolution * ((maxX - minX)
+                    / (renderCamera.aspect * renderCamera.orthographicSize * 2 * renderCamera.aspect)));
+                yRes = Mathf.RoundToInt(resolution * ((maxY - minY)
+                    / (renderCamera.aspect * renderCamera.orthographicSize * 2 / renderCamera.aspect)));
+
+                if (xRes <= maxSize && yRes <= maxSize)
+                {
+                    break;
+                }
+
+                resolution -= 100;
+                if (resolution < 0)
+                {
+                    Debug.LogError("unable to find acceptable resolution!");
+                    return new Texture2D(0, 0);
+                }
+            }
+
             var renderTexture = new RenderTexture(resolution, resolution, 24);
             renderCamera.targetTexture = renderTexture;
-
-            var minX = map.minX;
-            var maxX = map.maxX;
-            var minY = map.minY;
-            var maxY = map.maxY;
-
-            int xRes = Mathf.RoundToInt(resolution * ((maxX - minX) / (renderCamera.aspect * renderCamera.orthographicSize * 2 * renderCamera.aspect)));
-            int yRes = Mathf.RoundToInt(resolution * ((maxY - minY) / (renderCamera.aspect * renderCamera.orthographicSize * 2 / renderCamera.aspect)));
 
             Texture2D virtualPhoto = new Texture2D(xRes, yRes, TextureFormat.RGB24, false);
             RenderTexture.active = renderTexture;
@@ -186,11 +239,6 @@ namespace Transidious
 
             RenderTexture.active = null;
             renderCamera.targetTexture = null;
-
-#if DEBUG
-            var bytes = virtualPhoto.EncodeToPNG();
-            System.IO.File.WriteAllBytes("/Users/Jonas/Downloads/" + map.name + ".png", bytes);
-#endif
 
             map.boundaryBackgroundObj.SetActive(true);
             map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial = prevMaterial;

@@ -14,7 +14,7 @@
    viewBox="0 0 210 297"
    version="1.1"
    id="svg920"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
    sodipodi:docname="car1_no_outline.svg">
   <defs
      id="defs914" />
@@ -26,16 +26,16 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="397.14286"
+     inkscape:cx="273.21429"
      inkscape:cy="660.35714"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="707"
-     inkscape:window-x="0"
-     inkscape:window-y="1"
-     inkscape:window-maximized="1"
+     inkscape:window-width="754"
+     inkscape:window-height="417"
+     inkscape:window-x="981"
+     inkscape:window-y="85"
+     inkscape:window-maximized="0"
      inkscape:snap-global="false" />
   <metadata
      id="metadata917">
@@ -45,7 +45,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -58,7 +58,7 @@
        d="m 98.273808,96.67265 c -4.736068,0 -8.66653,2.583643 -9.609232,6.04718 -0.13801,0.4243 -0.214974,0.87673 -0.214974,1.34823 v 0.16434 0.7028 h -1.236099 v 9.75547 h 1.236099 v 13.00489 h -1.236099 v 9.75548 h 1.236099 v 0.85008 c 0,2.40068 1.9329,4.33358 4.333586,4.33358 h 0.04341 v 1.4981 h 2.004528 v -1.4981 h 21.029204 c 2.40069,0 4.33307,-1.9329 4.33307,-4.33358 v -0.85008 h 1.09709 v -9.75548 h -1.09709 v -13.00489 h 1.09709 v -9.75547 h -1.09709 v -0.7028 -0.16434 c 0,-0.47288 -0.0772,-0.92648 -0.21601,-1.35185 -0.94446,-3.461711 -4.87378,-6.04356 -9.6082,-6.04356 z"
        id="rect1465"
        inkscape:connector-curvature="0"
-       inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/car1.png"
+       inkscape:export-filename="/home/jonas/transidious/Assets/Resources/Sprites/car1_no_outline.png"
        inkscape:export-xdpi="300"
        inkscape:export-ydpi="300" />
   </g>

@@ -184,6 +184,13 @@ namespace Transidious
         {
         }
 
+        public void Delete(bool deleteMesh = false)
+        {
+            var map = GameController.instance.loadedMap;
+            map.buildings.Remove(this);
+            map.DeleteMapObject(this);
+        }
+
         public new SerializableBuilding Serialize()
         {
             return new SerializableBuilding
@@ -222,6 +229,15 @@ namespace Transidious
             return name;
         }
 
+        public void ActivateModal()
+        {
+            var modal = GameController.instance.sim.buildingInfoModal;
+            modal.SetBuilding(this);
+
+            modal.modal.PositionAt(centroid);
+            modal.modal.Enable();
+        }
+
         public override void OnMouseDown()
         {
             if (GameController.instance.input.IsPointerOverUIElement())
@@ -229,11 +245,7 @@ namespace Transidious
                 return;
             }
 
-            var modal = GameController.instance.sim.buildingInfoModal;
-            modal.SetBuilding(this);
-
-            modal.modal.PositionAt(centroid);
-            modal.modal.Enable();
+            ActivateModal();
         }
     }
 }

@@ -171,6 +171,13 @@ namespace Transidious
             }
         }
 
+        public void Delete(bool deleteMesh = false)
+        {
+            var map = GameController.instance.loadedMap;
+            map.naturalFeatures.Remove(this);
+            map.DeleteMapObject(this);
+        }
+
         public new SerializedFeature Serialize()
         {
             return new SerializedFeature

@@ -179,8 +179,9 @@ namespace Transidious
             }
         }
 
-        public void Initialize()
+        public void Initialize(bool resetIDs = true)
         {
+            this.boundaryPositions = null;
             this.mapObjectMap = new Dictionary<string, IMapObject>();
             this.mapObjectIDMap = new Dictionary<int, IMapObject>();
 
@@ -196,8 +197,12 @@ namespace Transidious
             this.buildingsByType = new Dictionary<Building.Type, List<Building>>();
 
             this.tilesToShow = new HashSet<MapTile>();
-
             mapObjectIDMap[0] = null;
+
+            if (resetIDs)
+            {
+                this.lastAssignedMapObjectID = 1;
+            }
 
             this.canvas.sortingLayerName = "Foreground";
         }
@@ -299,6 +304,11 @@ namespace Transidious
 
         public void DeleteMapObject(IMapObject obj)
         {
+            if (obj == null)
+            {
+                return;
+            }
+
             mapObjectIDMap.Remove(obj.Id);
             mapObjectMap.Remove(obj.Name);
 
@@ -413,18 +423,13 @@ namespace Transidious
             float halfWidth = (maxX - minX) / 2f;
             float halfHeight = (maxY - minY);
 
-            Camera.main.orthographicSize = InputController.maxZoom;
-
-            var halfViewportWidth = Camera.main.ScreenToWorldPoint(new Vector3(Camera.main.rect.width, 0, 0)).x;
-            var halfViewportHeight = halfViewportWidth;
-
             pslg = new PSLG(Map.Layer(MapLayer.Boundary));
             pslg.AddOrderedVertices(new Vector3[]
             {
-                new Vector3(minX - halfViewportWidth, minY - halfViewportHeight),
-                new Vector3(minX - halfViewportWidth, maxY + halfViewportHeight),
-                new Vector3(maxX + halfViewportWidth, maxY + halfViewportHeight),
-                new Vector3(maxX + halfViewportWidth, minY - halfViewportHeight)
+                new Vector3(minX, minY),
+                new Vector3(minX, maxY),
+                new Vector3(maxX, maxY),
+                new Vector3(maxX, minY)
             });
 
             pslg.AddHole(positionList);
@@ -548,6 +553,8 @@ namespace Transidious
         {
             var meshRenderer = boundaryMaskObj.GetComponent<MeshRenderer>();
             meshRenderer.material = GameController.GetUnlitMaterial(c);
+
+            Camera.main.backgroundColor = c;
         }
 
         public void MakeBackgroundTransparent()
@@ -1391,6 +1398,27 @@ namespace Transidious
             this.transitLines.Clear();
         }
 
+        public void ResetAll()
+        {
+            var mapObjects = mapObjectIDMap.Values.ToArray();
+            foreach (var obj in mapObjects)
+            {
+                DeleteMapObject(obj);
+            }
+
+            mapObjects = null;
+
+            foreach (var tile in AllTiles)
+            {
+                tile.Reset();
+            }
+
+            Initialize(false);
+
+            // Might be placebo, whatever
+            GC.Collect();
+        }
+
         // Use this for initialization
         void Awake()
         {
@@ -1401,15 +1429,15 @@ namespace Transidious
         void Start()
         {
             boundaryBackgroundObj = Instantiate(meshPrefab);
-            // boundaryBackgroundObj.transform.SetParent(this.transform);
+            boundaryBackgroundObj.transform.SetParent(this.transform);
             boundaryBackgroundObj.name = "Boundary Background";
 
             boundaryOutlineObj = Instantiate(meshPrefab);
-            // boundaryOutlineObj.transform.SetParent(this.transform);
+            boundaryOutlineObj.transform.SetParent(this.transform);
             boundaryOutlineObj.name = "Boundary Outline";
 
             boundaryMaskObj = Instantiate(meshPrefab);
-            // boundarymaskObj.transform.SetParent(this.transform);
+            boundaryMaskObj.transform.SetParent(this.transform);
             boundaryMaskObj.name = "Boundary Mask";
 
             this.backgroundSpriteDay = Instantiate(GameController.instance.spritePrefab);
@@ -1495,7 +1523,7 @@ namespace Transidious
             }
         }
 
-        public IEnumerator DoFinalize(float thresholdTime = 50)
+        public IEnumerator DoFinalize(float thresholdTime = 50, int tileX = -1, int tileY = -1)
         {
             foreach (var building in buildings)
             {
@@ -1533,13 +1561,40 @@ namespace Transidious
             Debug.Log("circle verts: " + MeshBuilder.circleVerts);
 #endif
 
-            foreach (var tile in AllTiles)
+            int minX, maxX;
+            if (tileX == -1)
             {
-                tile.FinalizeTile();
+                minX = 0;
+                maxX = tiles.Length;
+            }
+            else
+            {
+                minX = (int)Mathf.Floor(tileX * (OSMImporter.maxTileSize / Map.tileSize));
+                maxX = Mathf.Min(minX + (int)(OSMImporter.maxTileSize / Map.tileSize), tiles.Length);
+            }
 
-                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+            for (int x = minX; x < maxX; ++x)
+            {
+                int minY, maxY;
+                if (tileX == -1)
                 {
-                    yield return null;
+                    minY = 0;
+                    maxY = tiles[x].Length;
+                }
+                else
+                {
+                    minY = (int)Mathf.Floor(tileY * (OSMImporter.maxTileSize / Map.tileSize));
+                    maxY = Mathf.Min(minY + (int)(OSMImporter.maxTileSize / Map.tileSize), tiles[x].Length);
+                }
+
+                for (int y = minY; y < maxY; ++y)
+                {
+                    tiles[x][y].FinalizeTile();
+
+                    if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                    {
+                        yield return null;
+                    }
                 }
             }
 

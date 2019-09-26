@@ -115,6 +115,22 @@ namespace Transidious
             }
         }
 
+        public Vector2 MaxCameraSizeWorld
+        {
+            get
+            {
+                var orthoSize = camera.orthographicSize;
+                camera.orthographicSize = maxZoom;
+
+                var max = camera.ViewportToWorldPoint(new Vector2(1f, 1f));
+                var min = camera.ViewportToWorldPoint(new Vector2(0f, 0f));
+
+                camera.orthographicSize = orthoSize;
+
+                return max - min;
+            }
+        }
+
         public bool IsPressed(ControlType type)
         {
             if (keyBindings.TryGetValue(type, out Tuple<KeyCode, KeyCode> binding))
@@ -401,12 +417,12 @@ namespace Transidious
             FireEvent(InputEvent.ScaleChange);
         }
 
-        public void SetRenderingDistance(RenderingDistance dist)
+        public void SetRenderingDistance(RenderingDistance dist, bool forceUpdate = false)
         {
             var currRenderingDist = renderingDistance;
             this.renderingDistance = dist;
 
-            if (currRenderingDist != renderingDistance)
+            if (forceUpdate || currRenderingDist != renderingDistance)
             {
                 FireEvent(InputEvent.ScaleChange);
             }
@@ -612,6 +628,11 @@ namespace Transidious
                 break;
             }
 
+            SetCameraPosition(position);
+        }
+
+        public void SetCameraPosition(Vector2 position)
+        {
             if (position.x.Equals(camera.transform.position.x)
             && position.y.Equals(camera.transform.position.y))
             {

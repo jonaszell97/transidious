@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -g  -shared -Wl,-soname,libunitytriangle.so -o libunitytriangle.so CMakeFiles/unitytriangle.dir/UnityTriangle/triangle.cpp.o -static-libgcc -static-libstdc++ 

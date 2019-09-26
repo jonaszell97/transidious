@@ -236,6 +236,11 @@ namespace Transidious
             {
                 foreach (var entry in data.meshMap)
                 {
+                    if (entry.Value.meshes == null)
+                    {
+                        continue;
+                    }
+
                     foreach (var mesh in entry.Value.meshes)
                     {
                         var obj = renderingObjects[i];

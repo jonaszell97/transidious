@@ -6,6 +6,7 @@ namespace Transidious
     public class Car : MonoBehaviour
     {
         SimulationController sim;
+        int carModel;
         public Citizien driver;
         public float maxVelocity;
         public float acceleration;
@@ -13,10 +14,36 @@ namespace Transidious
         public PathFollowingObject pathFollow;
         public PathFollowingObject.CompletionCallback callback;
         public TrafficSimulator.DrivingCar drivingCar;
-        public bool isFocused;
 
-        public static Car focusedCar;
-        static GameObject carOutlineObj;
+        public bool isFocused
+        {
+            get
+            {
+                return sim.citizienModal.citizien == driver;
+            }
+        }
+
+        public bool IsDriving
+        {
+            get
+            {
+                return pathFollow != null;
+            }
+        }
+
+        public Color color
+        {
+            get
+            {
+                var renderer = GetComponent<SpriteRenderer>();
+                return renderer.color;
+            }
+            set
+            {
+                var renderer = GetComponent<SpriteRenderer>();
+                renderer.color = value;
+            }
+        }
 
         public void Initialize(SimulationController sim, Citizien driver, Color c, int carModel = -1)
         {
@@ -25,10 +52,10 @@ namespace Transidious
 
             if (carModel == -1)
             {
-                carModel = 0;
-                // carModel = UnityEngine.Random.Range(0, sim.game.carSprites.Length - 1);
+                carModel = UnityEngine.Random.Range(0, sim.game.carSprites.Length - 1);
             }
 
+            this.carModel = carModel;
             renderer.sprite = sim.game.carSprites[carModel];
 
             switch (carModel)
@@ -58,6 +85,7 @@ namespace Transidious
 
             this.sim = sim;
             this.driver = driver;
+            driver.car = this;
             this.length = renderer.bounds.size.y;
             this.transform.SetLayer(MapLayer.Cars, 1);
 
@@ -159,97 +187,47 @@ namespace Transidious
             if (isFocused)
             {
                 UpdateUIPosition();
-                carOutlineObj.transform.SetPositionInLayer(transform.position.x, transform.position.y);
-                carOutlineObj.transform.rotation = transform.rotation;
             }
         }
 
         public void Highlight()
         {
-            if (carOutlineObj == null)
-            {
-                carOutlineObj = Instantiate(GameController.instance.spritePrefab);
-                carOutlineObj.transform.SetLayer(MapLayer.Cars, 0);
-            }
+            GetComponent<SpriteRenderer>().sprite = sim.game.carSpritesOutlined[carModel];
+        }
 
-            var outlineSpriteRenderer = carOutlineObj.GetComponent<SpriteRenderer>();
-            var sprite = this.GetComponent<SpriteRenderer>().sprite;
-
-            outlineSpriteRenderer.sprite = sprite;
-            outlineSpriteRenderer.color = Color.black;
-
-            carOutlineObj.transform.ScaleBy(transform.localScale.x * 1.05f);
-            carOutlineObj.transform.SetPositionInLayer(transform.position.x, transform.position.y);
-            carOutlineObj.transform.rotation = transform.rotation;
+        public void Unhighlight()
+        {
+            GetComponent<SpriteRenderer>().sprite = sim.game.carSprites[carModel];
         }
 
         void UpdateUIPosition()
         {
-            var ui = sim.game.citizienUI;
-            var rectTransform = ui.GetComponent<RectTransform>();
+            var modal = GameController.instance.sim.citizienModal;
+            modal.modal.PositionAt(transform.position);
+        }
 
-            var pos = sim.game.input.WorldToUISpace(sim.game.uiCanvas, this.transform.position);
-            rectTransform.position = new Vector3(pos.x, pos.y, ui.transform.position.z);
+        void OnMouseEnter()
+        {
+            this.Highlight();
+        }
+
+        void OnMouseExit()
+        {
+            this.Unhighlight();
         }
 
         void OnMouseDown()
         {
-            this.Highlight();
-
-            var game = sim.game;
-            var ui = game.citizienUI;
-            isFocused = !isFocused;
-
-            if (isFocused)
+            if (GameController.instance.input.IsPointerOverUIElement())
             {
-                if (focusedCar != null)
-                {
-                    focusedCar.isFocused = false;
-                }
-
-                focusedCar = this;
-                ui.SetActive(true);
-
-                game.citizienUINameText.text = driver.Name + " (" + driver.age + ")";
-                game.citizienUIMoneyText.text = Translator.GetCurrency(driver.money);
-
-                var destination = driver.CurrentDestination;
-                if (destination.HasValue)
-                {
-                    var msg = Citizien.GetDestinationString(destination.Value);
-                    game.citizienUIDestinationImg.gameObject.SetActive(true);
-                    game.citizienUIDestinationText.gameObject.SetActive(true);
-                    game.citizienUIDestinationText.text = msg;
-                }
-                else
-                {
-                    game.citizienUIDestinationImg.gameObject.SetActive(false);
-                    game.citizienUIDestinationText.gameObject.SetActive(false);
-                }
-
-                if (driver.happiness < 50)
-                {
-                    game.citizienUIHappinessSprite.sprite = game.happinessSprites[0];
-                    game.citizienUIHappinessText.text = Translator.Get("ui:happiness_unhappy");
-                }
-                else if (driver.happiness < 80)
-                {
-                    game.citizienUIHappinessSprite.sprite = game.happinessSprites[1];
-                    game.citizienUIHappinessText.text = Translator.Get("ui:happiness_med_happy");
-                }
-                else
-                {
-                    game.citizienUIHappinessSprite.sprite = game.happinessSprites[2];
-                    game.citizienUIHappinessText.text = Translator.Get("ui:happiness_happy");
-                }
-
-                UpdateUIPosition();
+                return;
             }
-            else
-            {
-                ui.SetActive(false);
-                focusedCar = null;
-            }
+
+            var modal = GameController.instance.sim.citizienModal;
+            modal.SetCitizien(this.driver);
+
+            modal.modal.PositionAt(transform.position);
+            modal.modal.Enable();
         }
     }
 }

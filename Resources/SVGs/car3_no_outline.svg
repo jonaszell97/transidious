@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg920"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="car3_no_outline.svg">
+  <defs
+     id="defs914" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#cdcdcd"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="268.20993"
+     inkscape:cy="574.49492"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1853"
+     inkscape:window-height="1025"
+     inkscape:window-x="67"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false" />
+  <metadata
+     id="metadata917">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:5.17795277;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 456.58984 239.64648 C 426.37012 239.64648 402.04102 256.98588 402.04102 278.52344 L 402.04102 312.37695 L 391.39453 312.37695 C 389.43585 312.37695 387.85742 313.95342 387.85742 315.91211 C 387.85742 317.8708 389.43585 319.44922 391.39453 319.44922 L 402.04102 319.44922 L 402.04102 342.19141 L 402.04102 521.17188 C 402.04102 524.13973 404.43058 526.5293 407.39844 526.5293 L 413.15234 526.5293 L 413.15234 533.0957 C 413.15234 536.17364 415.63105 538.65234 418.70898 538.65234 C 421.78692 538.65234 424.26367 536.17364 424.26367 533.0957 L 424.26367 526.5293 L 536.08398 526.5293 C 539.05184 526.5293 541.44141 524.13973 541.44141 521.17188 L 541.44141 342.19141 L 541.44141 319.44922 L 549.98828 319.44922 C 551.94697 319.44922 553.52344 317.8708 553.52344 315.91211 C 553.52344 313.95342 551.94697 312.37695 549.98828 312.37695 L 541.44141 312.37695 L 541.44141 278.52344 C 541.44141 256.98588 517.1123 239.64648 486.89258 239.64648 L 456.58984 239.64648 z "
+       transform="scale(0.26458333)"
+       id="rect862"
+       inkscape:export-filename="/home/jonas/transidious/Assets/Resources/Sprites/car3_no_outline.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+  </g>
+</svg>

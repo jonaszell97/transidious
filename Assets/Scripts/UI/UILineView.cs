@@ -172,6 +172,14 @@ namespace Transidious
             var name = Instantiate(stopNamePrefab);
             name.transform.SetParent(stopNameGrid.transform);
             name.GetComponent<TMP_Text>().text = stop.name;
+
+            var link = name.GetComponent<UILocationLink>();
+            link.SetLocation(stop.location);
+            link.postMoveListener = () =>
+            {
+                stop.ActivateModal();
+            };
+
             name.transform.localScale = new Vector3(1f, 1f, 1f);
             name.transform.localPosition = new Vector3(0, 0, 0);
 

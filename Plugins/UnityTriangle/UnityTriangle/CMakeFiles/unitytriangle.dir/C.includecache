@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jonas/transidious/Plugins/UnityTriangle/UnityTriangle/UnityTriangle/triangle.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+math.h
+-
+sys/time.h
+-
+float.h
+-
+fpu_control.h
+-
+triangle.h
+/home/jonas/transidious/Plugins/UnityTriangle/UnityTriangle/UnityTriangle/triangle.h
+
+/home/jonas/transidious/Plugins/UnityTriangle/UnityTriangle/UnityTriangle/triangle.h
+
