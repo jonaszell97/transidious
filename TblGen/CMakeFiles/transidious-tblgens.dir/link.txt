@@ -1,1 +1,0 @@
-/usr/bin/clang++ -fPIC  -fno-exceptions -Wall  -shared -Wl,-soname,libtransidious-tblgens.so -o libtransidious-tblgens.so CMakeFiles/transidious-tblgens.dir/Backends/OSMImportBackend.cpp.o /usr/lib/llvm-6.0/lib/libLLVMSupport.a -lz -lrt -ldl -ltinfo -lpthread -lm /usr/lib/llvm-6.0/lib/libLLVMDemangle.a 

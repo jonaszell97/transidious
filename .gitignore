@@ -5,6 +5,11 @@ Assets/NuGet
 
 # ignore OSM files
 /Resources/OSM
+/TblGen/CMakeFiles
+/TblGen/CMakeCache.txt
+/TblGen/libtransidious-tblgens.dylib
+/TblGen/cmake_install.cmake
+/TblGen/Makefile
 
 /[Ll]ibrary/
 /[Tt]emp/
