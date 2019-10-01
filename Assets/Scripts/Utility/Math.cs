@@ -334,7 +334,7 @@ namespace Transidious
             }
         }
 
-        public static Rect GetBoundingRect(List<Vector2> points)
+        public static Rect GetBoundingRect(IReadOnlyList<Vector2> points)
         {
             Debug.Assert(points.Count >= 2);
 
@@ -424,6 +424,23 @@ namespace Transidious
             return upperHull;
         }
 
+        public static bool IsPointInPolygon(Vector2 pt, IReadOnlyList<Vector2> poly)
+        {
+            Debug.Assert(poly.Count >= 3, "invalid polygon");
+
+            var inside = false;
+            var j = poly.Count - 1;
+            for (int i = 0; i < poly.Count; j = i++)
+            {
+                // what the fuck
+                inside ^= poly[i].y > pt.y ^ poly[j].y > pt.y
+                    && pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y)
+                        + poly[i].x;
+            }
+
+            return inside;
+        }
+
         public static bool IsPointInPolygon(Vector2 pt, Vector2[] poly)
         {
             Debug.Assert(poly.Length >= 3, "invalid polygon");
@@ -439,6 +456,105 @@ namespace Transidious
             }
 
             return inside;
+        }
+
+        enum CrossingType
+        {
+            Upward,
+            Downward,
+            None,
+        }
+
+        static CrossingType GetCrossing(Ray2D ray, Vector2 e1, Vector2 e2,
+                                        out bool strictlyRight, out bool strictlyLeft)
+        {
+            strictlyRight = false;
+            strictlyLeft = false;
+
+            // Rule #3: horizontal edges are excluded
+            if (e1.y.Equals(e2.y))
+            {
+                return CrossingType.None;
+            }
+
+            var pt = GetIntersectionPoint(ray, e1, e2, out bool found);
+            if (!found)
+            {
+                return CrossingType.None;
+            }
+
+            strictlyRight = pt.x > ray.origin.x;
+            strictlyLeft = pt.x < ray.origin.x;
+
+            // Rule #1: an upward edge includes its starting endpoint, and excludes its final endpoint
+            if (e2.y > e1.y)
+            {
+               if (pt.Equals(e2))
+               {
+                   return CrossingType.None;
+               }
+
+                return CrossingType.Upward;
+            }
+
+            // Rule #2: a downward edge excludes its starting endpoint, and includes its final endpoint
+            Debug.Assert(e2.y < e1.y);
+
+            if (pt.Equals(e1))
+            {
+                return CrossingType.None;
+            }
+
+            return CrossingType.Downward;
+        }
+
+        // See http://geomalgorithms.com/a03-_inclusion.html
+        public static int WindingNumber(Vector2 pt, IReadOnlyList<Vector3> poly)
+        {
+            if (!poly.Last().Equals(poly.First()))
+            {
+                var tmp = poly.ToList();
+                tmp.Add(poly.First());
+                poly = tmp;
+            }
+
+            var wn = 0;
+            var ray = new Ray2D(pt, Vector2.right);
+
+            //    for (each edge E[i]:V[i]V[i + 1] of the polygon)
+            for (var i = 1; i < poly.Count; ++i)
+            {
+                var e1 = poly[i - 1];
+                var e2 = poly[i];
+                var crossing = GetCrossing(ray, e1, e2, out bool strictlyRight, out bool strictlyLeft);
+
+                //    if (E[i] crosses upward ala Rule #1)  
+                if (crossing == CrossingType.Upward)
+                {
+                    //    if (P is strictly left of E[i])    // Rule #4
+                    if (strictlyLeft)
+                    {
+                        ++wn;   // a valid up intersect right of P.x
+                    }
+                }
+
+                //    else if (E[i] crosses downward ala Rule  #2)
+                else if (crossing == CrossingType.Downward)
+                {
+                    //    if (P is  strictly right of E[i])   // Rule #4
+                    if (strictlyRight)
+                    {
+                        --wn;   // a valid down intersect right of P.x
+                    }
+                }
+            }
+
+            return wn; // =0 <=> P is outside the polygon
+        }
+
+        public static int WindingNumber(Vector2 pt, IReadOnlyList<Vector2> poly)
+        {
+            return WindingNumber(pt, poly.Select(v => (Vector2)v).ToArray());
         }
 
         public static float GetAreaOfPolygon(IReadOnlyList<Vector2> poly)
@@ -526,6 +642,35 @@ namespace Transidious
 
             accumulatedArea *= 3f;
             return new Vector2(centerX / accumulatedArea, centerY / accumulatedArea);
+        }
+
+        public static Vector2 RandomPointInPolygon(IReadOnlyList<Vector3> poly)
+        {
+            return RandomPointInPolygon(poly.Select(v => (Vector2)v).ToArray());
+        }
+
+        public static Vector2 RandomPointInPolygon(IReadOnlyList<Vector2> poly)
+        {
+            var boundingBox = GetBoundingRect(poly);
+            var tries = 0;
+
+            while (true)
+            {
+                var x = UnityEngine.Random.Range(boundingBox.x, boundingBox.x + boundingBox.width);
+                var y = UnityEngine.Random.Range(boundingBox.y, boundingBox.y + boundingBox.height);
+                var pt = new Vector2(x, y);
+
+                if (IsPointInPolygon(pt, poly))
+                {
+                    return pt;
+                }
+
+                if (++tries > 1000)
+                {
+                    Debug.LogError("could not find point in polygon!");
+                    return Vector2.zero;
+                }
+            }
         }
 
         static void DBSCAN_RangeQuery(ref List<Vector2> neighbors,
@@ -649,6 +794,74 @@ namespace Transidious
             }
 
             return clusters;
+        }
+
+        static readonly int ClipPrecision = 1000;
+
+        static ClipperLib.IntPoint GetIntPoint(Vector2 v)
+        {
+            return new ClipperLib.IntPoint(v.x * ClipPrecision, v.y * ClipPrecision);
+        }
+
+        static List<ClipperLib.IntPoint> GetPath(PSLG pslg)
+        {
+            var list = new List<ClipperLib.IntPoint>();
+            foreach (var pt in pslg.vertices)
+            {
+                list.Add(GetIntPoint(pt));
+            }
+
+            return list;
+        }
+
+        static Vector3[] GetUnityPath(List<ClipperLib.IntPoint> path)
+        {
+            return path.Select(p => new Vector3((float)p.X / (float)ClipPrecision, (float)p.Y / (float)ClipPrecision)).ToArray();
+        }
+
+        static void PopulateResultPSLG(PSLG pslg, ClipperLib.PolyNode node, bool hole)
+        {
+            if (hole)
+            {
+                pslg.AddHole(GetUnityPath(node.Contour));
+            }
+            else
+            {
+                pslg.AddOrderedVertices(GetUnityPath(node.Contour));
+            }
+
+            foreach (var child in node.Childs)
+            {
+                PopulateResultPSLG(pslg, child, !hole);
+            }
+        }
+
+        public static PSLG PolygonUnion(IReadOnlyList<PSLG> pslgs)
+        {
+            var clipper = new ClipperLib.Clipper();
+            foreach (var pslg in pslgs)
+            {
+                clipper.AddPath(GetPath(pslg), ClipperLib.PolyType.ptSubject, true);
+
+                foreach (var hole in pslg.holes)
+                {
+                    clipper.AddPath(GetPath(hole), ClipperLib.PolyType.ptSubject, true);
+                }
+            }
+
+            var solution = new ClipperLib.PolyTree();
+            if (!clipper.Execute(ClipperLib.ClipType.ctUnion, solution))
+            {
+                return null;
+            }
+
+            var result = new PSLG();
+            foreach (var node in solution.Childs)
+            {
+                PopulateResultPSLG(result, node, false);
+            }
+
+            return result;
         }
     }
 }

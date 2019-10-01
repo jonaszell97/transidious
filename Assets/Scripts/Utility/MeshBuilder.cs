@@ -1073,6 +1073,11 @@ namespace Transidious
 
         public static Mesh PointsToMeshFast(Vector3[] points)
         {
+            if (points.Length == 0)
+            {
+                return new Mesh();
+            }
+
             int pointCount = points.Length;
             if (points.Last() == points.First())
                 --pointCount;

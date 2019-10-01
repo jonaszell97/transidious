@@ -386,9 +386,17 @@ namespace Transidious
             }
         }
 
+        public TileIterator ActiveTiles
+        {
+            get
+            {
+                return new TileIterator(this, null, true);
+            }
+        }
+
         public static float Layer(MapLayer l, int orderInLayer = 0)
         {
-            Debug.Assert(orderInLayer < 10, "invalid layer order");
+            Debug.Assert(orderInLayer < 10 || l == MapLayer.Foreground, "invalid layer order");
             return -((float)((int)l * 10)) - (orderInLayer * 1f);
         }
 
@@ -709,6 +717,11 @@ namespace Transidious
                 return GetClosestStreet(position, radius + 1, tileX, tileY,
                                         minDist, minSeg, minPnt, prevIdx,
                                         disregardRivers);
+            }
+
+            if (minSeg == null)
+            {
+                return null;
             }
 
             return new PointOnStreet { seg = minSeg, pos = minPnt, prevIdx = prevIdx };
@@ -1321,6 +1334,27 @@ namespace Transidious
             prevCameraRect = cameraRect;
         }
 
+        void UpdateStreetNameScale(RenderingDistance dist)
+        {
+            if (tiles == null)
+            {
+                return;
+            }
+
+            if (dist >= RenderingDistance.Far)
+            {
+                return;
+            }
+
+            foreach (var tile in ActiveTiles)
+            {
+                foreach (var seg in tile.streetSegments)
+                {
+                    seg.UpdateTextScale(dist);
+                }
+            }
+        }
+
         public void HideBackgroundSprite()
         {
             // Do it next frame to guarantee that the tiles are visible again.
@@ -1448,6 +1482,7 @@ namespace Transidious
             input.RegisterEventListener(InputEvent.Zoom, _ =>
             {
                 this.UpdateVisibleTiles();
+                this.UpdateStreetNameScale(input.renderingDistance);
             });
 
             input.RegisterEventListener(InputEvent.Pan, _ =>

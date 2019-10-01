@@ -197,10 +197,8 @@ namespace Transidious
 
             while (true)
             {
-                xRes = Mathf.RoundToInt(resolution * ((maxX - minX)
-                    / (renderCamera.aspect * renderCamera.orthographicSize * 2 * renderCamera.aspect)));
-                yRes = Mathf.RoundToInt(resolution * ((maxY - minY)
-                    / (renderCamera.aspect * renderCamera.orthographicSize * 2 / renderCamera.aspect)));
+                xRes = Mathf.RoundToInt(resolution * ((maxX - minX) / (renderCamera.orthographicSize * 2)));
+                yRes = Mathf.RoundToInt(resolution * ((maxY - minY) / (renderCamera.orthographicSize * 2)));
 
                 if (xRes <= maxSize && yRes <= maxSize)
                 {
@@ -218,22 +216,26 @@ namespace Transidious
             var renderTexture = new RenderTexture(resolution, resolution, 24);
             renderCamera.targetTexture = renderTexture;
 
-            Texture2D virtualPhoto = new Texture2D(xRes, yRes, TextureFormat.RGB24, false);
+            var imageResX = (int)Mathf.Ceil((float)xRes / resolution) * resolution;
+            var imageResY = (int)Mathf.Ceil((float)yRes / resolution) * resolution;
+
+            Texture2D virtualPhoto = new Texture2D(imageResX, imageResY, TextureFormat.RGB24, false);
             RenderTexture.active = renderTexture;
 
-            for (float i = minX, xPos = 0; i < maxX;
-                 i += renderCamera.aspect * renderCamera.orthographicSize * 2, xPos++)
+            for (float i = minX, xPos = 0, spaceLeftX = xRes; i < maxX;
+                 i += renderCamera.orthographicSize * 2, xPos++, spaceLeftX -= resolution)
             {
-                for (float j = minY, yPos = 0; j < maxY;
-                     j += renderCamera.aspect * renderCamera.orthographicSize * 2, yPos++)
+                for (float j = minY, yPos = 0, spaceLeftY = yRes; j < maxY;
+                     j += renderCamera.orthographicSize * 2, yPos++, spaceLeftY -= resolution)
                 {
-                    gameObject.transform.position = new Vector3(i + renderCamera.aspect *
-                        renderCamera.orthographicSize, j + renderCamera.aspect *
-                        renderCamera.orthographicSize, cameraDistance);
+                    gameObject.transform.position = new Vector3(
+                        i + renderCamera.orthographicSize,
+                        j + renderCamera.orthographicSize, cameraDistance);
 
                     renderCamera.Render();
+
                     virtualPhoto.ReadPixels(new Rect(0, 0, resolution, resolution),
-                        (int)xPos * resolution, (int)yPos * resolution);
+                                            (int)xPos * resolution, (int)yPos * resolution);
                 }
             }
 
@@ -244,7 +246,7 @@ namespace Transidious
             map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial = prevMaterial;
             GameController.instance.input.SetRenderingDistance(prevRenderingDist);
 
-            return virtualPhoto;
+            return virtualPhoto.ResizeNonDestructive(xRes, yRes);
         }
     }
 }

@@ -45,7 +45,6 @@ namespace Transidious
                                Mesh mesh, float area, string name = "",
                                Vector2? centroid = null, int id = -1)
         {
-
 #if DEBUG
             if (name.Length == 0)
             {

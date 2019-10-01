@@ -53,11 +53,15 @@ class NaturalFeatureInfo<let type: NatureType, let tags: list<Tag>, let geoTypes
 
 enum BuildingType {
     Residential,
-    University,
+    Shop,
+    Office,
     ElementarySchool,
     HighSchool,
+    University,
     Hospital,
-    Stadium
+    Stadium,
+
+    GroceryStore,
 }
 
 class BuildingInfo<let type: BuildingType, let tags: list<Tag>, let geoTypes: list<GeoType> >
@@ -249,7 +253,24 @@ class DefaultArea : Area
             Tag<"building", "residential">
         ], [.Way, .Relation]>,
         BuildingInfo<.Residential, [
+            Tag<"building", "house">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Residential, [
             Tag<"building", "yes">
+        ], [.Way, .Relation]>,
+
+        BuildingInfo<.Shop, [
+            Tag<"building", "retail">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Shop, [
+            Tag<"building", "commercial">
+        ], [.Way, .Relation]>,
+
+        BuildingInfo<.Office, [
+            Tag<"building", "industrial">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Office, [
+            Tag<"building", "office">
         ], [.Way, .Relation]>,
 
         BuildingInfo<.University, [

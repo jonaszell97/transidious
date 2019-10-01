@@ -15,6 +15,8 @@ namespace Transidious
         public List<PSLG> holes;
         public List<int> boundaryMarkersForPolygons;
         public float z;
+        List<Tuple<Vector2, Vector2>> edges;
+        bool simplified = true;
 
         public PSLG(float z = 0)
         {
@@ -55,6 +57,31 @@ namespace Transidious
                 }
 
                 return outlines;
+            }
+        }
+
+        public List<Tuple<Vector2, Vector2>> Edges
+        {
+            get
+            {
+                if (edges != null)
+                {
+                    return edges;
+                }
+
+                edges = new List<Tuple<Vector2, Vector2>>();
+
+                for (var i = 1; i < vertices.Count; ++i)
+                {
+                    edges.Add(Tuple.Create<Vector2, Vector2>(vertices[i - 1], vertices[i]));
+                }
+
+                if (vertices.Count > 0 && !vertices.First().Equals(vertices.Last()))
+                {
+                    edges.Add(Tuple.Create<Vector2, Vector2>(vertices.Last(), vertices.First()));
+                }
+
+                return edges;
             }
         }
 
@@ -104,6 +131,8 @@ namespace Transidious
 
         public bool Validate()
         {
+            this.Simplify();
+
             foreach (var vert in vertices)
             {
                 if (!IsValidFloat(vert.x))
@@ -131,12 +160,19 @@ namespace Transidious
             return true;
         }
 
+        bool IsSimple(IReadOnlyList<Vector3> vertices)
+        {
+            return vertices.Distinct().Count() == vertices.Count;
+        }
+
         public void AddVertexLoop(List<Vector3> vertices)
         {
             if (vertices.Count < 3)
             {
                 return;
             }
+
+            simplified &= IsSimple(vertices);
 
             this.vertices.AddRange(vertices);
             int segmentOffset = segments.Count;
@@ -163,6 +199,8 @@ namespace Transidious
             if (vertices.Count < 3)
                 return;
 
+            simplified &= IsSimple(vertices);
+
             PSLG hole = new PSLG();
             hole.AddVertexLoop(vertices);
             holes.Add(hole);
@@ -174,6 +212,45 @@ namespace Transidious
                 return;
 
             AddHole(new List<Vector3>(vertices));
+        }
+
+        static readonly float SimplificationDistance = 0.001f;
+
+        void Simplify()
+        {
+            if (simplified)
+            {
+                return;
+            }
+
+            var encounteredVerts = new HashSet<Vector3>();
+            for (var i = 0; i < vertices.Count; ++i)
+            {
+                if (encounteredVerts.Add(vertices[i]))
+                {
+                    continue;
+                }
+
+                // Move backward along the edge by a small amount.
+                var edge = (vertices[i - 1] - vertices[i]);
+                if (edge.magnitude <= SimplificationDistance)
+                {
+                    vertices[i] += edge * .5f;
+                }
+                else
+                {
+                    vertices[i] += edge.normalized * SimplificationDistance;
+                }
+
+                encounteredVerts.Add(vertices[i]);
+            }
+
+            foreach (var hole in holes)
+            {
+                hole.Simplify();
+            }
+
+            simplified = true;
         }
 
         public int GetNumberOfSegments()
@@ -337,6 +414,8 @@ namespace Transidious
     {
 #if UNITY_EDITOR_OSX
         [DllImport("UnityTriangle", CallingConvention = CallingConvention.Cdecl)]
+#elif UNITY_EDITOR_WIN
+        [DllImport("triangle", EntryPoint = "Triangulate", CallingConvention = CallingConvention.Cdecl)]
 #else
         [DllImport("unitytriangle", EntryPoint = "Triangulate", CallingConvention = CallingConvention.Cdecl)]
 #endif
@@ -387,12 +466,26 @@ namespace Transidious
             }
         }
 
+        static Mesh TriangulateSimple(PSLG pslg)
+        {
+            var mesh = MeshBuilder.PointsToMeshFast(pslg.vertices.ToArray());
+            MeshBuilder.FixWindingOrder(mesh);
+
+            return mesh;
+        }
+
         public static Mesh CreateMesh(PSLG pslg)
         {
+            if (pslg == null)
+            {
+                return null;
+            }
+
             var polygon = Triangulate(pslg);
             if (polygon == null)
             {
-                return new Mesh();
+                Debug.LogWarning("creating simple mesh without holes");
+                return TriangulateSimple(pslg);
             }
 
             var mesh = new Mesh
@@ -491,8 +584,8 @@ namespace Transidious
             {
                 StartInfo =
                 {
-                    FileName = "/usr/local/bin/triangle",
-                    Arguments = "-pPq0 " + polyFilePath,
+                    FileName = @"C:\Users\Jonny\triangle\triangle.exe",
+                    Arguments = "-pP " + polyFilePath,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,

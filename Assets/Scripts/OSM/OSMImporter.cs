@@ -264,11 +264,11 @@ namespace Transidious
             yield return LoadParks();
             Debug.Log("loaded natural features");
 
-            yield return LoadBuildings();
-            Debug.Log("loaded buildings");
-
             yield return LoadStreets();
             Debug.Log("loaded streets");
+
+            yield return LoadBuildings();
+            Debug.Log("loaded buildings");
 
             if (singleTile)
             {
@@ -542,7 +542,7 @@ namespace Transidious
                 boundaryPositions = positionsToKeep.ToArray();
                 // boundaryPositions = positions.Select(v => (Vector2)v).ToArray();
 
-#if true
+#if false
                 var i = 0;
                 foreach (var pos in boundaryPositions)
                 {
@@ -1144,7 +1144,7 @@ namespace Transidious
             Debug.Log("removed " + removedVerts + " street verts");
         }
 
-        public Mesh LoadPolygon(PSLG pslg, Relation rel,
+        public void LoadPolygon(PSLG pslg, Relation rel,
                                 float simplificationThresholdAngle = 0f,
                                 string outer = "outer",
                                 string inner = "inner")
@@ -1189,29 +1189,24 @@ namespace Transidious
                     }
                 }
             }
-
-            if (pslg.Empty)
-            {
-                return null;
-            }
-            else
-            {
-                return TriangleAPI.CreateMesh(pslg);
-            }
         }
 
-        public Mesh LoadPolygon(Relation rel,
+        public void LoadPolygon(Relation rel,
                                 float simplificationThresholdAngle = 0f,
                                 string outer = "outer",
                                 string inner = "inner")
         {
             var pslg = new PSLG();
-            return LoadPolygon(pslg, rel, simplificationThresholdAngle, outer, inner);
+            LoadPolygon(pslg, rel, simplificationThresholdAngle, outer, inner);
         }
+
+        static readonly float ParkThresholdSize = 150f;
 
         IEnumerator LoadParks()
         {
             var totalVerts = 0;
+            var smallParks = 0;
+
             foreach (var feature in naturalFeatures)
             {
                 if (!ShouldImport(feature.Item1))
@@ -1232,7 +1227,9 @@ namespace Transidious
                     if (feature.Item1.Type == OsmGeoType.Relation)
                     {
                         var pslg = new PSLG();
-                        mesh = LoadPolygon(pslg, feature.Item1 as Relation);
+                        LoadPolygon(pslg, feature.Item1 as Relation);
+
+                        mesh = TriangleAPI.CreateMesh(pslg);
                         outlinePositions = pslg?.Outlines;
                         area = pslg?.Area ?? 0f;
                         centroid = pslg?.Centroid ?? Vector2.zero;
@@ -1260,6 +1257,12 @@ namespace Transidious
                         centroid = Math.GetCentroid(wayPositionsArr);
                     }
 
+                    if (area < ParkThresholdSize)
+                    {
+                        ++smallParks;
+                        continue;
+                    }
+
                     totalVerts += mesh?.triangles.Length ?? 0;
 
                     var f = map.CreateFeature(featureName, feature.Item2, mesh, area, centroid);
@@ -1281,10 +1284,10 @@ namespace Transidious
                 {
                     yield return null;
                 }
-
             }
 
             Debug.Log("feature verts: " + totalVerts);
+            Debug.Log("yeeted " + smallParks + " parks for being too god damn small");
             // yield return LoadFootpaths();
         }
 
@@ -1348,21 +1351,235 @@ namespace Transidious
             }
         }
 
+        class PartialBuilding
+        {
+            internal Tuple<OsmGeo, Building.Type> buildingData;
+            internal PSLG pslg;
+            internal Vector2 centroid;
+        }
+
+        struct Edge
+        {
+            internal Vector2 begin;
+            internal Vector2 end;
+
+            public Edge(Tuple<Vector2, Vector2> unorderedEdge) : this(unorderedEdge.Item1, unorderedEdge.Item2)
+            {
+                
+            }
+
+            public Edge(Vector2 v1, Vector2 v2)
+            {
+                if (v1.x <= v2.x)
+                {
+                    begin = v1;
+                    end = v2;
+                }
+                else
+                {
+                    begin = v2;
+                    end = v1;
+                }
+            }
+        }
+
+        bool CheckEquivalence(int idToCheck, int currentID, Dictionary<int,
+                              HashSet<int>> equivalences,
+                              HashSet<int> checkedEquivalences)
+        {
+            if (!checkedEquivalences.Add(currentID))
+                return false;
+
+            if (currentID == idToCheck)
+                return true;
+
+            foreach (var equivalentID in equivalences[currentID])
+            {
+                if (CheckEquivalence(idToCheck, equivalentID, equivalences, checkedEquivalences))
+                    return true;
+            }
+
+            return false;
+        }
+
+        List<PartialBuilding> MergeBuildings(List<PartialBuilding> partialBuildings)
+        {
+            var singleEdgeMap = new Dictionary<Edge, Vector2>();
+            var sharedEdgeMap = new Dictionary<Edge, HashSet<Vector2>>();
+
+            foreach (var building in partialBuildings)
+            {
+                foreach (var unorderedEdge in building.pslg.Edges)
+                {
+                    var edge = new Edge(unorderedEdge);
+                    if (sharedEdgeMap.TryGetValue(edge, out HashSet<Vector2> set))
+                    {
+                        set.Add(building.centroid);
+                        continue;
+                    }
+                    if (singleEdgeMap.TryGetValue(edge, out Vector2 otherBuilding))
+                    {
+                        set = new HashSet<Vector2> { otherBuilding, building.centroid };
+                        sharedEdgeMap.Add(edge, set);
+                        singleEdgeMap.Remove(edge);
+
+                        continue;
+                    }
+
+                    singleEdgeMap.Add(edge, building.centroid);
+                }
+            }
+
+            var nextEquivalenceClass = 0;
+            var equivalences = new Dictionary<int, HashSet<int>>();
+            var equivalenceClasses = new Dictionary<Edge, int>();
+            var assignments = new Dictionary<Vector2, int>();
+            var mergedBuildings = new List<PartialBuilding>();
+            var visitedBuildings = new HashSet<Vector2>();
+            var buildingTypes = new Dictionary<int, Building.Type>();
+
+            foreach (var building in partialBuildings)
+            {
+                var equivalenceClass = -1;
+                foreach (var unorderedEdge in building.pslg.Edges)
+                {
+                    var edge = new Edge(unorderedEdge);
+                    if (equivalenceClasses.TryGetValue(edge, out int classID))
+                    {
+                        if (equivalenceClass == -1)
+                        {
+                            equivalenceClass = classID;
+                        }
+                        else
+                        {
+                            equivalences[equivalenceClass].Add(classID);
+                            equivalences[classID].Add(equivalenceClass);
+                        }
+                    }
+                    else if (sharedEdgeMap.TryGetValue(edge, out HashSet<Vector2> _))
+                    {
+                        classID = nextEquivalenceClass++;
+                        equivalenceClasses.Add(edge, classID);
+                        equivalences.Add(classID, new HashSet<int>());
+                        buildingTypes.Add(classID, building.buildingData.Item2);
+
+                        if (equivalenceClass == -1)
+                        {
+                            equivalenceClass = classID;
+                        }
+                        else
+                        {
+                            equivalences[equivalenceClass].Add(classID);
+                            equivalences[classID].Add(equivalenceClass);
+                        }
+                    }
+                }
+
+                if (equivalenceClass == -1)
+                {
+                    mergedBuildings.Add(building);
+                    visitedBuildings.Add(building.centroid);
+                    continue;
+                }
+
+                if (assignments.TryGetValue(building.centroid, out int id))
+                {
+                    Debug.LogWarning("duplicate centroid: " + building.centroid);
+
+                    mergedBuildings.Add(building);
+                    visitedBuildings.Add(building.centroid);
+
+                    continue;
+                }
+
+                assignments.Add(building.centroid, equivalenceClass);
+            }
+
+            var buildingsToMerge = new List<Vector2>();
+            var checkedEquivalences = new HashSet<int>();
+            var pslgs = new List<PSLG>();
+
+            for (var id = 0; id < nextEquivalenceClass; ++id)
+            {
+                if (visitedBuildings.Count == partialBuildings.Count)
+                    break;
+
+                var type = buildingTypes[id];
+                foreach (var building in partialBuildings)
+                {
+                    if (building.buildingData.Item2 != type || visitedBuildings.Contains(building.centroid))
+                        continue;
+
+                    if (!assignments.TryGetValue(building.centroid, out int classID))
+                    {
+                        continue;
+                    }
+
+                    if (CheckEquivalence(classID, id, equivalences, checkedEquivalences))
+                    {
+                        buildingsToMerge.Add(building.centroid);
+                        pslgs.Add(building.pslg);
+                        visitedBuildings.Add(building.centroid);
+                    }
+
+                    checkedEquivalences.Clear();
+                }
+
+                if (buildingsToMerge.Count > 0)
+                {
+                    var mergedBuilding = new PartialBuilding()
+                    {
+                        buildingData = new Tuple<OsmGeo, Building.Type>(null, type),
+                    };
+
+                    mergedBuilding.pslg = Math.PolygonUnion(pslgs);
+                    mergedBuilding.centroid = mergedBuilding.pslg?.Centroid ?? Vector2.zero;
+                    mergedBuildings.Add(mergedBuilding);
+                }
+
+                buildingsToMerge.Clear();
+                pslgs.Clear();
+            }
+
+            return mergedBuildings;
+        }
+
+        /// <summary>
+        ///  Buildings with an area lower than this will not be imported. (in m^2)
+        /// </summary>
+        static readonly float ThresholdArea = 100f;
+        Dictionary<StreetSegment, int> assignedNumbers = new Dictionary<StreetSegment, int>();
+
+        // TODO: Generate sensible building names.
+        string GetBuildingName(PartialBuilding building, float area)
+        {
+            var tags = building.buildingData.Item1?.Tags;
+            if (tags?.ContainsKey("name") ?? false)
+            {
+                return tags.GetValue("name");
+            }
+
+            //var capacity = Building.GetDefaultCapacity(building.buildingData.Item2, area);
+            var closestStreet = map.GetClosestStreet(building.centroid);
+            if (closestStreet == null)
+            {
+                return "";
+            }
+
+            if (assignedNumbers.TryGetValue(closestStreet.seg, out int number))
+            {
+                assignedNumbers[closestStreet.seg]++;
+                return closestStreet.seg.street.name + " " + number;
+            }
+
+            assignedNumbers.Add(closestStreet.seg, 1);
+            return closestStreet.seg.street.name + " 1";
+        }
+
         IEnumerator LoadBuildings()
         {
             var totalVerts = 0;
-            // var nodeMap = new Dictionary<long, HashSet<Building>>();
-            // var nodesMap = new Dictionary<Building, long[]>();
-            // Action<long, Building> addNode = (long nodeId, Building b) =>
-            // {
-            //     if (!nodeMap.TryGetValue(nodeId, out HashSet<Building> list))
-            //     {
-            //         list = new HashSet<Building>();
-            //         nodeMap.Add(nodeId, list);
-            //     }
-
-            //     list.Add(b);
-            // };
+            var partialBuildings = new List<PartialBuilding>();
 
             foreach (var building in buildings)
             {
@@ -1371,38 +1588,14 @@ namespace Transidious
                     continue;
                 }
 
+                Debug.Log(building.Item2);
+
+                var pslg = new PSLG();
                 try
                 {
-                    var buildingName = building.Item1.Tags.GetValue("name");
-                    var numberStr = building.Item1.Tags.GetValue("addr:housenumber");
-
-                    if (string.IsNullOrEmpty(buildingName))
-                    {
-                        var streetName = building.Item1.Tags.GetValue("addr:street");
-                        buildingName = streetName;
-
-                        if (!string.IsNullOrEmpty(numberStr))
-                        {
-                            buildingName += " ";
-                            buildingName += numberStr;
-                        }
-                    }
-
-                    Debug.Log("loading building '" + buildingName + "'...");
-
-                    var type = building.Item2;
-                    Vector2[][] outlinePositions = null;
-                    float area = 0f;
-                    Vector2 centroid = Vector2.zero;
-
-                    Mesh mesh;
                     if (building.Item1.Type == OsmGeoType.Relation)
                     {
-                        var pslg = new PSLG();
-                        mesh = LoadPolygon(pslg, building.Item1 as Relation);
-                        outlinePositions = pslg?.Outlines;
-                        area = pslg?.Area ?? 0f;
-                        centroid = pslg?.Centroid ?? Vector2.zero;
+                        LoadPolygon(pslg, building.Item1 as Relation);
                     }
                     else
                     {
@@ -1419,31 +1612,6 @@ namespace Transidious
 
                             var loc = Project(node);
                             wayPositions.Add(loc);
-
-                            if (node.Tags != null)
-                            {
-                                if (string.IsNullOrEmpty(numberStr))
-                                {
-                                    numberStr = node.Tags.GetValue("addr:housenumber");
-                                }
-
-                                if (node.Tags.ContainsKey("shop"))
-                                {
-                                    var val = node.Tags.GetValue("shop");
-                                    if (val == "convenience" || val == "supermarket")
-                                    {
-                                        type = Building.Type.GroceryStore;
-                                    }
-                                    else
-                                    {
-                                        type = Building.Type.Shop;
-                                    }
-                                }
-                                else if (node.Tags.ContainsKey("office"))
-                                {
-                                    type = Building.Type.Office;
-                                }
-                            }
                         }
 
                         if (wayPositions.Count < 3)
@@ -1451,45 +1619,51 @@ namespace Transidious
                             continue;
                         }
 
-                        var wayPositionsArr = wayPositions.ToArray();
-                        mesh = MeshBuilder.PointsToMeshFast(wayPositionsArr);
-                        MeshBuilder.FixWindingOrder(mesh);
-
-                        outlinePositions = new Vector2[][]
-                        {
-                            wayPositionsArr.Select(v => (Vector2)v).ToArray(),
-                        };
-
-                        area = Math.GetAreaOfPolygon(wayPositionsArr);
-                        centroid = Math.GetCentroid(wayPositionsArr);
+                        pslg.AddVertexLoop(wayPositions);
                     }
 
-                    totalVerts += mesh?.triangles.Length ?? 0;
-
-                    var b = map.CreateBuilding(type, mesh, buildingName, numberStr, area, centroid);
-                    if (outlinePositions != null)
+                    var centroid = pslg.Centroid;
+                    partialBuildings.Add(new PartialBuilding
                     {
-                        outlinePositions = outlinePositions.Select(
-                            arr => MeshBuilder.RemoveDetailByDistance(arr, 1f).ToArray()).ToArray();
-
-                        b.outlinePositions = outlinePositions;
-                    }
-
-                    // if (building.Item1.Type == OsmGeoType.Way)
-                    // {
-                    //     var nodes = (building.Item1 as Way).Nodes;
-                    //     nodesMap.Add(b, nodes);
-
-                    //     foreach (var nodeId in nodes)
-                    //     {
-                    //         addNode(nodeId, b);
-                    //     }
-                    // }
+                        buildingData = building,
+                        pslg = pslg,
+                        centroid = centroid,
+                    });
                 }
                 catch (Exception e)
                 {
                     Debug.LogWarning(e.Message);
                     continue;
+                }
+            }
+
+            var mergedBuildings = MergeBuildings(partialBuildings);
+            Debug.Log("reduced from " + partialBuildings.Count + " to " + mergedBuildings.Count + " buildings");
+
+            var smallBuildings = 0;
+            foreach (var building in mergedBuildings)
+            {
+                var type = building.buildingData.Item2;
+                var outlinePositions = building.pslg?.Outlines;
+                var centroid = building.centroid;
+                var area = building.pslg?.Area ?? 0f;
+
+                if (area < ThresholdArea)
+                {
+                    ++smallBuildings;
+                    continue;
+                }
+
+                var mesh = TriangleAPI.CreateMesh(building.pslg);
+                totalVerts += mesh?.triangles.Length ?? 0;
+
+                var b = map.CreateBuilding(type, mesh, GetBuildingName(building, area), "", area, centroid);
+                if (outlinePositions != null)
+                {
+                    outlinePositions = outlinePositions.Select(
+                        arr => MeshBuilder.RemoveDetailByDistance(arr, 1f).ToArray()).ToArray();
+
+                    b.outlinePositions = outlinePositions;
                 }
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
@@ -1498,31 +1672,142 @@ namespace Transidious
                 }
             }
 
-            // var equivalenceClass = new HashSet<Building>();
-            // var checkedBuildings = new HashSet<Building>();
+            Debug.Log("yeeted " + smallBuildings + " buildings because of small area");
 
-            // foreach (var building in map.buildings)
-            // {
-            //     equivalenceClass.Clear();
-            //     BuildEquivalenceClass(building, equivalenceClass, checkedBuildings, nodeMap, nodesMap);
+            //foreach (var building in buildings)
+            //{
+            //    if (!ShouldImport(building.Item1))
+            //    {
+            //        continue;
+            //    }
 
-            //     if (equivalenceClass.Count <= 1)
-            //     {
-            //         continue;
-            //     }
+            //    try
+            //    {
+            //        var buildingName = building.Item1.Tags.GetValue("name");
+            //        var numberStr = building.Item1.Tags.GetValue("addr:housenumber");
 
-            //     var name = "";
-            //     foreach (var b in equivalenceClass)
-            //     {
-            //         if (!string.IsNullOrEmpty(b.name))
-            //         {
-            //             name = b.name;
-            //             break;
-            //         }
-            //     }
+            //        if (string.IsNullOrEmpty(buildingName))
+            //        {
+            //            var streetName = building.Item1.Tags.GetValue("addr:street");
+            //            buildingName = streetName;
 
+            //            if (!string.IsNullOrEmpty(numberStr))
+            //            {
+            //                buildingName += " ";
+            //                buildingName += numberStr;
+            //            }
+            //        }
 
-            // }
+            //        Debug.Log("loading building '" + buildingName + "'...");
+
+            //        var type = building.Item2;
+            //        Vector2[][] outlinePositions = null;
+            //        float area = 0f;
+            //        Vector2 centroid = Vector2.zero;
+
+            //        Mesh mesh;
+            //        if (building.Item1.Type == OsmGeoType.Relation)
+            //        {
+            //            var pslg = new PSLG();
+
+            //            mesh = TriangleAPI.CreateMesh(pslg);
+            //            outlinePositions = pslg?.Outlines;
+            //            area = pslg?.Area ?? 0f;
+            //            centroid = pslg?.Centroid ?? Vector2.zero;
+            //        }
+            //        else
+            //        {
+            //            var way = building.Item1 as Way;
+            //            var wayPositions = new List<Vector3>();
+
+            //            foreach (var nodeId in way.Nodes)
+            //            {
+            //                var node = FindNode(nodeId);
+            //                if (node == null)
+            //                {
+            //                    continue;
+            //                }
+
+            //                var loc = Project(node);
+            //                wayPositions.Add(loc);
+
+            //                if (node.Tags != null)
+            //                {
+            //                    if (string.IsNullOrEmpty(numberStr))
+            //                    {
+            //                        numberStr = node.Tags.GetValue("addr:housenumber");
+            //                    }
+
+            //                    if (node.Tags.ContainsKey("shop"))
+            //                    {
+            //                        var val = node.Tags.GetValue("shop");
+            //                        if (val == "convenience" || val == "supermarket")
+            //                        {
+            //                            type = Building.Type.GroceryStore;
+            //                        }
+            //                        else
+            //                        {
+            //                            type = Building.Type.Shop;
+            //                        }
+            //                    }
+            //                    else if (node.Tags.ContainsKey("office"))
+            //                    {
+            //                        type = Building.Type.Office;
+            //                    }
+            //                }
+            //            }
+
+            //            if (wayPositions.Count < 3)
+            //            {
+            //                continue;
+            //            }
+
+            //            var wayPositionsArr = wayPositions.ToArray();
+            //            mesh = MeshBuilder.PointsToMeshFast(wayPositionsArr);
+            //            MeshBuilder.FixWindingOrder(mesh);
+
+            //            outlinePositions = new Vector2[][]
+            //            {
+            //                wayPositionsArr.Select(v => (Vector2)v).ToArray(),
+            //            };
+
+            //            area = Math.GetAreaOfPolygon(wayPositionsArr);
+            //            centroid = Math.GetCentroid(wayPositionsArr);
+            //        }
+
+            //        totalVerts += mesh?.triangles.Length ?? 0;
+
+            //        var b = map.CreateBuilding(type, mesh, buildingName, numberStr, area, centroid);
+            //        if (outlinePositions != null)
+            //        {
+            //            outlinePositions = outlinePositions.Select(
+            //                arr => MeshBuilder.RemoveDetailByDistance(arr, 1f).ToArray()).ToArray();
+
+            //            b.outlinePositions = outlinePositions;
+            //        }
+
+            //        // if (building.Item1.Type == OsmGeoType.Way)
+            //        // {
+            //        //     var nodes = (building.Item1 as Way).Nodes;
+            //        //     nodesMap.Add(b, nodes);
+
+            //        //     foreach (var nodeId in nodes)
+            //        //     {
+            //        //         addNode(nodeId, b);
+            //        //     }
+            //        // }
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Debug.LogWarning(e.Message);
+            //        continue;
+            //    }
+
+            //    if (FrameTimer.instance.FrameDuration >= thresholdTime)
+            //    {
+            //        yield return null;
+            //    }
+            //}
 
             Debug.Log("building verts: " + totalVerts);
         }

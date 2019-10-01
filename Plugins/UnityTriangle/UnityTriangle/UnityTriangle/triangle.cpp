@@ -16040,18 +16040,21 @@ void TriangulateImpl(char *bin, char *args, char *file)
 extern "C"
 { 
 
+__declspec(dllexport)
 int Triangulate(char *bin, char *args, char *file)
 {
-  // Launch the thread.
-  std::thread thread(TriangulateImpl, bin, args, file);
+  TriangulateImpl(bin, args, file);
+  return 0;
+  // // Launch the thread.
+  // std::thread thread(TriangulateImpl, bin, args, file);
 
-  // Terminate the thread.
-  auto future = std::async(std::launch::async, &std::thread::join, &thread);
-  if (future.wait_for(std::chrono::seconds(15)) == std::future_status::timeout) {
-    return 124;
-  }
+  // // Terminate the thread.
+  // auto future = std::async(std::launch::async, &std::thread::join, &thread);
+  // if (future.wait_for(std::chrono::seconds(15)) == std::future_status::timeout) {
+  //   return 124;
+  // }
 
-  return result;
+  // return result;
 }
 
 }

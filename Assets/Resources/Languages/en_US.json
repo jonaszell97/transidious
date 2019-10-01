@@ -15,8 +15,18 @@
         "PM": true,
         "maxTimeStringLength": 8
     },
-    "items": [
-        {
+    "buildingNames": {
+        "Residential": ["Residence"],
+        "Shop": ["Goods", "Wares", "Shop", "Store"],
+        "Office": [],
+        "ElementarySchool": [],
+        "HighSchool": [],
+        "University": [],
+        "Hospital": [],
+        "Stadium": [],
+        "GroceryStore": []
+    },
+    "items": [{
             "key": "ui:citizien:happiness",
             "text": "Happiness"
         },

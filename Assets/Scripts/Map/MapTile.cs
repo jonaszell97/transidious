@@ -409,14 +409,16 @@ namespace Transidious
     {
         Map map;
         IMapObject obj;
+        bool activeOnly;
         int x, y;
 
-        public TileIterator(Map map, IMapObject obj = null)
+        public TileIterator(Map map, IMapObject obj = null, bool activeOnly = false)
         {
             this.map = map;
             this.obj = obj;
             this.x = 0;
             this.y = 0;
+            this.activeOnly = activeOnly;
         }
 
         MapTile Current
@@ -445,6 +447,13 @@ namespace Transidious
             if (foundNext && obj != null)
             {
                 if (!Current.mapObjects.Contains(obj))
+                {
+                    return MoveNext();
+                }
+            }
+            if (foundNext && activeOnly)
+            {
+                if (!Current.gameObject.activeSelf)
                 {
                     return MoveNext();
                 }

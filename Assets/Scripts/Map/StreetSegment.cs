@@ -843,14 +843,7 @@ namespace Transidious
 #if DEBUG
             if (GameController.instance.ImportingMap)
             {
-                switch (street.type)
-                {
-                case Street.Type.Primary:
-                case Street.Type.Secondary:
-                    break;
-                default:
-                    return;
-                }
+                return;
             }
 #endif
 
@@ -1286,11 +1279,7 @@ namespace Transidious
             case RenderingDistance.Farthest:
                 break;
             default:
-                if (streetName != null)
-                {
-                    setTextActive = true;
-                }
-
+                setTextActive = true;
                 break;
             }
 
@@ -1311,6 +1300,7 @@ namespace Transidious
 
         public void UpdateScale(RenderingDistance dist)
         {
+            UpdateTextScale(dist);
             return;
             if (!meshes.TryGetValue(dist, out StreetSegmentMeshInfo meshInfo))
             {
