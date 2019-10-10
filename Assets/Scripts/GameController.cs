@@ -89,6 +89,9 @@ namespace Transidious
         /// The simulation controller instance.
         public SimulationController sim;
 
+        /// Reference to the finance controller.
+        public FinanceController financeController;
+
         /// <summary>
         ///  The input controller.
         /// </summary>
@@ -125,6 +128,8 @@ namespace Transidious
         public Color bulldozeHighlightColor;
 
         // *** UI elements ***
+        /// The main ui.
+        public MainUI mainUI;
 
         /// The main loading screen.
         public UILoadingScreen loadingScreen;
@@ -152,58 +157,8 @@ namespace Transidious
         /// The street creation cursor sprite.
         public Sprite createStreetSprite;
 
-        /// Prefab for creating sprites.
-        public GameObject spritePrefab;
-
         /// GameObject that renders the creation cursor sprite.
         public GameObject createCursorObj;
-
-        /// The play/pause button.
-        public Button playPauseButton;
-
-        /// Sprites for the play/pause button.
-        public Sprite playSprite;
-        public Sprite pauseSprite;
-        public Sprite uiButtonSprite;
-
-        /// The game time text.
-        public TMP_Text gameTimeText;
-
-        /// The simulation speed button.
-        public Button simSpeedButton;
-
-        /// The simulation speed sprites.
-        public Sprite[] simSpeedSprites;
-
-        /// The scale bar.
-        public GameObject scaleBar;
-
-        /// The scale text.
-        public TMP_Text scaleText;
-
-        /// The traffic light sprites.
-        public Sprite[] trafficLightSprites;
-
-        /// The car sprites.
-        public Sprite[] carSpritesOutlined;
-
-        public Sprite[] carSprites;
-
-        /// The street direction arrow sprite.
-        public Sprite streetArrowSprite;
-
-        public Sprite squareSprite;
-        public Sprite roundedRectSprite;
-
-        /// The citizien info UI.
-        public GameObject citizienUI;
-        public Image citizienUIHappinessSprite;
-        public TMPro.TextMeshProUGUI citizienUINameText;
-        public TMPro.TextMeshProUGUI citizienUIHappinessText;
-        public TMPro.TextMeshProUGUI citizienUIMoneyText;
-        public Image citizienUIDestinationImg;
-        public TMPro.TextMeshProUGUI citizienUIDestinationText;
-        public Sprite[] happinessSprites;
 
         static GameController _instance;
         public static GameController instance
@@ -264,22 +219,13 @@ namespace Transidious
             return tooltip;
         }
 
-        public GameObject CreateSprite(Sprite s)
-        {
-            var obj = Instantiate(spritePrefab);
-            var spriteRenderer = obj.GetComponent<SpriteRenderer>();
-            spriteRenderer.sprite = s;
-
-            return obj;
-        }
-
         public GameObject CreateCursorSprite
         {
             get
             {
                 if (createCursorObj == null)
                 {
-                    createCursorObj = CreateSprite(createStreetSprite);
+                    createCursorObj = SpriteManager.CreateSprite(createStreetSprite);
                 }
 
                 return createCursorObj;
@@ -336,7 +282,10 @@ namespace Transidious
         public System.Collections.IEnumerator LoadMap(OSMImportHelper.Area area)
         {
             this.status = GameStatus.Loading;
+            loadingScreen.gameObject.SetActive(true);
+
             yield return SaveManager.LoadSave(this, area.ToString());
+            
             this.status = GameStatus.Playing;
             loadingScreen.gameObject.SetActive(false);
 
@@ -354,9 +303,6 @@ namespace Transidious
             this.bulldozeButton.onClick.AddListener(OnUIBulldozeButtonPressed);
             this.editButton.onClick.AddListener(OnUIEditButtonPressed);
             this.transitEditorButton.onClick.AddListener(OnUITransitEditorButtonClick);
-
-            this.playPauseButton.onClick.AddListener(OnPlayPauseClick);
-            this.simSpeedButton.onClick.AddListener(OnSimSpeedClick);
         }
 
         void Awake()
@@ -382,7 +328,6 @@ namespace Transidious
             this.highlightColor = new Color(96f / 255f, 208f / 255f, 230f / 255f);
             this.bulldozeHighlightColor = new Color(189f / 255f, 41f / 255f, 56f / 255f);
 
-            this.citizienUI.SetActive(false);
             RegisterUICallbacks();
         }
 
@@ -504,8 +449,8 @@ namespace Transidious
                 loadedMap.UpdateTextScale();
             }
 
-            this.playPauseButton.enabled = false;
-            this.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
+            mainUI.playPauseButton.enabled = false;
+            mainUI.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
         }
 
         void ExitEditMode()
@@ -531,8 +476,8 @@ namespace Transidious
                 createCursorObj.SetActive(false);
             }
 
-            this.playPauseButton.enabled = true;
-            this.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
+            mainUI.playPauseButton.enabled = true;
+            mainUI.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
         }
 
         void EnterTransitMode()
@@ -552,8 +497,8 @@ namespace Transidious
                 loadedMap.UpdateTextScale();
             }
 
-            this.playPauseButton.enabled = false;
-            this.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
+            mainUI.playPauseButton.enabled = false;
+            mainUI.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
         }
 
         void ExitTransitMode()
@@ -572,30 +517,18 @@ namespace Transidious
                 loadedMap.UpdateTextScale();
             }
 
-            this.playPauseButton.enabled = true;
-            this.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
+            mainUI.playPauseButton.enabled = true;
+            mainUI.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
         }
 
-        void OnPlayPauseClick()
-        {
-            if (status == GameStatus.Paused)
-            {
-                ExitPause();
-            }
-            else
-            {
-                EnterPause();
-            }
-        }
-
-        void EnterPause()
+        public void EnterPause()
         {
             this.status = GameStatus.Paused;
-            this.playPauseButton.GetComponent<Image>().sprite = playSprite;
-            this.simSpeedButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
+            mainUI.playPauseButton.GetComponent<Image>().sprite = SpriteManager.instance.playSprite;
+            mainUI.simSpeedButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
         }
 
-        void ExitPause()
+        public void ExitPause()
         {
             if (Editing)
             {
@@ -603,8 +536,8 @@ namespace Transidious
             }
 
             this.status = GameStatus.Playing;
-            this.playPauseButton.GetComponent<Image>().sprite = pauseSprite;
-            this.simSpeedButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
+            mainUI.playPauseButton.GetComponent<Image>().sprite = SpriteManager.instance.pauseSprite;
+            mainUI.simSpeedButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
         }
 
         void OnUITransitEditorButtonClick()
@@ -620,19 +553,6 @@ namespace Transidious
             default:
                 break;
             }
-        }
-
-        void OnSimSpeedClick()
-        {
-            if (Paused)
-            {
-                ExitPause();
-            }
-
-            var newSimSpeed = (sim.simulationSpeed + 1) % 3;
-            sim.simulationSpeed = newSimSpeed;
-
-            this.simSpeedButton.GetComponent<Image>().sprite = simSpeedSprites[newSimSpeed];
         }
     }
 }

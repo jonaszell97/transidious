@@ -184,7 +184,7 @@ namespace Transidious
         {
             if (firstClickMarker == null)
             {
-                firstClickMarker = game.CreateSprite(game.createStreetSprite);
+                firstClickMarker = SpriteManager.CreateSprite(game.createStreetSprite);
             }
 
             firstClickMarker.SetActive(true);

@@ -66,15 +66,15 @@ namespace Transidious
 
             if (citizien.happiness < 50)
             {
-                happinessSprite.sprite = GameController.instance.happinessSprites[0];
+                happinessSprite.sprite = SpriteManager.instance.happinessSprites[0];
             }
             else if (citizien.happiness < 80)
             {
-                happinessSprite.sprite = GameController.instance.happinessSprites[1];
+                happinessSprite.sprite = SpriteManager.instance.happinessSprites[1];
             }
             else
             {
-                happinessSprite.sprite = GameController.instance.happinessSprites[2];
+                happinessSprite.sprite = SpriteManager.instance.happinessSprites[2];
             }
         }
     }

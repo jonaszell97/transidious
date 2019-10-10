@@ -1,21 +1,21 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
 namespace Transidious
 {
     [Serializable]
-    struct LanguageItem
+    public struct LanguageItem
     {
         public string key;
         public string text;
     }
 
     [Serializable]
-    struct Currency
+    public struct Currency
     {
         public string name;
         public string symbol;
@@ -24,7 +24,7 @@ namespace Transidious
     }
 
     [Serializable]
-    struct DateFormat
+    public struct DateFormat
     {
         public int hours;
         public bool AM;
@@ -33,7 +33,7 @@ namespace Transidious
     }
 
     [Serializable]
-    class Language
+    public class Language
     {
         public string lang_id;
         public string language;
@@ -47,7 +47,8 @@ namespace Transidious
     public class Translator
     {
         Dictionary<string, string> items;
-        Language loadedLanguage;
+        public Language loadedLanguage;
+        public CultureInfo culture;
 
         public static Translator current;
 
@@ -67,6 +68,7 @@ namespace Transidious
             }
 
             current = this;
+            culture = CultureInfo.CreateSpecificCulture(langId.Replace("_", "-"));
         }
 
         public string Translate(string key)
@@ -168,24 +170,85 @@ namespace Transidious
             AppendInteger(str, (ulong)afterComma, null);
         }
 
-        public static string GetCurrency(float amount, int digits = 2)
+        public enum DateFormat
+        {
+            DateShort,
+            DateLong,
+            DateTimeShort,
+            DateTimeLong,
+        }
+
+        public static string GetDate(DateTime date, DateFormat format)
+        {
+            string fm;
+            switch (format)
+            {
+                case DateFormat.DateShort:
+                default:
+                    fm = "d";
+                    break;
+                case DateFormat.DateLong:
+                    fm = "D";
+                    break;
+                case DateFormat.DateTimeShort:
+                    fm = "g";
+                    break;
+                case DateFormat.DateTimeLong:
+                    fm = "f";
+                    break;
+            }
+
+            return date.ToString(fm, current.culture);
+        }
+
+        public static string GetNumber(int amount)
+        {
+            return string.Format(current.culture, "{0:n0}", amount);
+        }
+
+        public static string GetNumber(float amount)
+        {
+            return amount.ToString("N", current.culture);
+        }
+
+        public static string GetCurrency(decimal amount, bool includeSymbol = false, bool includePlusSign = false)
         {
             ref var currency = ref current.loadedLanguage.currency;
+            var str = (amount * (decimal)currency.valueInDollars).ToString("N", current.culture);
 
-            var str = new StringBuilder();
-            if (currency.beforeNumber)
+            if (includeSymbol)
             {
-                str.Append(currency.symbol);
+                if (currency.beforeNumber)
+                {
+                    str = currency.symbol + " " + str;
+                }
+                else
+                {
+                    str += " " + currency.symbol;
+                }
             }
 
-            AddCurrency(ref current.loadedLanguage, str, amount * currency.valueInDollars, 2);
-
-            if (!currency.beforeNumber)
+            if (includePlusSign && amount > 0)
             {
-                str.Append(currency.symbol);
+                str = "+" + str;
             }
 
-            return str.ToString();
+            return str;
+
+            //var str = new StringBuilder();
+            //if (currency.beforeNumber)
+            //{
+            //    str.Append(currency.symbol);
+            //}
+
+            //AddCurrency(ref current.loadedLanguage, str, amount * currency.valueInDollars, 2);
+
+            //if (!currency.beforeNumber)
+            //{
+            //    str.Append(currency.symbol);
+            //}
+
+            //return str.ToString();
         }
 
         public static int MaxTimeStringLength

@@ -27,6 +27,19 @@
         "GroceryStore": []
     },
     "items": [{
+            "key": "ui:finances:income",
+            "text": "Income"
+        },
+        {
+            "key": "ui:finances:expenses",
+            "text": "Expenses"
+        },
+        {
+            "key": "ui:finances:earnings",
+            "text": "Earnings"
+        },
+
+        {
             "key": "ui:citizien:happiness",
             "text": "Happiness"
         },

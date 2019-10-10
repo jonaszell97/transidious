@@ -25,7 +25,7 @@ namespace Transidious
             this.game = game;
             this.attachedObject = attachedObject;
             this.spriteRenderer = this.gameObject.AddComponent<SpriteRenderer>();
-            this.spriteRenderer.sprite = game.uiButtonSprite;
+            this.spriteRenderer.sprite = SpriteManager.instance.uiButtonSprite;
             this.spriteRenderer.color = backgroundColor;
             this.spriteRenderer.drawMode = SpriteDrawMode.Sliced;
 

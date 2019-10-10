@@ -20,6 +20,18 @@ namespace Transidious
         /// The citiziens.
         public List<Citizien> citiziens;
 
+        /// The number of citiziens.
+        public int totalCitizienCount;
+
+        /// The trend of the citizien count.
+        public int citizienCountTrend;
+
+        /// The citizien count ui text.
+        public TMPro.TMP_Text citizienCountText;
+
+        /// The citizien trend arrow.
+        public Image citizienCountTrendImg;
+
         /// The car prefab.
         public GameObject carPrefab;
 
@@ -35,8 +47,21 @@ namespace Transidious
         /// The citizien modal.
         public UICitizienInfoModal citizienModal;
 
-        /// scratch buffer used for time string building.
+        /// Scratch buffer used for time string building.
         char[] timeStringBuffer;
+
+        public delegate void TimedEvent();
+
+        class TimedEventInfo
+        {
+            internal bool active;
+            internal TimedEvent action;
+            internal int schedule;
+            internal int lastExecution;
+        }
+
+        int lastScheduledEvent = 0;
+        Dictionary<int, TimedEventInfo> scheduledEvents;
 
         public int MinuteOfDay
         {
@@ -56,7 +81,10 @@ namespace Transidious
         void Start()
         {
             this.timeStringBuffer = new char[Translator.MaxTimeStringLength];
+            this.scheduledEvents = new Dictionary<int, TimedEventInfo>();
+
             EventManager.current.RegisterEventListener(this);
+            UpdateCitizienUI();
         }
 
         void Update()
@@ -68,6 +96,11 @@ namespace Transidious
 
             var minuteOfDay = this.MinuteOfDay;
             bool isNewDay = UpdateGameTime();
+
+            if (isNewDay)
+            {
+                game.mainUI.UpdateDate(gameTime);
+            }
 
             foreach (var citizien in citiziens)
             {
@@ -101,6 +134,35 @@ namespace Transidious
                 }
             }
 #endif
+        }
+
+        /// <summary>
+        ///  Schedule a function to be executed every n seconds of game time.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="n"></param>
+        public int ScheduleEvent(TimedEvent e, int n = 1, bool active = true)
+        {
+            var id = lastScheduledEvent++;
+            var info = new TimedEventInfo()
+            {
+                active = active,
+                action = e,
+                schedule = n,
+            };
+
+            scheduledEvents.Add(id, info);
+            return id;
+        }
+
+        public void DeactivateEvent(int id)
+        {
+            scheduledEvents[id].active = false;
+        }
+
+        public void ActivateEvent(int id)
+        {
+            scheduledEvents[id].active = true;
         }
 
         public int SpeedMultiplier
@@ -139,10 +201,26 @@ namespace Transidious
             UpdateGameTimeString();
         }
 
+        void FireTimedEvents(int minute)
+        {
+            foreach (var info in scheduledEvents)
+            {
+                if (!info.Value.active)
+                {
+                    continue;
+                }
+
+                if (minute % info.Value.schedule == 0)
+                {
+                    info.Value.action();
+                }
+            }
+        }
+
         void UpdateGameTimeString()
         {
             Translator.FormatTime(gameTime, ref timeStringBuffer);
-            game.gameTimeText.SetCharArray(timeStringBuffer);
+            game.mainUI.gameTimeText.SetCharArray(timeStringBuffer);
         }
 
         bool UpdateGameTime()
@@ -157,7 +235,9 @@ namespace Transidious
                 return false;
             }
 
+            FireTimedEvents(gameTime.Minute);
             UpdateGameTimeString();
+            UpdateCitizienUI();
 
             var hour = gameTime.Hour;
             if (hour == 7)
@@ -173,6 +253,24 @@ namespace Transidious
 
             var newDay = gameTime.DayOfYear;
             return prevDay != newDay;
+        }
+
+        void UpdateCitizienUI()
+        {
+            this.citizienCountText.text = Translator.GetNumber(totalCitizienCount);
+            
+            if (citizienCountTrend == 0)
+            {
+                this.citizienCountTrendImg.transform.rotation = Quaternion.Euler(0f, 0f, -90f);
+            }
+            else if (citizienCountTrend < 0)
+            {
+                this.citizienCountTrendImg.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
+            }
+            else
+            {
+                this.citizienCountTrendImg.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            }
         }
 
         public Car CreateCar(Citizien driver, Vector3 pos, Color c, int carModel = -1)

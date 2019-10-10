@@ -44,15 +44,31 @@ namespace Transidious
         {
             get
             {
-                var outlines = new Vector2[1 + holes.Count][];
+                var outlines = new Vector2[boundaryMarkersForPolygons.Count + holes.Count][];
                 var i = 0;
 
-                var verts = vertices.Select(v => (Vector2)v);
-                outlines[i++] = verts.ToArray();
+                for (; i < boundaryMarkersForPolygons.Count; ++i)
+                {
+                    var start = boundaryMarkersForPolygons[i];
+                    var end = i < boundaryMarkersForPolygons.Count - 1 ? boundaryMarkersForPolygons[i + 1] : vertices.Count;
+                    var verts = vertices.GetRange(start, end - start);
+
+                    if (!verts.First().Equals(verts.Last()))
+                    {
+                        var tmp = verts.ToList();
+                        tmp.Add(tmp.First());
+
+                        outlines[i] = tmp.Select(v => (Vector2)v).ToArray();
+                    }
+                    else
+                    {
+                        outlines[i] = verts.Select(v => (Vector2)v).ToArray();
+                    }
+                }
 
                 foreach (var hole in holes)
                 {
-                    verts = hole.vertices.Select(v => (Vector2)v);
+                    var verts = hole.vertices.Select(v => (Vector2)v);
                     outlines[i++] = verts.ToArray();
                 }
 
@@ -114,6 +130,25 @@ namespace Transidious
                 return Math.GetCentroid(vertices);
             }
         }
+
+#if DEBUG
+        public void Draw(GameObject obj, Color outlineColor, Color holeColor)
+        {
+            for (var i = 0; i < boundaryMarkersForPolygons.Count - 1; ++i)
+            {
+                var start = boundaryMarkersForPolygons[i];
+                var end = boundaryMarkersForPolygons[i + 1];
+                var verts = vertices.GetRange(start, end - start).ToArray();
+
+                obj.DrawLine(verts, 1f, outlineColor, true);
+            }
+
+            foreach (var hole in holes)
+            {
+                hole.Draw(obj, holeColor, outlineColor);
+            }
+        }
+#endif
 
         public bool IsValidFloat(float val)
         {

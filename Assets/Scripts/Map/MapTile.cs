@@ -18,7 +18,7 @@ namespace Transidious
         class ColliderInfo
         {
             internal Rect boundingBox;
-            internal Vector2[] poly;
+            internal Vector2[][] poly;
             internal StaticMapObject obj;
             internal bool shouldHighlight;
         }
@@ -89,6 +89,14 @@ namespace Transidious
                                 Rect boundingBox,
                                 bool shouldHighlight = false)
         {
+            AddCollider(obj, new Vector2[][] { points }, boundingBox, shouldHighlight);
+        }
+
+            public void AddCollider(StaticMapObject obj,
+                                Vector2[][] points,
+                                Rect boundingBox,
+                                bool shouldHighlight = false)
+        {
             // var pathCount = polygonCollider.pathCount;
             // polygonCollider.pathCount++;
             // polygonCollider.SetPath(pathCount, boundingBox.Points());
@@ -107,12 +115,15 @@ namespace Transidious
                                 Rect rect,
                                 bool shouldHighlight = false)
         {
-            AddCollider(obj, new Vector2[]
+            AddCollider(obj, new Vector2[][]
             {
-                new Vector2(rect.x, rect.y),                            // bl
-                new Vector2(rect.x, rect.y + rect.height),              // tl
-                new Vector2(rect.x + rect.width, rect.y + rect.height), // tr
-                new Vector2(rect.x + rect.width, rect.y),               // br
+                new Vector2[]
+                {
+                    new Vector2(rect.x, rect.y),                            // bl
+                    new Vector2(rect.x, rect.y + rect.height),              // tl
+                    new Vector2(rect.x + rect.width, rect.y + rect.height), // tr
+                    new Vector2(rect.x + rect.width, rect.y),               // br
+                }
             }, rect, shouldHighlight);
         }
 
@@ -128,7 +139,7 @@ namespace Transidious
                 new Vector2(bounds.max.x, bounds.min.y), // br
             };
 
-            AddCollider(obj, points,
+            AddCollider(obj, new Vector2[][] { points },
                         new Rect(bounds.min.x, bounds.min.y, bounds.size.x, bounds.size.y),
                         shouldHighlight);
         }
@@ -196,7 +207,11 @@ namespace Transidious
                 foreach (var centroid in cluster)
                 {
                     var info = centroidMap[centroid];
-                    points.AddRange(info.poly);
+
+                    foreach (var pts in info.poly)
+                    {
+                        points.AddRange(pts);
+                    }
                 }
 
                 var boundingBox = Math.GetBoundingRect(points);
@@ -255,6 +270,7 @@ namespace Transidious
             {
                 lineRenderers = new List<LineRenderer>();
             }
+
             while (i >= lineRenderers.Count)
             {
                 var obj = Instantiate(GameController.instance.lineRendererPrefab);

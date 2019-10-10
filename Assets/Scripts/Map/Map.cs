@@ -1474,9 +1474,9 @@ namespace Transidious
             boundaryMaskObj.transform.SetParent(this.transform);
             boundaryMaskObj.name = "Boundary Mask";
 
-            this.backgroundSpriteDay = Instantiate(GameController.instance.spritePrefab);
+            this.backgroundSpriteDay = Instantiate(SpriteManager.instance.spritePrefab);
             this.backgroundSpriteDay.transform.SetParent(this.transform);
-            this.backgroundSpriteNight = Instantiate(GameController.instance.spritePrefab);
+            this.backgroundSpriteNight = Instantiate(SpriteManager.instance.spritePrefab);
             this.backgroundSpriteNight.transform.SetParent(this.transform);
 
             input.RegisterEventListener(InputEvent.Zoom, _ =>

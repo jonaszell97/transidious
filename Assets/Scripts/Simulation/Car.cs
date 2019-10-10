@@ -52,11 +52,11 @@ namespace Transidious
 
             if (carModel == -1)
             {
-                carModel = UnityEngine.Random.Range(0, sim.game.carSprites.Length - 1);
+                carModel = UnityEngine.Random.Range(0, SpriteManager.instance.carSprites.Length - 1);
             }
 
             this.carModel = carModel;
-            renderer.sprite = sim.game.carSprites[carModel];
+            renderer.sprite = SpriteManager.instance.carSprites[carModel];
 
             switch (carModel)
             {
@@ -192,12 +192,12 @@ namespace Transidious
 
         public void Highlight()
         {
-            GetComponent<SpriteRenderer>().sprite = sim.game.carSpritesOutlined[carModel];
+            GetComponent<SpriteRenderer>().sprite = SpriteManager.instance.carSpritesOutlined[carModel];
         }
 
         public void Unhighlight()
         {
-            GetComponent<SpriteRenderer>().sprite = sim.game.carSprites[carModel];
+            GetComponent<SpriteRenderer>().sprite = SpriteManager.instance.carSprites[carModel];
         }
 
         void UpdateUIPosition()

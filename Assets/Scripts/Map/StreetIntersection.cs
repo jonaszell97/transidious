@@ -92,12 +92,12 @@ namespace Transidious
             if (spriteObj1 != null)
             {
                 var map = spriteObj1.GetComponentInParent<Map>();
-                spriteObj1.GetComponent<SpriteRenderer>().sprite = map.Game.trafficLightSprites[(int)status];
+                spriteObj1.GetComponent<SpriteRenderer>().sprite = SpriteManager.instance.trafficLightSprites[(int)status];
             }
             if (spriteObj2 != null)
             {
                 var map = spriteObj2.GetComponentInParent<Map>();
-                spriteObj2.GetComponent<SpriteRenderer>().sprite = map.Game.trafficLightSprites[(int)status];
+                spriteObj2.GetComponent<SpriteRenderer>().sprite = SpriteManager.instance.trafficLightSprites[(int)status];
             }
 #endif
         }
@@ -664,8 +664,8 @@ namespace Transidious
 #if DEBUG
                 if (map.renderTrafficLights)
                 {
-                    var sprite1 = map.Game.CreateSprite(
-                        map.Game.trafficLightSprites[(int)tl.status]);
+                    var sprite1 = SpriteManager.CreateSprite(
+                        SpriteManager.instance.trafficLightSprites[(int)tl.status]);
 
                     sprite1.transform.SetParent(map.transform);
                     sprite1.transform.position = GetTrafficLightPosition(seg);
@@ -675,8 +675,8 @@ namespace Transidious
 
                     if (oppositeSeg != null)
                     {
-                        var sprite2 = map.Game.CreateSprite(
-                            map.Game.trafficLightSprites[(int)tl.status]);
+                        var sprite2 = SpriteManager.CreateSprite(
+                            SpriteManager.instance.trafficLightSprites[(int)tl.status]);
 
                         sprite2.transform.SetParent(map.transform);
                         sprite2.transform.position = GetTrafficLightPosition(oppositeSeg);

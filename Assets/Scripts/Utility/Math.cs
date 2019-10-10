@@ -424,7 +424,20 @@ namespace Transidious
             return upperHull;
         }
 
-        public static bool IsPointInPolygon(Vector2 pt, IReadOnlyList<Vector2> poly)
+        public static bool IsPointInPolygon(Vector2 pt, Vector2[][] polys)
+        {
+            foreach (var poly in polys)
+            {
+                if (IsPointInPolygon(pt, poly))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+            public static bool IsPointInPolygon(Vector2 pt, IReadOnlyList<Vector2> poly)
         {
             Debug.Assert(poly.Count >= 3, "invalid polygon");
 
@@ -821,6 +834,11 @@ namespace Transidious
 
         static void PopulateResultPSLG(PSLG pslg, ClipperLib.PolyNode node, bool hole)
         {
+            if (node.IsOpen)
+            {
+                Debug.LogWarning("FOUND OPEN NODE");
+            }
+
             if (hole)
             {
                 pslg.AddHole(GetUnityPath(node.Contour));

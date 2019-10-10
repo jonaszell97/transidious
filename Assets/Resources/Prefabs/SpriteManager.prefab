@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3905945487440811454
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3905945487440811424}
+  - component: {fileID: 3905945487440811425}
+  m_Layer: 0
+  m_Name: SpriteManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3905945487440811424
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3905945487440811454}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3905945487440811425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3905945487440811454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 049fc315ebc61e144883da33b522ac01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spritePrefab: {fileID: 7509411211804675045, guid: d85ccc0785f0f440da30462ccae07626,
+    type: 3}
+  playSprite: {fileID: 21300000, guid: 5fcb9fd4cd3b34978bb3a5e3f6f94933, type: 3}
+  pauseSprite: {fileID: 21300000, guid: 0c3a7d36d672d416a9037c187cdb15ee, type: 3}
+  uiButtonSprite: {fileID: 21300000, guid: d02523da7e7624b7096309af14ca7bac, type: 3}
+  simSpeedSprites:
+  - {fileID: 21300000, guid: a38b7d67fac46454f91ff2a1259c0fbc, type: 3}
+  - {fileID: 21300000, guid: 64e0a0db1af7d4bcfa3a5499b6552e8b, type: 3}
+  - {fileID: 21300000, guid: 16fb10da7a259479192910c3278060a0, type: 3}
+  trafficLightSprites:
+  - {fileID: 21300000, guid: 778c29a0ee182402da4e6f207941a448, type: 3}
+  - {fileID: 21300000, guid: eb9735822c03c430c96d9499f029c06e, type: 3}
+  - {fileID: 21300000, guid: 756280033e2254f41b65015b644f1231, type: 3}
+  - {fileID: 21300000, guid: 520c352197ec6434b95a8e0c7ab684a4, type: 3}
+  carSpritesOutlined:
+  - {fileID: 21300000, guid: 33917ebdf7b9a4a588cc7cee11086f2a, type: 3}
+  - {fileID: 21300000, guid: 4cc98ebf6b94a46d08add13128c06205, type: 3}
+  - {fileID: 21300000, guid: cbafe7be3132a484680f592edd70d8ea, type: 3}
+  - {fileID: 21300000, guid: e94d7a94eeda548d9bda9dd6420e64b9, type: 3}
+  - {fileID: 21300000, guid: e6d570122b89c44a99646d04b287b240, type: 3}
+  carSprites:
+  - {fileID: 21300000, guid: 6dde07f519316ee8ca661bca80047fa6, type: 3}
+  - {fileID: 21300000, guid: dde0132b199f5fc05a8745b278a837bf, type: 3}
+  - {fileID: 21300000, guid: 2d43e01c314649264bbaf8ae0932fcd8, type: 3}
+  - {fileID: 21300000, guid: f5e37dd3a0172acf1a5b5eb6e28c2cf9, type: 3}
+  - {fileID: 21300000, guid: f48336b180036a4f08ddea2b380f4ab3, type: 3}
+  streetArrowSprite: {fileID: 21300000, guid: 6111dbc200a6a47fa852be2ea67c3fb3, type: 3}
+  squareSprite: {fileID: 21300000, guid: c461aa8d3f47cec2495249aec485a9f6, type: 3}
+  roundedRectSprite: {fileID: 432383116780828386, guid: 93ceb56d58541b01fb56d9ba35ad42cf,
+    type: 3}
+  happinessSprites:
+  - {fileID: 21300000, guid: 47aa223e56474421e875a7d22df012ea, type: 3}
+  - {fileID: 21300000, guid: 956f9fe1eaf3448e6a478cfc7cc05593, type: 3}
+  - {fileID: 21300000, guid: c4222372f60134c18b3753419fe11d7f, type: 3}

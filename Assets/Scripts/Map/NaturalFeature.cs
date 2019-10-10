@@ -76,7 +76,7 @@ namespace Transidious
 
                 if (outlinePositions != null)
                 {
-                    tile.AddCollider(this, outlinePositions[0],
+                    tile.AddCollider(this, outlinePositions,
                                      MeshBuilder.GetCollisionRect(mesh), true);
                 }
                 else

@@ -62,6 +62,24 @@ namespace Transidious
         }
 #endif
 
+        public static void DisableImmediateChildren(this GameObject obj)
+        {
+            for (int i = obj.transform.childCount - 1; i >= 0; --i)
+            {
+                Transform child = obj.transform.GetChild(i);
+                child.gameObject.SetActive(false);
+            }
+        }
+
+        public static void EnableImmediateChildren(this GameObject obj)
+        {
+            for (int i = obj.transform.childCount - 1; i >= 0; --i)
+            {
+                Transform child = obj.transform.GetChild(i);
+                child.gameObject.SetActive(true);
+            }
+        }
+
         public static void RemoveAllChildren(this GameObject obj)
         {
             for (int i = obj.transform.childCount - 1; i >= 0; --i)

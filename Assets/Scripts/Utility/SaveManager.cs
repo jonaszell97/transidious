@@ -10,16 +10,68 @@ using ICSharpCode.SharpZipLib.GZip;
 
 namespace Transidious
 {
+    [Serializable]
+    public struct VersionTriple : IEquatable<VersionTriple>
+    {
+        public short major;
+        public short minor;
+        public short patch;
+
+        public VersionTriple(short major, short minor, short patch)
+        {
+            this.major = major;
+            this.minor = minor;
+            this.patch = patch;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is VersionTriple triple && Equals(triple);
+        }
+
+        public bool Equals(VersionTriple other)
+        {
+            return major == other.major &&
+                   minor == other.minor &&
+                   patch == other.patch;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -704854903;
+            hashCode = hashCode * -1521134295 + major.GetHashCode();
+            hashCode = hashCode * -1521134295 + minor.GetHashCode();
+            hashCode = hashCode * -1521134295 + patch.GetHashCode();
+            return hashCode;
+        }
+
+        public static bool operator ==(VersionTriple left, VersionTriple right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(VersionTriple left, VersionTriple right)
+        {
+            return !(left == right);
+        }
+    }
+
     public class SaveManager
     {
+        public static readonly VersionTriple SaveFormatVersion = new VersionTriple(0, 0, 1);
+
         [Serializable]
         public struct SerializedMap
         {
+            public VersionTriple saveFormatVersion;
             public float maxTileSize;
             public SerializableVector2[] boundaryPositions;
             public float minX, maxX, minY, maxY;
             public SerializableVector3 cameraStartingPos;
             public SerializableMesh2D[] boundaryMeshes;
+            public Building.SerializableBuilding[] buildings;
+            public Street.SerializedStreet[] streets;
+            public StreetIntersection.SerializedStreetIntersection[] streetIntersections;
             public NaturalFeature.SerializedFeature[] naturalFeatures;
             public byte[] backgroundImage;
         }
@@ -27,10 +79,8 @@ namespace Transidious
         [Serializable]
         public struct SaveFile
         {
+            public VersionTriple saveFormatVersion;
             public MapTile.SerializableMapTile[][] tiles;
-            public Building.SerializableBuilding[] buildings;
-            public Street.SerializedStreet[] streets;
-            public StreetIntersection.SerializedStreetIntersection[] streetIntersections;
             public Route.SerializedRoute[] transitRoutes;
             public Stop.SerializedStop[] transitStops;
             public Line.SerializedLine[] transitLines;
@@ -48,12 +98,17 @@ namespace Transidious
         {
             var result = new SerializedMap
             {
+                saveFormatVersion = SaveFormatVersion,
                 maxTileSize = OSMImporter.maxTileSize,
                 minX = map.minX,
                 maxX = map.maxX,
                 minY = map.minY,
                 maxY = map.maxY,
                 cameraStartingPos = new SerializableVector3(map.startingCameraPos),
+                buildings = map.buildings.Select(r => r.Serialize()).ToArray(),
+                streets = map.streets.Select(s => s.Serialize()).ToArray(),
+                streetIntersections = map.streetIntersections.Select(
+                    s => s.Serialize()).ToArray(),
                 naturalFeatures = map.naturalFeatures.Select(r => r.Serialize()).ToArray(),
                 backgroundImage = backgroundImage,
             };
@@ -113,11 +168,8 @@ namespace Transidious
 
             return new SaveFile
             {
+                saveFormatVersion = SaveFormatVersion,
                 tiles = stiles,
-                buildings = map.buildings.Select(r => r.Serialize()).ToArray(),
-                streets = map.streets.Select(s => s.Serialize()).ToArray(),
-                streetIntersections = map.streetIntersections.Select(
-                    s => s.Serialize()).ToArray(),
                 transitRoutes = map.transitRoutes.Select(r => r.Serialize()).ToArray(),
                 transitStops = map.transitStops.Select(r => r.Serialize()).ToArray(),
                 transitLines = map.transitLines.Select(r => r.Serialize()).ToArray(),
@@ -301,8 +353,14 @@ namespace Transidious
 
             var fileResource = (TextAsset)asyncResource.asset;
             var serializedMap = DeserializeFromStream<SerializedMap>(fileResource);
-            var isBaseTile = tileX == -1 || (tileX == 0 && tileY == 0);
 
+            if (serializedMap.saveFormatVersion != SaveFormatVersion)
+            {
+                Debug.LogError("Incompatible save format version!");
+                yield break;
+            }
+
+            var isBaseTile = tileX == -1 || (tileX == 0 && tileY == 0);
             if (isBaseTile)
             {
                 map.minX = serializedMap.minX;
@@ -328,11 +386,8 @@ namespace Transidious
                 map.startingCameraPos = Camera.main.transform.position;
             }
 
-            // Deserialize natural features.
-            foreach (var feature in serializedMap.naturalFeatures)
-            {
-                NaturalFeature.Deserialize(map, feature);
-            }
+            yield return DeserializeGameObjects(map, serializedMap);
+            yield return InitializeGameObjects(map, serializedMap);
 
             LoadBackgroundSprite(map, serializedMap.backgroundImage,
                                  MapDisplayMode.Day,
@@ -343,8 +398,52 @@ namespace Transidious
                                  MapDisplayMode.Night,
                                  ref map.backgroundSpriteNight,
                                  tileX, tileY, serializedMap.maxTileSize);
+        }
 
-            yield return null;
+        static IEnumerator DeserializeGameObjects(Map map, SerializedMap serializedMap)
+        {
+            // Deserialize buildings.
+            foreach (var b in serializedMap.buildings)
+            {
+                Building.Deserialize(map, b);
+
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
+            }
+
+            // Deserialize raw intersections without their intersecting streets.
+            foreach (var inter in serializedMap.streetIntersections)
+            {
+                StreetIntersection.Deserialize(map, inter);
+            }
+
+            // Deserialize natural features.
+            foreach (var feature in serializedMap.naturalFeatures)
+            {
+                NaturalFeature.Deserialize(map, feature);
+            }
+        }
+
+        static IEnumerator InitializeGameObjects(Map map, SerializedMap serializedMap)
+        {
+            // Deserialize streets along with their segments.
+            foreach (var street in serializedMap.streets)
+            {
+                Street.Deserialize(map, street);
+
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
+            }
+
+            // Connect buildings to their streets.
+            foreach (var building in map.buildings)
+            {
+                building.street = map.GetMapObject<StreetSegment>(building.streetID);
+            }
         }
 
         static void LoadBackgroundSprite(Map map, byte[] bytes,
@@ -491,6 +590,11 @@ namespace Transidious
             }
 
             var saveFile = DeserializeFromStream<SaveFile>(fileResource);
+            if (saveFile.saveFormatVersion != SaveFormatVersion)
+            {
+                Debug.LogError("Incompatible save format version!");
+                yield break;
+            }
 
             yield return DeserializeGameObjects(map, saveFile);
             yield return InitializeGameObjects(map, saveFile);
@@ -498,23 +602,6 @@ namespace Transidious
 
         static IEnumerator DeserializeGameObjects(Map map, SaveFile saveFile)
         {
-            // Deserialize buildings.
-            foreach (var b in saveFile.buildings)
-            {
-                Building.Deserialize(map, b);
-
-                if (FrameTimer.instance.FrameDuration >= thresholdTime)
-                {
-                    yield return null;
-                }
-            }
-
-            // Deserialize raw intersections without their intersecting streets.
-            foreach (var inter in saveFile.streetIntersections)
-            {
-                StreetIntersection.Deserialize(map, inter);
-            }
-
             // Deserialize raw routes without stops or lines.
             foreach (var route in saveFile.transitRoutes)
             {
@@ -534,21 +621,12 @@ namespace Transidious
                 map.CreateLine(line.type, line.mapObject.name, line.color,
                                line.mapObject.id).Finish();
             }
+
+            yield break;
         }
 
         static IEnumerator InitializeGameObjects(Map map, SaveFile saveFile)
         {
-            // Deserialize streets along with their segments.
-            foreach (var street in saveFile.streets)
-            {
-                Street.Deserialize(map, street);
-
-                if (FrameTimer.instance.FrameDuration >= thresholdTime)
-                {
-                    yield return null;
-                }
-            }
-
             // Connect stops with their lines.
             foreach (var stop in saveFile.transitStops)
             {

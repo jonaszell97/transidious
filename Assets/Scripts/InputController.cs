@@ -407,7 +407,7 @@ namespace Transidious
             panSensitivityY = camera.orthographicSize * 0.1f;
             zoomSensitivity = camera.orthographicSize * 0.5f;
 
-            UpdateScaleBar();
+            controller.mainUI.UpdateScaleBar();
 
             FireEvent(InputEvent.Zoom);
 
@@ -426,102 +426,6 @@ namespace Transidious
             {
                 FireEvent(InputEvent.ScaleChange);
             }
-        }
-
-        void FadeScaleBar()
-        {
-            controller.scaleBar.SetActive(false);
-            controller.scaleText.gameObject.SetActive(false);
-        }
-
-        float fadeScaleBarTime = 0f;
-
-        void UpdateScaleBar()
-        {
-            if (controller?.scaleBar == null)
-            {
-                return;
-            }
-
-            controller.scaleBar.SetActive(true);
-            controller.scaleText.gameObject.SetActive(true);
-
-            var maxX = camera.ScreenToWorldPoint(new Vector3(100f, 0f, 0f)).x;
-            var minX = camera.ScreenToWorldPoint(new Vector3(0f, 0f, 0f)).x;
-
-            var maxLength = maxX - minX;
-            var scale = 0f;
-            var scaleText = "";
-
-            if (maxLength >= 10000f * Map.Meters)
-            {
-                scaleText = "10km";
-                scale = 10000f * Map.Meters;
-            }
-            else if (maxLength >= 5000f * Map.Meters)
-            {
-                scaleText = "5km";
-                scale = 5000f * Map.Meters;
-            }
-            else if (maxLength >= 2000f * Map.Meters)
-            {
-                scaleText = "2km";
-                scale = 2000f * Map.Meters;
-            }
-            else if (maxLength >= 1000f * Map.Meters)
-            {
-                scaleText = "1km";
-                scale = 1000f * Map.Meters;
-            }
-            else if (maxLength >= 500f * Map.Meters)
-            {
-                scaleText = "500m";
-                scale = 500f * Map.Meters;
-            }
-            else if (maxLength >= 200f * Map.Meters)
-            {
-                scaleText = "200m";
-                scale = 200f * Map.Meters;
-            }
-            else if (maxLength >= 100f * Map.Meters)
-            {
-                scaleText = "100m";
-                scale = 100f * Map.Meters;
-            }
-            else if (maxLength >= 50f * Map.Meters)
-            {
-                scaleText = "50m";
-                scale = 50f * Map.Meters;
-            }
-            else if (maxLength >= 20f * Map.Meters)
-            {
-                scaleText = "20m";
-                scale = 20f * Map.Meters;
-            }
-            else if (maxLength >= 10f * Map.Meters)
-            {
-                scaleText = "10m";
-                scale = 10f * Map.Meters;
-            }
-            else if (maxLength >= 5f * Map.Meters)
-            {
-                scaleText = "5m";
-                scale = 5f * Map.Meters;
-            }
-            else
-            {
-                scaleText = "1m";
-                scale = 1f * Map.Meters;
-            }
-
-            controller.scaleText.text = scaleText;
-
-            var img = controller.scaleBar.GetComponent<UnityEngine.UI.Image>();
-            var rectTransform = img.rectTransform;
-
-            rectTransform.sizeDelta = new Vector2(100 * (scale / maxLength), rectTransform.sizeDelta.y);
-
-            fadeScaleBarTime = 3f;
         }
 
         public void UpdateRenderingDistance()
@@ -770,13 +674,16 @@ namespace Transidious
 
             CheckKeyboardEvents();
 
-            if (fadeScaleBarTime > 0f)
+            if (controller.mainUI != null)
             {
-                fadeScaleBarTime -= Time.deltaTime;
-                if (fadeScaleBarTime <= 0f)
+                if (controller.mainUI.fadeScaleBarTime > 0f)
                 {
-                    fadeScaleBarTime = 0f;
-                    FadeScaleBar();
+                    controller.mainUI.fadeScaleBarTime -= Time.deltaTime;
+                    if (controller.mainUI.fadeScaleBarTime <= 0f)
+                    {
+                        controller.mainUI.fadeScaleBarTime = 0f;
+                        controller.mainUI.FadeScaleBar();
+                    }
                 }
             }
 

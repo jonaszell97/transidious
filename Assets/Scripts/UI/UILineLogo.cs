@@ -66,11 +66,11 @@ namespace Transidious
             case TransitType.Bus:
             case TransitType.LightRail:
             case TransitType.IntercityRail:
-                backgroundImage.sprite = GameController.instance.roundedRectSprite;
+                backgroundImage.sprite = SpriteManager.instance.roundedRectSprite;
                 backgroundImage.type = UnityEngine.UI.Image.Type.Sliced;
                 break;
             default:
-                backgroundImage.sprite = GameController.instance.squareSprite;
+                backgroundImage.sprite = SpriteManager.instance.squareSprite;
                 backgroundImage.type = UnityEngine.UI.Image.Type.Simple;
                 break;
             }

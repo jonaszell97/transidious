@@ -10,6 +10,12 @@ namespace Transidious
 {
     public class OSMImporter : MonoBehaviour
     {
+        public enum ImportType
+        {
+            Fast,
+            Complete,
+        }
+
         public class TransitLine
         {
             internal TransitType type;
@@ -30,6 +36,7 @@ namespace Transidious
         }
 
         public Map map;
+        public ImportType importType = ImportType.Complete;
 
         public int thresholdTime = 1000;
         public bool loadGame = true;
@@ -1532,6 +1539,8 @@ namespace Transidious
                         buildingData = new Tuple<OsmGeo, Building.Type>(null, type),
                     };
 
+                    Debug.Log(type);
+
                     mergedBuilding.pslg = Math.PolygonUnion(pslgs);
                     mergedBuilding.centroid = mergedBuilding.pslg?.Centroid ?? Vector2.zero;
                     mergedBuildings.Add(mergedBuilding);
@@ -1548,7 +1557,7 @@ namespace Transidious
         ///  Buildings with an area lower than this will not be imported. (in m^2)
         /// </summary>
         static readonly float ThresholdArea = 100f;
-        Dictionary<StreetSegment, int> assignedNumbers = new Dictionary<StreetSegment, int>();
+        Dictionary<Street, int> assignedNumbers = new Dictionary<Street, int>();
 
         // TODO: Generate sensible building names.
         string GetBuildingName(PartialBuilding building, float area)
@@ -1566,13 +1575,13 @@ namespace Transidious
                 return "";
             }
 
-            if (assignedNumbers.TryGetValue(closestStreet.seg, out int number))
+            if (assignedNumbers.TryGetValue(closestStreet.seg.street, out int number))
             {
-                assignedNumbers[closestStreet.seg]++;
+                assignedNumbers[closestStreet.seg.street]++;
                 return closestStreet.seg.street.name + " " + number;
             }
 
-            assignedNumbers.Add(closestStreet.seg, 1);
+            assignedNumbers.Add(closestStreet.seg.street, 2);
             return closestStreet.seg.street.name + " 1";
         }
 
@@ -1637,11 +1646,16 @@ namespace Transidious
                 }
             }
 
-            var mergedBuildings = MergeBuildings(partialBuildings);
-            Debug.Log("reduced from " + partialBuildings.Count + " to " + mergedBuildings.Count + " buildings");
+            if (importType == ImportType.Complete)
+            {
+                var mergedBuildings = MergeBuildings(partialBuildings);
+                Debug.Log("reduced from " + partialBuildings.Count + " to " + mergedBuildings.Count + " buildings");
+
+                partialBuildings = mergedBuildings;
+            }
 
             var smallBuildings = 0;
-            foreach (var building in mergedBuildings)
+            foreach (var building in partialBuildings)
             {
                 var type = building.buildingData.Item2;
                 var outlinePositions = building.pslg?.Outlines;

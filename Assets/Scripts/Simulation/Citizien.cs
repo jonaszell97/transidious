@@ -274,7 +274,7 @@ namespace Transidious
         public short birthday;
         public bool female;
         public Occupation occupation;
-        public float money;
+        public decimal money;
         public Car car;
         public bool educated;
         public byte happiness;
@@ -291,6 +291,8 @@ namespace Transidious
         public Citizien(SimulationController sim, Car car = null)
         {
             this.sim = sim;
+            this.sim.totalCitizienCount++;
+
             this.lastName = RandomNameGenerator.LastName;
 
             var genderAndAge = RandomNameGenerator.GenderAndAge;
@@ -300,7 +302,7 @@ namespace Transidious
             this.birthday = (short)Random.Range(0, 365);
             this.age = (short)genderAndAge.Item2;
             this.happiness = 100;
-            this.money = Random.Range(0f, 1000000f);
+            this.money = (decimal)Random.Range(0f, 1000000f);
 
             this.pointsOfInterest = new Dictionary<PointOfInterest, Building>();
             this.relationships = new Dictionary<Relationship, Citizien>();

@@ -274,8 +274,8 @@ namespace Transidious
 
             if (seg.directionArrow == null)
             {
-                seg.directionArrow = map.Game.CreateSprite(
-                    map.Game.streetArrowSprite);
+                seg.directionArrow = SpriteManager.CreateSprite(
+                    SpriteManager.instance.streetArrowSprite);
 
                 seg.directionArrow.transform.localScale = new Vector3(5f, 5f, 1f);
 
@@ -298,7 +298,7 @@ namespace Transidious
                 return;
             }
 
-            var sprite = map.Game.streetArrowSprite;
+            var sprite = SpriteManager.instance.streetArrowSprite;
             var neededWidth = sprite.bounds.extents.y;
             var posAndAngle = GetPositionAndAngle(seg, neededWidth);
 
