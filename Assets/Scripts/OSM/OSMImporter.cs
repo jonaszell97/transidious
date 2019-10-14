@@ -1,13 +1,347 @@
-﻿using OsmSharp;
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Transidious.Serialization.OSM;
 
 namespace Transidious
 {
+    public class OSMImporterProxy
+    {
+        public class TransitLine
+        {
+            internal TransitType type;
+            internal OsmSharp.Relation inbound;
+            internal OsmSharp.Relation outbound;
+
+            void Add(OsmSharp.Relation line)
+            {
+                if (inbound == null)
+                {
+                    inbound = line;
+                }
+                else
+                {
+                    outbound = line;
+                }
+            }
+        }
+
+        public Dictionary<long, OsmSharp.Node> nodes = new Dictionary<long, OsmSharp.Node>();
+        public List<Tuple<OsmSharp.Way, Street.Type>> streets = new List<Tuple<OsmSharp.Way, Street.Type>>();
+
+        HashSet<OsmSharp.Relation> referencedRelations = new HashSet<OsmSharp.Relation>();
+
+        public Dictionary<string, TransitLine> lines = new Dictionary<string, TransitLine>();
+        public Dictionary<long, OsmSharp.Node> stops = new Dictionary<long, OsmSharp.Node>();
+
+        public List<Tuple<OsmSharp.OsmGeo, NaturalFeature.Type>> naturalFeatures = new List<Tuple<OsmSharp.OsmGeo, NaturalFeature.Type>>();
+        public List<Tuple<OsmSharp.OsmGeo, Building.Type>> buildings = new List<Tuple<OsmSharp.OsmGeo, Building.Type>>();
+
+        public OsmSharp.Relation boundary = null;
+        public Dictionary<long, OsmSharp.Way> ways = new Dictionary<long, OsmSharp.Way>();
+
+        public double minLat = double.PositiveInfinity;
+        public double minLng = double.PositiveInfinity;
+        public double maxLat = 0;
+        public double maxLng = 0;
+
+        public float minUsedLat = float.PositiveInfinity;
+        public float minUsedLng = float.PositiveInfinity;
+
+        public float maxX;
+        public float minX;
+
+        public float maxY;
+        public float minY;
+
+        float cosCenterLat;
+        static readonly float earthRadius = 6371000f * Map.Meters;
+
+        public async Task ImportArea(string areaName, string country)
+        {
+            await Task.Factory.StartNew(() =>
+            {
+                var _ = new OSMImportHelper(this, areaName, country);
+            });
+
+            FindMinLngAndLat();
+
+            cosCenterLat = Mathf.Cos(Math.toRadians((float)(minLat + (maxLat - minLat) * 0.5f)));
+
+            minX = earthRadius * Math.toRadians((float)minLng) * cosCenterLat;
+            minY = earthRadius * Math.toRadians((float)minLat);
+
+            maxX = earthRadius * Math.toRadians((float)maxLng) * cosCenterLat;
+            maxY = earthRadius * Math.toRadians((float)maxLat);
+        }
+
+        public Area Deserialize(string fileName)
+        {
+            return SaveManager.Decompress(fileName, Area.Parser);
+        }
+
+        public void Load(Area area, OSMImporter importer)
+        {
+            importer.minX = area.MinX;
+            importer.maxX = area.MaxX;
+            importer.minY = area.MinY;
+            importer.maxY = area.MaxY;
+
+            foreach (var node in area.Nodes)
+            {
+                importer.nodes.Add(node.Geo.Id, node);
+            }
+            foreach (var way in area.Ways)
+            {
+                importer.ways.Add(way.Geo.Id, way);
+            }
+            foreach (var rel in area.Relations)
+            {
+                importer.relations.Add(rel.Geo.Id, rel);
+            }
+
+            importer.boundary = importer.relations[area.Boundary];
+
+            foreach (var street in area.Streets)
+            {
+                importer.streets.Add(Tuple.Create(importer.ways[street.WayId], (Street.Type)street.Type));
+            }
+            foreach (var feature in area.Features)
+            {
+                importer.naturalFeatures.Add(Tuple.Create(feature.GeoId, (NaturalFeature.Type)feature.Type));
+            }
+            foreach (var building in area.Buildings)
+            {
+                importer.buildings.Add(Tuple.Create(building.GeoId, (Building.Type)building.Type));
+            }
+        }
+
+        Vector2 Project(OsmSharp.Node node)
+        {
+            return Project((float)node.Longitude, (float)node.Latitude);
+        }
+
+        Vector2 Project(float lng, float lat)
+        {
+            var x = earthRadius * Math.toRadians(lng) * cosCenterLat;
+            var y = earthRadius * Math.toRadians(lat);
+
+            return new Vector2((x - minX), (y - minY));
+        }
+
+        OsmSharp.Way FindWay(long id)
+        {
+            if (ways.ContainsKey(id))
+            {
+                return ways[id];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        OsmSharp.Node FindNode(long id)
+        {
+            if (nodes.ContainsKey(id))
+            {
+                return nodes[id];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        void FindMinLngAndLat()
+        {
+            if (boundary == null)
+            {
+                return;
+            }
+
+            minLng = double.PositiveInfinity;
+            minLat = double.PositiveInfinity;
+            maxLng = 0;
+            maxLat = 0;
+
+            foreach (var member in boundary.Members)
+            {
+                var way = FindWay(member.Id);
+                if (way == null)
+                {
+                    continue;
+                }
+
+                foreach (var nodeId in way.Nodes)
+                {
+                    if (!nodes.TryGetValue(nodeId, out OsmSharp.Node node))
+                    {
+                        continue;
+                    }
+
+                    minLng = System.Math.Min(minLng, node.Longitude.Value);
+                    minLat = System.Math.Min(minLat, node.Latitude.Value);
+
+                    maxLng = System.Math.Max(maxLng, node.Longitude.Value);
+                    maxLat = System.Math.Max(maxLat, node.Latitude.Value);
+                }
+            }
+        }
+
+        OsmGeo Serialize(OsmSharp.OsmGeo geo)
+        {
+            var result = new OsmGeo
+            {
+                Id = (ulong)geo.Id.Value,
+                Type = (OsmGeo.Types.Type)geo.Type,
+            };
+
+            foreach (var tag in geo.Tags)
+            {
+                result.Tags.Add(tag.Key, tag.Value);
+            }
+
+            return result;
+        }
+
+        Node Serialize(OsmSharp.Node node)
+        {
+            return new Node
+            {
+                Geo = Serialize((OsmSharp.OsmGeo)node),
+                Position = Project(node).ToProtobuf(),
+            };
+        }
+
+        Way Serialize(OsmSharp.Way way)
+        {
+            var result = new Way
+            {
+                Geo = Serialize((OsmSharp.OsmGeo)way),
+            };
+
+            foreach (var id in way.Nodes)
+            {
+                result.Nodes.Add((ulong)id);
+            }
+
+            return result;
+        }
+
+        Relation Serialize(OsmSharp.Relation rel)
+        {
+            var result = new Relation
+            {
+                Geo = Serialize((OsmSharp.OsmGeo)rel),
+            };
+
+            foreach (var member in rel.Members)
+            {
+                result.Members.Add(new Relation.Types.Member
+                {
+                    Id = (ulong)member.Id,
+                    Type = (OsmGeo.Types.Type)member.Type,
+                    Role = member.Role,
+                });
+            }
+
+            return result;
+        }
+
+        ulong AddRelation(OsmSharp.Relation rel)
+        {
+            if (rel == null)
+            {
+                return 0;
+            }
+
+            referencedRelations.Add(rel);
+            return (ulong)rel.Id.Value;
+        }
+
+        public Area Serialize()
+        {
+            var maxValues = Project((float)maxLng, (float)maxLat);
+            var area = new Area
+            {
+                MinX = 0f,
+                MaxX = maxValues.x,
+                MinY = 0f,
+                MaxY = maxValues.y,
+            };
+            
+            foreach (var node in nodes)
+            {
+                area.Nodes.Add(Serialize(node.Value));
+            }
+
+            Debug.Log(nodes.Count + " <> " + area.Nodes.Count);
+
+            foreach (var way in ways)
+            {
+                area.Ways.Add(Serialize(way.Value));
+            }
+
+            area.Boundary = AddRelation(boundary);
+
+            foreach (var street in streets)
+            {
+                area.Streets.Add(new Area.Types.Street
+                {
+                    WayId = (ulong)street.Item1.Id.Value,
+                    Type = (Serialization.Street.Types.Type)street.Item2,
+                });
+            }
+
+            foreach (var building in buildings)
+            {
+                if (building.Item1.Type == OsmSharp.OsmGeoType.Relation)
+                {
+                    AddRelation(building.Item1 as OsmSharp.Relation);
+                }
+
+                area.Buildings.Add(new Area.Types.Building
+                {
+                    GeoId = (ulong)building.Item1.Id.Value,
+                    Type = (Serialization.Building.Types.Type)building.Item2,
+                });
+            }
+            
+            foreach (var feature in naturalFeatures)
+            {
+                if (feature.Item1.Type == OsmSharp.OsmGeoType.Relation)
+                {
+                    AddRelation(feature.Item1 as OsmSharp.Relation);
+                }
+
+                area.Features.Add(new Area.Types.NaturalFeature
+                {
+                    GeoId = (ulong)feature.Item1.Id.Value,
+                    Type = (Serialization.NaturalFeature.Types.Type)feature.Item2,
+                });
+            }
+
+            foreach (var rel in referencedRelations)
+            {
+                area.Relations.Add(Serialize(rel));
+            }
+
+            return area;
+        }
+
+        public Area Save(string fileName)
+        {
+            var area = this.Serialize();
+            SaveManager.CompressGZip<Area>(fileName, area);
+
+            return area;
+        }
+    }
+
     public class OSMImporter : MonoBehaviour
     {
         public enum ImportType
@@ -40,48 +374,34 @@ namespace Transidious
 
         public int thresholdTime = 1000;
         public bool loadGame = true;
+        public bool importOnly = false;
+        public bool forceReload = false;
 
-        public Dictionary<long, Node> nodes = new Dictionary<long, Node>();
+        public Relation boundary = null;
+        public Dictionary<ulong, Node> nodes = new Dictionary<ulong, Node>();
+        public Dictionary<ulong, Way> ways = new Dictionary<ulong, Way>();
+        public Dictionary<ulong, Relation> relations = new Dictionary<ulong, Relation>();
+
         public List<Tuple<Way, Street.Type>> streets = new List<Tuple<Way, Street.Type>>();
 
         public Dictionary<string, TransitLine> lines = new Dictionary<string, TransitLine>();
-        public Dictionary<long, Node> stops = new Dictionary<long, Node>();
-        Dictionary<long, Stop> stopMap = new Dictionary<long, Stop>();
+        public Dictionary<ulong, Node> stops = new Dictionary<ulong, Node>();
+        Dictionary<ulong, Stop> stopMap = new Dictionary<ulong, Stop>();
 
         public Dictionary<Vector2, StreetSegment> streetSegmentMap = new Dictionary<Vector2, StreetSegment>();
         public Dictionary<Vector2, Transidious.StreetIntersection> streetIntersectionMap = new Dictionary<Vector2, Transidious.StreetIntersection>();
 
-        public Relation boundary = null;
-        public Dictionary<long, Way> ways = new Dictionary<long, Way>();
-
-        public List<Tuple<OsmGeo, NaturalFeature.Type>> naturalFeatures = new List<Tuple<OsmGeo, NaturalFeature.Type>>();
-        public List<Tuple<OsmGeo, Building.Type>> buildings = new List<Tuple<OsmGeo, Building.Type>>();
-
-        public double minLat = double.PositiveInfinity;
-        public double minLng = double.PositiveInfinity;
-        public double maxLat = 0;
-        public double maxLng = 0;
-
-        public float minUsedLat = float.PositiveInfinity;
-        public float minUsedLng = float.PositiveInfinity;
+        public List<Tuple<ulong, NaturalFeature.Type>> naturalFeatures = new List<Tuple<ulong, NaturalFeature.Type>>();
+        public List<Tuple<ulong, Building.Type>> buildings = new List<Tuple<ulong, Building.Type>>();
 
         public float maxX;
         public float minX;
-        public float width;
-
         public float maxY;
         public float minY;
-        public float height;
 
         public OSMImportHelper.Area area;
         public string country;
-        public int tileX, tileY;
-        public int tilesX, tilesY;
-        public bool singleTile;
         public bool done;
-
-        float cosCenterLat;
-        static readonly float earthRadius = 6371000f * Map.Meters;
 
         public static readonly float maxTileSize = 999999f; // 6000f;
 
@@ -96,177 +416,72 @@ namespace Transidious
 
             await this.ImportArea();
 
-            tilesX = (int)Mathf.Ceil(width / maxTileSize);
-            tilesY = (int)Mathf.Ceil(height / maxTileSize);
-            singleTile = tilesX == 1 && tilesY == 1;
-
-            if (singleTile)
+            if (importOnly)
             {
-
-                StartCoroutine(LoadFeatures());
+                Debug.Log("Done!");
                 return;
             }
 
-            StartCoroutine(LoadTiles());
-        }
-
-        IEnumerator LoadTiles()
-        {
-            for (var x = 0; x < tilesX; ++x)
-            {
-                for (var y = 0; y < tilesY; ++y)
-                {
-                    tileX = x;
-                    tileY = y;
-                    done = false;
-
-                    StartCoroutine(LoadFeatures());
-
-                    while (!done)
-                    {
-                        yield return null;
-                    }
-
-                    map.ResetAll();
-                }
-            }
-
-            Debug.Log("Done!");
-        }
-
-        bool IsMainImporter
-        {
-            get
-            {
-                return tileX == 0 && tileY == 0;
-            }
-        }
-
-        bool ShouldImport(Node node)
-        {
-            if (singleTile)
-            {
-                return true;
-            }
-
-            var pos = Project(node);
-            var x = (int)Mathf.Floor(pos.x / maxTileSize);
-            var y = (int)Mathf.Floor(pos.y / maxTileSize);
-
-            return x == tileX && y == tileY;
-        }
-
-        bool ShouldImport(Way way)
-        {
-            if (singleTile)
-            {
-                return true;
-            }
-
-            foreach (var nodeId in way.Nodes)
-            {
-                var node = FindNode(nodeId);
-                if (node != null)
-                {
-                    return ShouldImport(node);
-                }
-            }
-
-            return false;
-        }
-
-        bool ShouldImport(Relation relation)
-        {
-            if (singleTile)
-            {
-                return true;
-            }
-
-            foreach (var member in relation.Members)
-            {
-                if (member.Type == OsmGeoType.Node)
-                {
-                    var node = FindNode(member.Id);
-                    if (node != null)
-                    {
-                        return ShouldImport(node);
-                    }
-                }
-                else if (member.Type == OsmGeoType.Way)
-                {
-                    var way = FindWay(member.Id);
-                    if (way != null)
-                    {
-                        return ShouldImport(way);
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        bool ShouldImport(OsmGeo geo)
-        {
-            if (singleTile)
-            {
-                return true;
-            }
-
-            if (geo.Type == OsmGeoType.Node)
-            {
-                return ShouldImport(geo as Node);
-            }
-            if (geo.Type == OsmGeoType.Way)
-            {
-                return ShouldImport(geo as Way);
-            }
-
-            return ShouldImport(geo as Relation);
-        }
-
-        Vector3 Project(Node node)
-        {
-            return Project((float)node.Longitude, (float)node.Latitude);
-        }
-
-        Vector3 Project(float lng, float lat)
-        {
-            var x = earthRadius * Math.toRadians(lng) * cosCenterLat;
-            var y = earthRadius * Math.toRadians(lat);
-
-            return new Vector3((x - minX), (y - minY));
+            StartCoroutine(LoadFeatures());
         }
 
         public async Task ImportArea()
         {
-            var areaName = area.ToString();
-            await Task.Factory.StartNew(() =>
+            var areaName = this.area.ToString();
+            string fileName = "Resources/Areas/";
+            fileName += areaName;
+            fileName += ".bytes";
+
+            var proxy = new OSMImporterProxy();
+
+            Area area;
+            if (!System.IO.File.Exists(fileName) || forceReload)
             {
-                var _ = new OSMImportHelper(this, areaName, country);
-            });
+                await proxy.ImportArea(areaName, country);
+                area = proxy.Save(fileName);
+            }
+            else
+            {
+                area = proxy.Deserialize(fileName);
+            }
 
-            FindMinLngAndLat();
+            if (importOnly)
+            {
+                return;
+            }
 
-            cosCenterLat = Mathf.Cos(Math.toRadians((float)(minLat + (maxLat - minLat) * 0.5f)));
-
-            minX = earthRadius * Math.toRadians((float)minLng) * cosCenterLat;
-            minY = earthRadius * Math.toRadians((float)minLat);
-
-            maxX = earthRadius * Math.toRadians((float)maxLng) * cosCenterLat;
-            maxY = earthRadius * Math.toRadians((float)maxLat);
-
-            width = maxX - minX;
-            height = maxY - minY;
+            proxy.Load(area, this);
         }
 
         IEnumerator LoadFeatures()
         {
-            if (IsMainImporter)
-            {
-                LoadBoundary();
-                Debug.Log("loaded boundary");
-                yield return null;
-            }
+            yield return null;
+
+            //var pslg = new PSLG();
+            //pslg.AddOrderedVertices(new Vector3[] {
+            //    new Vector2(0f, 0f),
+            //    new Vector2(0f, 1f),
+            //    new Vector2(1f, 1f),
+            //    new Vector2(1f, 0f),
+            //});
+            //pslg.AddHole(new Vector3[] {
+            //    new Vector2(0.25f, 0.25f),
+            //    new Vector2(0.25f, .75f),
+            //    new Vector2(.75f, .75f),
+            //    new Vector2(.75f, .25f),
+            //});
+
+            //var mesh = TriangleAPI.CreateMesh(pslg);
+            //var obj = new GameObject();
+            //var filter = obj.AddComponent<MeshFilter>();
+            //filter.sharedMesh = mesh;
+            //var renderer = obj.AddComponent<MeshRenderer>();
+            //renderer.material = GameController.GetUnlitMaterial(Color.red);
+
+            //yield break;
+
+            LoadBoundary();
+            Debug.Log("loaded boundary");
 
             yield return LoadParks();
             Debug.Log("loaded natural features");
@@ -277,100 +492,38 @@ namespace Transidious
             yield return LoadBuildings();
             Debug.Log("loaded buildings");
 
-            if (singleTile)
-            {
-                yield return map.DoFinalize(thresholdTime);
-            }
-            else
-            {
-                yield return map.DoFinalize(thresholdTime, tileX, tileY);
-            }
+            yield return map.DoFinalize(thresholdTime);
 
             // yield return LoadTransitLines();
             // Debug.Log("loaded transit lines");
 
-            Texture2D backgroundTex;
-            if (singleTile)
-            {
-                backgroundTex = ScreenShotMaker.Instance.MakeScreenshotSingle(map);
-                SaveManager.SaveMapLayout(map, backgroundTex.EncodeToPNG());
-            }
-            else
-            {
-                backgroundTex = ScreenShotMaker.Instance.MakeScreenshotSingle(map, tileX, tileY);
-                SaveManager.SaveMapLayout(map, backgroundTex.EncodeToPNG(), tileX, tileY);
-            }
+            var backgroundTex = ScreenShotMaker.Instance.MakeScreenshotSingle(map);
+            SaveManager.SaveMapLayout(map, backgroundTex.EncodeToPNG());
 
             Destroy(backgroundTex);
             Resources.UnloadUnusedAssets();
 
-            if (singleTile)
-            {
-                SaveManager.SaveMapData(map);
-            }
-            else
-            {
-                SaveManager.SaveMapData(map, tileX, tileY);
-            }
+            SaveManager.SaveMapData(map);
 
-            if (singleTile)
-            {
-                Debug.Log("Done!");
-            }
-            else
-            {
-                Debug.Log("Done with tile " + tileX + ", " + tileY + "!");
-            }
-
+            Debug.Log("Done!");
             done = true;
 
-            if (loadGame && singleTile)
+            if (loadGame)
             {
                 UnityEngine.SceneManagement.SceneManager.LoadScene("MainGame");
             }
         }
 
-        void FindMinLngAndLat()
+        Vector2 Project(Node node)
         {
-            if (boundary == null)
-            {
-                return;
-            }
-
-            minLng = double.PositiveInfinity;
-            minLat = double.PositiveInfinity;
-            maxLng = 0;
-            maxLat = 0;
-
-            foreach (var member in boundary.Members)
-            {
-                Way way = FindWay(member.Id);
-                if (way == null)
-                {
-                    continue;
-                }
-
-                foreach (var nodeId in way.Nodes)
-                {
-                    if (!nodes.TryGetValue(nodeId, out Node node))
-                    {
-                        continue;
-                    }
-
-                    minLng = System.Math.Min(minLng, node.Longitude.Value);
-                    minLat = System.Math.Min(minLat, node.Latitude.Value);
-
-                    maxLng = System.Math.Max(maxLng, node.Longitude.Value);
-                    maxLat = System.Math.Max(maxLat, node.Latitude.Value);
-                }
-            }
+            return node.Position.Deserialize();
         }
 
-        Way FindWay(long id)
+        Way FindWay(ulong id)
         {
-            if (ways.ContainsKey(id))
+            if (ways.TryGetValue(id, out Way result))
             {
-                return ways[id];
+                return result;
             }
             else
             {
@@ -378,11 +531,23 @@ namespace Transidious
             }
         }
 
-        Node FindNode(long id)
+        Relation FindRelation(ulong id)
         {
-            if (nodes.ContainsKey(id))
+            if (relations.TryGetValue(id, out Relation rel))
             {
-                return nodes[id];
+                return rel;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        Node FindNode(ulong id)
+        {
+            if (nodes.TryGetValue(id, out Node node))
+            {
+                return node;
             }
             else
             {
@@ -431,8 +596,7 @@ namespace Transidious
                         continue;
                     }
 
-                    var loc = Project(node);
-                    wayNode.positions.Add(new Vector3(loc.x, loc.y, z));
+                    wayNode.positions.Add(node.Position.Deserialize());
                 }
 
                 if (wayNode.positions.Count > 0)
@@ -516,8 +680,7 @@ namespace Transidious
                     continue;
                 }
 
-                var loc = Project(node);
-                positions.Add(new Vector3(loc.x, loc.y, z));
+                positions.Add(node.Position.Deserialize());
             }
         }
 
@@ -526,9 +689,8 @@ namespace Transidious
             map.minX = 0;
             map.minY = 0;
 
-            var maxValues = Project((float)maxLng, (float)maxLat);
-            map.maxX = maxValues.x;
-            map.maxY = maxValues.y;
+            map.maxX = maxX;
+            map.maxY = maxY;
 
             Vector2[] boundaryPositions;
             if (boundary != null)
@@ -573,32 +735,6 @@ namespace Transidious
             }
 
             map.UpdateBoundary(boundaryPositions);
-        }
-
-        void OnDrawGizmosSelected()
-        {
-            Gizmos.color = Color.red;
-
-            for (int x = 0; x < tilesX; ++x)
-            {
-                for (int y = 0; y < tilesY; ++y)
-                {
-                    var baseX = map.minX + x * maxTileSize;
-                    var baseY = map.minY + y * maxTileSize;
-
-                    Gizmos.DrawLine(new Vector3(baseX, baseY, -13f),
-                                    new Vector3(baseX + maxTileSize, baseY, -13f));
-
-                    Gizmos.DrawLine(new Vector3(baseX, baseY, -13f),
-                                    new Vector3(baseX, baseY + maxTileSize, -13f));
-
-                    Gizmos.DrawLine(new Vector3(baseX, baseY + maxTileSize, -13f),
-                                    new Vector3(baseX + maxTileSize, baseY + maxTileSize, -13f));
-
-                    Gizmos.DrawLine(new Vector3(baseX + maxTileSize, baseY, -13f),
-                                    new Vector3(baseX + maxTileSize, baseY + maxTileSize, -13f));
-                }
-            }
         }
 
         void AddStopToLine(Line l, Stop s, Stop previousStop, int i, List<List<Vector3>> wayPositions,
@@ -662,7 +798,7 @@ namespace Transidious
                 return null;
             }
 
-            if (stopMap.TryGetValue(stopNode.Id.Value, out Stop stop))
+            if (stopMap.TryGetValue(stopNode.Geo.Id, out Stop stop))
             {
                 return stop;
             }
@@ -673,7 +809,7 @@ namespace Transidious
                 var street = map.GetClosestStreet(loc)?.seg;
                 if (street == null)
                 {
-                    Debug.LogWarning("'" + stopNode.Tags.GetValue("name") + "' is not on map");
+                    Debug.LogWarning("'" + stopNode.Geo.Tags["name"] + "' is not on map");
                     return null;
                 }
 
@@ -687,7 +823,7 @@ namespace Transidious
                 loc = closestPtAndPos.Item1;
             }
 
-            var stopName = stopNode.Tags.GetValue("name");
+            var stopName = stopNode.Geo.Tags["name"];
             Debug.Log("loading stop '" + stopName + "'...");
 
             stopName = stopName.Replace("S+U ", "");
@@ -697,7 +833,7 @@ namespace Transidious
             stopName = stopName.Replace("Berlin ", "");
 
             var s = map.CreateStop(stopName, loc);
-            stopMap.Add(stopNode.Id.Value, s);
+            stopMap.Add(stopNode.Geo.Id, s);
 
             return s;
         }
@@ -707,8 +843,8 @@ namespace Transidious
             foreach (var linePair in lines)
             {
                 if (linePair.Value.type != TransitType.Bus
-                /*|| (linePair.Value.inbound.Tags.GetValue("ref") != "M19"
-                && linePair.Value.inbound.Tags.GetValue("ref") != "M29")*/)
+                /*|| (linePair.Value.inbound.Geo.Tags["ref"] != "M19"
+                && linePair.Value.inbound.Geo.Tags["ref"] != "M29")*/)
                 {
                     continue;
                 }
@@ -717,7 +853,7 @@ namespace Transidious
                 var l2 = linePair.Value.outbound;
 
                 Color color;
-                if (ColorUtility.TryParseHtmlString(l1.Tags.GetValue("colour"), out Color c))
+                if (ColorUtility.TryParseHtmlString(l1.Geo.Tags["colour"], out Color c))
                 {
                     color = c;
                 }
@@ -726,7 +862,7 @@ namespace Transidious
                     color = Map.defaultLineColors[linePair.Value.type];
                 }
 
-                var l = map.CreateLine(linePair.Value.type, l1.Tags.GetValue("ref"), color).Finish();
+                var l = map.CreateLine(linePair.Value.type, l1.Geo.Tags["ref"], color).Finish();
                 Debug.Log("loading line '" + l.name + "'...");
 
                 var members = l1.Members.ToList();
@@ -760,10 +896,10 @@ namespace Transidious
 
                             currentPositions.Add(Project(node));
 
-                            if (i != 0 && node.Tags != null
-                            && (node.Tags.GetValue("railway").StartsWith("stop")
-                            || node.Tags.GetValue("public_transport").StartsWith("stop")
-                            || node.Tags.GetValue("highway").Contains("stop")))
+                            if (i != 0 && node.Geo.Tags != null
+                            && (node.Geo.Tags["railway"].StartsWith("stop")
+                            || node.Geo.Tags["public_transport"].StartsWith("stop")
+                            || node.Geo.Tags["highway"].Contains("stop")))
                             {
                                 wayPositions.Add(currentPositions);
                                 currentPositions = new List<Vector3>();
@@ -804,7 +940,7 @@ namespace Transidious
                                 continue;
                             }
 
-                            if (node.Tags.Contains("highway", "bus_stop"))
+                            if (node.Geo.Tags.Contains("highway", "bus_stop"))
                             {
                                 s = GetOrCreateStop(node, true);
                                 break;
@@ -889,18 +1025,13 @@ namespace Transidious
 
             foreach (var street in streets)
             {
-                if (!ShouldImport(street.Item1))
-                {
-                    continue;
-                }
-
-                var tags = street.Item1.Tags;
+                var tags = street.Item1.Geo.Tags;
                 var streetName = tags.GetValue("name");
                 Debug.Log("loading street '" + streetName + "'...");
 
-                if (streetName == string.Empty)
+                if (string.IsNullOrEmpty(streetName))
                 {
-                    streetName = street.Item1.Id?.ToString() ?? (namelessStreets++).ToString();
+                    streetName = street.Item1.Geo.Id.ToString() ?? (namelessStreets++).ToString();
                 }
 
                 var positions = new List<Node>();
@@ -1062,7 +1193,7 @@ namespace Transidious
                         continue;
                     }
 
-                    var segPositionsStream = startSeg.positions.Select(n => this.Project(n));
+                    var segPositionsStream = startSeg.positions.Select(n => (Vector3)this.Project(n));
                     var segPositions = MeshBuilder.RemoveDetailByDistance(
                         segPositionsStream.ToArray(), 2.5f);
 
@@ -1113,7 +1244,7 @@ namespace Transidious
                                 continue;
                             }
 
-                            var nextSegPositionsStream = nextSeg.positions.Select(n => this.Project(n));
+                            var nextSegPositionsStream = nextSeg.positions.Select(n => (Vector3)this.Project(n));
                             var nextSegPositions = MeshBuilder.RemoveDetailByDistance(
                                 nextSegPositionsStream.ToArray(), 2.5f);
 
@@ -1184,7 +1315,7 @@ namespace Transidious
                     }
 
                     var wayPositions = GetWayPositions(way);
-                    if (wayPositions.Count == way.Nodes.Length)
+                    if (wayPositions.Count == way.Nodes.Count)
                     {
                         if (simplificationThresholdAngle > 0f)
                         {
@@ -1216,14 +1347,22 @@ namespace Transidious
 
             foreach (var feature in naturalFeatures)
             {
-                if (!ShouldImport(feature.Item1))
-                {
-                    continue;
-                }
-
                 try
                 {
-                    var featureName = feature.Item1.Tags.GetValue("name");
+                    var way = FindWay(feature.Item1);
+                    var rel = FindRelation(feature.Item1);
+
+                    OsmGeo geo;
+                    if (way != null)
+                    {
+                        geo = way.Geo;
+                    }
+                    else
+                    {
+                        geo = rel.Geo;
+                    }
+
+                    var featureName = geo.Tags.GetValue("name") ?? string.Empty;
                     Vector2[][] outlinePositions = null;
                     float area = 0f;
                     Vector2 centroid = Vector2.zero;
@@ -1231,21 +1370,19 @@ namespace Transidious
                     Debug.Log("loading natural feature '" + featureName + "'...");
 
                     Mesh mesh;
-                    if (feature.Item1.Type == OsmGeoType.Relation)
+                    if (rel != null)
                     {
                         var pslg = new PSLG();
-                        LoadPolygon(pslg, feature.Item1 as Relation);
+                        LoadPolygon(pslg, rel);
 
-                        mesh = TriangleAPI.CreateMesh(pslg);
+                        mesh = TriangleAPI.CreateMesh(pslg, importType == ImportType.Fast);
                         outlinePositions = pslg?.Outlines;
                         area = pslg?.Area ?? 0f;
                         centroid = pslg?.Centroid ?? Vector2.zero;
                     }
                     else
                     {
-                        var way = feature.Item1 as Way;
                         var wayPositions = GetWayPositions(way);
-
                         if (wayPositions.Count < 3)
                         {
                             continue;
@@ -1257,7 +1394,7 @@ namespace Transidious
 
                         outlinePositions = new Vector2[][]
                         {
-                        wayPositionsArr.Select(v => (Vector2)v).ToArray(),
+                            wayPositionsArr.Select(v => (Vector2)v).ToArray(),
                         };
 
                         area = Math.GetAreaOfPolygon(wayPositionsArr);
@@ -1303,7 +1440,7 @@ namespace Transidious
             var verts = 0;
             foreach (var street in streets)
             {
-                var tags = street.Item1.Tags;
+                var tags = street.Item1.Geo.Tags;
                 var name = tags.GetValue("name");
                 Debug.Log("loading path '" + name + "'...");
 
@@ -1360,7 +1497,8 @@ namespace Transidious
 
         class PartialBuilding
         {
-            internal Tuple<OsmGeo, Building.Type> buildingData;
+            internal OsmGeo geo;
+            internal Tuple<ulong, Building.Type> buildingData;
             internal PSLG pslg;
             internal Vector2 centroid;
         }
@@ -1443,7 +1581,7 @@ namespace Transidious
             var assignments = new Dictionary<Vector2, int>();
             var mergedBuildings = new List<PartialBuilding>();
             var visitedBuildings = new HashSet<Vector2>();
-            var buildingTypes = new Dictionary<int, Building.Type>();
+            var originalBuildings = new Dictionary<int, PartialBuilding>();
 
             foreach (var building in partialBuildings)
             {
@@ -1468,7 +1606,7 @@ namespace Transidious
                         classID = nextEquivalenceClass++;
                         equivalenceClasses.Add(edge, classID);
                         equivalences.Add(classID, new HashSet<int>());
-                        buildingTypes.Add(classID, building.buildingData.Item2);
+                        originalBuildings.Add(classID, building);
 
                         if (equivalenceClass == -1)
                         {
@@ -1505,17 +1643,27 @@ namespace Transidious
             var buildingsToMerge = new List<Vector2>();
             var checkedEquivalences = new HashSet<int>();
             var pslgs = new List<PSLG>();
+            var thresholdDistance = 200f * 200f;
 
             for (var id = 0; id < nextEquivalenceClass; ++id)
             {
                 if (visitedBuildings.Count == partialBuildings.Count)
                     break;
 
-                var type = buildingTypes[id];
+                var original = originalBuildings[id];
+                var type = original.buildingData.Item2;
+
                 foreach (var building in partialBuildings)
                 {
                     if (building.buildingData.Item2 != type || visitedBuildings.Contains(building.centroid))
+                    {
                         continue;
+                    }
+
+                    if ((building.centroid - original.centroid).sqrMagnitude > thresholdDistance)
+                    {
+                        continue;
+                    }
 
                     if (!assignments.TryGetValue(building.centroid, out int classID))
                     {
@@ -1536,10 +1684,9 @@ namespace Transidious
                 {
                     var mergedBuilding = new PartialBuilding()
                     {
-                        buildingData = new Tuple<OsmGeo, Building.Type>(null, type),
+                        geo = original.geo,
+                        buildingData = new Tuple<ulong, Building.Type>(0, type),
                     };
-
-                    Debug.Log(type);
 
                     mergedBuilding.pslg = Math.PolygonUnion(pslgs);
                     mergedBuilding.centroid = mergedBuilding.pslg?.Centroid ?? Vector2.zero;
@@ -1562,8 +1709,8 @@ namespace Transidious
         // TODO: Generate sensible building names.
         string GetBuildingName(PartialBuilding building, float area)
         {
-            var tags = building.buildingData.Item1?.Tags;
-            if (tags?.ContainsKey("name") ?? false)
+            var tags = building.geo?.Tags;
+            if (tags.ContainsKey("name"))
             {
                 return tags.GetValue("name");
             }
@@ -1575,14 +1722,20 @@ namespace Transidious
                 return "";
             }
 
-            if (assignedNumbers.TryGetValue(closestStreet.seg.street, out int number))
+            var street = closestStreet.seg.street;
+            if (!string.IsNullOrEmpty(street.displayName) && street.displayName != street.name)
             {
-                assignedNumbers[closestStreet.seg.street]++;
-                return closestStreet.seg.street.name + " " + number;
+                street = map.GetMapObject<Street>(street.displayName) ?? street;
             }
 
-            assignedNumbers.Add(closestStreet.seg.street, 2);
-            return closestStreet.seg.street.name + " 1";
+            if (assignedNumbers.TryGetValue(street, out int number))
+            {
+                assignedNumbers[street]++;
+                return street.name + " " + number;
+            }
+
+            assignedNumbers.Add(street, 2);
+            return street.name + " 1";
         }
 
         IEnumerator LoadBuildings()
@@ -1592,25 +1745,29 @@ namespace Transidious
 
             foreach (var building in buildings)
             {
-                if (!ShouldImport(building.Item1))
-                {
-                    continue;
-                }
-
-                Debug.Log(building.Item2);
-
                 var pslg = new PSLG();
                 try
                 {
-                    if (building.Item1.Type == OsmGeoType.Relation)
+                    var way = FindWay(building.Item1);
+                    var rel = FindRelation(building.Item1);
+
+                    OsmGeo geo;
+                    if (way != null)
                     {
-                        LoadPolygon(pslg, building.Item1 as Relation);
+                        geo = way.Geo;
                     }
                     else
                     {
-                        var way = building.Item1 as Way;
-                        var wayPositions = new List<Vector3>();
+                        geo = rel.Geo;
+                    }
 
+                    if (rel != null)
+                    {
+                        LoadPolygon(pslg, rel);
+                    }
+                    else
+                    {
+                        var wayPositions = new List<Vector3>();
                         foreach (var nodeId in way.Nodes)
                         {
                             var node = FindNode(nodeId);
@@ -1634,6 +1791,7 @@ namespace Transidious
                     var centroid = pslg.Centroid;
                     partialBuildings.Add(new PartialBuilding
                     {
+                        geo = geo,
                         buildingData = building,
                         pslg = pslg,
                         centroid = centroid,
@@ -1648,9 +1806,13 @@ namespace Transidious
 
             if (importType == ImportType.Complete)
             {
-                var mergedBuildings = MergeBuildings(partialBuildings);
-                Debug.Log("reduced from " + partialBuildings.Count + " to " + mergedBuildings.Count + " buildings");
+                List<PartialBuilding> mergedBuildings = null;
+                this.RunTimer("MergeBuildings", () =>
+                {
+                    mergedBuildings = MergeBuildings(partialBuildings);
+                });
 
+                Debug.Log("reduced from " + partialBuildings.Count + " to " + mergedBuildings.Count + " buildings");
                 partialBuildings = mergedBuildings;
             }
 
@@ -1668,7 +1830,7 @@ namespace Transidious
                     continue;
                 }
 
-                var mesh = TriangleAPI.CreateMesh(building.pslg);
+                var mesh = TriangleAPI.CreateMesh(building.pslg, importType == ImportType.Fast);
                 totalVerts += mesh?.triangles.Length ?? 0;
 
                 var b = map.CreateBuilding(type, mesh, GetBuildingName(building, area), "", area, centroid);
@@ -1697,12 +1859,12 @@ namespace Transidious
 
             //    try
             //    {
-            //        var buildingName = building.Item1.Tags.GetValue("name");
-            //        var numberStr = building.Item1.Tags.GetValue("addr:housenumber");
+            //        var buildingName = building.Item1.Geo.Tags["name"];
+            //        var numberStr = building.Item1.Geo.Tags["addr:housenumber"];
 
             //        if (string.IsNullOrEmpty(buildingName))
             //        {
-            //            var streetName = building.Item1.Tags.GetValue("addr:street");
+            //            var streetName = building.Item1.Geo.Tags["addr:street"];
             //            buildingName = streetName;
 
             //            if (!string.IsNullOrEmpty(numberStr))
@@ -1749,12 +1911,12 @@ namespace Transidious
             //                {
             //                    if (string.IsNullOrEmpty(numberStr))
             //                    {
-            //                        numberStr = node.Tags.GetValue("addr:housenumber");
+            //                        numberStr = node.Geo.Tags["addr:housenumber"];
             //                    }
 
             //                    if (node.Tags.ContainsKey("shop"))
             //                    {
-            //                        var val = node.Tags.GetValue("shop");
+            //                        var val = node.Geo.Tags["shop"];
             //                        if (val == "convenience" || val == "supermarket")
             //                        {
             //                            type = Building.Type.GroceryStore;

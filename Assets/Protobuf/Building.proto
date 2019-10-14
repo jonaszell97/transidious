@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package Transidious.Serialization;
+option csharp_namespace = "Transidious.Serialization";
+
+import "Common.proto";
+
+message Building {
+    enum Type {
+        Residential = 0;
+        Shop = 1;
+        Office = 2;
+        ElementarySchool = 3;
+        HighSchool = 4;
+        University = 5;
+        Hospital = 6;
+        Stadium = 7;
+        GroceryStore = 8;
+    }
+
+    MapObject mapObject = 1;
+    Mesh2D mesh = 2;
+    uint32 streetID = 3;
+    Type type = 4;
+    Vector2 position = 5;
+}

@@ -35,7 +35,7 @@ Paris,
 
     }
 
-    OSMImporter importer;
+    OSMImporterProxy importer;
     Area area = Area.Default;
 
     Stream input = null;
@@ -65,7 +65,7 @@ Paris,
        }
     }
 
-    public OSMImportHelper(OSMImporter importer, string area, string country)
+    public OSMImportHelper(OSMImporterProxy importer, string area, string country)
     {
          this.importer = importer;
          this.referencedGeos = new HashSet<long>();
@@ -242,13 +242,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -541,13 +541,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -840,13 +840,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -1139,13 +1139,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -1438,13 +1438,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -1737,13 +1737,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -2036,13 +2036,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -2335,13 +2335,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -2634,13 +2634,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -2933,13 +2933,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -3232,13 +3232,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -3531,13 +3531,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -3830,13 +3830,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -4129,13 +4129,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -4428,13 +4428,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -4727,13 +4727,13 @@ type = TransitType.LightRail;
                      AddGeoReference(rel);
 
                      var lineName = tags.GetValue("ref");
-                     if (importer.lines.TryGetValue(lineName, out OSMImporter.TransitLine pair))
+                     if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
                      {
                          pair.outbound = rel;
                      }
                      else
                      {
-                         importer.lines.Add(lineName, new OSMImporter.TransitLine {
+                         importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
                              inbound = rel,
                              type = type
                          });
@@ -4981,8 +4981,13 @@ break;
         }
         break;}
 
+            OsmGeo[] nodes = null;
+            GameController.instance.RunTimer("ToArray", () =>
+            {
+                nodes = allNodes.ToArray();
+            });
 
-      foreach (var way in allNodes.OfType<Way>())
+      foreach (var way in nodes.OfType<Way>())
          {
             if (!way.Id.HasValue || !referencedGeos.Contains(way.Id.Value))
             {
@@ -4995,7 +5000,7 @@ break;
             }
          }
 
-         foreach (var geo in allNodes)
+         foreach (var geo in nodes)
          {
             if (!geo.Id.HasValue || !referencedGeos.Contains(geo.Id.Value))
             {
@@ -5014,6 +5019,6 @@ break;
                   break;
             }
          }
-   }
+        }
 }
 }

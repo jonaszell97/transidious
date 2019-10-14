@@ -131,25 +131,25 @@ namespace Transidious
 
         public void HandleMouseOver(DynamicMapObject obj)
         {
-            var snap = GetSnapForObject(obj);
-            if (snap == null)
-            {
-                return;
-            }
+            //var snap = GetSnapForObject(obj);
+            //if (snap == null)
+            //{
+            //    return;
+            //}
 
-            if (snap.GetApplicableType() != obj.GetType())
-            {
-                return;
-            }
+            //if (snap.GetApplicableType() != obj.GetType())
+            //{
+            //    return;
+            //}
 
-            if (snap is StreetSnap)
-            {
-                SnapToStreet(snap as StreetSnap, obj as StreetSegment);
-            }
-            else if (snap is MapObjectSnap)
-            {
-                SnapToMapObject(snap as MapObjectSnap, obj);
-            }
+            //if (snap is StreetSnap)
+            //{
+            //    SnapToStreet(snap as StreetSnap, obj as StreetSegment);
+            //}
+            //else if (snap is MapObjectSnap)
+            //{
+            //    SnapToMapObject(snap as MapObjectSnap, obj);
+            //}
         }
 
         public void HandleMouseExit(DynamicMapObject obj)

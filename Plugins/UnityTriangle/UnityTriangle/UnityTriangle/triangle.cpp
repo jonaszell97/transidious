@@ -1,3 +1,87 @@
+
+#include <future>
+#include <stdexcept>
+#include <string>
+#include <sstream>
+#include <thread>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <cstdarg>
+
+std::string vformat (const char *fmt, va_list ap)
+{
+    // Allocate a buffer on the stack that's big enough for us almost
+    // all the time.
+    size_t size = 1024;
+    char buf[1024];
+
+    // Try to vsnprintf into our buffer.
+    va_list apcopy;
+    va_copy (apcopy, ap);
+    int needed = vsnprintf (&buf[0], size, fmt, ap);
+    // NB. On Windows, vsnprintf returns -1 if the string didn't fit the
+    // buffer.  On Linux & OSX, it returns the length it would have needed.
+
+    if (needed <= size && needed >= 0) {
+        // It fit fine the first time, we're done.
+        return std::string (&buf[0]);
+    } else {
+        // vsnprintf reported that it wanted to write more characters
+        // than we allotted.  So do a malloc of the right size and try again.
+        // This doesn't happen very often if we chose our initial size
+        // well.
+        std::vector <char> buf;
+        size = needed;
+        buf.resize (size);
+        needed = vsnprintf (&buf[0], size, fmt, apcopy);
+        return std::string (&buf[0]);
+    }
+}
+
+std::string format(const char *fmt, ...)
+{
+    va_list ap;
+    va_start (ap, fmt);
+    std::string buf = vformat (fmt, ap);
+    va_end (ap);
+    return buf;
+}
+
+extern "C"
+{
+    //Create a callback delegate
+    typedef void(*FuncCallBack)(const char* message, int color, int size);
+    static FuncCallBack callbackInstance = nullptr;
+    __declspec(dllexport) void RegisterDebugCallback(FuncCallBack cb);
+}
+
+//Color Enum
+enum class Color { Red, Green, Blue, Black, White, Yellow, Orange };
+
+class  Debug
+{
+public:
+    static void Log(const char* message, Color color = Color::Black);
+    static void Log(const std::string message, Color color = Color::Black);
+    static void Log(const int message, Color color = Color::Black);
+    static void Log(const char message, Color color = Color::Black);
+    static void Log(const float message, Color color = Color::Black);
+    static void Log(const double message, Color color = Color::Black);
+    static void Log(const bool message, Color color = Color::Black);
+
+    template<class ...Ts>
+    static void printf(const char *fmt, Ts... ts)
+    {
+      Log(format(fmt, ts...));
+    }
+
+private:
+    static void send_log(const std::stringstream &ss, const Color &color);
+};
+
 /*****************************************************************************/
 /*                                                                           */
 /*      888888888        ,o,                          / 888                  */
@@ -342,15 +426,6 @@
 
 #define ONETHIRD 0.333333333333333333333333333333333333333333333333333333333333
 
-#include <future>
-#include <stdexcept>
-#include <string>
-#include <thread>
-
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
 #ifndef NO_TIMER
 #include <sys/time.h>
 #endif /* not NO_TIMER */
@@ -1437,7 +1512,7 @@ int size;
 
   memptr = (VOID *) malloc((unsigned int) size);
   if (memptr == (VOID *) NULL) {
-    printf("Error:  Out of memory.\n");
+   Debug::printf("Error:  Out of memory.\n");
     triexit(1);
   }
   return(memptr);
@@ -1474,69 +1549,69 @@ void syntax()
 {
 #ifdef CDT_ONLY
 #ifdef REDUCED
-  printf("triangle [-pAcjevngBPNEIOXzo_lQVh] input_file\n");
+ Debug::printf("triangle [-pAcjevngBPNEIOXzo_lQVh] input_file\n");
 #else /* not REDUCED */
-  printf("triangle [-pAcjevngBPNEIOXzo_iFlCQVh] input_file\n");
+ Debug::printf("triangle [-pAcjevngBPNEIOXzo_iFlCQVh] input_file\n");
 #endif /* not REDUCED */
 #else /* not CDT_ONLY */
 #ifdef REDUCED
-  printf("triangle [-prq__a__uAcDjevngBPNEIOXzo_YS__lQVh] input_file\n");
+ Debug::printf("triangle [-prq__a__uAcDjevngBPNEIOXzo_YS__lQVh] input_file\n");
 #else /* not REDUCED */
-  printf("triangle [-prq__a__uAcDjevngBPNEIOXzo_YS__iFlsCQVh] input_file\n");
+ Debug::printf("triangle [-prq__a__uAcDjevngBPNEIOXzo_YS__iFlsCQVh] input_file\n");
 #endif /* not REDUCED */
 #endif /* not CDT_ONLY */
 
-  printf("    -p  Triangulates a Planar Straight Line Graph (.poly file).\n");
+ Debug::printf("    -p  Triangulates a Planar Straight Line Graph (.poly file).\n");
 #ifndef CDT_ONLY
-  printf("    -r  Refines a previously generated mesh.\n");
-  printf(
+ Debug::printf("    -r  Refines a previously generated mesh.\n");
+ Debug::printf(
     "    -q  Quality mesh generation.  A minimum angle may be specified.\n");
-  printf("    -a  Applies a maximum triangle area constraint.\n");
-  printf("    -u  Applies a user-defined triangle constraint.\n");
+ Debug::printf("    -a  Applies a maximum triangle area constraint.\n");
+ Debug::printf("    -u  Applies a user-defined triangle constraint.\n");
 #endif /* not CDT_ONLY */
-  printf(
+ Debug::printf(
     "    -A  Applies attributes to identify triangles in certain regions.\n");
-  printf("    -c  Encloses the convex hull with segments.\n");
+ Debug::printf("    -c  Encloses the convex hull with segments.\n");
 #ifndef CDT_ONLY
-  printf("    -D  Conforming Delaunay:  all triangles are truly Delaunay.\n");
+ Debug::printf("    -D  Conforming Delaunay:  all triangles are truly Delaunay.\n");
 #endif /* not CDT_ONLY */
 /*
-  printf("    -w  Weighted Delaunay triangulation.\n");
-  printf("    -W  Regular triangulation (lower hull of a height field).\n");
+ Debug::printf("    -w  Weighted Delaunay triangulation.\n");
+ Debug::printf("    -W  Regular triangulation (lower hull of a height field).\n");
 */
-  printf("    -j  Jettison unused vertices from output .node file.\n");
-  printf("    -e  Generates an edge list.\n");
-  printf("    -v  Generates a Voronoi diagram.\n");
-  printf("    -n  Generates a list of triangle neighbors.\n");
-  printf("    -g  Generates an .off file for Geomview.\n");
-  printf("    -B  Suppresses output of boundary information.\n");
-  printf("    -P  Suppresses output of .poly file.\n");
-  printf("    -N  Suppresses output of .node file.\n");
-  printf("    -E  Suppresses output of .ele file.\n");
-  printf("    -I  Suppresses mesh iteration numbers.\n");
-  printf("    -O  Ignores holes in .poly file.\n");
-  printf("    -X  Suppresses use of exact arithmetic.\n");
-  printf("    -z  Numbers all items starting from zero (rather than one).\n");
-  printf("    -o2 Generates second-order subparametric elements.\n");
+ Debug::printf("    -j  Jettison unused vertices from output .node file.\n");
+ Debug::printf("    -e  Generates an edge list.\n");
+ Debug::printf("    -v  Generates a Voronoi diagram.\n");
+ Debug::printf("    -n  Generates a list of triangle neighbors.\n");
+ Debug::printf("    -g  Generates an .off file for Geomview.\n");
+ Debug::printf("    -B  Suppresses output of boundary information.\n");
+ Debug::printf("    -P  Suppresses output of .poly file.\n");
+ Debug::printf("    -N  Suppresses output of .node file.\n");
+ Debug::printf("    -E  Suppresses output of .ele file.\n");
+ Debug::printf("    -I  Suppresses mesh iteration numbers.\n");
+ Debug::printf("    -O  Ignores holes in .poly file.\n");
+ Debug::printf("    -X  Suppresses use of exact arithmetic.\n");
+ Debug::printf("    -z  Numbers all items starting from zero (rather than one).\n");
+ Debug::printf("    -o2 Generates second-order subparametric elements.\n");
 #ifndef CDT_ONLY
-  printf("    -Y  Suppresses boundary segment splitting.\n");
-  printf("    -S  Specifies maximum number of added Steiner points.\n");
+ Debug::printf("    -Y  Suppresses boundary segment splitting.\n");
+ Debug::printf("    -S  Specifies maximum number of added Steiner points.\n");
 #endif /* not CDT_ONLY */
 #ifndef REDUCED
-  printf("    -i  Uses incremental method, rather than divide-and-conquer.\n");
-  printf("    -F  Uses Fortune's sweepline algorithm, rather than d-and-c.\n");
+ Debug::printf("    -i  Uses incremental method, rather than divide-and-conquer.\n");
+ Debug::printf("    -F  Uses Fortune's sweepline algorithm, rather than d-and-c.\n");
 #endif /* not REDUCED */
-  printf("    -l  Uses vertical cuts only, rather than alternating cuts.\n");
+ Debug::printf("    -l  Uses vertical cuts only, rather than alternating cuts.\n");
 #ifndef REDUCED
 #ifndef CDT_ONLY
-  printf(
+ Debug::printf(
     "    -s  Force segments into mesh by splitting (instead of using CDT).\n");
 #endif /* not CDT_ONLY */
-  printf("    -C  Check consistency of final mesh.\n");
+ Debug::printf("    -C  Check consistency of final mesh.\n");
 #endif /* not REDUCED */
-  printf("    -Q  Quiet:  No terminal output except errors.\n");
-  printf("    -V  Verbose:  Detailed information on what I'm doing.\n");
-  printf("    -h  Help:  Detailed instructions for Triangle.\n");
+ Debug::printf("    -Q  Quiet:  No terminal output except errors.\n");
+ Debug::printf("    -V  Verbose:  Detailed information on what I'm doing.\n");
+ Debug::printf("    -h  Help:  Detailed instructions for Triangle.\n");
   triexit(0);
 }
 
@@ -1552,1714 +1627,1714 @@ void syntax()
 
 void info()
 {
-  printf("Triangle\n");
-  printf(
+ Debug::printf("Triangle\n");
+ Debug::printf(
 "A Two-Dimensional Quality Mesh Generator and Delaunay Triangulator.\n");
-  printf("Version 1.6\n\n");
-  printf(
+ Debug::printf("Version 1.6\n\n");
+ Debug::printf(
 "Copyright 1993, 1995, 1997, 1998, 2002, 2005 Jonathan Richard Shewchuk\n");
-  printf("2360 Woolsey #H / Berkeley, California 94705-1927\n");
-  printf("Bugs/comments to jrs@cs.berkeley.edu\n");
-  printf(
+ Debug::printf("2360 Woolsey #H / Berkeley, California 94705-1927\n");
+ Debug::printf("Bugs/comments to jrs@cs.berkeley.edu\n");
+ Debug::printf(
 "Created as part of the Quake project (tools for earthquake simulation).\n");
-  printf(
+ Debug::printf(
 "Supported in part by NSF Grant CMS-9318163 and an NSERC 1967 Scholarship.\n");
-  printf("There is no warranty whatsoever.  Use at your own risk.\n");
+ Debug::printf("There is no warranty whatsoever.  Use at your own risk.\n");
 #ifdef SINGLE
-  printf("This executable is compiled for single precision arithmetic.\n\n\n");
+ Debug::printf("This executable is compiled for single precision arithmetic.\n\n\n");
 #else /* not SINGLE */
-  printf("This executable is compiled for double precision arithmetic.\n\n\n");
+ Debug::printf("This executable is compiled for double precision arithmetic.\n\n\n");
 #endif /* not SINGLE */
-  printf(
+ Debug::printf(
 "Triangle generates exact Delaunay triangulations, constrained Delaunay\n");
-  printf(
+ Debug::printf(
 "triangulations, conforming Delaunay triangulations, Voronoi diagrams, and\n");
-  printf(
+ Debug::printf(
 "high-quality triangular meshes.  The latter can be generated with no small\n"
 );
-  printf(
+ Debug::printf(
 "or large angles, and are thus suitable for finite element analysis.  If no\n"
 );
-  printf(
+ Debug::printf(
 "command line switch is specified, your .node input file is read, and the\n");
-  printf(
+ Debug::printf(
 "Delaunay triangulation is returned in .node and .ele output files.  The\n");
-  printf("command syntax is:\n\n");
-  printf("triangle [-prq__a__uAcDjevngBPNEIOXzo_YS__iFlsCQVh] input_file\n\n");
-  printf(
+ Debug::printf("command syntax is:\n\n");
+ Debug::printf("triangle [-prq__a__uAcDjevngBPNEIOXzo_YS__iFlsCQVh] input_file\n\n");
+ Debug::printf(
 "Underscores indicate that numbers may optionally follow certain switches.\n");
-  printf(
+ Debug::printf(
 "Do not leave any space between a switch and its numeric parameter.\n");
-  printf(
+ Debug::printf(
 "input_file must be a file with extension .node, or extension .poly if the\n");
-  printf(
+ Debug::printf(
 "-p switch is used.  If -r is used, you must supply .node and .ele files,\n");
-  printf(
+ Debug::printf(
 "and possibly a .poly file and an .area file as well.  The formats of these\n"
 );
-  printf("files are described below.\n\n");
-  printf("Command Line Switches:\n\n");
-  printf(
+ Debug::printf("files are described below.\n\n");
+ Debug::printf("Command Line Switches:\n\n");
+ Debug::printf(
 "    -p  Reads a Planar Straight Line Graph (.poly file), which can specify\n"
 );
-  printf(
+ Debug::printf(
 "        vertices, segments, holes, regional attributes, and regional area\n");
-  printf(
+ Debug::printf(
 "        constraints.  Generates a constrained Delaunay triangulation (CDT)\n"
 );
-  printf(
+ Debug::printf(
 "        fitting the input; or, if -s, -q, -a, or -u is used, a conforming\n");
-  printf(
+ Debug::printf(
 "        constrained Delaunay triangulation (CCDT).  If you want a truly\n");
-  printf(
+ Debug::printf(
 "        Delaunay (not just constrained Delaunay) triangulation, use -D as\n");
-  printf(
+ Debug::printf(
 "        well.  When -p is not used, Triangle reads a .node file by default.\n"
 );
-  printf(
+ Debug::printf(
 "    -r  Refines a previously generated mesh.  The mesh is read from a .node\n"
 );
-  printf(
+ Debug::printf(
 "        file and an .ele file.  If -p is also used, a .poly file is read\n");
-  printf(
+ Debug::printf(
 "        and used to constrain segments in the mesh.  If -a is also used\n");
-  printf(
+ Debug::printf(
 "        (with no number following), an .area file is read and used to\n");
-  printf(
+ Debug::printf(
 "        impose area constraints on the mesh.  Further details on refinement\n"
 );
-  printf("        appear below.\n");
-  printf(
+ Debug::printf("        appear below.\n");
+ Debug::printf(
 "    -q  Quality mesh generation by Delaunay refinement (a hybrid of Paul\n");
-  printf(
+ Debug::printf(
 "        Chew's and Jim Ruppert's algorithms).  Adds vertices to the mesh to\n"
 );
-  printf(
+ Debug::printf(
 "        ensure that all angles are between 20 and 140 degrees.  An\n");
-  printf(
+ Debug::printf(
 "        alternative bound on the minimum angle, replacing 20 degrees, may\n");
-  printf(
+ Debug::printf(
 "        be specified after the `q'.  The specified angle may include a\n");
-  printf(
+ Debug::printf(
 "        decimal point, but not exponential notation.  Note that a bound of\n"
 );
-  printf(
+ Debug::printf(
 "        theta degrees on the smallest angle also implies a bound of\n");
-  printf(
+ Debug::printf(
 "        (180 - 2 theta) on the largest angle.  If the minimum angle is 28.6\n"
 );
-  printf(
+ Debug::printf(
 "        degrees or smaller, Triangle is mathematically guaranteed to\n");
-  printf(
+ Debug::printf(
 "        terminate (assuming infinite precision arithmetic--Triangle may\n");
-  printf(
+ Debug::printf(
 "        fail to terminate if you run out of precision).  In practice,\n");
-  printf(
+ Debug::printf(
 "        Triangle often succeeds for minimum angles up to 34 degrees.  For\n");
-  printf(
+ Debug::printf(
 "        some meshes, however, you might need to reduce the minimum angle to\n"
 );
-  printf(
+ Debug::printf(
 "        avoid problems associated with insufficient floating-point\n");
-  printf("        precision.\n");
-  printf(
+ Debug::printf("        precision.\n");
+ Debug::printf(
 "    -a  Imposes a maximum triangle area.  If a number follows the `a', no\n");
-  printf(
+ Debug::printf(
 "        triangle is generated whose area is larger than that number.  If no\n"
 );
-  printf(
+ Debug::printf(
 "        number is specified, an .area file (if -r is used) or .poly file\n");
-  printf(
+ Debug::printf(
 "        (if -r is not used) specifies a set of maximum area constraints.\n");
-  printf(
+ Debug::printf(
 "        An .area file contains a separate area constraint for each\n");
-  printf(
+ Debug::printf(
 "        triangle, and is useful for refining a finite element mesh based on\n"
 );
-  printf(
+ Debug::printf(
 "        a posteriori error estimates.  A .poly file can optionally contain\n"
 );
-  printf(
+ Debug::printf(
 "        an area constraint for each segment-bounded region, thereby\n");
-  printf(
+ Debug::printf(
 "        controlling triangle densities in a first triangulation of a PSLG.\n"
 );
-  printf(
+ Debug::printf(
 "        You can impose both a fixed area constraint and a varying area\n");
-  printf(
+ Debug::printf(
 "        constraint by invoking the -a switch twice, once with and once\n");
-  printf(
+ Debug::printf(
 "        without a number following.  Each area specified may include a\n");
-  printf("        decimal point.\n");
-  printf(
+ Debug::printf("        decimal point.\n");
+ Debug::printf(
 "    -u  Imposes a user-defined constraint on triangle size.  There are two\n"
 );
-  printf(
+ Debug::printf(
 "        ways to use this feature.  One is to edit the triunsuitable()\n");
-  printf(
+ Debug::printf(
 "        procedure in triangle.c to encode any constraint you like, then\n");
-  printf(
+ Debug::printf(
 "        recompile Triangle.  The other is to compile triangle.c with the\n");
-  printf(
+ Debug::printf(
 "        EXTERNAL_TEST symbol set (compiler switch -DEXTERNAL_TEST), then\n");
-  printf(
+ Debug::printf(
 "        link Triangle with a separate object file that implements\n");
-  printf(
+ Debug::printf(
 "        triunsuitable().  In either case, the -u switch causes the user-\n");
-  printf("        defined test to be applied to every triangle.\n");
-  printf(
+ Debug::printf("        defined test to be applied to every triangle.\n");
+ Debug::printf(
 "    -A  Assigns an additional floating-point attribute to each triangle\n");
-  printf(
+ Debug::printf(
 "        that identifies what segment-bounded region each triangle belongs\n");
-  printf(
+ Debug::printf(
 "        to.  Attributes are assigned to regions by the .poly file.  If a\n");
-  printf(
+ Debug::printf(
 "        region is not explicitly marked by the .poly file, triangles in\n");
-  printf(
+ Debug::printf(
 "        that region are assigned an attribute of zero.  The -A switch has\n");
-  printf(
+ Debug::printf(
 "        an effect only when the -p switch is used and the -r switch is not.\n"
 );
-  printf(
+ Debug::printf(
 "    -c  Creates segments on the convex hull of the triangulation.  If you\n");
-  printf(
+ Debug::printf(
 "        are triangulating a vertex set, this switch causes a .poly file to\n"
 );
-  printf(
+ Debug::printf(
 "        be written, containing all edges of the convex hull.  If you are\n");
-  printf(
+ Debug::printf(
 "        triangulating a PSLG, this switch specifies that the whole convex\n");
-  printf(
+ Debug::printf(
 "        hull of the PSLG should be triangulated, regardless of what\n");
-  printf(
+ Debug::printf(
 "        segments the PSLG has.  If you do not use this switch when\n");
-  printf(
+ Debug::printf(
 "        triangulating a PSLG, Triangle assumes that you have identified the\n"
 );
-  printf(
+ Debug::printf(
 "        region to be triangulated by surrounding it with segments of the\n");
-  printf(
+ Debug::printf(
 "        input PSLG.  Beware:  if you are not careful, this switch can cause\n"
 );
-  printf(
+ Debug::printf(
 "        the introduction of an extremely thin angle between a PSLG segment\n"
 );
-  printf(
+ Debug::printf(
 "        and a convex hull segment, which can cause overrefinement (and\n");
-  printf(
+ Debug::printf(
 "        possibly failure if Triangle runs out of precision).  If you are\n");
-  printf(
+ Debug::printf(
 "        refining a mesh, the -c switch works differently:  it causes a\n");
-  printf(
+ Debug::printf(
 "        .poly file to be written containing the boundary edges of the mesh\n"
 );
-  printf("        (useful if no .poly file was read).\n");
-  printf(
+ Debug::printf("        (useful if no .poly file was read).\n");
+ Debug::printf(
 "    -D  Conforming Delaunay triangulation:  use this switch if you want to\n"
 );
-  printf(
+ Debug::printf(
 "        ensure that all the triangles in the mesh are Delaunay, and not\n");
-  printf(
+ Debug::printf(
 "        merely constrained Delaunay; or if you want to ensure that all the\n"
 );
-  printf(
+ Debug::printf(
 "        Voronoi vertices lie within the triangulation.  (Some finite volume\n"
 );
-  printf(
+ Debug::printf(
 "        methods have this requirement.)  This switch invokes Ruppert's\n");
-  printf(
+ Debug::printf(
 "        original algorithm, which splits every subsegment whose diametral\n");
-  printf(
+ Debug::printf(
 "        circle is encroached.  It usually increases the number of vertices\n"
 );
-  printf("        and triangles.\n");
-  printf(
+ Debug::printf("        and triangles.\n");
+ Debug::printf(
 "    -j  Jettisons vertices that are not part of the final triangulation\n");
-  printf(
+ Debug::printf(
 "        from the output .node file.  By default, Triangle copies all\n");
-  printf(
+ Debug::printf(
 "        vertices in the input .node file to the output .node file, in the\n");
-  printf(
+ Debug::printf(
 "        same order, so their indices do not change.  The -j switch prevents\n"
 );
-  printf(
+ Debug::printf(
 "        duplicated input vertices, or vertices `eaten' by holes, from\n");
-  printf(
+ Debug::printf(
 "        appearing in the output .node file.  Thus, if two input vertices\n");
-  printf(
+ Debug::printf(
 "        have exactly the same coordinates, only the first appears in the\n");
-  printf(
+ Debug::printf(
 "        output.  If any vertices are jettisoned, the vertex numbering in\n");
-  printf(
+ Debug::printf(
 "        the output .node file differs from that of the input .node file.\n");
-  printf(
+ Debug::printf(
 "    -e  Outputs (to an .edge file) a list of edges of the triangulation.\n");
-  printf(
+ Debug::printf(
 "    -v  Outputs the Voronoi diagram associated with the triangulation.\n");
-  printf(
+ Debug::printf(
 "        Does not attempt to detect degeneracies, so some Voronoi vertices\n");
-  printf(
+ Debug::printf(
 "        may be duplicated.  See the discussion of Voronoi diagrams below.\n");
-  printf(
+ Debug::printf(
 "    -n  Outputs (to a .neigh file) a list of triangles neighboring each\n");
-  printf("        triangle.\n");
-  printf(
+ Debug::printf("        triangle.\n");
+ Debug::printf(
 "    -g  Outputs the mesh to an Object File Format (.off) file, suitable for\n"
 );
-  printf("        viewing with the Geometry Center's Geomview package.\n");
-  printf(
+ Debug::printf("        viewing with the Geometry Center's Geomview package.\n");
+ Debug::printf(
 "    -B  No boundary markers in the output .node, .poly, and .edge output\n");
-  printf(
+ Debug::printf(
 "        files.  See the detailed discussion of boundary markers below.\n");
-  printf(
+ Debug::printf(
 "    -P  No output .poly file.  Saves disk space, but you lose the ability\n");
-  printf(
+ Debug::printf(
 "        to maintain constraining segments on later refinements of the mesh.\n"
 );
-  printf("    -N  No output .node file.\n");
-  printf("    -E  No output .ele file.\n");
-  printf(
+ Debug::printf("    -N  No output .node file.\n");
+ Debug::printf("    -E  No output .ele file.\n");
+ Debug::printf(
 "    -I  No iteration numbers.  Suppresses the output of .node and .poly\n");
-  printf(
+ Debug::printf(
 "        files, so your input files won't be overwritten.  (If your input is\n"
 );
-  printf(
+ Debug::printf(
 "        a .poly file only, a .node file is written.)  Cannot be used with\n");
-  printf(
+ Debug::printf(
 "        the -r switch, because that would overwrite your input .ele file.\n");
-  printf(
+ Debug::printf(
 "        Shouldn't be used with the -q, -a, -u, or -s switch if you are\n");
-  printf(
+ Debug::printf(
 "        using a .node file for input, because no .node file is written, so\n"
 );
-  printf("        there is no record of any added Steiner points.\n");
-  printf("    -O  No holes.  Ignores the holes in the .poly file.\n");
-  printf(
+ Debug::printf("        there is no record of any added Steiner points.\n");
+ Debug::printf("    -O  No holes.  Ignores the holes in the .poly file.\n");
+ Debug::printf(
 "    -X  No exact arithmetic.  Normally, Triangle uses exact floating-point\n"
 );
-  printf(
+ Debug::printf(
 "        arithmetic for certain tests if it thinks the inexact tests are not\n"
 );
-  printf(
+ Debug::printf(
 "        accurate enough.  Exact arithmetic ensures the robustness of the\n");
-  printf(
+ Debug::printf(
 "        triangulation algorithms, despite floating-point roundoff error.\n");
-  printf(
+ Debug::printf(
 "        Disabling exact arithmetic with the -X switch causes a small\n");
-  printf(
+ Debug::printf(
 "        improvement in speed and creates the possibility that Triangle will\n"
 );
-  printf("        fail to produce a valid mesh.  Not recommended.\n");
-  printf(
+ Debug::printf("        fail to produce a valid mesh.  Not recommended.\n");
+ Debug::printf(
 "    -z  Numbers all items starting from zero (rather than one).  Note that\n"
 );
-  printf(
+ Debug::printf(
 "        this switch is normally overridden by the value used to number the\n"
 );
-  printf(
+ Debug::printf(
 "        first vertex of the input .node or .poly file.  However, this\n");
-  printf(
+ Debug::printf(
 "        switch is useful when calling Triangle from another program.\n");
-  printf(
+ Debug::printf(
 "    -o2 Generates second-order subparametric elements with six nodes each.\n"
 );
-  printf(
+ Debug::printf(
 "    -Y  No new vertices on the boundary.  This switch is useful when the\n");
-  printf(
+ Debug::printf(
 "        mesh boundary must be preserved so that it conforms to some\n");
-  printf(
+ Debug::printf(
 "        adjacent mesh.  Be forewarned that you will probably sacrifice much\n"
 );
-  printf(
+ Debug::printf(
 "        of the quality of the mesh; Triangle will try, but the resulting\n");
-  printf(
+ Debug::printf(
 "        mesh may contain poorly shaped triangles.  Works well if all the\n");
-  printf(
+ Debug::printf(
 "        boundary vertices are closely spaced.  Specify this switch twice\n");
-  printf(
+ Debug::printf(
 "        (`-YY') to prevent all segment splitting, including internal\n");
-  printf("        boundaries.\n");
-  printf(
+ Debug::printf("        boundaries.\n");
+ Debug::printf(
 "    -S  Specifies the maximum number of Steiner points (vertices that are\n");
-  printf(
+ Debug::printf(
 "        not in the input, but are added to meet the constraints on minimum\n"
 );
-  printf(
+ Debug::printf(
 "        angle and maximum area).  The default is to allow an unlimited\n");
-  printf(
+ Debug::printf(
 "        number.  If you specify this switch with no number after it,\n");
-  printf(
+ Debug::printf(
 "        the limit is set to zero.  Triangle always adds vertices at segment\n"
 );
-  printf(
+ Debug::printf(
 "        intersections, even if it needs to use more vertices than the limit\n"
 );
-  printf(
+ Debug::printf(
 "        you set.  When Triangle inserts segments by splitting (-s), it\n");
-  printf(
+ Debug::printf(
 "        always adds enough vertices to ensure that all the segments of the\n"
 );
-  printf("        PLSG are recovered, ignoring the limit if necessary.\n");
-  printf(
+ Debug::printf("        PLSG are recovered, ignoring the limit if necessary.\n");
+ Debug::printf(
 "    -i  Uses an incremental rather than a divide-and-conquer algorithm to\n");
-  printf(
+ Debug::printf(
 "        construct a Delaunay triangulation.  Try it if the divide-and-\n");
-  printf("        conquer algorithm fails.\n");
-  printf(
+ Debug::printf("        conquer algorithm fails.\n");
+ Debug::printf(
 "    -F  Uses Steven Fortune's sweepline algorithm to construct a Delaunay\n");
-  printf(
+ Debug::printf(
 "        triangulation.  Warning:  does not use exact arithmetic for all\n");
-  printf("        calculations.  An exact result is not guaranteed.\n");
-  printf(
+ Debug::printf("        calculations.  An exact result is not guaranteed.\n");
+ Debug::printf(
 "    -l  Uses only vertical cuts in the divide-and-conquer algorithm.  By\n");
-  printf(
+ Debug::printf(
 "        default, Triangle alternates between vertical and horizontal cuts,\n"
 );
-  printf(
+ Debug::printf(
 "        which usually improve the speed except with vertex sets that are\n");
-  printf(
+ Debug::printf(
 "        small or short and wide.  This switch is primarily of theoretical\n");
-  printf("        interest.\n");
-  printf(
+ Debug::printf("        interest.\n");
+ Debug::printf(
 "    -s  Specifies that segments should be forced into the triangulation by\n"
 );
-  printf(
+ Debug::printf(
 "        recursively splitting them at their midpoints, rather than by\n");
-  printf(
+ Debug::printf(
 "        generating a constrained Delaunay triangulation.  Segment splitting\n"
 );
-  printf(
+ Debug::printf(
 "        is true to Ruppert's original algorithm, but can create needlessly\n"
 );
-  printf(
+ Debug::printf(
 "        small triangles.  This switch is primarily of theoretical interest.\n"
 );
-  printf(
+ Debug::printf(
 "    -C  Check the consistency of the final mesh.  Uses exact arithmetic for\n"
 );
-  printf(
+ Debug::printf(
 "        checking, even if the -X switch is used.  Useful if you suspect\n");
-  printf("        Triangle is buggy.\n");
-  printf(
+ Debug::printf("        Triangle is buggy.\n");
+ Debug::printf(
 "    -Q  Quiet:  Suppresses all explanation of what Triangle is doing,\n");
-  printf("        unless an error occurs.\n");
-  printf(
+ Debug::printf("        unless an error occurs.\n");
+ Debug::printf(
 "    -V  Verbose:  Gives detailed information about what Triangle is doing.\n"
 );
-  printf(
+ Debug::printf(
 "        Add more `V's for increasing amount of detail.  `-V' is most\n");
-  printf(
+ Debug::printf(
 "        useful; itgives information on algorithmic progress and much more\n");
-  printf(
+ Debug::printf(
 "        detailed statistics.  `-VV' gives vertex-by-vertex details, and\n");
-  printf(
+ Debug::printf(
 "        prints so much that Triangle runs much more slowly.  `-VVVV' gives\n"
 );
-  printf("        information only a debugger could love.\n");
-  printf("    -h  Help:  Displays these instructions.\n");
-  printf("\n");
-  printf("Definitions:\n");
-  printf("\n");
-  printf(
+ Debug::printf("        information only a debugger could love.\n");
+ Debug::printf("    -h  Help:  Displays these instructions.\n");
+ Debug::printf("\n");
+ Debug::printf("Definitions:\n");
+ Debug::printf("\n");
+ Debug::printf(
 "  A Delaunay triangulation of a vertex set is a triangulation whose\n");
-  printf(
+ Debug::printf(
 "  vertices are the vertex set, that covers the convex hull of the vertex\n");
-  printf(
+ Debug::printf(
 "  set.  A Delaunay triangulation has the property that no vertex lies\n");
-  printf(
+ Debug::printf(
 "  inside the circumscribing circle (circle that passes through all three\n");
-  printf("  vertices) of any triangle in the triangulation.\n\n");
-  printf(
+ Debug::printf("  vertices) of any triangle in the triangulation.\n\n");
+ Debug::printf(
 "  A Voronoi diagram of a vertex set is a subdivision of the plane into\n");
-  printf(
+ Debug::printf(
 "  polygonal cells (some of which may be unbounded, meaning infinitely\n");
-  printf(
+ Debug::printf(
 "  large), where each cell is the set of points in the plane that are closer\n"
 );
-  printf(
+ Debug::printf(
 "  to some input vertex than to any other input vertex.  The Voronoi diagram\n"
 );
-  printf("  is a geometric dual of the Delaunay triangulation.\n\n");
-  printf(
+ Debug::printf("  is a geometric dual of the Delaunay triangulation.\n\n");
+ Debug::printf(
 "  A Planar Straight Line Graph (PSLG) is a set of vertices and segments.\n");
-  printf(
+ Debug::printf(
 "  Segments are simply edges, whose endpoints are all vertices in the PSLG.\n"
 );
-  printf(
+ Debug::printf(
 "  Segments may intersect each other only at their endpoints.  The file\n");
-  printf("  format for PSLGs (.poly files) is described below.\n\n");
-  printf(
+ Debug::printf("  format for PSLGs (.poly files) is described below.\n\n");
+ Debug::printf(
 "  A constrained Delaunay triangulation (CDT) of a PSLG is similar to a\n");
-  printf(
+ Debug::printf(
 "  Delaunay triangulation, but each PSLG segment is present as a single edge\n"
 );
-  printf(
+ Debug::printf(
 "  of the CDT.  (A constrained Delaunay triangulation is not truly a\n");
-  printf(
+ Debug::printf(
 "  Delaunay triangulation, because some of its triangles might not be\n");
-  printf(
+ Debug::printf(
 "  Delaunay.)  By definition, a CDT does not have any vertices other than\n");
-  printf(
+ Debug::printf(
 "  those specified in the input PSLG.  Depending on context, a CDT might\n");
-  printf(
+ Debug::printf(
 "  cover the convex hull of the PSLG, or it might cover only a segment-\n");
-  printf("  bounded region (e.g. a polygon).\n\n");
-  printf(
+ Debug::printf("  bounded region (e.g. a polygon).\n\n");
+ Debug::printf(
 "  A conforming Delaunay triangulation of a PSLG is a triangulation in which\n"
 );
-  printf(
+ Debug::printf(
 "  each triangle is truly Delaunay, and each PSLG segment is represented by\n"
 );
-  printf(
+ Debug::printf(
 "  a linear contiguous sequence of edges of the triangulation.  New vertices\n"
 );
-  printf(
+ Debug::printf(
 "  (not part of the PSLG) may appear, and each input segment may have been\n");
-  printf(
+ Debug::printf(
 "  subdivided into shorter edges (subsegments) by these additional vertices.\n"
 );
-  printf(
+ Debug::printf(
 "  The new vertices are frequently necessary to maintain the Delaunay\n");
-  printf("  property while ensuring that every segment is represented.\n\n");
-  printf(
+ Debug::printf("  property while ensuring that every segment is represented.\n\n");
+ Debug::printf(
 "  A conforming constrained Delaunay triangulation (CCDT) of a PSLG is a\n");
-  printf(
+ Debug::printf(
 "  triangulation of a PSLG whose triangles are constrained Delaunay.  New\n");
-  printf("  vertices may appear, and input segments may be subdivided into\n");
-  printf(
+ Debug::printf("  vertices may appear, and input segments may be subdivided into\n");
+ Debug::printf(
 "  subsegments, but not to guarantee that segments are respected; rather, to\n"
 );
-  printf(
+ Debug::printf(
 "  improve the quality of the triangles.  The high-quality meshes produced\n");
-  printf(
+ Debug::printf(
 "  by the -q switch are usually CCDTs, but can be made conforming Delaunay\n");
-  printf("  with the -D switch.\n\n");
-  printf("File Formats:\n\n");
-  printf(
+ Debug::printf("  with the -D switch.\n\n");
+ Debug::printf("File Formats:\n\n");
+ Debug::printf(
 "  All files may contain comments prefixed by the character '#'.  Vertices,\n"
 );
-  printf(
+ Debug::printf(
 "  triangles, edges, holes, and maximum area constraints must be numbered\n");
-  printf(
+ Debug::printf(
 "  consecutively, starting from either 1 or 0.  Whichever you choose, all\n");
-  printf(
+ Debug::printf(
 "  input files must be consistent; if the vertices are numbered from 1, so\n");
-  printf(
+ Debug::printf(
 "  must be all other objects.  Triangle automatically detects your choice\n");
-  printf(
+ Debug::printf(
 "  while reading the .node (or .poly) file.  (When calling Triangle from\n");
-  printf(
+ Debug::printf(
 "  another program, use the -z switch if you wish to number objects from\n");
-  printf("  zero.)  Examples of these file formats are given below.\n\n");
-  printf("  .node files:\n");
-  printf(
+ Debug::printf("  zero.)  Examples of these file formats are given below.\n\n");
+ Debug::printf("  .node files:\n");
+ Debug::printf(
 "    First line:  <# of vertices> <dimension (must be 2)> <# of attributes>\n"
 );
-  printf(
+ Debug::printf(
 "                                           <# of boundary markers (0 or 1)>\n"
 );
-  printf(
+ Debug::printf(
 "    Remaining lines:  <vertex #> <x> <y> [attributes] [boundary marker]\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    The attributes, which are typically floating-point values of physical\n");
-  printf(
+ Debug::printf(
 "    quantities (such as mass or conductivity) associated with the nodes of\n"
 );
-  printf(
+ Debug::printf(
 "    a finite element mesh, are copied unchanged to the output mesh.  If -q,\n"
 );
-  printf(
+ Debug::printf(
 "    -a, -u, -D, or -s is selected, each new Steiner point added to the mesh\n"
 );
-  printf("    has attributes assigned to it by linear interpolation.\n\n");
-  printf(
+ Debug::printf("    has attributes assigned to it by linear interpolation.\n\n");
+ Debug::printf(
 "    If the fourth entry of the first line is `1', the last column of the\n");
-  printf(
+ Debug::printf(
 "    remainder of the file is assumed to contain boundary markers.  Boundary\n"
 );
-  printf(
+ Debug::printf(
 "    markers are used to identify boundary vertices and vertices resting on\n"
 );
-  printf(
+ Debug::printf(
 "    PSLG segments; a complete description appears in a section below.  The\n"
 );
-  printf(
+ Debug::printf(
 "    .node file produced by Triangle contains boundary markers in the last\n");
-  printf("    column unless they are suppressed by the -B switch.\n\n");
-  printf("  .ele files:\n");
-  printf(
+ Debug::printf("    column unless they are suppressed by the -B switch.\n\n");
+ Debug::printf("  .ele files:\n");
+ Debug::printf(
 "    First line:  <# of triangles> <nodes per triangle> <# of attributes>\n");
-  printf(
+ Debug::printf(
 "    Remaining lines:  <triangle #> <node> <node> <node> ... [attributes]\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    Nodes are indices into the corresponding .node file.  The first three\n");
-  printf(
+ Debug::printf(
 "    nodes are the corner vertices, and are listed in counterclockwise order\n"
 );
-  printf(
+ Debug::printf(
 "    around each triangle.  (The remaining nodes, if any, depend on the type\n"
 );
-  printf("    of finite element used.)\n\n");
-  printf(
+ Debug::printf("    of finite element used.)\n\n");
+ Debug::printf(
 "    The attributes are just like those of .node files.  Because there is no\n"
 );
-  printf(
+ Debug::printf(
 "    simple mapping from input to output triangles, Triangle attempts to\n");
-  printf(
+ Debug::printf(
 "    interpolate attributes, and may cause a lot of diffusion of attributes\n"
 );
-  printf(
+ Debug::printf(
 "    among nearby triangles as the triangulation is refined.  Attributes do\n"
 );
-  printf("    not diffuse across segments, so attributes used to identify\n");
-  printf("    segment-bounded regions remain intact.\n\n");
-  printf(
+ Debug::printf("    not diffuse across segments, so attributes used to identify\n");
+ Debug::printf("    segment-bounded regions remain intact.\n\n");
+ Debug::printf(
 "    In .ele files produced by Triangle, each triangular element has three\n");
-  printf(
+ Debug::printf(
 "    nodes (vertices) unless the -o2 switch is used, in which case\n");
-  printf(
+ Debug::printf(
 "    subparametric quadratic elements with six nodes each are generated.\n");
-  printf(
+ Debug::printf(
 "    The first three nodes are the corners in counterclockwise order, and\n");
-  printf(
+ Debug::printf(
 "    the fourth, fifth, and sixth nodes lie on the midpoints of the edges\n");
-  printf(
+ Debug::printf(
 "    opposite the first, second, and third vertices, respectively.\n");
-  printf("\n");
-  printf("  .poly files:\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf("  .poly files:\n");
+ Debug::printf(
 "    First line:  <# of vertices> <dimension (must be 2)> <# of attributes>\n"
 );
-  printf(
+ Debug::printf(
 "                                           <# of boundary markers (0 or 1)>\n"
 );
-  printf(
+ Debug::printf(
 "    Following lines:  <vertex #> <x> <y> [attributes] [boundary marker]\n");
-  printf("    One line:  <# of segments> <# of boundary markers (0 or 1)>\n");
-  printf(
+ Debug::printf("    One line:  <# of segments> <# of boundary markers (0 or 1)>\n");
+ Debug::printf(
 "    Following lines:  <segment #> <endpoint> <endpoint> [boundary marker]\n");
-  printf("    One line:  <# of holes>\n");
-  printf("    Following lines:  <hole #> <x> <y>\n");
-  printf(
+ Debug::printf("    One line:  <# of holes>\n");
+ Debug::printf("    Following lines:  <hole #> <x> <y>\n");
+ Debug::printf(
 "    Optional line:  <# of regional attributes and/or area constraints>\n");
-  printf(
+ Debug::printf(
 "    Optional following lines:  <region #> <x> <y> <attribute> <max area>\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    A .poly file represents a PSLG, as well as some additional information.\n"
 );
-  printf(
+ Debug::printf(
 "    The first section lists all the vertices, and is identical to the\n");
-  printf(
+ Debug::printf(
 "    format of .node files.  <# of vertices> may be set to zero to indicate\n"
 );
-  printf(
+ Debug::printf(
 "    that the vertices are listed in a separate .node file; .poly files\n");
-  printf(
+ Debug::printf(
 "    produced by Triangle always have this format.  A vertex set represented\n"
 );
-  printf(
+ Debug::printf(
 "    this way has the advantage that it may easily be triangulated with or\n");
-  printf(
+ Debug::printf(
 "    without segments (depending on whether the -p switch is invoked).\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    The second section lists the segments.  Segments are edges whose\n");
-  printf(
+ Debug::printf(
 "    presence in the triangulation is enforced.  (Depending on the choice of\n"
 );
-  printf(
+ Debug::printf(
 "    switches, segment might be subdivided into smaller edges).  Each\n");
-  printf(
+ Debug::printf(
 "    segment is specified by listing the indices of its two endpoints.  This\n"
 );
-  printf(
+ Debug::printf(
 "    means that you must include its endpoints in the vertex list.  Each\n");
-  printf("    segment, like each point, may have a boundary marker.\n\n");
-  printf(
+ Debug::printf("    segment, like each point, may have a boundary marker.\n\n");
+ Debug::printf(
 "    If -q, -a, -u, and -s are not selected, Triangle produces a constrained\n"
 );
-  printf(
+ Debug::printf(
 "    Delaunay triangulation (CDT), in which each segment appears as a single\n"
 );
-  printf(
+ Debug::printf(
 "    edge in the triangulation.  If -q, -a, -u, or -s is selected, Triangle\n"
 );
-  printf(
+ Debug::printf(
 "    produces a conforming constrained Delaunay triangulation (CCDT), in\n");
-  printf(
+ Debug::printf(
 "    which segments may be subdivided into smaller edges.  If -D is\n");
-  printf(
+ Debug::printf(
 "    selected, Triangle produces a conforming Delaunay triangulation, so\n");
-  printf(
+ Debug::printf(
 "    that every triangle is Delaunay, and not just constrained Delaunay.\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    The third section lists holes (and concavities, if -c is selected) in\n");
-  printf(
+ Debug::printf(
 "    the triangulation.  Holes are specified by identifying a point inside\n");
-  printf(
+ Debug::printf(
 "    each hole.  After the triangulation is formed, Triangle creates holes\n");
-  printf(
+ Debug::printf(
 "    by eating triangles, spreading out from each hole point until its\n");
-  printf(
+ Debug::printf(
 "    progress is blocked by segments in the PSLG.  You must be careful to\n");
-  printf(
+ Debug::printf(
 "    enclose each hole in segments, or your whole triangulation might be\n");
-  printf(
+ Debug::printf(
 "    eaten away.  If the two triangles abutting a segment are eaten, the\n");
-  printf(
+ Debug::printf(
 "    segment itself is also eaten.  Do not place a hole directly on a\n");
-  printf("    segment; if you do, Triangle chooses one side of the segment\n");
-  printf("    arbitrarily.\n\n");
-  printf(
+ Debug::printf("    segment; if you do, Triangle chooses one side of the segment\n");
+ Debug::printf("    arbitrarily.\n\n");
+ Debug::printf(
 "    The optional fourth section lists regional attributes (to be assigned\n");
-  printf(
+ Debug::printf(
 "    to all triangles in a region) and regional constraints on the maximum\n");
-  printf(
+ Debug::printf(
 "    triangle area.  Triangle reads this section only if the -A switch is\n");
-  printf(
+ Debug::printf(
 "    used or the -a switch is used without a number following it, and the -r\n"
 );
-  printf(
+ Debug::printf(
 "    switch is not used.  Regional attributes and area constraints are\n");
-  printf(
+ Debug::printf(
 "    propagated in the same manner as holes:  you specify a point for each\n");
-  printf(
+ Debug::printf(
 "    attribute and/or constraint, and the attribute and/or constraint\n");
-  printf(
+ Debug::printf(
 "    affects the whole region (bounded by segments) containing the point.\n");
-  printf(
+ Debug::printf(
 "    If two values are written on a line after the x and y coordinate, the\n");
-  printf(
+ Debug::printf(
 "    first such value is assumed to be a regional attribute (but is only\n");
-  printf(
+ Debug::printf(
 "    applied if the -A switch is selected), and the second value is assumed\n"
 );
-  printf(
+ Debug::printf(
 "    to be a regional area constraint (but is only applied if the -a switch\n"
 );
-  printf(
+ Debug::printf(
 "    is selected).  You may specify just one value after the coordinates,\n");
-  printf(
+ Debug::printf(
 "    which can serve as both an attribute and an area constraint, depending\n"
 );
-  printf(
+ Debug::printf(
 "    on the choice of switches.  If you are using the -A and -a switches\n");
-  printf(
+ Debug::printf(
 "    simultaneously and wish to assign an attribute to some region without\n");
-  printf("    imposing an area constraint, use a negative maximum area.\n\n");
-  printf(
+ Debug::printf("    imposing an area constraint, use a negative maximum area.\n\n");
+ Debug::printf(
 "    When a triangulation is created from a .poly file, you must either\n");
-  printf(
+ Debug::printf(
 "    enclose the entire region to be triangulated in PSLG segments, or\n");
-  printf(
+ Debug::printf(
 "    use the -c switch, which automatically creates extra segments that\n");
-  printf(
+ Debug::printf(
 "    enclose the convex hull of the PSLG.  If you do not use the -c switch,\n"
 );
-  printf(
+ Debug::printf(
 "    Triangle eats all triangles that are not enclosed by segments; if you\n");
-  printf(
+ Debug::printf(
 "    are not careful, your whole triangulation may be eaten away.  If you do\n"
 );
-  printf(
+ Debug::printf(
 "    use the -c switch, you can still produce concavities by the appropriate\n"
 );
-  printf(
+ Debug::printf(
 "    placement of holes just inside the boundary of the convex hull.\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    An ideal PSLG has no intersecting segments, nor any vertices that lie\n");
-  printf(
+ Debug::printf(
 "    upon segments (except, of course, the endpoints of each segment).  You\n"
 );
-  printf(
+ Debug::printf(
 "    aren't required to make your .poly files ideal, but you should be aware\n"
 );
-  printf(
+ Debug::printf(
 "    of what can go wrong.  Segment intersections are relatively safe--\n");
-  printf(
+ Debug::printf(
 "    Triangle calculates the intersection points for you and adds them to\n");
-  printf(
+ Debug::printf(
 "    the triangulation--as long as your machine's floating-point precision\n");
-  printf(
+ Debug::printf(
 "    doesn't become a problem.  You are tempting the fates if you have three\n"
 );
-  printf(
+ Debug::printf(
 "    segments that cross at the same location, and expect Triangle to figure\n"
 );
-  printf(
+ Debug::printf(
 "    out where the intersection point is.  Thanks to floating-point roundoff\n"
 );
-  printf(
+ Debug::printf(
 "    error, Triangle will probably decide that the three segments intersect\n"
 );
-  printf(
+ Debug::printf(
 "    at three different points, and you will find a minuscule triangle in\n");
-  printf(
+ Debug::printf(
 "    your output--unless Triangle tries to refine the tiny triangle, uses\n");
-  printf(
+ Debug::printf(
 "    up the last bit of machine precision, and fails to terminate at all.\n");
-  printf(
+ Debug::printf(
 "    You're better off putting the intersection point in the input files,\n");
-  printf(
+ Debug::printf(
 "    and manually breaking up each segment into two.  Similarly, if you\n");
-  printf(
+ Debug::printf(
 "    place a vertex at the middle of a segment, and hope that Triangle will\n"
 );
-  printf(
+ Debug::printf(
 "    break up the segment at that vertex, you might get lucky.  On the other\n"
 );
-  printf(
+ Debug::printf(
 "    hand, Triangle might decide that the vertex doesn't lie precisely on\n");
-  printf(
+ Debug::printf(
 "    the segment, and you'll have a needle-sharp triangle in your output--or\n"
 );
-  printf("    a lot of tiny triangles if you're generating a quality mesh.\n");
-  printf("\n");
-  printf(
+ Debug::printf("    a lot of tiny triangles if you're generating a quality mesh.\n");
+ Debug::printf("\n");
+ Debug::printf(
 "    When Triangle reads a .poly file, it also writes a .poly file, which\n");
-  printf(
+ Debug::printf(
 "    includes all the subsegments--the edges that are parts of input\n");
-  printf(
+ Debug::printf(
 "    segments.  If the -c switch is used, the output .poly file also\n");
-  printf(
+ Debug::printf(
 "    includes all of the edges on the convex hull.  Hence, the output .poly\n"
 );
-  printf(
+ Debug::printf(
 "    file is useful for finding edges associated with input segments and for\n"
 );
-  printf(
+ Debug::printf(
 "    setting boundary conditions in finite element simulations.  Moreover,\n");
-  printf(
+ Debug::printf(
 "    you will need the output .poly file if you plan to refine the output\n");
-  printf(
+ Debug::printf(
 "    mesh, and don't want segments to be missing in later triangulations.\n");
-  printf("\n");
-  printf("  .area files:\n");
-  printf("    First line:  <# of triangles>\n");
-  printf("    Following lines:  <triangle #> <maximum area>\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf("  .area files:\n");
+ Debug::printf("    First line:  <# of triangles>\n");
+ Debug::printf("    Following lines:  <triangle #> <maximum area>\n");
+ Debug::printf("\n");
+ Debug::printf(
 "    An .area file associates with each triangle a maximum area that is used\n"
 );
-  printf(
+ Debug::printf(
 "    for mesh refinement.  As with other file formats, every triangle must\n");
-  printf(
+ Debug::printf(
 "    be represented, and the triangles must be numbered consecutively.  A\n");
-  printf(
+ Debug::printf(
 "    triangle may be left unconstrained by assigning it a negative maximum\n");
-  printf("    area.\n\n");
-  printf("  .edge files:\n");
-  printf("    First line:  <# of edges> <# of boundary markers (0 or 1)>\n");
-  printf(
+ Debug::printf("    area.\n\n");
+ Debug::printf("  .edge files:\n");
+ Debug::printf("    First line:  <# of edges> <# of boundary markers (0 or 1)>\n");
+ Debug::printf(
 "    Following lines:  <edge #> <endpoint> <endpoint> [boundary marker]\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    Endpoints are indices into the corresponding .node file.  Triangle can\n"
 );
-  printf(
+ Debug::printf(
 "    produce .edge files (use the -e switch), but cannot read them.  The\n");
-  printf(
+ Debug::printf(
 "    optional column of boundary markers is suppressed by the -B switch.\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    In Voronoi diagrams, one also finds a special kind of edge that is an\n");
-  printf(
+ Debug::printf(
 "    infinite ray with only one endpoint.  For these edges, a different\n");
-  printf("    format is used:\n\n");
-  printf("        <edge #> <endpoint> -1 <direction x> <direction y>\n\n");
-  printf(
+ Debug::printf("    format is used:\n\n");
+ Debug::printf("        <edge #> <endpoint> -1 <direction x> <direction y>\n\n");
+ Debug::printf(
 "    The `direction' is a floating-point vector that indicates the direction\n"
 );
-  printf("    of the infinite ray.\n\n");
-  printf("  .neigh files:\n");
-  printf(
+ Debug::printf("    of the infinite ray.\n\n");
+ Debug::printf("  .neigh files:\n");
+ Debug::printf(
 "    First line:  <# of triangles> <# of neighbors per triangle (always 3)>\n"
 );
-  printf(
+ Debug::printf(
 "    Following lines:  <triangle #> <neighbor> <neighbor> <neighbor>\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    Neighbors are indices into the corresponding .ele file.  An index of -1\n"
 );
-  printf(
+ Debug::printf(
 "    indicates no neighbor (because the triangle is on an exterior\n");
-  printf(
+ Debug::printf(
 "    boundary).  The first neighbor of triangle i is opposite the first\n");
-  printf("    corner of triangle i, and so on.\n\n");
-  printf(
+ Debug::printf("    corner of triangle i, and so on.\n\n");
+ Debug::printf(
 "    Triangle can produce .neigh files (use the -n switch), but cannot read\n"
 );
-  printf("    them.\n\n");
-  printf("Boundary Markers:\n\n");
-  printf(
+ Debug::printf("    them.\n\n");
+ Debug::printf("Boundary Markers:\n\n");
+ Debug::printf(
 "  Boundary markers are tags used mainly to identify which output vertices\n");
-  printf(
+ Debug::printf(
 "  and edges are associated with which PSLG segment, and to identify which\n");
-  printf(
+ Debug::printf(
 "  vertices and edges occur on a boundary of the triangulation.  A common\n");
-  printf(
+ Debug::printf(
 "  use is to determine where boundary conditions should be applied to a\n");
-  printf(
+ Debug::printf(
 "  finite element mesh.  You can prevent boundary markers from being written\n"
 );
-  printf("  into files produced by Triangle by using the -B switch.\n\n");
-  printf(
+ Debug::printf("  into files produced by Triangle by using the -B switch.\n\n");
+ Debug::printf(
 "  The boundary marker associated with each segment in an output .poly file\n"
 );
-  printf("  and each edge in an output .edge file is chosen as follows:\n");
-  printf(
+ Debug::printf("  and each edge in an output .edge file is chosen as follows:\n");
+ Debug::printf(
 "    - If an output edge is part or all of a PSLG segment with a nonzero\n");
-  printf(
+ Debug::printf(
 "      boundary marker, then the edge is assigned the same marker.\n");
-  printf(
+ Debug::printf(
 "    - Otherwise, if the edge lies on a boundary of the triangulation\n");
-  printf(
+ Debug::printf(
 "      (even the boundary of a hole), then the edge is assigned the marker\n");
-  printf("      one (1).\n");
-  printf("    - Otherwise, the edge is assigned the marker zero (0).\n");
-  printf(
+ Debug::printf("      one (1).\n");
+ Debug::printf("    - Otherwise, the edge is assigned the marker zero (0).\n");
+ Debug::printf(
 "  The boundary marker associated with each vertex in an output .node file\n");
-  printf("  is chosen as follows:\n");
-  printf(
+ Debug::printf("  is chosen as follows:\n");
+ Debug::printf(
 "    - If a vertex is assigned a nonzero boundary marker in the input file,\n"
 );
-  printf(
+ Debug::printf(
 "      then it is assigned the same marker in the output .node file.\n");
-  printf(
+ Debug::printf(
 "    - Otherwise, if the vertex lies on a PSLG segment (even if it is an\n");
-  printf(
+ Debug::printf(
 "      endpoint of the segment) with a nonzero boundary marker, then the\n");
-  printf(
+ Debug::printf(
 "      vertex is assigned the same marker.  If the vertex lies on several\n");
-  printf("      such segments, one of the markers is chosen arbitrarily.\n");
-  printf(
+ Debug::printf("      such segments, one of the markers is chosen arbitrarily.\n");
+ Debug::printf(
 "    - Otherwise, if the vertex occurs on a boundary of the triangulation,\n");
-  printf("      then the vertex is assigned the marker one (1).\n");
-  printf("    - Otherwise, the vertex is assigned the marker zero (0).\n");
-  printf("\n");
-  printf(
+ Debug::printf("      then the vertex is assigned the marker one (1).\n");
+ Debug::printf("    - Otherwise, the vertex is assigned the marker zero (0).\n");
+ Debug::printf("\n");
+ Debug::printf(
 "  If you want Triangle to determine for you which vertices and edges are on\n"
 );
-  printf(
+ Debug::printf(
 "  the boundary, assign them the boundary marker zero (or use no markers at\n"
 );
-  printf(
+ Debug::printf(
 "  all) in your input files.  In the output files, all boundary vertices,\n");
-  printf("  edges, and segments will be assigned the value one.\n\n");
-  printf("Triangulation Iteration Numbers:\n\n");
-  printf(
+ Debug::printf("  edges, and segments will be assigned the value one.\n\n");
+ Debug::printf("Triangulation Iteration Numbers:\n\n");
+ Debug::printf(
 "  Because Triangle can read and refine its own triangulations, input\n");
-  printf(
+ Debug::printf(
 "  and output files have iteration numbers.  For instance, Triangle might\n");
-  printf(
+ Debug::printf(
 "  read the files mesh.3.node, mesh.3.ele, and mesh.3.poly, refine the\n");
-  printf(
+ Debug::printf(
 "  triangulation, and output the files mesh.4.node, mesh.4.ele, and\n");
-  printf("  mesh.4.poly.  Files with no iteration number are treated as if\n");
-  printf(
+ Debug::printf("  mesh.4.poly.  Files with no iteration number are treated as if\n");
+ Debug::printf(
 "  their iteration number is zero; hence, Triangle might read the file\n");
-  printf(
+ Debug::printf(
 "  points.node, triangulate it, and produce the files points.1.node and\n");
-  printf("  points.1.ele.\n\n");
-  printf(
+ Debug::printf("  points.1.ele.\n\n");
+ Debug::printf(
 "  Iteration numbers allow you to create a sequence of successively finer\n");
-  printf(
+ Debug::printf(
 "  meshes suitable for multigrid methods.  They also allow you to produce a\n"
 );
-  printf(
+ Debug::printf(
 "  sequence of meshes using error estimate-driven mesh refinement.\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "  If you're not using refinement or quality meshing, and you don't like\n");
-  printf(
+ Debug::printf(
 "  iteration numbers, use the -I switch to disable them.  This switch also\n");
-  printf(
+ Debug::printf(
 "  disables output of .node and .poly files to prevent your input files from\n"
 );
-  printf(
+ Debug::printf(
 "  being overwritten.  (If the input is a .poly file that contains its own\n");
-  printf(
+ Debug::printf(
 "  points, a .node file is written.  This can be quite convenient for\n");
-  printf("  computing CDTs or quality meshes.)\n\n");
-  printf("Examples of How to Use Triangle:\n\n");
-  printf(
+ Debug::printf("  computing CDTs or quality meshes.)\n\n");
+ Debug::printf("Examples of How to Use Triangle:\n\n");
+ Debug::printf(
 "  `triangle dots' reads vertices from dots.node, and writes their Delaunay\n"
 );
-  printf(
+ Debug::printf(
 "  triangulation to dots.1.node and dots.1.ele.  (dots.1.node is identical\n");
-  printf(
+ Debug::printf(
 "  to dots.node.)  `triangle -I dots' writes the triangulation to dots.ele\n");
-  printf(
+ Debug::printf(
 "  instead.  (No additional .node file is needed, so none is written.)\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "  `triangle -pe object.1' reads a PSLG from object.1.poly (and possibly\n");
-  printf(
+ Debug::printf(
 "  object.1.node, if the vertices are omitted from object.1.poly) and writes\n"
 );
-  printf(
+ Debug::printf(
 "  its constrained Delaunay triangulation to object.2.node and object.2.ele.\n"
 );
-  printf(
+ Debug::printf(
 "  The segments are copied to object.2.poly, and all edges are written to\n");
-  printf("  object.2.edge.\n\n");
-  printf(
+ Debug::printf("  object.2.edge.\n\n");
+ Debug::printf(
 "  `triangle -pq31.5a.1 object' reads a PSLG from object.poly (and possibly\n"
 );
-  printf(
+ Debug::printf(
 "  object.node), generates a mesh whose angles are all between 31.5 and 117\n"
 );
-  printf(
+ Debug::printf(
 "  degrees and whose triangles all have areas of 0.1 or less, and writes the\n"
 );
-  printf(
+ Debug::printf(
 "  mesh to object.1.node and object.1.ele.  Each segment may be broken up\n");
-  printf("  into multiple subsegments; these are written to object.1.poly.\n");
-  printf("\n");
-  printf(
+ Debug::printf("  into multiple subsegments; these are written to object.1.poly.\n");
+ Debug::printf("\n");
+ Debug::printf(
 "  Here is a sample file `box.poly' describing a square with a square hole:\n"
 );
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    # A box with eight vertices in 2D, no attributes, one boundary marker.\n"
 );
-  printf("    8 2 0 1\n");
-  printf("     # Outer box has these vertices:\n");
-  printf("     1   0 0   0\n");
-  printf("     2   0 3   0\n");
-  printf("     3   3 0   0\n");
-  printf("     4   3 3   33     # A special marker for this vertex.\n");
-  printf("     # Inner square has these vertices:\n");
-  printf("     5   1 1   0\n");
-  printf("     6   1 2   0\n");
-  printf("     7   2 1   0\n");
-  printf("     8   2 2   0\n");
-  printf("    # Five segments with boundary markers.\n");
-  printf("    5 1\n");
-  printf("     1   1 2   5      # Left side of outer box.\n");
-  printf("     # Square hole has these segments:\n");
-  printf("     2   5 7   0\n");
-  printf("     3   7 8   0\n");
-  printf("     4   8 6   10\n");
-  printf("     5   6 5   0\n");
-  printf("    # One hole in the middle of the inner square.\n");
-  printf("    1\n");
-  printf("     1   1.5 1.5\n");
-  printf("\n");
-  printf(
+ Debug::printf("    8 2 0 1\n");
+ Debug::printf("     # Outer box has these vertices:\n");
+ Debug::printf("     1   0 0   0\n");
+ Debug::printf("     2   0 3   0\n");
+ Debug::printf("     3   3 0   0\n");
+ Debug::printf("     4   3 3   33     # A special marker for this vertex.\n");
+ Debug::printf("     # Inner square has these vertices:\n");
+ Debug::printf("     5   1 1   0\n");
+ Debug::printf("     6   1 2   0\n");
+ Debug::printf("     7   2 1   0\n");
+ Debug::printf("     8   2 2   0\n");
+ Debug::printf("    # Five segments with boundary markers.\n");
+ Debug::printf("    5 1\n");
+ Debug::printf("     1   1 2   5      # Left side of outer box.\n");
+ Debug::printf("     # Square hole has these segments:\n");
+ Debug::printf("     2   5 7   0\n");
+ Debug::printf("     3   7 8   0\n");
+ Debug::printf("     4   8 6   10\n");
+ Debug::printf("     5   6 5   0\n");
+ Debug::printf("    # One hole in the middle of the inner square.\n");
+ Debug::printf("    1\n");
+ Debug::printf("     1   1.5 1.5\n");
+ Debug::printf("\n");
+ Debug::printf(
 "  Note that some segments are missing from the outer square, so you must\n");
-  printf(
+ Debug::printf(
 "  use the `-c' switch.  After `triangle -pqc box.poly', here is the output\n"
 );
-  printf(
+ Debug::printf(
 "  file `box.1.node', with twelve vertices.  The last four vertices were\n");
-  printf(
+ Debug::printf(
 "  added to meet the angle constraint.  Vertices 1, 2, and 9 have markers\n");
-  printf(
+ Debug::printf(
 "  from segment 1.  Vertices 6 and 8 have markers from segment 4.  All the\n");
-  printf(
+ Debug::printf(
 "  other vertices but 4 have been marked to indicate that they lie on a\n");
-  printf("  boundary.\n\n");
-  printf("    12  2  0  1\n");
-  printf("       1    0   0      5\n");
-  printf("       2    0   3      5\n");
-  printf("       3    3   0      1\n");
-  printf("       4    3   3     33\n");
-  printf("       5    1   1      1\n");
-  printf("       6    1   2     10\n");
-  printf("       7    2   1      1\n");
-  printf("       8    2   2     10\n");
-  printf("       9    0   1.5    5\n");
-  printf("      10    1.5   0    1\n");
-  printf("      11    3   1.5    1\n");
-  printf("      12    1.5   3    1\n");
-  printf("    # Generated by triangle -pqc box.poly\n");
-  printf("\n");
-  printf("  Here is the output file `box.1.ele', with twelve triangles.\n");
-  printf("\n");
-  printf("    12  3  0\n");
-  printf("       1     5   6   9\n");
-  printf("       2    10   3   7\n");
-  printf("       3     6   8  12\n");
-  printf("       4     9   1   5\n");
-  printf("       5     6   2   9\n");
-  printf("       6     7   3  11\n");
-  printf("       7    11   4   8\n");
-  printf("       8     7   5  10\n");
-  printf("       9    12   2   6\n");
-  printf("      10     8   7  11\n");
-  printf("      11     5   1  10\n");
-  printf("      12     8   4  12\n");
-  printf("    # Generated by triangle -pqc box.poly\n\n");
-  printf(
+ Debug::printf("  boundary.\n\n");
+ Debug::printf("    12  2  0  1\n");
+ Debug::printf("       1    0   0      5\n");
+ Debug::printf("       2    0   3      5\n");
+ Debug::printf("       3    3   0      1\n");
+ Debug::printf("       4    3   3     33\n");
+ Debug::printf("       5    1   1      1\n");
+ Debug::printf("       6    1   2     10\n");
+ Debug::printf("       7    2   1      1\n");
+ Debug::printf("       8    2   2     10\n");
+ Debug::printf("       9    0   1.5    5\n");
+ Debug::printf("      10    1.5   0    1\n");
+ Debug::printf("      11    3   1.5    1\n");
+ Debug::printf("      12    1.5   3    1\n");
+ Debug::printf("    # Generated by triangle -pqc box.poly\n");
+ Debug::printf("\n");
+ Debug::printf("  Here is the output file `box.1.ele', with twelve triangles.\n");
+ Debug::printf("\n");
+ Debug::printf("    12  3  0\n");
+ Debug::printf("       1     5   6   9\n");
+ Debug::printf("       2    10   3   7\n");
+ Debug::printf("       3     6   8  12\n");
+ Debug::printf("       4     9   1   5\n");
+ Debug::printf("       5     6   2   9\n");
+ Debug::printf("       6     7   3  11\n");
+ Debug::printf("       7    11   4   8\n");
+ Debug::printf("       8     7   5  10\n");
+ Debug::printf("       9    12   2   6\n");
+ Debug::printf("      10     8   7  11\n");
+ Debug::printf("      11     5   1  10\n");
+ Debug::printf("      12     8   4  12\n");
+ Debug::printf("    # Generated by triangle -pqc box.poly\n\n");
+ Debug::printf(
 "  Here is the output file `box.1.poly'.  Note that segments have been added\n"
 );
-  printf(
+ Debug::printf(
 "  to represent the convex hull, and some segments have been subdivided by\n");
-  printf(
+ Debug::printf(
 "  newly added vertices.  Note also that <# of vertices> is set to zero to\n");
-  printf("  indicate that the vertices should be read from the .node file.\n");
-  printf("\n");
-  printf("    0  2  0  1\n");
-  printf("    12  1\n");
-  printf("       1     1   9     5\n");
-  printf("       2     5   7     1\n");
-  printf("       3     8   7     1\n");
-  printf("       4     6   8    10\n");
-  printf("       5     5   6     1\n");
-  printf("       6     3  10     1\n");
-  printf("       7     4  11     1\n");
-  printf("       8     2  12     1\n");
-  printf("       9     9   2     5\n");
-  printf("      10    10   1     1\n");
-  printf("      11    11   3     1\n");
-  printf("      12    12   4     1\n");
-  printf("    1\n");
-  printf("       1   1.5 1.5\n");
-  printf("    # Generated by triangle -pqc box.poly\n");
-  printf("\n");
-  printf("Refinement and Area Constraints:\n");
-  printf("\n");
-  printf(
+ Debug::printf("  indicate that the vertices should be read from the .node file.\n");
+ Debug::printf("\n");
+ Debug::printf("    0  2  0  1\n");
+ Debug::printf("    12  1\n");
+ Debug::printf("       1     1   9     5\n");
+ Debug::printf("       2     5   7     1\n");
+ Debug::printf("       3     8   7     1\n");
+ Debug::printf("       4     6   8    10\n");
+ Debug::printf("       5     5   6     1\n");
+ Debug::printf("       6     3  10     1\n");
+ Debug::printf("       7     4  11     1\n");
+ Debug::printf("       8     2  12     1\n");
+ Debug::printf("       9     9   2     5\n");
+ Debug::printf("      10    10   1     1\n");
+ Debug::printf("      11    11   3     1\n");
+ Debug::printf("      12    12   4     1\n");
+ Debug::printf("    1\n");
+ Debug::printf("       1   1.5 1.5\n");
+ Debug::printf("    # Generated by triangle -pqc box.poly\n");
+ Debug::printf("\n");
+ Debug::printf("Refinement and Area Constraints:\n");
+ Debug::printf("\n");
+ Debug::printf(
 "  The -r switch causes a mesh (.node and .ele files) to be read and\n");
-  printf(
+ Debug::printf(
 "  refined.  If the -p switch is also used, a .poly file is read and used to\n"
 );
-  printf(
+ Debug::printf(
 "  specify edges that are constrained and cannot be eliminated (although\n");
-  printf(
+ Debug::printf(
 "  they can be subdivided into smaller edges) by the refinement process.\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "  When you refine a mesh, you generally want to impose tighter constraints.\n"
 );
-  printf(
+ Debug::printf(
 "  One way to accomplish this is to use -q with a larger angle, or -a\n");
-  printf(
+ Debug::printf(
 "  followed by a smaller area than you used to generate the mesh you are\n");
-  printf(
+ Debug::printf(
 "  refining.  Another way to do this is to create an .area file, which\n");
-  printf(
+ Debug::printf(
 "  specifies a maximum area for each triangle, and use the -a switch\n");
-  printf(
+ Debug::printf(
 "  (without a number following).  Each triangle's area constraint is applied\n"
 );
-  printf(
+ Debug::printf(
 "  to that triangle.  Area constraints tend to diffuse as the mesh is\n");
-  printf(
+ Debug::printf(
 "  refined, so if there are large variations in area constraint between\n");
-  printf(
+ Debug::printf(
 "  adjacent triangles, you may not get the results you want.  In that case,\n"
 );
-  printf(
+ Debug::printf(
 "  consider instead using the -u switch and writing a C procedure that\n");
-  printf("  determines which triangles are too large.\n\n");
-  printf(
+ Debug::printf("  determines which triangles are too large.\n\n");
+ Debug::printf(
 "  If you are refining a mesh composed of linear (three-node) elements, the\n"
 );
-  printf(
+ Debug::printf(
 "  output mesh contains all the nodes present in the input mesh, in the same\n"
 );
-  printf(
+ Debug::printf(
 "  order, with new nodes added at the end of the .node file.  However, the\n");
-  printf(
+ Debug::printf(
 "  refinement is not hierarchical: there is no guarantee that each output\n");
-  printf(
+ Debug::printf(
 "  element is contained in a single input element.  Often, an output element\n"
 );
-  printf(
+ Debug::printf(
 "  can overlap two or three input elements, and some input edges are not\n");
-  printf(
+ Debug::printf(
 "  present in the output mesh.  Hence, a sequence of refined meshes forms a\n"
 );
-  printf(
+ Debug::printf(
 "  hierarchy of nodes, but not a hierarchy of elements.  If you refine a\n");
-  printf(
+ Debug::printf(
 "  mesh of higher-order elements, the hierarchical property applies only to\n"
 );
-  printf(
+ Debug::printf(
 "  the nodes at the corners of an element; the midpoint nodes on each edge\n");
-  printf("  are discarded before the mesh is refined.\n\n");
-  printf(
+ Debug::printf("  are discarded before the mesh is refined.\n\n");
+ Debug::printf(
 "  Maximum area constraints in .poly files operate differently from those in\n"
 );
-  printf(
+ Debug::printf(
 "  .area files.  A maximum area in a .poly file applies to the whole\n");
-  printf(
+ Debug::printf(
 "  (segment-bounded) region in which a point falls, whereas a maximum area\n");
-  printf(
+ Debug::printf(
 "  in an .area file applies to only one triangle.  Area constraints in .poly\n"
 );
-  printf(
+ Debug::printf(
 "  files are used only when a mesh is first generated, whereas area\n");
-  printf(
+ Debug::printf(
 "  constraints in .area files are used only to refine an existing mesh, and\n"
 );
-  printf(
+ Debug::printf(
 "  are typically based on a posteriori error estimates resulting from a\n");
-  printf("  finite element simulation on that mesh.\n\n");
-  printf(
+ Debug::printf("  finite element simulation on that mesh.\n\n");
+ Debug::printf(
 "  `triangle -rq25 object.1' reads object.1.node and object.1.ele, then\n");
-  printf(
+ Debug::printf(
 "  refines the triangulation to enforce a 25 degree minimum angle, and then\n"
 );
-  printf(
+ Debug::printf(
 "  writes the refined triangulation to object.2.node and object.2.ele.\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "  `triangle -rpaa6.2 z.3' reads z.3.node, z.3.ele, z.3.poly, and z.3.area.\n"
 );
-  printf(
+ Debug::printf(
 "  After reconstructing the mesh and its subsegments, Triangle refines the\n");
-  printf(
+ Debug::printf(
 "  mesh so that no triangle has area greater than 6.2, and furthermore the\n");
-  printf(
+ Debug::printf(
 "  triangles satisfy the maximum area constraints in z.3.area.  No angle\n");
-  printf(
+ Debug::printf(
 "  bound is imposed at all.  The output is written to z.4.node, z.4.ele, and\n"
 );
-  printf("  z.4.poly.\n\n");
-  printf(
+ Debug::printf("  z.4.poly.\n\n");
+ Debug::printf(
 "  The sequence `triangle -qa1 x', `triangle -rqa.3 x.1', `triangle -rqa.1\n");
-  printf(
+ Debug::printf(
 "  x.2' creates a sequence of successively finer meshes x.1, x.2, and x.3,\n");
-  printf("  suitable for multigrid.\n\n");
-  printf("Convex Hulls and Mesh Boundaries:\n\n");
-  printf(
+ Debug::printf("  suitable for multigrid.\n\n");
+ Debug::printf("Convex Hulls and Mesh Boundaries:\n\n");
+ Debug::printf(
 "  If the input is a vertex set (not a PSLG), Triangle produces its convex\n");
-  printf(
+ Debug::printf(
 "  hull as a by-product in the output .poly file if you use the -c switch.\n");
-  printf(
+ Debug::printf(
 "  There are faster algorithms for finding a two-dimensional convex hull\n");
-  printf("  than triangulation, of course, but this one comes for free.\n\n");
-  printf(
+ Debug::printf("  than triangulation, of course, but this one comes for free.\n\n");
+ Debug::printf(
 "  If the input is an unconstrained mesh (you are using the -r switch but\n");
-  printf(
+ Debug::printf(
 "  not the -p switch), Triangle produces a list of its boundary edges\n");
-  printf(
+ Debug::printf(
 "  (including hole boundaries) as a by-product when you use the -c switch.\n");
-  printf(
+ Debug::printf(
 "  If you also use the -p switch, the output .poly file contains all the\n");
-  printf("  segments from the input .poly file as well.\n\n");
-  printf("Voronoi Diagrams:\n\n");
-  printf(
+ Debug::printf("  segments from the input .poly file as well.\n\n");
+ Debug::printf("Voronoi Diagrams:\n\n");
+ Debug::printf(
 "  The -v switch produces a Voronoi diagram, in files suffixed .v.node and\n");
-  printf(
+ Debug::printf(
 "  .v.edge.  For example, `triangle -v points' reads points.node, produces\n");
-  printf(
+ Debug::printf(
 "  its Delaunay triangulation in points.1.node and points.1.ele, and\n");
-  printf(
+ Debug::printf(
 "  produces its Voronoi diagram in points.1.v.node and points.1.v.edge.  The\n"
 );
-  printf(
+ Debug::printf(
 "  .v.node file contains a list of all Voronoi vertices, and the .v.edge\n");
-  printf(
+ Debug::printf(
 "  file contains a list of all Voronoi edges, some of which may be infinite\n"
 );
-  printf(
+ Debug::printf(
 "  rays.  (The choice of filenames makes it easy to run the set of Voronoi\n");
-  printf("  vertices through Triangle, if so desired.)\n\n");
-  printf(
+ Debug::printf("  vertices through Triangle, if so desired.)\n\n");
+ Debug::printf(
 "  This implementation does not use exact arithmetic to compute the Voronoi\n"
 );
-  printf(
+ Debug::printf(
 "  vertices, and does not check whether neighboring vertices are identical.\n"
 );
-  printf(
+ Debug::printf(
 "  Be forewarned that if the Delaunay triangulation is degenerate or\n");
-  printf(
+ Debug::printf(
 "  near-degenerate, the Voronoi diagram may have duplicate vertices or\n");
-  printf("  crossing edges.\n\n");
-  printf(
+ Debug::printf("  crossing edges.\n\n");
+ Debug::printf(
 "  The result is a valid Voronoi diagram only if Triangle's output is a true\n"
 );
-  printf(
+ Debug::printf(
 "  Delaunay triangulation.  The Voronoi output is usually meaningless (and\n");
-  printf(
+ Debug::printf(
 "  may contain crossing edges and other pathology) if the output is a CDT or\n"
 );
-  printf(
+ Debug::printf(
 "  CCDT, or if it has holes or concavities.  If the triangulated domain is\n");
-  printf(
+ Debug::printf(
 "  convex and has no holes, you can use -D switch to force Triangle to\n");
-  printf(
+ Debug::printf(
 "  construct a conforming Delaunay triangulation instead of a CCDT, so the\n");
-  printf("  Voronoi diagram will be valid.\n\n");
-  printf("Mesh Topology:\n\n");
-  printf(
+ Debug::printf("  Voronoi diagram will be valid.\n\n");
+ Debug::printf("Mesh Topology:\n\n");
+ Debug::printf(
 "  You may wish to know which triangles are adjacent to a certain Delaunay\n");
-  printf(
+ Debug::printf(
 "  edge in an .edge file, which Voronoi cells are adjacent to a certain\n");
-  printf(
+ Debug::printf(
 "  Voronoi edge in a .v.edge file, or which Voronoi cells are adjacent to\n");
-  printf(
+ Debug::printf(
 "  each other.  All of this information can be found by cross-referencing\n");
-  printf(
+ Debug::printf(
 "  output files with the recollection that the Delaunay triangulation and\n");
-  printf("  the Voronoi diagram are planar duals.\n\n");
-  printf(
+ Debug::printf("  the Voronoi diagram are planar duals.\n\n");
+ Debug::printf(
 "  Specifically, edge i of an .edge file is the dual of Voronoi edge i of\n");
-  printf(
+ Debug::printf(
 "  the corresponding .v.edge file, and is rotated 90 degrees counterclock-\n");
-  printf(
+ Debug::printf(
 "  wise from the Voronoi edge.  Triangle j of an .ele file is the dual of\n");
-  printf(
+ Debug::printf(
 "  vertex j of the corresponding .v.node file.  Voronoi cell k is the dual\n");
-  printf("  of vertex k of the corresponding .node file.\n\n");
-  printf(
+ Debug::printf("  of vertex k of the corresponding .node file.\n\n");
+ Debug::printf(
 "  Hence, to find the triangles adjacent to a Delaunay edge, look at the\n");
-  printf(
+ Debug::printf(
 "  vertices of the corresponding Voronoi edge.  If the endpoints of a\n");
-  printf(
+ Debug::printf(
 "  Voronoi edge are Voronoi vertices 2 and 6 respectively, then triangles 2\n"
 );
-  printf(
+ Debug::printf(
 "  and 6 adjoin the left and right sides of the corresponding Delaunay edge,\n"
 );
-  printf(
+ Debug::printf(
 "  respectively.  To find the Voronoi cells adjacent to a Voronoi edge, look\n"
 );
-  printf(
+ Debug::printf(
 "  at the endpoints of the corresponding Delaunay edge.  If the endpoints of\n"
 );
-  printf(
+ Debug::printf(
 "  a Delaunay edge are input vertices 7 and 12, then Voronoi cells 7 and 12\n"
 );
-  printf(
+ Debug::printf(
 "  adjoin the right and left sides of the corresponding Voronoi edge,\n");
-  printf(
+ Debug::printf(
 "  respectively.  To find which Voronoi cells are adjacent to each other,\n");
-  printf("  just read the list of Delaunay edges.\n\n");
-  printf(
+ Debug::printf("  just read the list of Delaunay edges.\n\n");
+ Debug::printf(
 "  Triangle does not write a list of the edges adjoining each Voronoi cell,\n"
 );
-  printf(
+ Debug::printf(
 "  but you can reconstructed it straightforwardly.  For instance, to find\n");
-  printf(
+ Debug::printf(
 "  all the edges of Voronoi cell 1, search the output .edge file for every\n");
-  printf(
+ Debug::printf(
 "  edge that has input vertex 1 as an endpoint.  The corresponding dual\n");
-  printf(
+ Debug::printf(
 "  edges in the output .v.edge file form the boundary of Voronoi cell 1.\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "  For each Voronoi vertex, the .neigh file gives a list of the three\n");
-  printf(
+ Debug::printf(
 "  Voronoi vertices attached to it.  You might find this more convenient\n");
-  printf("  than the .v.edge file.\n\n");
-  printf("Quadratic Elements:\n\n");
-  printf(
+ Debug::printf("  than the .v.edge file.\n\n");
+ Debug::printf("Quadratic Elements:\n\n");
+ Debug::printf(
 "  Triangle generates meshes with subparametric quadratic elements if the\n");
-  printf(
+ Debug::printf(
 "  -o2 switch is specified.  Quadratic elements have six nodes per element,\n"
 );
-  printf(
+ Debug::printf(
 "  rather than three.  `Subparametric' means that the edges of the triangles\n"
 );
-  printf(
+ Debug::printf(
 "  are always straight, so that subparametric quadratic elements are\n");
-  printf(
+ Debug::printf(
 "  geometrically identical to linear elements, even though they can be used\n"
 );
-  printf(
+ Debug::printf(
 "  with quadratic interpolating functions.  The three extra nodes of an\n");
-  printf(
+ Debug::printf(
 "  element fall at the midpoints of the three edges, with the fourth, fifth,\n"
 );
-  printf(
+ Debug::printf(
 "  and sixth nodes appearing opposite the first, second, and third corners\n");
-  printf("  respectively.\n\n");
-  printf("Domains with Small Angles:\n\n");
-  printf(
+ Debug::printf("  respectively.\n\n");
+ Debug::printf("Domains with Small Angles:\n\n");
+ Debug::printf(
 "  If two input segments adjoin each other at a small angle, clearly the -q\n"
 );
-  printf(
+ Debug::printf(
 "  switch cannot remove the small angle.  Moreover, Triangle may have no\n");
-  printf(
+ Debug::printf(
 "  choice but to generate additional triangles whose smallest angles are\n");
-  printf(
+ Debug::printf(
 "  smaller than the specified bound.  However, these triangles only appear\n");
-  printf(
+ Debug::printf(
 "  between input segments separated by small angles.  Moreover, if you\n");
-  printf(
+ Debug::printf(
 "  request a minimum angle of theta degrees, Triangle will generally produce\n"
 );
-  printf(
+ Debug::printf(
 "  no angle larger than 180 - 2 theta, even if it is forced to compromise on\n"
 );
-  printf("  the minimum angle.\n\n");
-  printf("Statistics:\n\n");
-  printf(
+ Debug::printf("  the minimum angle.\n\n");
+ Debug::printf("Statistics:\n\n");
+ Debug::printf(
 "  After generating a mesh, Triangle prints a count of entities in the\n");
-  printf(
+ Debug::printf(
 "  output mesh, including the number of vertices, triangles, edges, exterior\n"
 );
-  printf(
+ Debug::printf(
 "  boundary edges (i.e. subsegments on the boundary of the triangulation,\n");
-  printf(
+ Debug::printf(
 "  including hole boundaries), interior boundary edges (i.e. subsegments of\n"
 );
-  printf(
+ Debug::printf(
 "  input segments not on the boundary), and total subsegments.  If you've\n");
-  printf(
+ Debug::printf(
 "  forgotten the statistics for an existing mesh, run Triangle on that mesh\n"
 );
-  printf(
+ Debug::printf(
 "  with the -rNEP switches to read the mesh and print the statistics without\n"
 );
-  printf(
+ Debug::printf(
 "  writing any files.  Use -rpNEP if you've got a .poly file for the mesh.\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "  The -V switch produces extended statistics, including a rough estimate\n");
-  printf(
+ Debug::printf(
 "  of memory use, the number of calls to geometric predicates, and\n");
-  printf(
+ Debug::printf(
 "  histograms of the angles and the aspect ratios of the triangles in the\n");
-  printf("  mesh.\n\n");
-  printf("Exact Arithmetic:\n\n");
-  printf(
+ Debug::printf("  mesh.\n\n");
+ Debug::printf("Exact Arithmetic:\n\n");
+ Debug::printf(
 "  Triangle uses adaptive exact arithmetic to perform what computational\n");
-  printf(
+ Debug::printf(
 "  geometers call the `orientation' and `incircle' tests.  If the floating-\n"
 );
-  printf(
+ Debug::printf(
 "  point arithmetic of your machine conforms to the IEEE 754 standard (as\n");
-  printf(
+ Debug::printf(
 "  most workstations do), and does not use extended precision internal\n");
-  printf(
+ Debug::printf(
 "  floating-point registers, then your output is guaranteed to be an\n");
-  printf(
+ Debug::printf(
 "  absolutely true Delaunay or constrained Delaunay triangulation, roundoff\n"
 );
-  printf(
+ Debug::printf(
 "  error notwithstanding.  The word `adaptive' implies that these arithmetic\n"
 );
-  printf(
+ Debug::printf(
 "  routines compute the result only to the precision necessary to guarantee\n"
 );
-  printf(
+ Debug::printf(
 "  correctness, so they are usually nearly as fast as their approximate\n");
-  printf("  counterparts.\n\n");
-  printf(
+ Debug::printf("  counterparts.\n\n");
+ Debug::printf(
 "  May CPUs, including Intel x86 processors, have extended precision\n");
-  printf(
+ Debug::printf(
 "  floating-point registers.  These must be reconfigured so their precision\n"
 );
-  printf(
+ Debug::printf(
 "  is reduced to memory precision.  Triangle does this if it is compiled\n");
-  printf("  correctly.  See the makefile for details.\n\n");
-  printf(
+ Debug::printf("  correctly.  See the makefile for details.\n\n");
+ Debug::printf(
 "  The exact tests can be disabled with the -X switch.  On most inputs, this\n"
 );
-  printf(
+ Debug::printf(
 "  switch reduces the computation time by about eight percent--it's not\n");
-  printf(
+ Debug::printf(
 "  worth the risk.  There are rare difficult inputs (having many collinear\n");
-  printf(
+ Debug::printf(
 "  and cocircular vertices), however, for which the difference in speed\n");
-  printf(
+ Debug::printf(
 "  could be a factor of two.  Be forewarned that these are precisely the\n");
-  printf(
+ Debug::printf(
 "  inputs most likely to cause errors if you use the -X switch.  Hence, the\n"
 );
-  printf("  -X switch is not recommended.\n\n");
-  printf(
+ Debug::printf("  -X switch is not recommended.\n\n");
+ Debug::printf(
 "  Unfortunately, the exact tests don't solve every numerical problem.\n");
-  printf(
+ Debug::printf(
 "  Exact arithmetic is not used to compute the positions of new vertices,\n");
-  printf(
+ Debug::printf(
 "  because the bit complexity of vertex coordinates would grow without\n");
-  printf(
+ Debug::printf(
 "  bound.  Hence, segment intersections aren't computed exactly; in very\n");
-  printf(
+ Debug::printf(
 "  unusual cases, roundoff error in computing an intersection point might\n");
-  printf(
+ Debug::printf(
 "  actually lead to an inverted triangle and an invalid triangulation.\n");
-  printf(
+ Debug::printf(
 "  (This is one reason to specify your own intersection points in your .poly\n"
 );
-  printf(
+ Debug::printf(
 "  files.)  Similarly, exact arithmetic is not used to compute the vertices\n"
 );
-  printf("  of the Voronoi diagram.\n\n");
-  printf(
+ Debug::printf("  of the Voronoi diagram.\n\n");
+ Debug::printf(
 "  Another pair of problems not solved by the exact arithmetic routines is\n");
-  printf(
+ Debug::printf(
 "  underflow and overflow.  If Triangle is compiled for double precision\n");
-  printf(
+ Debug::printf(
 "  arithmetic, I believe that Triangle's geometric predicates work correctly\n"
 );
-  printf(
+ Debug::printf(
 "  if the exponent of every input coordinate falls in the range [-148, 201].\n"
 );
-  printf(
+ Debug::printf(
 "  Underflow can silently prevent the orientation and incircle tests from\n");
-  printf(
+ Debug::printf(
 "  being performed exactly, while overflow typically causes a floating\n");
-  printf("  exception.\n\n");
-  printf("Calling Triangle from Another Program:\n\n");
-  printf("  Read the file triangle.h for details.\n\n");
-  printf("Troubleshooting:\n\n");
-  printf("  Please read this section before mailing me bugs.\n\n");
-  printf("  `My output mesh has no triangles!'\n\n");
-  printf(
+ Debug::printf("  exception.\n\n");
+ Debug::printf("Calling Triangle from Another Program:\n\n");
+ Debug::printf("  Read the file triangle.h for details.\n\n");
+ Debug::printf("Troubleshooting:\n\n");
+ Debug::printf("  Please read this section before mailing me bugs.\n\n");
+ Debug::printf("  `My output mesh has no triangles!'\n\n");
+ Debug::printf(
 "    If you're using a PSLG, you've probably failed to specify a proper set\n"
 );
-  printf(
+ Debug::printf(
 "    of bounding segments, or forgotten to use the -c switch.  Or you may\n");
-  printf(
+ Debug::printf(
 "    have placed a hole badly, thereby eating all your triangles.  To test\n");
-  printf("    these possibilities, try again with the -c and -O switches.\n");
-  printf(
+ Debug::printf("    these possibilities, try again with the -c and -O switches.\n");
+ Debug::printf(
 "    Alternatively, all your input vertices may be collinear, in which case\n"
 );
-  printf("    you can hardly expect to triangulate them.\n\n");
-  printf("  `Triangle doesn't terminate, or just crashes.'\n\n");
-  printf(
+ Debug::printf("    you can hardly expect to triangulate them.\n\n");
+ Debug::printf("  `Triangle doesn't terminate, or just crashes.'\n\n");
+ Debug::printf(
 "    Bad things can happen when triangles get so small that the distance\n");
-  printf(
+ Debug::printf(
 "    between their vertices isn't much larger than the precision of your\n");
-  printf(
+ Debug::printf(
 "    machine's arithmetic.  If you've compiled Triangle for single-precision\n"
 );
-  printf(
+ Debug::printf(
 "    arithmetic, you might do better by recompiling it for double-precision.\n"
 );
-  printf(
+ Debug::printf(
 "    Then again, you might just have to settle for more lenient constraints\n"
 );
-  printf(
+ Debug::printf(
 "    on the minimum angle and the maximum area than you had planned.\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    You can minimize precision problems by ensuring that the origin lies\n");
-  printf(
+ Debug::printf(
 "    inside your vertex set, or even inside the densest part of your\n");
-  printf(
+ Debug::printf(
 "    mesh.  If you're triangulating an object whose x-coordinates all fall\n");
-  printf(
+ Debug::printf(
 "    between 6247133 and 6247134, you're not leaving much floating-point\n");
-  printf("    precision for Triangle to work with.\n\n");
-  printf(
+ Debug::printf("    precision for Triangle to work with.\n\n");
+ Debug::printf(
 "    Precision problems can occur covertly if the input PSLG contains two\n");
-  printf(
+ Debug::printf(
 "    segments that meet (or intersect) at an extremely small angle, or if\n");
-  printf(
+ Debug::printf(
 "    such an angle is introduced by the -c switch.  If you don't realize\n");
-  printf(
+ Debug::printf(
 "    that a tiny angle is being formed, you might never discover why\n");
-  printf(
+ Debug::printf(
 "    Triangle is crashing.  To check for this possibility, use the -S switch\n"
 );
-  printf(
+ Debug::printf(
 "    (with an appropriate limit on the number of Steiner points, found by\n");
-  printf(
+ Debug::printf(
 "    trial-and-error) to stop Triangle early, and view the output .poly file\n"
 );
-  printf(
+ Debug::printf(
 "    with Show Me (described below).  Look carefully for regions where dense\n"
 );
-  printf(
+ Debug::printf(
 "    clusters of vertices are forming and for small angles between segments.\n"
 );
-  printf(
+ Debug::printf(
 "    Zoom in closely, as such segments might look like a single segment from\n"
 );
-  printf("    a distance.\n\n");
-  printf(
+ Debug::printf("    a distance.\n\n");
+ Debug::printf(
 "    If some of the input values are too large, Triangle may suffer a\n");
-  printf(
+ Debug::printf(
 "    floating exception due to overflow when attempting to perform an\n");
-  printf(
+ Debug::printf(
 "    orientation or incircle test.  (Read the section on exact arithmetic\n");
-  printf(
+ Debug::printf(
 "    above.)  Again, I recommend compiling Triangle for double (rather\n");
-  printf("    than single) precision arithmetic.\n\n");
-  printf(
+ Debug::printf("    than single) precision arithmetic.\n\n");
+ Debug::printf(
 "    Unexpected problems can arise if you use quality meshing (-q, -a, or\n");
-  printf(
+ Debug::printf(
 "    -u) with an input that is not segment-bounded--that is, if your input\n");
-  printf(
+ Debug::printf(
 "    is a vertex set, or you're using the -c switch.  If the convex hull of\n"
 );
-  printf(
+ Debug::printf(
 "    your input vertices has collinear vertices on its boundary, an input\n");
-  printf(
+ Debug::printf(
 "    vertex that you think lies on the convex hull might actually lie just\n");
-  printf(
+ Debug::printf(
 "    inside the convex hull.  If so, the vertex and the nearby convex hull\n");
-  printf(
+ Debug::printf(
 "    edge form an extremely thin triangle.  When Triangle tries to refine\n");
-  printf(
+ Debug::printf(
 "    the mesh to enforce angle and area constraints, Triangle might generate\n"
 );
-  printf(
+ Debug::printf(
 "    extremely tiny triangles, or it might fail because of insufficient\n");
-  printf("    floating-point precision.\n\n");
-  printf(
+ Debug::printf("    floating-point precision.\n\n");
+ Debug::printf(
 "  `The numbering of the output vertices doesn't match the input vertices.'\n"
 );
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    You may have had duplicate input vertices, or you may have eaten some\n");
-  printf(
+ Debug::printf(
 "    of your input vertices with a hole, or by placing them outside the area\n"
 );
-  printf(
+ Debug::printf(
 "    enclosed by segments.  In any case, you can solve the problem by not\n");
-  printf("    using the -j switch.\n\n");
-  printf(
+ Debug::printf("    using the -j switch.\n\n");
+ Debug::printf(
 "  `Triangle executes without incident, but when I look at the resulting\n");
-  printf(
+ Debug::printf(
 "  mesh, it has overlapping triangles or other geometric inconsistencies.'\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf(
 "    If you select the -X switch, Triangle occasionally makes mistakes due\n");
-  printf(
+ Debug::printf(
 "    to floating-point roundoff error.  Although these errors are rare,\n");
-  printf(
+ Debug::printf(
 "    don't use the -X switch.  If you still have problems, please report the\n"
 );
-  printf("    bug.\n\n");
-  printf(
+ Debug::printf("    bug.\n\n");
+ Debug::printf(
 "  `Triangle executes without incident, but when I look at the resulting\n");
-  printf("  Voronoi diagram, it has overlapping edges or other geometric\n");
-  printf("  inconsistencies.'\n");
-  printf("\n");
-  printf(
+ Debug::printf("  Voronoi diagram, it has overlapping edges or other geometric\n");
+ Debug::printf("  inconsistencies.'\n");
+ Debug::printf("\n");
+ Debug::printf(
 "    If your input is a PSLG (-p), you can only expect a meaningful Voronoi\n"
 );
-  printf(
+ Debug::printf(
 "    diagram if the domain you are triangulating is convex and free of\n");
-  printf(
+ Debug::printf(
 "    holes, and you use the -D switch to construct a conforming Delaunay\n");
-  printf("    triangulation (instead of a CDT or CCDT).\n\n");
-  printf(
+ Debug::printf("    triangulation (instead of a CDT or CCDT).\n\n");
+ Debug::printf(
 "  Strange things can happen if you've taken liberties with your PSLG.  Do\n");
-  printf(
+ Debug::printf(
 "  you have a vertex lying in the middle of a segment?  Triangle sometimes\n");
-  printf(
+ Debug::printf(
 "  copes poorly with that sort of thing.  Do you want to lay out a collinear\n"
 );
-  printf(
+ Debug::printf(
 "  row of evenly spaced, segment-connected vertices?  Have you simply\n");
-  printf(
+ Debug::printf(
 "  defined one long segment connecting the leftmost vertex to the rightmost\n"
 );
-  printf(
+ Debug::printf(
 "  vertex, and a bunch of vertices lying along it?  This method occasionally\n"
 );
-  printf(
+ Debug::printf(
 "  works, especially with horizontal and vertical lines, but often it\n");
-  printf(
+ Debug::printf(
 "  doesn't, and you'll have to connect each adjacent pair of vertices with a\n"
 );
-  printf("  separate segment.  If you don't like it, tough.\n\n");
-  printf(
+ Debug::printf("  separate segment.  If you don't like it, tough.\n\n");
+ Debug::printf(
 "  Furthermore, if you have segments that intersect other than at their\n");
-  printf(
+ Debug::printf(
 "  endpoints, try not to let the intersections fall extremely close to PSLG\n"
 );
-  printf("  vertices or each other.\n\n");
-  printf(
+ Debug::printf("  vertices or each other.\n\n");
+ Debug::printf(
 "  If you have problems refining a triangulation not produced by Triangle:\n");
-  printf(
+ Debug::printf(
 "  Are you sure the triangulation is geometrically valid?  Is it formatted\n");
-  printf(
+ Debug::printf(
 "  correctly for Triangle?  Are the triangles all listed so the first three\n"
 );
-  printf(
+ Debug::printf(
 "  vertices are their corners in counterclockwise order?  Are all of the\n");
-  printf(
+ Debug::printf(
 "  triangles constrained Delaunay?  Triangle's Delaunay refinement algorithm\n"
 );
-  printf("  assumes that it starts with a CDT.\n\n");
-  printf("Show Me:\n\n");
-  printf(
+ Debug::printf("  assumes that it starts with a CDT.\n\n");
+ Debug::printf("Show Me:\n\n");
+ Debug::printf(
 "  Triangle comes with a separate program named `Show Me', whose primary\n");
-  printf(
+ Debug::printf(
 "  purpose is to draw meshes on your screen or in PostScript.  Its secondary\n"
 );
-  printf(
+ Debug::printf(
 "  purpose is to check the validity of your input files, and do so more\n");
-  printf(
+ Debug::printf(
 "  thoroughly than Triangle does.  Unlike Triangle, Show Me requires that\n");
-  printf(
+ Debug::printf(
 "  you have the X Windows system.  Sorry, Microsoft Windows users.\n");
-  printf("\n");
-  printf("Triangle on the Web:\n");
-  printf("\n");
-  printf("  To see an illustrated version of these instructions, check out\n");
-  printf("\n");
-  printf("    http://www.cs.cmu.edu/~quake/triangle.html\n");
-  printf("\n");
-  printf("A Brief Plea:\n");
-  printf("\n");
-  printf(
+ Debug::printf("\n");
+ Debug::printf("Triangle on the Web:\n");
+ Debug::printf("\n");
+ Debug::printf("  To see an illustrated version of these instructions, check out\n");
+ Debug::printf("\n");
+ Debug::printf("    http://www.cs.cmu.edu/~quake/triangle.html\n");
+ Debug::printf("\n");
+ Debug::printf("A Brief Plea:\n");
+ Debug::printf("\n");
+ Debug::printf(
 "  If you use Triangle, and especially if you use it to accomplish real\n");
-  printf(
+ Debug::printf(
 "  work, I would like very much to hear from you.  A short letter or email\n");
-  printf(
+ Debug::printf(
 "  (to jrs@cs.berkeley.edu) describing how you use Triangle will mean a lot\n"
 );
-  printf(
+ Debug::printf(
 "  to me.  The more people I know are using this program, the more easily I\n"
 );
-  printf(
+ Debug::printf(
 "  can justify spending time on improvements, which in turn will benefit\n");
-  printf(
+ Debug::printf(
 "  you.  Also, I can put you on a list to receive email whenever a new\n");
-  printf("  version of Triangle is available.\n\n");
-  printf(
+ Debug::printf("  version of Triangle is available.\n\n");
+ Debug::printf(
 "  If you use a mesh generated by Triangle in a publication, please include\n"
 );
-  printf(
+ Debug::printf(
 "  an acknowledgment as well.  And please spell Triangle with a capital `T'!\n"
 );
-  printf(
+ Debug::printf(
 "  If you want to include a citation, use `Jonathan Richard Shewchuk,\n");
-  printf(
+ Debug::printf(
 "  ``Triangle: Engineering a 2D Quality Mesh Generator and Delaunay\n");
-  printf(
+ Debug::printf(
 "  Triangulator,'' in Applied Computational Geometry:  Towards Geometric\n");
-  printf(
+ Debug::printf(
 "  Engineering (Ming C. Lin and Dinesh Manocha, editors), volume 1148 of\n");
-  printf(
+ Debug::printf(
 "  Lecture Notes in Computer Science, pages 203-222, Springer-Verlag,\n");
-  printf(
+ Debug::printf(
 "  Berlin, May 1996.  (From the First ACM Workshop on Applied Computational\n"
 );
-  printf("  Geometry.)'\n\n");
-  printf("Research credit:\n\n");
-  printf(
+ Debug::printf("  Geometry.)'\n\n");
+ Debug::printf("Research credit:\n\n");
+ Debug::printf(
 "  Of course, I can take credit for only a fraction of the ideas that made\n");
-  printf(
+ Debug::printf(
 "  this mesh generator possible.  Triangle owes its existence to the efforts\n"
 );
-  printf(
+ Debug::printf(
 "  of many fine computational geometers and other researchers, including\n");
-  printf(
+ Debug::printf(
 "  Marshall Bern, L. Paul Chew, Kenneth L. Clarkson, Boris Delaunay, Rex A.\n"
 );
-  printf(
+ Debug::printf(
 "  Dwyer, David Eppstein, Steven Fortune, Leonidas J. Guibas, Donald E.\n");
-  printf(
+ Debug::printf(
 "  Knuth, Charles L. Lawson, Der-Tsai Lee, Gary L. Miller, Ernst P. Mucke,\n");
-  printf(
+ Debug::printf(
 "  Steven E. Pav, Douglas M. Priest, Jim Ruppert, Isaac Saias, Bruce J.\n");
-  printf(
+ Debug::printf(
 "  Schachter, Micha Sharir, Peter W. Shor, Daniel D. Sleator, Jorge Stolfi,\n"
 );
-  printf("  Robert E. Tarjan, Alper Ungor, Christopher J. Van Wyk, Noel J.\n");
-  printf(
+ Debug::printf("  Robert E. Tarjan, Alper Ungor, Christopher J. Van Wyk, Noel J.\n");
+ Debug::printf(
 "  Walkington, and Binhai Zhu.  See the comments at the beginning of the\n");
-  printf("  source code for references.\n\n");
+ Debug::printf("  source code for references.\n\n");
   triexit(0);
 }
 
@@ -3273,9 +3348,9 @@ void info()
 
 void internalerror()
 {
-  printf("  Please report this bug to jrs@cs.berkeley.edu\n");
-  printf("  Include the message above, your input data set, and the exact\n");
-  printf("    command line you used to run Triangle.\n");
+ Debug::printf("  Please report this bug to jrs@cs.berkeley.edu\n");
+ Debug::printf("  Include the message above, your input data set, and the exact\n");
+ Debug::printf("    command line you used to run Triangle.\n");
   triexit(1);
 }
 
@@ -3373,7 +3448,7 @@ struct behavior *b;
             workstring[k] = '\0';
             b->maxarea = (REAL) strtod(workstring, (char **) NULL);
             if (b->maxarea <= 0.0) {
-              printf("Error:  Maximum area must be greater than zero.\n");
+             Debug::printf("Error:  Maximum area must be greater than zero.\n");
               triexit(1);
 	    }
 	  } else {
@@ -3534,7 +3609,7 @@ struct behavior *b;
   }
   b->goodangle *= b->goodangle;
   if (b->refine && b->noiterationnum) {
-    printf(
+   Debug::printf(
       "Error:  You cannot use the -I switch when refining a triangulation.\n");
     triexit(1);
   }
@@ -3553,15 +3628,15 @@ struct behavior *b;
   if (b->weighted && (b->poly || b->quality)) {
     b->weighted = 0;
     if (!b->quiet) {
-      printf("Warning:  weighted triangulations (-w, -W) are incompatible\n");
-      printf("  with PSLGs (-p) and meshing (-q, -a, -u).  Weights ignored.\n"
+     Debug::printf("Warning:  weighted triangulations (-w, -W) are incompatible\n");
+     Debug::printf("  with PSLGs (-p) and meshing (-q, -a, -u).  Weights ignored.\n"
              );
     }
   }
   if (b->jettison && b->nonodewritten && !b->quiet) {
-    printf("Warning:  -j and -N switches are somewhat incompatible.\n");
-    printf("  If any vertices are jettisoned, you will need the output\n");
-    printf("  .node file to reconstruct the new node indices.");
+   Debug::printf("Warning:  -j and -N switches are somewhat incompatible.\n");
+   Debug::printf("  If any vertices are jettisoned, you will need the output\n");
+   Debug::printf("  .node file to reconstruct the new node indices.");
   }
 
 #ifndef TRILIBRARY
@@ -3682,72 +3757,72 @@ struct otri *t;
   struct osub printsh;
   vertex printvertex;
 
-  printf("triangle x%lx with orientation %d:\n", (unsigned long) t->tri,
+ Debug::printf("triangle x%lx with orientation %d:\n", (unsigned long) t->tri,
          t->orient);
   decode(t->tri[0], printtri);
   if (printtri.tri == m->dummytri) {
-    printf("    [0] = Outer space\n");
+   Debug::printf("    [0] = Outer space\n");
   } else {
-    printf("    [0] = x%lx  %d\n", (unsigned long) printtri.tri,
+   Debug::printf("    [0] = x%lx  %d\n", (unsigned long) printtri.tri,
            printtri.orient);
   }
   decode(t->tri[1], printtri);
   if (printtri.tri == m->dummytri) {
-    printf("    [1] = Outer space\n");
+   Debug::printf("    [1] = Outer space\n");
   } else {
-    printf("    [1] = x%lx  %d\n", (unsigned long) printtri.tri,
+   Debug::printf("    [1] = x%lx  %d\n", (unsigned long) printtri.tri,
            printtri.orient);
   }
   decode(t->tri[2], printtri);
   if (printtri.tri == m->dummytri) {
-    printf("    [2] = Outer space\n");
+   Debug::printf("    [2] = Outer space\n");
   } else {
-    printf("    [2] = x%lx  %d\n", (unsigned long) printtri.tri,
+   Debug::printf("    [2] = x%lx  %d\n", (unsigned long) printtri.tri,
            printtri.orient);
   }
 
   org(*t, printvertex);
   if (printvertex == (vertex) NULL)
-    printf("    Origin[%d] = NULL\n", (t->orient + 1) % 3 + 3);
+   Debug::printf("    Origin[%d] = NULL\n", (t->orient + 1) % 3 + 3);
   else
-    printf("    Origin[%d] = x%lx  (%.12g, %.12g)\n",
+   Debug::printf("    Origin[%d] = x%lx  (%.12g, %.12g)\n",
            (t->orient + 1) % 3 + 3, (unsigned long) printvertex,
            printvertex[0], printvertex[1]);
   dest(*t, printvertex);
   if (printvertex == (vertex) NULL)
-    printf("    Dest  [%d] = NULL\n", (t->orient + 2) % 3 + 3);
+   Debug::printf("    Dest  [%d] = NULL\n", (t->orient + 2) % 3 + 3);
   else
-    printf("    Dest  [%d] = x%lx  (%.12g, %.12g)\n",
+   Debug::printf("    Dest  [%d] = x%lx  (%.12g, %.12g)\n",
            (t->orient + 2) % 3 + 3, (unsigned long) printvertex,
            printvertex[0], printvertex[1]);
   apex(*t, printvertex);
   if (printvertex == (vertex) NULL)
-    printf("    Apex  [%d] = NULL\n", t->orient + 3);
+   Debug::printf("    Apex  [%d] = NULL\n", t->orient + 3);
   else
-    printf("    Apex  [%d] = x%lx  (%.12g, %.12g)\n",
+   Debug::printf("    Apex  [%d] = x%lx  (%.12g, %.12g)\n",
            t->orient + 3, (unsigned long) printvertex,
            printvertex[0], printvertex[1]);
 
   if (b->usesegments) {
     sdecode(t->tri[6], printsh);
     if (printsh.ss != m->dummysub) {
-      printf("    [6] = x%lx  %d\n", (unsigned long) printsh.ss,
+     Debug::printf("    [6] = x%lx  %d\n", (unsigned long) printsh.ss,
              printsh.ssorient);
     }
     sdecode(t->tri[7], printsh);
     if (printsh.ss != m->dummysub) {
-      printf("    [7] = x%lx  %d\n", (unsigned long) printsh.ss,
+     Debug::printf("    [7] = x%lx  %d\n", (unsigned long) printsh.ss,
              printsh.ssorient);
     }
     sdecode(t->tri[8], printsh);
     if (printsh.ss != m->dummysub) {
-      printf("    [8] = x%lx  %d\n", (unsigned long) printsh.ss,
+     Debug::printf("    [8] = x%lx  %d\n", (unsigned long) printsh.ss,
              printsh.ssorient);
     }
   }
 
   if (b->vararea) {
-    printf("    Area constraint:  %.4g\n", areabound(*t));
+   Debug::printf("    Area constraint:  %.4g\n", areabound(*t));
   }
 }
 
@@ -3776,65 +3851,65 @@ struct osub *s;
   struct otri printtri;
   vertex printvertex;
 
-  printf("subsegment x%lx with orientation %d and mark %d:\n",
+ Debug::printf("subsegment x%lx with orientation %d and mark %d:\n",
          (unsigned long) s->ss, s->ssorient, mark(*s));
   sdecode(s->ss[0], printsh);
   if (printsh.ss == m->dummysub) {
-    printf("    [0] = No subsegment\n");
+   Debug::printf("    [0] = No subsegment\n");
   } else {
-    printf("    [0] = x%lx  %d\n", (unsigned long) printsh.ss,
+   Debug::printf("    [0] = x%lx  %d\n", (unsigned long) printsh.ss,
            printsh.ssorient);
   }
   sdecode(s->ss[1], printsh);
   if (printsh.ss == m->dummysub) {
-    printf("    [1] = No subsegment\n");
+   Debug::printf("    [1] = No subsegment\n");
   } else {
-    printf("    [1] = x%lx  %d\n", (unsigned long) printsh.ss,
+   Debug::printf("    [1] = x%lx  %d\n", (unsigned long) printsh.ss,
            printsh.ssorient);
   }
 
   sorg(*s, printvertex);
   if (printvertex == (vertex) NULL)
-    printf("    Origin[%d] = NULL\n", 2 + s->ssorient);
+   Debug::printf("    Origin[%d] = NULL\n", 2 + s->ssorient);
   else
-    printf("    Origin[%d] = x%lx  (%.12g, %.12g)\n",
+   Debug::printf("    Origin[%d] = x%lx  (%.12g, %.12g)\n",
            2 + s->ssorient, (unsigned long) printvertex,
            printvertex[0], printvertex[1]);
   sdest(*s, printvertex);
   if (printvertex == (vertex) NULL)
-    printf("    Dest  [%d] = NULL\n", 3 - s->ssorient);
+   Debug::printf("    Dest  [%d] = NULL\n", 3 - s->ssorient);
   else
-    printf("    Dest  [%d] = x%lx  (%.12g, %.12g)\n",
+   Debug::printf("    Dest  [%d] = x%lx  (%.12g, %.12g)\n",
            3 - s->ssorient, (unsigned long) printvertex,
            printvertex[0], printvertex[1]);
 
   decode(s->ss[6], printtri);
   if (printtri.tri == m->dummytri) {
-    printf("    [6] = Outer space\n");
+   Debug::printf("    [6] = Outer space\n");
   } else {
-    printf("    [6] = x%lx  %d\n", (unsigned long) printtri.tri,
+   Debug::printf("    [6] = x%lx  %d\n", (unsigned long) printtri.tri,
            printtri.orient);
   }
   decode(s->ss[7], printtri);
   if (printtri.tri == m->dummytri) {
-    printf("    [7] = Outer space\n");
+   Debug::printf("    [7] = Outer space\n");
   } else {
-    printf("    [7] = x%lx  %d\n", (unsigned long) printtri.tri,
+   Debug::printf("    [7] = x%lx  %d\n", (unsigned long) printtri.tri,
            printtri.orient);
   }
 
   segorg(*s, printvertex);
   if (printvertex == (vertex) NULL)
-    printf("    Segment origin[%d] = NULL\n", 4 + s->ssorient);
+   Debug::printf("    Segment origin[%d] = NULL\n", 4 + s->ssorient);
   else
-    printf("    Segment origin[%d] = x%lx  (%.12g, %.12g)\n",
+   Debug::printf("    Segment origin[%d] = x%lx  (%.12g, %.12g)\n",
            4 + s->ssorient, (unsigned long) printvertex,
            printvertex[0], printvertex[1]);
   segdest(*s, printvertex);
   if (printvertex == (vertex) NULL)
-    printf("    Segment dest  [%d] = NULL\n", 5 - s->ssorient);
+   Debug::printf("    Segment dest  [%d] = NULL\n", 5 - s->ssorient);
   else
-    printf("    Segment dest  [%d] = x%lx  (%.12g, %.12g)\n",
+   Debug::printf("    Segment dest  [%d] = x%lx  (%.12g, %.12g)\n",
            5 - s->ssorient, (unsigned long) printvertex,
            printvertex[0], printvertex[1]);
 }
@@ -6718,7 +6793,7 @@ struct behavior *b;
   saveexact = b->noexact;
   b->noexact = 0;
   if (!b->quiet) {
-    printf("  Checking consistency of mesh...\n");
+   Debug::printf("  Checking consistency of mesh...\n");
   }
   horrors = 0;
   /* Run through the list of triangles, checking each one. */
@@ -6734,7 +6809,7 @@ struct behavior *b;
         /* Test if the triangle is flat or inverted. */
         apex(triangleloop, triapex);
         if (counterclockwise(m, b, triorg, tridest, triapex) <= 0.0) {
-          printf("  !! !! Inverted ");
+         Debug::printf("  !! !! Inverted ");
           printtriangle(m, b, &triangleloop);
           horrors++;
         }
@@ -6746,13 +6821,13 @@ struct behavior *b;
         sym(oppotri, oppooppotri);
         if ((triangleloop.tri != oppooppotri.tri)
             || (triangleloop.orient != oppooppotri.orient)) {
-          printf("  !! !! Asymmetric triangle-triangle bond:\n");
+         Debug::printf("  !! !! Asymmetric triangle-triangle bond:\n");
           if (triangleloop.tri == oppooppotri.tri) {
-            printf("   (Right triangle, wrong orientation)\n");
+           Debug::printf("   (Right triangle, wrong orientation)\n");
           }
-          printf("    First ");
+         Debug::printf("    First ");
           printtriangle(m, b, &triangleloop);
-          printf("    Second (nonreciprocating) ");
+         Debug::printf("    Second (nonreciprocating) ");
           printtriangle(m, b, &oppotri);
           horrors++;
         }
@@ -6761,11 +6836,11 @@ struct behavior *b;
         org(oppotri, oppoorg);
         dest(oppotri, oppodest);
         if ((triorg != oppodest) || (tridest != oppoorg)) {
-          printf("  !! !! Mismatched edge coordinates between two triangles:\n"
+         Debug::printf("  !! !! Mismatched edge coordinates between two triangles:\n"
                  );
-          printf("    First mismatched ");
+         Debug::printf("    First mismatched ");
           printtriangle(m, b, &triangleloop);
-          printf("    Second mismatched ");
+         Debug::printf("    Second mismatched ");
           printtriangle(m, b, &oppotri);
           horrors++;
         }
@@ -6775,12 +6850,12 @@ struct behavior *b;
   }
   if (horrors == 0) {
     if (!b->quiet) {
-      printf("  In my studied opinion, the mesh appears to be consistent.\n");
+     Debug::printf("  In my studied opinion, the mesh appears to be consistent.\n");
     }
   } else if (horrors == 1) {
-    printf("  !! !! !! !! Precisely one festering wound discovered.\n");
+   Debug::printf("  !! !! !! !! Precisely one festering wound discovered.\n");
   } else {
-    printf("  !! !! !! !! %d abominations witnessed.\n", horrors);
+   Debug::printf("  !! !! !! !! %d abominations witnessed.\n", horrors);
   }
   /* Restore the status of exact arithmetic. */
   b->noexact = saveexact;
@@ -6820,7 +6895,7 @@ struct behavior *b;
   saveexact = b->noexact;
   b->noexact = 0;
   if (!b->quiet) {
-    printf("  Checking Delaunay property of mesh...\n");
+   Debug::printf("  Checking Delaunay property of mesh...\n");
   }
   horrors = 0;
   /* Run through the list of triangles, checking each one. */
@@ -6859,15 +6934,15 @@ struct behavior *b;
       if (shouldbedelaunay) {
         if (nonregular(m, b, triorg, tridest, triapex, oppoapex) > 0.0) {
           if (!b->weighted) {
-            printf("  !! !! Non-Delaunay pair of triangles:\n");
-            printf("    First non-Delaunay ");
+           Debug::printf("  !! !! Non-Delaunay pair of triangles:\n");
+           Debug::printf("    First non-Delaunay ");
             printtriangle(m, b, &triangleloop);
-            printf("    Second non-Delaunay ");
+           Debug::printf("    Second non-Delaunay ");
           } else {
-            printf("  !! !! Non-regular pair of triangles:\n");
-            printf("    First non-regular ");
+           Debug::printf("  !! !! Non-regular pair of triangles:\n");
+           Debug::printf("    First non-regular ");
             printtriangle(m, b, &triangleloop);
-            printf("    Second non-regular ");
+           Debug::printf("    Second non-regular ");
           }
           printtriangle(m, b, &oppotri);
           horrors++;
@@ -6878,14 +6953,14 @@ struct behavior *b;
   }
   if (horrors == 0) {
     if (!b->quiet) {
-      printf(
+     Debug::printf(
   "  By virtue of my perceptive intelligence, I declare the mesh Delaunay.\n");
     }
   } else if (horrors == 1) {
-    printf(
+   Debug::printf(
          "  !! !! !! !! Precisely one terrifying transgression identified.\n");
   } else {
-    printf("  !! !! !! !! %d obscenities viewed with horror.\n", horrors);
+   Debug::printf("  !! !! !! !! %d obscenities viewed with horror.\n", horrors);
   }
   /* Restore the status of exact arithmetic. */
   b->noexact = saveexact;
@@ -6924,8 +6999,8 @@ struct badtriang *badtri;
   int i;
 
   if (b->verbose > 2) {
-    printf("  Queueing bad triangle:\n");
-    printf("    (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
+   Debug::printf("  Queueing bad triangle:\n");
+   Debug::printf("    (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
            badtri->triangorg[0], badtri->triangorg[1],
            badtri->triangdest[0], badtri->triangdest[1],
            badtri->triangapex[0], badtri->triangapex[1]);
@@ -7180,7 +7255,7 @@ struct osub *testsubseg;
 
   if (encroached && (!b->nobisect || ((b->nobisect == 1) && (sides == 2)))) {
     if (b->verbose > 2) {
-      printf(
+     Debug::printf(
         "  Queueing encroached subsegment (%.12g, %.12g) (%.12g, %.12g).\n",
         eorg[0], eorg[1], edest[0], edest[1]);
     }
@@ -7414,7 +7489,7 @@ struct behavior *b;
   vertex triorg;
 
   if (b->verbose) {
-    printf("    Constructing mapping from vertices to triangles.\n");
+   Debug::printf("    Constructing mapping from vertices to triangles.\n");
   }
   traversalinit(&m->triangles);
   triangleloop.tri = triangletraverse(m);
@@ -7519,7 +7594,7 @@ int stopatsubsegment;
   subseg sptr;                      /* Temporary variable used by tspivot(). */
 
   if (b->verbose > 2) {
-    printf("  Searching for point (%.12g, %.12g).\n",
+   Debug::printf("  Searching for point (%.12g, %.12g).\n",
            searchpoint[0], searchpoint[1]);
   }
   /* Where are we? */
@@ -7528,7 +7603,7 @@ int stopatsubsegment;
   apex(*searchtri, fapex);
   while (1) {
     if (b->verbose > 2) {
-      printf("    At (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
+     Debug::printf("    At (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
              forg[0], forg[1], fdest[0], fdest[1], fapex[0], fapex[1]);
     }
     /* Check whether the apex is the point we seek. */
@@ -7664,7 +7739,7 @@ struct otri *searchtri;
   triangle ptr;                         /* Temporary variable used by sym(). */
 
   if (b->verbose > 2) {
-    printf("  Randomly sampling for a triangle near point (%.12g, %.12g).\n",
+   Debug::printf("  Randomly sampling for a triangle near point (%.12g, %.12g).\n",
            searchpoint[0], searchpoint[1]);
   }
   /* Record the distance from the suggested starting triangle to the */
@@ -7673,7 +7748,7 @@ struct otri *searchtri;
   searchdist = (searchpoint[0] - torg[0]) * (searchpoint[0] - torg[0]) +
                (searchpoint[1] - torg[1]) * (searchpoint[1] - torg[1]);
   if (b->verbose > 2) {
-    printf("    Boundary triangle has origin (%.12g, %.12g).\n",
+   Debug::printf("    Boundary triangle has origin (%.12g, %.12g).\n",
            torg[0], torg[1]);
   }
 
@@ -7692,7 +7767,7 @@ struct otri *searchtri;
         otricopy(m->recenttri, *searchtri);
         searchdist = dist;
         if (b->verbose > 2) {
-          printf("    Choosing recent triangle with origin (%.12g, %.12g).\n",
+         Debug::printf("    Choosing recent triangle with origin (%.12g, %.12g).\n",
                  torg[0], torg[1]);
         }
       }
@@ -7747,7 +7822,7 @@ struct otri *searchtri;
           otricopy(sampletri, *searchtri);
           searchdist = dist;
           if (b->verbose > 2) {
-            printf("    Choosing triangle with origin (%.12g, %.12g).\n",
+           Debug::printf("    Choosing triangle with origin (%.12g, %.12g).\n",
                    torg[0], torg[1]);
           }
         }
@@ -7857,7 +7932,7 @@ int subsegmark;                            /* Marker for the new subsegment. */
     tsbond(oppotri, newsubseg);
     setmark(newsubseg, subsegmark);
     if (b->verbose > 2) {
-      printf("  Inserting new ");
+     Debug::printf("  Inserting new ");
       printsubseg(m, b, &newsubseg);
     }
   } else {
@@ -7944,14 +8019,14 @@ struct otri *flipedge;                    /* Handle for the triangle abc. */
   sym(*flipedge, top);
 #ifdef SELF_CHECK
   if (top.tri == m->dummytri) {
-    printf("Internal error in flip():  Attempt to flip on boundary.\n");
+   Debug::printf("Internal error in flip():  Attempt to flip on boundary.\n");
     lnextself(*flipedge);
     return;
   }
   if (m->checksegments) {
     tspivot(*flipedge, toplsubseg);
     if (toplsubseg.ss != m->dummysub) {
-      printf("Internal error in flip():  Attempt to flip a segment.\n");
+     Debug::printf("Internal error in flip():  Attempt to flip a segment.\n");
       lnextself(*flipedge);
       return;
     }
@@ -8010,9 +8085,9 @@ struct otri *flipedge;                    /* Handle for the triangle abc. */
   setdest(top, farvertex);
   setapex(top, leftvertex);
   if (b->verbose > 2) {
-    printf("  Edge flip results in left ");
+   Debug::printf("  Edge flip results in left ");
     printtriangle(m, b, &top);
-    printf("  and right ");
+   Debug::printf("  and right ");
     printtriangle(m, b, flipedge);
   }
 }
@@ -8079,14 +8154,14 @@ struct otri *flipedge;                    /* Handle for the triangle abc. */
   sym(*flipedge, top);
 #ifdef SELF_CHECK
   if (top.tri == m->dummytri) {
-    printf("Internal error in unflip():  Attempt to flip on boundary.\n");
+   Debug::printf("Internal error in unflip():  Attempt to flip on boundary.\n");
     lnextself(*flipedge);
     return;
   }
   if (m->checksegments) {
     tspivot(*flipedge, toplsubseg);
     if (toplsubseg.ss != m->dummysub) {
-      printf("Internal error in unflip():  Attempt to flip a subsegment.\n");
+     Debug::printf("Internal error in unflip():  Attempt to flip a subsegment.\n");
       lnextself(*flipedge);
       return;
     }
@@ -8145,9 +8220,9 @@ struct otri *flipedge;                    /* Handle for the triangle abc. */
   setdest(top, botvertex);
   setapex(top, rightvertex);
   if (b->verbose > 2) {
-    printf("  Edge unflip results in left ");
+   Debug::printf("  Edge unflip results in left ");
     printtriangle(m, b, flipedge);
-    printf("  and right ");
+   Debug::printf("  and right ");
     printtriangle(m, b, &top);
   }
 }
@@ -8249,7 +8324,7 @@ int triflaws;
   subseg sptr;         /* Temporary variable used by spivot() and tspivot(). */
 
   if (b->verbose > 1) {
-    printf("  Inserting (%.12g, %.12g).\n", newvertex[0], newvertex[1]);
+   Debug::printf("  Inserting (%.12g, %.12g).\n", newvertex[0], newvertex[1]);
   }
 
   if (splitseg == (struct osub *) NULL) {
@@ -8303,7 +8378,7 @@ int triflaws;
             sorg(brokensubseg, encroached->subsegorg);
             sdest(brokensubseg, encroached->subsegdest);
             if (b->verbose > 2) {
-              printf(
+             Debug::printf(
           "  Queueing encroached subsegment (%.12g, %.12g) (%.12g, %.12g).\n",
                      encroached->subsegorg[0], encroached->subsegorg[1],
                      encroached->subsegdest[0], encroached->subsegdest[1]);
@@ -8428,47 +8503,47 @@ int triflaws;
 
 #ifdef SELF_CHECK
     if (counterclockwise(m, b, rightvertex, leftvertex, botvertex) < 0.0) {
-      printf("Internal error in insertvertex():\n");
-      printf(
+     Debug::printf("Internal error in insertvertex():\n");
+     Debug::printf(
             "  Clockwise triangle prior to edge vertex insertion (bottom).\n");
     }
     if (mirrorflag) {
       if (counterclockwise(m, b, leftvertex, rightvertex, topvertex) < 0.0) {
-        printf("Internal error in insertvertex():\n");
-        printf("  Clockwise triangle prior to edge vertex insertion (top).\n");
+       Debug::printf("Internal error in insertvertex():\n");
+       Debug::printf("  Clockwise triangle prior to edge vertex insertion (top).\n");
       }
       if (counterclockwise(m, b, rightvertex, topvertex, newvertex) < 0.0) {
-        printf("Internal error in insertvertex():\n");
-        printf(
+       Debug::printf("Internal error in insertvertex():\n");
+       Debug::printf(
             "  Clockwise triangle after edge vertex insertion (top right).\n");
       }
       if (counterclockwise(m, b, topvertex, leftvertex, newvertex) < 0.0) {
-        printf("Internal error in insertvertex():\n");
-        printf(
+       Debug::printf("Internal error in insertvertex():\n");
+       Debug::printf(
             "  Clockwise triangle after edge vertex insertion (top left).\n");
       }
     }
     if (counterclockwise(m, b, leftvertex, botvertex, newvertex) < 0.0) {
-      printf("Internal error in insertvertex():\n");
-      printf(
+     Debug::printf("Internal error in insertvertex():\n");
+     Debug::printf(
           "  Clockwise triangle after edge vertex insertion (bottom left).\n");
     }
     if (counterclockwise(m, b, botvertex, rightvertex, newvertex) < 0.0) {
-      printf("Internal error in insertvertex():\n");
-      printf(
+     Debug::printf("Internal error in insertvertex():\n");
+     Debug::printf(
         "  Clockwise triangle after edge vertex insertion (bottom right).\n");
     }
 #endif /* SELF_CHECK */
     if (b->verbose > 2) {
-      printf("  Updating bottom left ");
+     Debug::printf("  Updating bottom left ");
       printtriangle(m, b, &botright);
       if (mirrorflag) {
-        printf("  Updating top left ");
+       Debug::printf("  Updating top left ");
         printtriangle(m, b, &topright);
-        printf("  Creating top right ");
+       Debug::printf("  Creating top right ");
         printtriangle(m, b, &newtopright);
       }
-      printf("  Creating bottom right ");
+     Debug::printf("  Creating bottom right ");
       printtriangle(m, b, &newbotright);
     }
 
@@ -8543,28 +8618,28 @@ int triflaws;
 
 #ifdef SELF_CHECK
     if (counterclockwise(m, b, rightvertex, leftvertex, botvertex) < 0.0) {
-      printf("Internal error in insertvertex():\n");
-      printf("  Clockwise triangle prior to vertex insertion.\n");
+     Debug::printf("Internal error in insertvertex():\n");
+     Debug::printf("  Clockwise triangle prior to vertex insertion.\n");
     }
     if (counterclockwise(m, b, rightvertex, leftvertex, newvertex) < 0.0) {
-      printf("Internal error in insertvertex():\n");
-      printf("  Clockwise triangle after vertex insertion (top).\n");
+     Debug::printf("Internal error in insertvertex():\n");
+     Debug::printf("  Clockwise triangle after vertex insertion (top).\n");
     }
     if (counterclockwise(m, b, leftvertex, botvertex, newvertex) < 0.0) {
-      printf("Internal error in insertvertex():\n");
-      printf("  Clockwise triangle after vertex insertion (left).\n");
+     Debug::printf("Internal error in insertvertex():\n");
+     Debug::printf("  Clockwise triangle after vertex insertion (left).\n");
     }
     if (counterclockwise(m, b, botvertex, rightvertex, newvertex) < 0.0) {
-      printf("Internal error in insertvertex():\n");
-      printf("  Clockwise triangle after vertex insertion (right).\n");
+     Debug::printf("Internal error in insertvertex():\n");
+     Debug::printf("  Clockwise triangle after vertex insertion (right).\n");
     }
 #endif /* SELF_CHECK */
     if (b->verbose > 2) {
-      printf("  Updating top ");
+     Debug::printf("  Updating top ");
       printtriangle(m, b, &horiz);
-      printf("  Creating left ");
+     Debug::printf("  Creating left ");
       printtriangle(m, b, &newbotleft);
-      printf("  Creating right ");
+     Debug::printf("  Creating right ");
       printtriangle(m, b, &newbotright);
     }
   }
@@ -8724,8 +8799,8 @@ int triflaws;
           if (newvertex != (vertex) NULL) {
             if (counterclockwise(m, b, leftvertex, newvertex, rightvertex) <
                 0.0) {
-              printf("Internal error in insertvertex():\n");
-              printf("  Clockwise triangle prior to edge flip (bottom).\n");
+             Debug::printf("Internal error in insertvertex():\n");
+             Debug::printf("  Clockwise triangle prior to edge flip (bottom).\n");
             }
             /* The following test has been removed because constrainededge() */
             /*   sometimes generates inverted triangles that insertvertex()  */
@@ -8733,27 +8808,27 @@ int triflaws;
 /*
             if (counterclockwise(m, b, rightvertex, farvertex, leftvertex) <
                 0.0) {
-              printf("Internal error in insertvertex():\n");
-              printf("  Clockwise triangle prior to edge flip (top).\n");
+             Debug::printf("Internal error in insertvertex():\n");
+             Debug::printf("  Clockwise triangle prior to edge flip (top).\n");
             }
 */
             if (counterclockwise(m, b, farvertex, leftvertex, newvertex) <
                 0.0) {
-              printf("Internal error in insertvertex():\n");
-              printf("  Clockwise triangle after edge flip (left).\n");
+             Debug::printf("Internal error in insertvertex():\n");
+             Debug::printf("  Clockwise triangle after edge flip (left).\n");
             }
             if (counterclockwise(m, b, newvertex, rightvertex, farvertex) <
                 0.0) {
-              printf("Internal error in insertvertex():\n");
-              printf("  Clockwise triangle after edge flip (right).\n");
+             Debug::printf("Internal error in insertvertex():\n");
+             Debug::printf("  Clockwise triangle after edge flip (right).\n");
             }
           }
 #endif /* SELF_CHECK */
           if (b->verbose > 2) {
-            printf("  Edge flip results in left ");
+           Debug::printf("  Edge flip results in left ");
             lnextself(topleft);
             printtriangle(m, b, &topleft);
-            printf("  and right ");
+           Debug::printf("  and right ");
             printtriangle(m, b, &horiz);
           }
           /* On the next iterations, consider the two edges that were  */
@@ -8886,8 +8961,8 @@ int triflaws;
   apex(*lastedge, leftbasevertex);
   dest(*firstedge, rightbasevertex);
   if (b->verbose > 2) {
-    printf("  Triangulating interior polygon at edge\n");
-    printf("    (%.12g, %.12g) (%.12g, %.12g)\n", leftbasevertex[0],
+   Debug::printf("  Triangulating interior polygon at edge\n");
+   Debug::printf("    (%.12g, %.12g) (%.12g, %.12g)\n", leftbasevertex[0],
            leftbasevertex[1], rightbasevertex[0], rightbasevertex[1]);
   }
   /* Find the best vertex to connect the base to. */
@@ -8907,7 +8982,7 @@ int triflaws;
     }
   }
   if (b->verbose > 2) {
-    printf("    Connecting edge to (%.12g, %.12g)\n", bestvertex[0],
+   Debug::printf("    Connecting edge to (%.12g, %.12g)\n", bestvertex[0],
            bestvertex[1]);
   }
   if (bestnumber > 1) {
@@ -8979,7 +9054,7 @@ struct otri *deltri;
 
   org(*deltri, delvertex);
   if (b->verbose > 1) {
-    printf("  Deleting (%.12g, %.12g).\n", delvertex[0], delvertex[1]);
+   Debug::printf("  Deleting (%.12g, %.12g).\n", delvertex[0], delvertex[1]);
   }
   vertexdealloc(m, delvertex);
 
@@ -8989,8 +9064,8 @@ struct otri *deltri;
   while (!otriequal(*deltri, countingtri)) {
 #ifdef SELF_CHECK
     if (countingtri.tri == m->dummytri) {
-      printf("Internal error in deletevertex():\n");
-      printf("  Attempt to delete boundary vertex.\n");
+     Debug::printf("Internal error in deletevertex():\n");
+     Debug::printf("  Attempt to delete boundary vertex.\n");
       internalerror();
     }
 #endif /* SELF_CHECK */
@@ -9000,7 +9075,7 @@ struct otri *deltri;
 
 #ifdef SELF_CHECK
   if (edgecount < 3) {
-    printf("Internal error in deletevertex():\n  Vertex has degree %d.\n",
+   Debug::printf("Internal error in deletevertex():\n  Vertex has degree %d.\n",
            edgecount);
     internalerror();
   }
@@ -9536,7 +9611,7 @@ int axis;
   setdest(baseedge, innerleftdest);
   /* Apex is intentionally left NULL. */
   if (b->verbose > 2) {
-    printf("  Creating base bounding ");
+   Debug::printf("  Creating base bounding ");
     printtriangle(m, b, &baseedge);
   }
   /* Fix the extreme triangles if necessary. */
@@ -9577,7 +9652,7 @@ int axis;
       lnextself(nextedge);
       bond(nextedge, leftcand);
       if (b->verbose > 2) {
-        printf("  Creating top bounding ");
+       Debug::printf("  Creating top bounding ");
         printtriangle(m, b, &nextedge);
       }
       /* Special treatment for horizontal cuts. */
@@ -9725,7 +9800,7 @@ int axis;
       apex(leftcand, upperleft);
     }
     if (b->verbose > 2) {
-      printf("  Connecting ");
+     Debug::printf("  Connecting ");
       printtriangle(m, b, &baseedge);
     }
   }
@@ -9770,7 +9845,7 @@ struct otri *farright;
   int divider;
 
   if (b->verbose > 2) {
-    printf("  Triangulating %d vertices.\n", vertices);
+   Debug::printf("  Triangulating %d vertices.\n", vertices);
   }
   if (vertices == 2) {
     /* The triangulation of two vertices is an edge.  An edge is */
@@ -9791,9 +9866,9 @@ struct otri *farright;
     lnextself(*farright);
     bond(*farleft, *farright);
     if (b->verbose > 2) {
-      printf("  Creating ");
+     Debug::printf("  Creating ");
       printtriangle(m, b, farleft);
-      printf("  Creating ");
+     Debug::printf("  Creating ");
       printtriangle(m, b, farright);
     }
     /* Ensure that the origin of `farleft' is sortarray[0]. */
@@ -9886,13 +9961,13 @@ struct otri *farright;
       }
     }
     if (b->verbose > 2) {
-      printf("  Creating ");
+     Debug::printf("  Creating ");
       printtriangle(m, b, &midtri);
-      printf("  Creating ");
+     Debug::printf("  Creating ");
       printtriangle(m, b, &tri1);
-      printf("  Creating ");
+     Debug::printf("  Creating ");
       printtriangle(m, b, &tri2);
-      printf("  Creating ");
+     Debug::printf("  Creating ");
       printtriangle(m, b, &tri3);
     }
     return;
@@ -9904,7 +9979,7 @@ struct otri *farright;
     divconqrecurse(m, b, &sortarray[divider], vertices - divider, 1 - axis,
                    &innerright, farright);
     if (b->verbose > 1) {
-      printf("  Joining triangulations with %d and %d vertices.\n", divider,
+     Debug::printf("  Joining triangulations with %d and %d vertices.\n", divider,
              vertices - divider);
     }
     /* Merge the two triangulations into one. */
@@ -9930,7 +10005,7 @@ struct otri *startghost;
   triangle ptr;                         /* Temporary variable used by sym(). */
 
   if (b->verbose) {
-    printf("  Removing ghost triangles.\n");
+   Debug::printf("  Removing ghost triangles.\n");
   }
   /* Find an edge on the convex hull to start point location from. */
   lprev(*startghost, searchedge);
@@ -9990,7 +10065,7 @@ struct behavior *b;
   int i, j;
 
   if (b->verbose) {
-    printf("  Sorting vertices.\n");
+   Debug::printf("  Sorting vertices.\n");
   }
 
   /* Allocate an array of pointers to vertices for sorting. */
@@ -10007,7 +10082,7 @@ struct behavior *b;
     if ((sortarray[i][0] == sortarray[j][0])
         && (sortarray[i][1] == sortarray[j][1])) {
       if (!b->quiet) {
-        printf(
+       Debug::printf(
 "Warning:  A duplicate vertex at (%.12g, %.12g) appeared and was ignored.\n",
                sortarray[j][0], sortarray[j][1]);
       }
@@ -10031,7 +10106,7 @@ struct behavior *b;
   }
 
   if (b->verbose) {
-    printf("  Forming triangulation.\n");
+   Debug::printf("  Forming triangulation.\n");
   }
 
   /* Form the Delaunay triangulation. */
@@ -10075,7 +10150,7 @@ struct behavior *b;
   REAL width;
 
   if (b->verbose) {
-    printf("  Creating triangular bounding box.\n");
+   Debug::printf("  Creating triangular bounding box.\n");
   }
   /* Find the width (or height, whichever is larger) of the triangulation. */
   width = m->xmax - m->xmin;
@@ -10105,7 +10180,7 @@ struct behavior *b;
   /*   edge to begin searching (point location) from.           */
   m->dummytri[0] = (triangle) inftri.tri;
   if (b->verbose > 2) {
-    printf("  Creating ");
+   Debug::printf("  Creating ");
     printtriangle(m, b, &inftri);
   }
 }
@@ -10146,7 +10221,7 @@ struct behavior *b;
   triangle ptr;                         /* Temporary variable used by sym(). */
 
   if (b->verbose) {
-    printf("  Removing triangular bounding box.\n");
+   Debug::printf("  Removing triangular bounding box.\n");
   }
   /* Find a boundary triangle. */
   nextedge.tri = m->dummytri;
@@ -10242,7 +10317,7 @@ struct behavior *b;
   /* Create a triangular bounding box. */
   boundingbox(m, b);
   if (b->verbose) {
-    printf("  Incrementally inserting vertices.\n");
+   Debug::printf("  Incrementally inserting vertices.\n");
   }
   traversalinit(&m->vertices);
   vertexloop = vertextraverse(m);
@@ -10251,7 +10326,7 @@ struct behavior *b;
     if (insertvertex(m, b, vertexloop, &starttri, (struct osub *) NULL, 0, 0)
         == DUPLICATEVERTEX) {
       if (!b->quiet) {
-        printf(
+       Debug::printf(
 "Warning:  A duplicate vertex at (%.12g, %.12g) appeared and was ignored.\n",
                vertexloop[0], vertexloop[1]);
       }
@@ -10664,7 +10739,7 @@ struct otri *searchtri;
       lefttree->rchild = righttree;
       return lefttree;
     } else {
-/*      printf("Holy Toledo!!!\n"); */
+/*     Debug::printf("Holy Toledo!!!\n"); */
       leftright = lefttree->rchild;
       while (leftright->rchild != (struct splaynode *) NULL) {
         leftright = leftright->rchild;
@@ -10825,13 +10900,13 @@ struct behavior *b;
   splayroot = (struct splaynode *) NULL;
 
   if (b->verbose) {
-    printf("  Placing vertices in event heap.\n");
+   Debug::printf("  Placing vertices in event heap.\n");
   }
   createeventheap(m, &eventheap, &events, &freeevents);
   heapsize = m->invertices;
 
   if (b->verbose) {
-    printf("  Forming triangulation.\n");
+   Debug::printf("  Forming triangulation.\n");
   }
   maketriangle(m, b, &lefttri);
   maketriangle(m, b, &righttri);
@@ -10849,7 +10924,7 @@ struct behavior *b;
   heapsize--;
   do {
     if (heapsize == 0) {
-      printf("Error:  Input vertices are all identical.\n");
+     Debug::printf("Error:  Input vertices are all identical.\n");
       triexit(1);
     }
     secondvertex = (vertex) eventheap[0]->eventptr;
@@ -10860,7 +10935,7 @@ struct behavior *b;
     if ((firstvertex[0] == secondvertex[0]) &&
         (firstvertex[1] == secondvertex[1])) {
       if (!b->quiet) {
-        printf(
+       Debug::printf(
 "Warning:  A duplicate vertex at (%.12g, %.12g) appeared and was ignored.\n",
                secondvertex[0], secondvertex[1]);
       }
@@ -10909,7 +10984,7 @@ struct behavior *b;
       if ((nextvertex[0] == lastvertex[0]) &&
           (nextvertex[1] == lastvertex[1])) {
         if (!b->quiet) {
-          printf(
+         Debug::printf(
 "Warning:  A duplicate vertex at (%.12g, %.12g) appeared and was ignored.\n",
                  nextvertex[0], nextvertex[1]);
         }
@@ -11035,19 +11110,19 @@ struct behavior *b;
 
 #ifdef REDUCED
   if (!b->quiet) {
-    printf(
+   Debug::printf(
       "Constructing Delaunay triangulation by divide-and-conquer method.\n");
   }
   hulledges = divconqdelaunay(m, b);
 #else /* not REDUCED */
   if (!b->quiet) {
-    printf("Constructing Delaunay triangulation ");
+   Debug::printf("Constructing Delaunay triangulation ");
     if (b->incremental) {
-      printf("by incremental method.\n");
+     Debug::printf("by incremental method.\n");
     } else if (b->sweepline) {
-      printf("by sweepline method.\n");
+     Debug::printf("by sweepline method.\n");
     } else {
-      printf("by divide-and-conquer method.\n");
+     Debug::printf("by divide-and-conquer method.\n");
     }
   }
   if (b->incremental) {
@@ -11178,18 +11253,18 @@ FILE *polyfile;
   m->inelements = elements;
   incorners = corners;
   if (incorners < 3) {
-    printf("Error:  Triangles must have at least 3 vertices.\n");
+   Debug::printf("Error:  Triangles must have at least 3 vertices.\n");
     triexit(1);
   }
   m->eextras = attribs;
 #else /* not TRILIBRARY */
   /* Read the triangles from an .ele file. */
   if (!b->quiet) {
-    printf("Opening %s.\n", elefilename);
+   Debug::printf("Opening %s.\n", elefilename);
   }
   elefile = fopen(elefilename, "r");
   if (elefile == (FILE *) NULL) {
-    printf("  Error:  Cannot access file %s.\n", elefilename);
+   Debug::printf("  Error:  Cannot access file %s.\n", elefilename);
     triexit(1);
   }
   /* Read number of triangles, number of vertices per triangle, and */
@@ -11202,7 +11277,7 @@ FILE *polyfile;
   } else {
     incorners = (int) strtol(stringptr, &stringptr, 0);
     if (incorners < 3) {
-      printf("Error:  Triangles in %s must have at least 3 vertices.\n",
+     Debug::printf("Error:  Triangles in %s must have at least 3 vertices.\n",
              elefilename);
       triexit(1);
     }
@@ -11255,17 +11330,17 @@ FILE *polyfile;
   if (b->vararea) {
     /* Open an .area file, check for consistency with the .ele file. */
     if (!b->quiet) {
-      printf("Opening %s.\n", areafilename);
+     Debug::printf("Opening %s.\n", areafilename);
     }
     areafile = fopen(areafilename, "r");
     if (areafile == (FILE *) NULL) {
-      printf("  Error:  Cannot access file %s.\n", areafilename);
+     Debug::printf("  Error:  Cannot access file %s.\n", areafilename);
       triexit(1);
     }
     stringptr = readline(inputline, areafile, areafilename);
     areaelements = (int) strtol(stringptr, &stringptr, 0);
     if (areaelements != m->inelements) {
-      printf("Error:  %s and %s disagree on number of triangles.\n",
+     Debug::printf("Error:  %s and %s disagree on number of triangles.\n",
              elefilename, areafilename);
       triexit(1);
     }
@@ -11273,7 +11348,7 @@ FILE *polyfile;
 #endif /* not TRILIBRARY */
 
   if (!b->quiet) {
-    printf("Reconstructing mesh.\n");
+   Debug::printf("Reconstructing mesh.\n");
   }
   /* Allocate a temporary array that maps each vertex to some adjacent */
   /*   triangle.  I took care to allocate all the permanent memory for */
@@ -11286,7 +11361,7 @@ FILE *polyfile;
   }
 
   if (b->verbose) {
-    printf("  Assembling triangles.\n");
+   Debug::printf("  Assembling triangles.\n");
   }
   /* Read the triangles from the .ele file, and link */
   /*   together those that share an edge.            */
@@ -11300,7 +11375,7 @@ FILE *polyfile;
       corner[j] = trianglelist[vertexindex++];
       if ((corner[j] < b->firstnumber) ||
           (corner[j] >= b->firstnumber + m->invertices)) {
-        printf("Error:  Triangle %ld has an invalid vertex index.\n",
+       Debug::printf("Error:  Triangle %ld has an invalid vertex index.\n",
                elementnumber);
         triexit(1);
       }
@@ -11311,14 +11386,14 @@ FILE *polyfile;
     for (j = 0; j < 3; j++) {
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Triangle %ld is missing vertex %d in %s.\n",
+       Debug::printf("Error:  Triangle %ld is missing vertex %d in %s.\n",
                elementnumber, j + 1, elefilename);
         triexit(1);
       } else {
         corner[j] = (int) strtol(stringptr, &stringptr, 0);
         if ((corner[j] < b->firstnumber) ||
             (corner[j] >= b->firstnumber + m->invertices)) {
-          printf("Error:  Triangle %ld has an invalid vertex index.\n",
+         Debug::printf("Error:  Triangle %ld has an invalid vertex index.\n",
                  elementnumber);
           triexit(1);
         }
@@ -11435,7 +11510,7 @@ FILE *polyfile;
   hullsize = 0;                      /* Prepare to count the boundary edges. */
   if (b->poly) {
     if (b->verbose) {
-      printf("  Marking segments in triangulation.\n");
+     Debug::printf("  Marking segments in triangulation.\n");
     }
     /* Read the segments from the .poly file, and link them */
     /*   to their neighboring triangles.                    */
@@ -11456,7 +11531,7 @@ FILE *polyfile;
       /* Skip the first (segment number) field. */
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Segment %ld has no endpoints in %s.\n", segmentnumber,
+       Debug::printf("Error:  Segment %ld has no endpoints in %s.\n", segmentnumber,
                polyfilename);
         triexit(1);
       } else {
@@ -11464,7 +11539,7 @@ FILE *polyfile;
       }
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Segment %ld is missing its second endpoint in %s.\n",
+       Debug::printf("Error:  Segment %ld is missing its second endpoint in %s.\n",
                segmentnumber, polyfilename);
         triexit(1);
       } else {
@@ -11482,7 +11557,7 @@ FILE *polyfile;
       for (j = 0; j < 2; j++) {
         if ((end[j] < b->firstnumber) ||
             (end[j] >= b->firstnumber + m->invertices)) {
-          printf("Error:  Segment %ld has an invalid vertex index.\n", 
+         Debug::printf("Error:  Segment %ld has an invalid vertex index.\n", 
                  segmentnumber);
           triexit(1);
         }
@@ -11639,10 +11714,10 @@ vertex searchpoint;
     /* Turn left until satisfied. */
     onextself(*searchtri);
     if (searchtri->tri == m->dummytri) {
-      printf("Internal error in finddirection():  Unable to find a\n");
-      printf("  triangle leading from (%.12g, %.12g) to", startvertex[0],
+     Debug::printf("Internal error in finddirection():  Unable to find a\n");
+     Debug::printf("  triangle leading from (%.12g, %.12g) to", startvertex[0],
              startvertex[1]);
-      printf("  (%.12g, %.12g).\n", searchpoint[0], searchpoint[1]);
+     Debug::printf("  (%.12g, %.12g).\n", searchpoint[0], searchpoint[1]);
       internalerror();
     }
     apex(*searchtri, leftvertex);
@@ -11654,10 +11729,10 @@ vertex searchpoint;
     /* Turn right until satisfied. */
     oprevself(*searchtri);
     if (searchtri->tri == m->dummytri) {
-      printf("Internal error in finddirection():  Unable to find a\n");
-      printf("  triangle leading from (%.12g, %.12g) to", startvertex[0],
+     Debug::printf("Internal error in finddirection():  Unable to find a\n");
+     Debug::printf("  triangle leading from (%.12g, %.12g) to", startvertex[0],
              startvertex[1]);
-      printf("  (%.12g, %.12g).\n", searchpoint[0], searchpoint[1]);
+     Debug::printf("  (%.12g, %.12g).\n", searchpoint[0], searchpoint[1]);
       internalerror();
     }
     dest(*searchtri, rightvertex);
@@ -11733,8 +11808,8 @@ vertex endpoint2;
   ety = torg[1] - endpoint2[1];
   denom = ty * ex - tx * ey;
   if (denom == 0.0) {
-    printf("Internal error in segmentintersection():");
-    printf("  Attempt to find intersection of parallel segments.\n");
+   Debug::printf("Internal error in segmentintersection():");
+   Debug::printf("  Attempt to find intersection of parallel segments.\n");
     internalerror();
   }
   split = (ey * etx - ex * ety) / denom;
@@ -11747,15 +11822,15 @@ vertex endpoint2;
   setvertexmark(newvertex, mark(*splitsubseg));
   setvertextype(newvertex, INPUTVERTEX);
   if (b->verbose > 1) {
-    printf(
+   Debug::printf(
   "  Splitting subsegment (%.12g, %.12g) (%.12g, %.12g) at (%.12g, %.12g).\n",
            torg[0], torg[1], tdest[0], tdest[1], newvertex[0], newvertex[1]);
   }
   /* Insert the intersection vertex.  This should always succeed. */
   success = insertvertex(m, b, newvertex, splittri, splitsubseg, 0, 0);
   if (success != SUCCESSFULVERTEX) {
-    printf("Internal error in segmentintersection():\n");
-    printf("  Failure to split a segment.\n");
+   Debug::printf("Internal error in segmentintersection():\n");
+   Debug::printf("  Failure to split a segment.\n");
     internalerror();
   }
   /* Record a triangle whose origin is the new vertex. */
@@ -11787,8 +11862,8 @@ vertex endpoint2;
     onextself(*splittri);
   } else if ((rightvertex[0] != endpoint1[0]) ||
              (rightvertex[1] != endpoint1[1])) {
-    printf("Internal error in segmentintersection():\n");
-    printf("  Topological inconsistency after splitting a segment.\n");
+   Debug::printf("Internal error in segmentintersection():\n");
+   Debug::printf("  Topological inconsistency after splitting a segment.\n");
     internalerror();
   }
   /* `splittri' should have destination endpoint1. */
@@ -11924,8 +11999,8 @@ int newmark;
   subseg sptr;                      /* Temporary variable used by tspivot(). */
 
   if (b->verbose > 2) {
-    printf("Forcing segment into triangulation by recursive splitting:\n");
-    printf("  (%.12g, %.12g) (%.12g, %.12g)\n", endpoint1[0], endpoint1[1],
+   Debug::printf("Forcing segment into triangulation by recursive splitting:\n");
+   Debug::printf("  (%.12g, %.12g) (%.12g, %.12g)\n", endpoint1[0], endpoint1[1],
            endpoint2[0], endpoint2[1]);
   }
   /* Create a new vertex to insert in the middle of the segment. */
@@ -11943,7 +12018,7 @@ int newmark;
                          0, 0);
   if (success == DUPLICATEVERTEX) {
     if (b->verbose > 2) {
-      printf("  Segment intersects existing vertex (%.12g, %.12g).\n",
+     Debug::printf("  Segment intersects existing vertex (%.12g, %.12g).\n",
              newvertex[0], newvertex[1]);
     }
     /* Use the vertex that's already there. */
@@ -11952,7 +12027,7 @@ int newmark;
   } else {
     if (success == VIOLATINGVERTEX) {
       if (b->verbose > 2) {
-        printf("  Two segments intersect at (%.12g, %.12g).\n",
+       Debug::printf("  Two segments intersect at (%.12g, %.12g).\n",
                newvertex[0], newvertex[1]);
       }
       /* By fluke, we've landed right on another segment.  Split it. */
@@ -11960,8 +12035,8 @@ int newmark;
       success = insertvertex(m, b, newvertex, &searchtri1, &brokensubseg,
                              0, 0);
       if (success != SUCCESSFULVERTEX) {
-        printf("Internal error in conformingedge():\n");
-        printf("  Failure to split a segment.\n");
+       Debug::printf("Internal error in conformingedge():\n");
+       Debug::printf("  Failure to split a segment.\n");
         internalerror();
       }
     }
@@ -12273,7 +12348,7 @@ int newmark;
   triangle ptr;                         /* Temporary variable used by sym(). */
 
   if (b->verbose > 1) {
-    printf("  Connecting (%.12g, %.12g) to (%.12g, %.12g).\n",
+   Debug::printf("  Connecting (%.12g, %.12g) to (%.12g, %.12g).\n",
            endpoint1[0], endpoint1[1], endpoint2[0], endpoint2[1]);
   }
 
@@ -12291,9 +12366,9 @@ int newmark;
     symself(searchtri1);
     /* Search for the segment's first endpoint by point location. */
     if (locate(m, b, endpoint1, &searchtri1) != ONVERTEX) {
-      printf(
+     Debug::printf(
         "Internal error in insertsegment():  Unable to locate PSLG vertex\n");
-      printf("  (%.12g, %.12g) in triangulation.\n",
+     Debug::printf("  (%.12g, %.12g) in triangulation.\n",
              endpoint1[0], endpoint1[1]);
       internalerror();
     }
@@ -12324,9 +12399,9 @@ int newmark;
     symself(searchtri2);
     /* Search for the segment's second endpoint by point location. */
     if (locate(m, b, endpoint2, &searchtri2) != ONVERTEX) {
-      printf(
+     Debug::printf(
         "Internal error in insertsegment():  Unable to locate PSLG vertex\n");
-      printf("  (%.12g, %.12g) in triangulation.\n",
+     Debug::printf("  (%.12g, %.12g) in triangulation.\n",
              endpoint2[0], endpoint2[1]);
       internalerror();
     }
@@ -12455,7 +12530,7 @@ char *polyfilename;
 
   if (b->poly) {
     if (!b->quiet) {
-      printf("Recovering segments in Delaunay triangulation.\n");
+     Debug::printf("Recovering segments in Delaunay triangulation.\n");
     }
 #ifdef TRILIBRARY
     strcpy(polyfilename, "input");
@@ -12485,7 +12560,7 @@ char *polyfilename;
     if (m->insegments > 0) {
       makevertexmap(m, b);
       if (b->verbose) {
-        printf("  Recovering PSLG segments.\n");
+       Debug::printf("  Recovering PSLG segments.\n");
       }
     }
 
@@ -12502,7 +12577,7 @@ char *polyfilename;
       stringptr = readline(inputline, polyfile, b->inpolyfilename);
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Segment %d has no endpoints in %s.\n",
+       Debug::printf("Error:  Segment %d has no endpoints in %s.\n",
                b->firstnumber + i, polyfilename);
         triexit(1);
       } else {
@@ -12510,7 +12585,7 @@ char *polyfilename;
       }
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Segment %d is missing its second endpoint in %s.\n",
+       Debug::printf("Error:  Segment %d is missing its second endpoint in %s.\n",
                b->firstnumber + i, polyfilename);
         triexit(1);
       } else {
@@ -12528,13 +12603,13 @@ char *polyfilename;
       if ((end1 < b->firstnumber) ||
           (end1 >= b->firstnumber + m->invertices)) {
         if (!b->quiet) {
-          printf("Warning:  Invalid first endpoint of segment %d in %s.\n",
+         Debug::printf("Warning:  Invalid first endpoint of segment %d in %s.\n",
                  b->firstnumber + i, polyfilename);
         }
       } else if ((end2 < b->firstnumber) ||
                  (end2 >= b->firstnumber + m->invertices)) {
         if (!b->quiet) {
-          printf("Warning:  Invalid second endpoint of segment %d in %s.\n",
+         Debug::printf("Warning:  Invalid second endpoint of segment %d in %s.\n",
                  b->firstnumber + i, polyfilename);
         }
       } else {
@@ -12543,7 +12618,7 @@ char *polyfilename;
         endpoint2 = getvertex(m, b, end2);
         if ((endpoint1[0] == endpoint2[0]) && (endpoint1[1] == endpoint2[1])) {
           if (!b->quiet) {
-            printf("Warning:  Endpoints of segment %d are coincident in %s.\n",
+           Debug::printf("Warning:  Endpoints of segment %d are coincident in %s.\n",
                    b->firstnumber + i, polyfilename);
           }
         } else {
@@ -12557,7 +12632,7 @@ char *polyfilename;
   if (b->convex || !b->poly) {
     /* Enclose the convex hull with subsegments. */
     if (b->verbose) {
-      printf("  Enclosing convex hull with segments.\n");
+     Debug::printf("  Enclosing convex hull with segments.\n");
     }
     markhull(m, b);
   }
@@ -12598,7 +12673,7 @@ struct behavior *b;
   subseg sptr;                      /* Temporary variable used by tspivot(). */
 
   if (b->verbose) {
-    printf("  Marking concavities (external triangles) for elimination.\n");
+   Debug::printf("  Marking concavities (external triangles) for elimination.\n");
   }
   /* Find a triangle handle on the hull. */
   hulltri.tri = m->dummytri;
@@ -12683,7 +12758,7 @@ struct behavior *b;
   subseg sptr;                      /* Temporary variable used by tspivot(). */
 
   if (b->verbose) {
-    printf("  Marking neighbors of marked triangles.\n");
+   Debug::printf("  Marking neighbors of marked triangles.\n");
   }
   /* Loop through all the infected triangles, spreading the virus to */
   /*   their neighbors, then to their neighbors' neighbors.          */
@@ -12703,7 +12778,7 @@ struct behavior *b;
       org(testtri, deadorg);
       dest(testtri, deaddest);
       apex(testtri, deadapex);
-      printf("    Checking (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
+     Debug::printf("    Checking (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
              deadorg[0], deadorg[1], deaddest[0], deaddest[1],
              deadapex[0], deadapex[1]);
     }
@@ -12736,7 +12811,7 @@ struct behavior *b;
             org(neighbor, deadorg);
             dest(neighbor, deaddest);
             apex(neighbor, deadapex);
-            printf(
+           Debug::printf(
               "    Marking (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
                    deadorg[0], deadorg[1], deaddest[0], deaddest[1],
                    deadapex[0], deadapex[1]);
@@ -12770,7 +12845,7 @@ struct behavior *b;
   }
 
   if (b->verbose) {
-    printf("  Deleting marked triangles.\n");
+   Debug::printf("  Deleting marked triangles.\n");
   }
 
   traversalinit(&m->viri);
@@ -12822,7 +12897,7 @@ struct behavior *b;
         }
         if (killorg) {
           if (b->verbose > 1) {
-            printf("    Deleting vertex (%.12g, %.12g)\n",
+           Debug::printf("    Deleting vertex (%.12g, %.12g)\n",
                    testvertex[0], testvertex[1]);
           }
           setvertextype(testvertex, UNDEADVERTEX);
@@ -12893,7 +12968,7 @@ REAL area;
   subseg sptr;                      /* Temporary variable used by tspivot(). */
 
   if (b->verbose > 1) {
-    printf("  Marking neighbors of marked triangles.\n");
+   Debug::printf("  Marking neighbors of marked triangles.\n");
   }
   /* Loop through all the infected triangles, spreading the attribute      */
   /*   and/or area constraint to their neighbors, then to their neighbors' */
@@ -12922,7 +12997,7 @@ REAL area;
       org(testtri, regionorg);
       dest(testtri, regiondest);
       apex(testtri, regionapex);
-      printf("    Checking (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
+     Debug::printf("    Checking (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
              regionorg[0], regionorg[1], regiondest[0], regiondest[1],
              regionapex[0], regionapex[1]);
     }
@@ -12940,7 +13015,7 @@ REAL area;
           org(neighbor, regionorg);
           dest(neighbor, regiondest);
           apex(neighbor, regionapex);
-          printf("    Marking (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
+         Debug::printf("    Marking (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
                  regionorg[0], regionorg[1], regiondest[0], regiondest[1],
                  regionapex[0], regionapex[1]);
         }
@@ -12959,7 +13034,7 @@ REAL area;
 
   /* Uninfect all triangles. */
   if (b->verbose > 1) {
-    printf("  Unmarking marked triangles.\n");
+   Debug::printf("  Unmarking marked triangles.\n");
   }
   traversalinit(&m->viri);
   virusloop = (triangle **) traverse(&m->viri);
@@ -13009,9 +13084,9 @@ int regions;
   triangle ptr;                         /* Temporary variable used by sym(). */
 
   if (!(b->quiet || (b->noholes && b->convex))) {
-    printf("Removing unwanted triangles.\n");
+   Debug::printf("Removing unwanted triangles.\n");
     if (b->verbose && (holes > 0)) {
-      printf("  Marking holes for elimination.\n");
+     Debug::printf("  Marking holes for elimination.\n");
     }
   }
 
@@ -13113,12 +13188,12 @@ int regions;
     if (!b->quiet) {
       if (b->regionattrib) {
         if (b->vararea) {
-          printf("Spreading regional attributes and area constraints.\n");
+         Debug::printf("Spreading regional attributes and area constraints.\n");
         } else {
-          printf("Spreading regional attributes.\n");
+         Debug::printf("Spreading regional attributes.\n");
         }
       } else { 
-        printf("Spreading regional area constraints.\n");
+       Debug::printf("Spreading regional area constraints.\n");
       }
     }
     if (b->regionattrib && !b->refine) {
@@ -13212,12 +13287,12 @@ struct behavior *b;
 
 void precisionerror()
 {
-  printf("Try increasing the area criterion and/or reducing the minimum\n");
-  printf("  allowable angle so that tiny triangles are not created.\n");
+ Debug::printf("Try increasing the area criterion and/or reducing the minimum\n");
+ Debug::printf("  allowable angle so that tiny triangles are not created.\n");
 #ifdef SINGLE
-  printf("Alternatively, try recompiling me with double precision\n");
-  printf("  arithmetic (by removing \"#define SINGLE\" from the\n");
-  printf("  source file or \"-DSINGLE\" from the makefile).\n");
+ Debug::printf("Alternatively, try recompiling me with double precision\n");
+ Debug::printf("  arithmetic (by removing \"#define SINGLE\" from the\n");
+ Debug::printf("  source file or \"-DSINGLE\" from the makefile).\n");
 #endif /* SINGLE */
 }
 
@@ -13402,7 +13477,7 @@ int triflaws;
         setvertexmark(newvertex, mark(currentenc));
         setvertextype(newvertex, SEGMENTVERTEX);
         if (b->verbose > 1) {
-          printf(
+         Debug::printf(
   "  Splitting subsegment (%.12g, %.12g) (%.12g, %.12g) at (%.12g, %.12g).\n",
                  eorg[0], eorg[1], edest[0], edest[1],
                  newvertex[0], newvertex[1]);
@@ -13410,11 +13485,11 @@ int triflaws;
         /* Check whether the new vertex lies on an endpoint. */
         if (((newvertex[0] == eorg[0]) && (newvertex[1] == eorg[1])) ||
             ((newvertex[0] == edest[0]) && (newvertex[1] == edest[1]))) {
-          printf("Error:  Ran out of precision at (%.12g, %.12g).\n",
+         Debug::printf("Error:  Ran out of precision at (%.12g, %.12g).\n",
                  newvertex[0], newvertex[1]);
-          printf("I attempted to split a segment to a smaller size than\n");
-          printf("  can be accommodated by the finite precision of\n");
-          printf("  floating point arithmetic.\n");
+         Debug::printf("I attempted to split a segment to a smaller size than\n");
+         Debug::printf("  can be accommodated by the finite precision of\n");
+         Debug::printf("  floating point arithmetic.\n");
           precisionerror();
           triexit(1);
         }
@@ -13422,8 +13497,8 @@ int triflaws;
         success = insertvertex(m, b, newvertex, &enctri, &currentenc,
                                1, triflaws);
         if ((success != SUCCESSFULVERTEX) && (success != ENCROACHINGVERTEX)) {
-          printf("Internal error in splitencsegs():\n");
-          printf("  Failure to split a segment.\n");
+         Debug::printf("Internal error in splitencsegs():\n");
+         Debug::printf("  Failure to split a segment.\n");
           internalerror();
         }
         if (m->steinerleft > 0) {
@@ -13463,7 +13538,7 @@ struct behavior *b;
   struct otri triangleloop;
 
   if (b->verbose) {
-    printf("  Making a list of bad triangles.\n");
+   Debug::printf("  Making a list of bad triangles.\n");
   }
   traversalinit(&m->triangles);
   triangleloop.orient = 0;
@@ -13516,8 +13591,8 @@ struct badtriang *badtri;
   if (!deadtri(badotri.tri) && (borg == badtri->triangorg) &&
       (bdest == badtri->triangdest) && (bapex == badtri->triangapex)) {
     if (b->verbose > 1) {
-      printf("  Splitting this triangle at its circumcenter:\n");
-      printf("    (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n", borg[0],
+     Debug::printf("  Splitting this triangle at its circumcenter:\n");
+     Debug::printf("    (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n", borg[0],
              borg[1], bdest[0], bdest[1], bapex[0], bapex[1]);
     }
 
@@ -13531,7 +13606,7 @@ struct badtriang *badtri;
         ((newvertex[0] == bdest[0]) && (newvertex[1] == bdest[1])) ||
         ((newvertex[0] == bapex[0]) && (newvertex[1] == bapex[1]))) {
       if (!b->quiet) {
-        printf(
+       Debug::printf(
              "Warning:  New vertex (%.12g, %.12g) falls on existing vertex.\n",
                newvertex[0], newvertex[1]);
         errorflag = 1;
@@ -13572,7 +13647,7 @@ struct badtriang *badtri;
         /*   delete the new vertex.                                   */
         undovertex(m, b);
         if (b->verbose > 1) {
-          printf("  Rejecting (%.12g, %.12g).\n", newvertex[0], newvertex[1]);
+         Debug::printf("  Rejecting (%.12g, %.12g).\n", newvertex[0], newvertex[1]);
         }
         vertexdealloc(m, newvertex);
       } else if (success == VIOLATINGVERTEX) {
@@ -13582,7 +13657,7 @@ struct badtriang *badtri;
       } else {                                 /* success == DUPLICATEVERTEX */
         /* Couldn't insert the new vertex because a vertex is already there. */
         if (!b->quiet) {
-          printf(
+         Debug::printf(
             "Warning:  New vertex (%.12g, %.12g) falls on existing vertex.\n",
                  newvertex[0], newvertex[1]);
           errorflag = 1;
@@ -13592,14 +13667,14 @@ struct badtriang *badtri;
     }
     if (errorflag) {
       if (b->verbose) {
-        printf("  The new vertex is at the circumcenter of triangle\n");
-        printf("    (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
+       Debug::printf("  The new vertex is at the circumcenter of triangle\n");
+       Debug::printf("    (%.12g, %.12g) (%.12g, %.12g) (%.12g, %.12g)\n",
                borg[0], borg[1], bdest[0], bdest[1], bapex[0], bapex[1]);
       }
-      printf("This probably means that I am trying to refine triangles\n");
-      printf("  to a smaller size than can be accommodated by the finite\n");
-      printf("  precision of floating point arithmetic.  (You can be\n");
-      printf("  sure of this if I fail to terminate.)\n");
+     Debug::printf("This probably means that I am trying to refine triangles\n");
+     Debug::printf("  to a smaller size than can be accommodated by the finite\n");
+     Debug::printf("  precision of floating point arithmetic.  (You can be\n");
+     Debug::printf("  sure of this if I fail to terminate.)\n");
       precisionerror();
     }
   }
@@ -13629,18 +13704,18 @@ struct behavior *b;
   int i;
 
   if (!b->quiet) {
-    printf("Adding Steiner points to enforce quality.\n");
+   Debug::printf("Adding Steiner points to enforce quality.\n");
   }
   /* Initialize the pool of encroached subsegments. */
   poolinit(&m->badsubsegs, sizeof(struct badsubseg), BADSUBSEGPERBLOCK,
            BADSUBSEGPERBLOCK, 0);
   if (b->verbose) {
-    printf("  Looking for encroached subsegments.\n");
+   Debug::printf("  Looking for encroached subsegments.\n");
   }
   /* Test all segments to see if they're encroached. */
   tallyencs(m, b);
   if (b->verbose && (m->badsubsegs.items > 0)) {
-    printf("  Splitting encroached subsegments.\n");
+   Debug::printf("  Splitting encroached subsegments.\n");
   }
   /* Fix encroached subsegments without noting bad triangles. */
   splitencsegs(m, b, 0);
@@ -13664,7 +13739,7 @@ struct behavior *b;
              FLIPSTACKERPERBLOCK, 0);
     m->checkquality = 1;
     if (b->verbose) {
-      printf("  Splitting bad triangles.\n");
+     Debug::printf("  Splitting bad triangles.\n");
     }
     while ((m->badtriangles.items > 0) && (m->steinerleft != 0)) {
       /* Fix one bad triangle by inserting a vertex at its circumcenter. */
@@ -13689,17 +13764,17 @@ struct behavior *b;
   /* Might we have run out of Steiner points too soon? */
   if (!b->quiet && b->conformdel && (m->badsubsegs.items > 0) &&
       (m->steinerleft == 0)) {
-    printf("\nWarning:  I ran out of Steiner points, but the mesh has\n");
+   Debug::printf("\nWarning:  I ran out of Steiner points, but the mesh has\n");
     if (m->badsubsegs.items == 1) {
-      printf("  one encroached subsegment, and therefore might not be truly\n"
+     Debug::printf("  one encroached subsegment, and therefore might not be truly\n"
              );
     } else {
-      printf("  %ld encroached subsegments, and therefore might not be truly\n"
+     Debug::printf("  %ld encroached subsegments, and therefore might not be truly\n"
              , m->badsubsegs.items);
     }
-    printf("  Delaunay.  If the Delaunay property is important to you,\n");
-    printf("  try increasing the number of Steiner points (controlled by\n");
-    printf("  the -S switch) slightly and try again.\n\n");
+   Debug::printf("  Delaunay.  If the Delaunay property is important to you,\n");
+   Debug::printf("  try increasing the number of Steiner points (controlled by\n");
+   Debug::printf("  the -S switch) slightly and try again.\n\n");
   }
 }
 
@@ -13733,7 +13808,7 @@ struct behavior *b;
   subseg sptr;                      /* Temporary variable used by tspivot(). */
 
   if (!b->quiet) {
-    printf("Adding vertices for second-order triangles.\n");
+   Debug::printf("Adding vertices for second-order triangles.\n");
   }
   /* The following line ensures that dead items in the pool of nodes    */
   /*   cannot be allocated for the extra nodes associated with high     */
@@ -13777,7 +13852,7 @@ struct behavior *b;
           }
         }
         if (b->verbose > 1) {
-          printf("  Creating (%.12g, %.12g).\n", newvertex[0], newvertex[1]);
+         Debug::printf("  Creating (%.12g, %.12g).\n", newvertex[0], newvertex[1]);
         }
         /* Record the new node in the (one or two) adjacent elements. */
         triangleloop.tri[m->highorderindex + triangleloop.orient] =
@@ -13822,7 +13897,7 @@ char *infilename;
   do {
     result = fgets(string, INPUTLINESIZE, infile);
     if (result == (char *) NULL) {
-      printf("  Error:  Unexpected end of file in %s.\n", infilename);
+     Debug::printf("  Error:  Unexpected end of file in %s.\n", infilename);
       triexit(1);
     }
     /* Skip anything that doesn't look like a number, a comment, */
@@ -13918,16 +13993,19 @@ FILE **polyfile;
   if (b->poly) {
     /* Read the vertices from a .poly file. */
     if (!b->quiet) {
-      printf("Opening %s.\n", polyfilename);
+     Debug::printf("Opening %s.\n", polyfilename);
     }
     *polyfile = fopen(polyfilename, "r");
+    Debug::Log("Opened file.");
     if (*polyfile == (FILE *) NULL) {
-      printf("  Error:  Cannot access file %s.\n", polyfilename);
+     Debug::printf("  Error:  Cannot access file %s.\n", polyfilename);
       triexit(1);
     }
     /* Read number of vertices, number of dimensions, number of vertex */
     /*   attributes, and number of boundary markers.                   */
+    Debug::Log("-- 0 --");
     stringptr = readline(inputline, *polyfile, polyfilename);
+    Debug::Log("-- 1 --");
     m->invertices = (int) strtol(stringptr, &stringptr, 0);
     stringptr = findfield(stringptr);
     if (*stringptr == '\0') {
@@ -13936,12 +14014,14 @@ FILE **polyfile;
       m->mesh_dim = (int) strtol(stringptr, &stringptr, 0);
     }
     stringptr = findfield(stringptr);
+    Debug::Log("-- 2 --");
     if (*stringptr == '\0') {
       m->nextras = 0;
     } else {
       m->nextras = (int) strtol(stringptr, &stringptr, 0);
     }
     stringptr = findfield(stringptr);
+    Debug::Log("-- 3 --");
     if (*stringptr == '\0') {
       nodemarkers = 0;
     } else {
@@ -13961,16 +14041,18 @@ FILE **polyfile;
     m->readnodefile = 1;
     infilename = nodefilename;
     *polyfile = (FILE *) NULL;
+    
+    Debug::Log("Done reading file.");
   }
 
   if (m->readnodefile) {
     /* Read the vertices from a .node file. */
     if (!b->quiet) {
-      printf("Opening %s.\n", nodefilename);
+     Debug::printf("Opening %s.\n", nodefilename);
     }
     infile = fopen(nodefilename, "r");
     if (infile == (FILE *) NULL) {
-      printf("  Error:  Cannot access file %s.\n", nodefilename);
+     Debug::printf("  Error:  Cannot access file %s.\n", nodefilename);
       triexit(1);
     }
     /* Read number of vertices, number of dimensions, number of vertex */
@@ -13998,11 +14080,11 @@ FILE **polyfile;
   }
 
   if (m->invertices < 3) {
-    printf("Error:  Input must have at least three input vertices.\n");
+   Debug::printf("Error:  Input must have at least three input vertices.\n");
     triexit(1);
   }
   if (m->mesh_dim != 2) {
-    printf("Error:  Triangle only works with two-dimensional meshes.\n");
+   Debug::printf("Error:  Triangle only works with two-dimensional meshes.\n");
     triexit(1);
   }
   if (m->nextras == 0) {
@@ -14023,13 +14105,13 @@ FILE **polyfile;
     }
     stringptr = findfield(stringptr);
     if (*stringptr == '\0') {
-      printf("Error:  Vertex %d has no x coordinate.\n", b->firstnumber + i);
+     Debug::printf("Error:  Vertex %d has no x coordinate.\n", b->firstnumber + i);
       triexit(1);
     }
     x = (REAL) strtod(stringptr, &stringptr);
     stringptr = findfield(stringptr);
     if (*stringptr == '\0') {
-      printf("Error:  Vertex %d has no y coordinate.\n", b->firstnumber + i);
+     Debug::printf("Error:  Vertex %d has no y coordinate.\n", b->firstnumber + i);
       triexit(1);
     }
     y = (REAL) strtod(stringptr, &stringptr);
@@ -14116,7 +14198,7 @@ int numberofpointattribs;
   m->nextras = numberofpointattribs;
   m->readnodefile = 0;
   if (m->invertices < 3) {
-    printf("Error:  Input must have at least three input vertices.\n");
+   Debug::printf("Error:  Input must have at least three input vertices.\n");
     triexit(1);
   }
   if (m->nextras == 0) {
@@ -14207,7 +14289,7 @@ int *regions;
       stringptr = readline(inputline, polyfile, polyfilename);
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Hole %d has no x coordinate.\n",
+       Debug::printf("Error:  Hole %d has no x coordinate.\n",
                b->firstnumber + (i >> 1));
         triexit(1);
       } else {
@@ -14215,7 +14297,7 @@ int *regions;
       }
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-        printf("Error:  Hole %d has no y coordinate.\n",
+       Debug::printf("Error:  Hole %d has no y coordinate.\n",
                b->firstnumber + (i >> 1));
         triexit(1);
       } else {
@@ -14239,7 +14321,7 @@ int *regions;
         stringptr = readline(inputline, polyfile, polyfilename);
         stringptr = findfield(stringptr);
         if (*stringptr == '\0') {
-          printf("Error:  Region %d has no x coordinate.\n",
+         Debug::printf("Error:  Region %d has no x coordinate.\n",
                  b->firstnumber + i);
           triexit(1);
         } else {
@@ -14247,7 +14329,7 @@ int *regions;
         }
         stringptr = findfield(stringptr);
         if (*stringptr == '\0') {
-          printf("Error:  Region %d has no y coordinate.\n",
+         Debug::printf("Error:  Region %d has no y coordinate.\n",
                  b->firstnumber + i);
           triexit(1);
         } else {
@@ -14255,7 +14337,7 @@ int *regions;
         }
         stringptr = findfield(stringptr);
         if (*stringptr == '\0') {
-          printf(
+         Debug::printf(
             "Error:  Region %d has no region attribute or area constraint.\n",
                  b->firstnumber + i);
           triexit(1);
@@ -14377,7 +14459,7 @@ char **argv;
 
 #ifdef TRILIBRARY
   if (!b->quiet) {
-    printf("Writing vertices.\n");
+   Debug::printf("Writing vertices.\n");
   }
   /* Allocate memory for output vertices if necessary. */
   if (*pointlist == (REAL *) NULL) {
@@ -14399,11 +14481,11 @@ char **argv;
   attribindex = 0;
 #else /* not TRILIBRARY */
   if (!b->quiet) {
-    printf("Writing %s.\n", nodefilename);
+   Debug::printf("Writing %s.\n", nodefilename);
   }
   outfile = fopen(nodefilename, "w");
   if (outfile == (FILE *) NULL) {
-    printf("  Error:  Cannot create file %s.\n", nodefilename);
+   Debug::printf("  Error:  Cannot create file %s.\n", nodefilename);
     triexit(1);
   }
   /* Number of vertices, number of dimensions, number of vertex attributes, */
@@ -14542,7 +14624,7 @@ char **argv;
 
 #ifdef TRILIBRARY
   if (!b->quiet) {
-    printf("Writing triangles.\n");
+   Debug::printf("Writing triangles.\n");
   }
   /* Allocate memory for output triangles if necessary. */
   if (*trianglelist == (int *) NULL) {
@@ -14562,11 +14644,11 @@ char **argv;
   attribindex = 0;
 #else /* not TRILIBRARY */
   if (!b->quiet) {
-    printf("Writing %s.\n", elefilename);
+   Debug::printf("Writing %s.\n", elefilename);
   }
   outfile = fopen(elefilename, "w");
   if (outfile == (FILE *) NULL) {
-    printf("  Error:  Cannot create file %s.\n", elefilename);
+   Debug::printf("  Error:  Cannot create file %s.\n", elefilename);
     triexit(1);
   }
   /* Number of triangles, vertices per triangle, attributes per triangle. */
@@ -14687,7 +14769,7 @@ char **argv;
 
 #ifdef TRILIBRARY
   if (!b->quiet) {
-    printf("Writing segments.\n");
+   Debug::printf("Writing segments.\n");
   }
   /* Allocate memory for output segments if necessary. */
   if (*segmentlist == (int *) NULL) {
@@ -14704,11 +14786,11 @@ char **argv;
   index = 0;
 #else /* not TRILIBRARY */
   if (!b->quiet) {
-    printf("Writing %s.\n", polyfilename);
+   Debug::printf("Writing %s.\n", polyfilename);
   }
   outfile = fopen(polyfilename, "w");
   if (outfile == (FILE *) NULL) {
-    printf("  Error:  Cannot create file %s.\n", polyfilename);
+   Debug::printf("  Error:  Cannot create file %s.\n", polyfilename);
     triexit(1);
   }
   /* The zero indicates that the vertices are in a separate .node file. */
@@ -14829,7 +14911,7 @@ char **argv;
 
 #ifdef TRILIBRARY
   if (!b->quiet) {
-    printf("Writing edges.\n");
+   Debug::printf("Writing edges.\n");
   }
   /* Allocate memory for edges if necessary. */
   if (*edgelist == (int *) NULL) {
@@ -14844,11 +14926,11 @@ char **argv;
   index = 0;
 #else /* not TRILIBRARY */
   if (!b->quiet) {
-    printf("Writing %s.\n", edgefilename);
+   Debug::printf("Writing %s.\n", edgefilename);
   }
   outfile = fopen(edgefilename, "w");
   if (outfile == (FILE *) NULL) {
-    printf("  Error:  Cannot create file %s.\n", edgefilename);
+   Debug::printf("  Error:  Cannot create file %s.\n", edgefilename);
     triexit(1);
   }
   /* Number of edges, number of boundary markers (zero or one). */
@@ -14995,7 +15077,7 @@ char **argv;
 
 #ifdef TRILIBRARY
   if (!b->quiet) {
-    printf("Writing Voronoi vertices.\n");
+   Debug::printf("Writing Voronoi vertices.\n");
   }
   /* Allocate memory for Voronoi vertices if necessary. */
   if (*vpointlist == (REAL *) NULL) {
@@ -15014,11 +15096,11 @@ char **argv;
   attribindex = 0;
 #else /* not TRILIBRARY */
   if (!b->quiet) {
-    printf("Writing %s.\n", vnodefilename);
+   Debug::printf("Writing %s.\n", vnodefilename);
   }
   outfile = fopen(vnodefilename, "w");
   if (outfile == (FILE *) NULL) {
-    printf("  Error:  Cannot create file %s.\n", vnodefilename);
+   Debug::printf("  Error:  Cannot create file %s.\n", vnodefilename);
     triexit(1);
   }
   /* Number of triangles, two dimensions, number of vertex attributes, */
@@ -15067,7 +15149,7 @@ char **argv;
 
 #ifdef TRILIBRARY
   if (!b->quiet) {
-    printf("Writing Voronoi edges.\n");
+   Debug::printf("Writing Voronoi edges.\n");
   }
   /* Allocate memory for output Voronoi edges if necessary. */
   if (*vedgelist == (int *) NULL) {
@@ -15083,11 +15165,11 @@ char **argv;
   coordindex = 0;
 #else /* not TRILIBRARY */
   if (!b->quiet) {
-    printf("Writing %s.\n", vedgefilename);
+   Debug::printf("Writing %s.\n", vedgefilename);
   }
   outfile = fopen(vedgefilename, "w");
   if (outfile == (FILE *) NULL) {
-    printf("  Error:  Cannot create file %s.\n", vedgefilename);
+   Debug::printf("  Error:  Cannot create file %s.\n", vedgefilename);
     triexit(1);
   }
   /* Number of edges, zero boundary markers. */
@@ -15191,7 +15273,7 @@ char **argv;
 
 #ifdef TRILIBRARY
   if (!b->quiet) {
-    printf("Writing neighbors.\n");
+   Debug::printf("Writing neighbors.\n");
   }
   /* Allocate memory for neighbors if necessary. */
   if (*neighborlist == (int *) NULL) {
@@ -15202,11 +15284,11 @@ char **argv;
   index = 0;
 #else /* not TRILIBRARY */
   if (!b->quiet) {
-    printf("Writing %s.\n", neighborfilename);
+   Debug::printf("Writing %s.\n", neighborfilename);
   }
   outfile = fopen(neighborfilename, "w");
   if (outfile == (FILE *) NULL) {
-    printf("  Error:  Cannot create file %s.\n", neighborfilename);
+   Debug::printf("  Error:  Cannot create file %s.\n", neighborfilename);
     triexit(1);
   }
   /* Number of triangles, three neighbors per triangle. */
@@ -15287,7 +15369,7 @@ char **argv;
   long outvertices;
 
   if (!b->quiet) {
-    printf("Writing %s.\n", offfilename);
+   Debug::printf("Writing %s.\n", offfilename);
   }
 
   if (b->jettison) {
@@ -15298,7 +15380,7 @@ char **argv;
 
   outfile = fopen(offfilename, "w");
   if (outfile == (FILE *) NULL) {
-    printf("  Error:  Cannot create file %s.\n", offfilename);
+   Debug::printf("  Error:  Cannot create file %s.\n", offfilename);
     triexit(1);
   }
   /* Number of vertices, triangles, and edges. */
@@ -15379,7 +15461,7 @@ struct behavior *b;
   int acutebiggest;
   int i, ii, j, k;
 
-  printf("Mesh quality statistics:\n\n");
+ Debug::printf("Mesh quality statistics:\n\n");
   radconst = PI / 18.0;
   degconst = 180.0 / PI;
   for (i = 0; i < 8; i++) {
@@ -15513,37 +15595,37 @@ struct behavior *b;
     }
   }
 
-  printf("  Smallest area: %16.5g   |  Largest area: %16.5g\n",
+ Debug::printf("  Smallest area: %16.5g   |  Largest area: %16.5g\n",
          smallestarea, biggestarea);
-  printf("  Shortest edge: %16.5g   |  Longest edge: %16.5g\n",
+ Debug::printf("  Shortest edge: %16.5g   |  Longest edge: %16.5g\n",
          shortest, longest);
-  printf("  Shortest altitude: %12.5g   |  Largest aspect ratio: %8.5g\n\n",
+ Debug::printf("  Shortest altitude: %12.5g   |  Largest aspect ratio: %8.5g\n\n",
          minaltitude, worstaspect);
 
-  printf("  Triangle aspect ratio histogram:\n");
-  printf("  1.1547 - %-6.6g    :  %8d    | %6.6g - %-6.6g     :  %8d\n",
+ Debug::printf("  Triangle aspect ratio histogram:\n");
+ Debug::printf("  1.1547 - %-6.6g    :  %8d    | %6.6g - %-6.6g     :  %8d\n",
          ratiotable[0], aspecttable[0], ratiotable[7], ratiotable[8],
          aspecttable[8]);
   for (i = 1; i < 7; i++) {
-    printf("  %6.6g - %-6.6g    :  %8d    | %6.6g - %-6.6g     :  %8d\n",
+   Debug::printf("  %6.6g - %-6.6g    :  %8d    | %6.6g - %-6.6g     :  %8d\n",
            ratiotable[i - 1], ratiotable[i], aspecttable[i],
            ratiotable[i + 7], ratiotable[i + 8], aspecttable[i + 8]);
   }
-  printf("  %6.6g - %-6.6g    :  %8d    | %6.6g -            :  %8d\n",
+ Debug::printf("  %6.6g - %-6.6g    :  %8d    | %6.6g -            :  %8d\n",
          ratiotable[6], ratiotable[7], aspecttable[7], ratiotable[14],
          aspecttable[15]);
-  printf("  (Aspect ratio is longest edge divided by shortest altitude)\n\n");
+ Debug::printf("  (Aspect ratio is longest edge divided by shortest altitude)\n\n");
 
-  printf("  Smallest angle: %15.5g   |  Largest angle: %15.5g\n\n",
+ Debug::printf("  Smallest angle: %15.5g   |  Largest angle: %15.5g\n\n",
          smallestangle, biggestangle);
 
-  printf("  Angle histogram:\n");
+ Debug::printf("  Angle histogram:\n");
   for (i = 0; i < 9; i++) {
-    printf("    %3d - %3d degrees:  %8d    |    %3d - %3d degrees:  %8d\n",
+   Debug::printf("    %3d - %3d degrees:  %8d    |    %3d - %3d degrees:  %8d\n",
            i * 10, i * 10 + 10, angletable[i],
            i * 10 + 90, i * 10 + 100, angletable[i + 9]);
   }
-  printf("\n");
+ Debug::printf("\n");
 }
 
 /*****************************************************************************/
@@ -15561,58 +15643,58 @@ struct behavior *b;
 #endif /* not ANSI_DECLARATORS */
 
 {
-  printf("\nStatistics:\n\n");
-  printf("  Input vertices: %d\n", m->invertices);
+ Debug::printf("\nStatistics:\n\n");
+ Debug::printf("  Input vertices: %d\n", m->invertices);
   if (b->refine) {
-    printf("  Input triangles: %d\n", m->inelements);
+   Debug::printf("  Input triangles: %d\n", m->inelements);
   }
   if (b->poly) {
-    printf("  Input segments: %d\n", m->insegments);
+   Debug::printf("  Input segments: %d\n", m->insegments);
     if (!b->refine) {
-      printf("  Input holes: %d\n", m->holes);
+     Debug::printf("  Input holes: %d\n", m->holes);
     }
   }
 
-  printf("\n  Mesh vertices: %ld\n", m->vertices.items - m->undeads);
-  printf("  Mesh triangles: %ld\n", m->triangles.items);
-  printf("  Mesh edges: %ld\n", m->edges);
-  printf("  Mesh exterior boundary edges: %ld\n", m->hullsize);
+ Debug::printf("\n  Mesh vertices: %ld\n", m->vertices.items - m->undeads);
+ Debug::printf("  Mesh triangles: %ld\n", m->triangles.items);
+ Debug::printf("  Mesh edges: %ld\n", m->edges);
+ Debug::printf("  Mesh exterior boundary edges: %ld\n", m->hullsize);
   if (b->poly || b->refine) {
-    printf("  Mesh interior boundary edges: %ld\n",
+   Debug::printf("  Mesh interior boundary edges: %ld\n",
            m->subsegs.items - m->hullsize);
-    printf("  Mesh subsegments (constrained edges): %ld\n",
+   Debug::printf("  Mesh subsegments (constrained edges): %ld\n",
            m->subsegs.items);
   }
-  printf("\n");
+ Debug::printf("\n");
 
   if (b->verbose) {
     quality_statistics(m, b);
-    printf("Memory allocation statistics:\n\n");
-    printf("  Maximum number of vertices: %ld\n", m->vertices.maxitems);
-    printf("  Maximum number of triangles: %ld\n", m->triangles.maxitems);
+   Debug::printf("Memory allocation statistics:\n\n");
+   Debug::printf("  Maximum number of vertices: %ld\n", m->vertices.maxitems);
+   Debug::printf("  Maximum number of triangles: %ld\n", m->triangles.maxitems);
     if (m->subsegs.maxitems > 0) {
-      printf("  Maximum number of subsegments: %ld\n", m->subsegs.maxitems);
+     Debug::printf("  Maximum number of subsegments: %ld\n", m->subsegs.maxitems);
     }
     if (m->viri.maxitems > 0) {
-      printf("  Maximum number of viri: %ld\n", m->viri.maxitems);
+     Debug::printf("  Maximum number of viri: %ld\n", m->viri.maxitems);
     }
     if (m->badsubsegs.maxitems > 0) {
-      printf("  Maximum number of encroached subsegments: %ld\n",
+     Debug::printf("  Maximum number of encroached subsegments: %ld\n",
              m->badsubsegs.maxitems);
     }
     if (m->badtriangles.maxitems > 0) {
-      printf("  Maximum number of bad triangles: %ld\n",
+     Debug::printf("  Maximum number of bad triangles: %ld\n",
              m->badtriangles.maxitems);
     }
     if (m->flipstackers.maxitems > 0) {
-      printf("  Maximum number of stacked triangle flips: %ld\n",
+     Debug::printf("  Maximum number of stacked triangle flips: %ld\n",
              m->flipstackers.maxitems);
     }
     if (m->splaynodes.maxitems > 0) {
-      printf("  Maximum number of splay tree nodes: %ld\n",
+     Debug::printf("  Maximum number of splay tree nodes: %ld\n",
              m->splaynodes.maxitems);
     }
-    printf("  Approximate heap memory use (bytes): %ld\n\n",
+   Debug::printf("  Approximate heap memory use (bytes): %ld\n\n",
            m->vertices.maxitems * m->vertices.itembytes +
            m->triangles.maxitems * m->triangles.itembytes +
            m->subsegs.maxitems * m->subsegs.itembytes +
@@ -15622,26 +15704,26 @@ struct behavior *b;
            m->flipstackers.maxitems * m->flipstackers.itembytes +
            m->splaynodes.maxitems * m->splaynodes.itembytes);
 
-    printf("Algorithmic statistics:\n\n");
+   Debug::printf("Algorithmic statistics:\n\n");
     if (!b->weighted) {
-      printf("  Number of incircle tests: %ld\n", m->incirclecount);
+     Debug::printf("  Number of incircle tests: %ld\n", m->incirclecount);
     } else {
-      printf("  Number of 3D orientation tests: %ld\n", m->orient3dcount);
+     Debug::printf("  Number of 3D orientation tests: %ld\n", m->orient3dcount);
     }
-    printf("  Number of 2D orientation tests: %ld\n", m->counterclockcount);
+   Debug::printf("  Number of 2D orientation tests: %ld\n", m->counterclockcount);
     if (m->hyperbolacount > 0) {
-      printf("  Number of right-of-hyperbola tests: %ld\n",
+     Debug::printf("  Number of right-of-hyperbola tests: %ld\n",
              m->hyperbolacount);
     }
     if (m->circletopcount > 0) {
-      printf("  Number of circle top computations: %ld\n",
+     Debug::printf("  Number of circle top computations: %ld\n",
              m->circletopcount);
     }
     if (m->circumcentercount > 0) {
-      printf("  Number of triangle circumcenter computations: %ld\n",
+     Debug::printf("  Number of triangle circumcenter computations: %ld\n",
              m->circumcentercount);
     }
-    printf("\n");
+   Debug::printf("\n");
   }
 }
 
@@ -15761,11 +15843,11 @@ char **argv;
   if (!b.quiet) {
     gettimeofday(&tv2, &tz);
     if (b.refine) {
-      printf("Mesh reconstruction");
+     Debug::printf("Mesh reconstruction");
     } else {
-      printf("Delaunay");
+     Debug::printf("Delaunay");
     }
-    printf(" milliseconds:  %ld\n", 1000l * (tv2.tv_sec - tv1.tv_sec) +
+   Debug::printf(" milliseconds:  %ld\n", 1000l * (tv2.tv_sec - tv1.tv_sec) +
            (tv2.tv_usec - tv1.tv_usec) / 1000l);
   }
 #endif /* not NO_TIMER */
@@ -15793,7 +15875,7 @@ char **argv;
   if (!b.quiet) {
     gettimeofday(&tv3, &tz);
     if (b.usesegments && !b.refine) {
-      printf("Segment milliseconds:  %ld\n",
+     Debug::printf("Segment milliseconds:  %ld\n",
              1000l * (tv3.tv_sec - tv2.tv_sec) +
              (tv3.tv_usec - tv2.tv_usec) / 1000l);
     }
@@ -15826,7 +15908,7 @@ char **argv;
   if (!b.quiet) {
     gettimeofday(&tv4, &tz);
     if (b.poly && !b.refine) {
-      printf("Hole milliseconds:  %ld\n", 1000l * (tv4.tv_sec - tv3.tv_sec) +
+     Debug::printf("Hole milliseconds:  %ld\n", 1000l * (tv4.tv_sec - tv3.tv_sec) +
              (tv4.tv_usec - tv3.tv_usec) / 1000l);
     }
   }
@@ -15843,7 +15925,7 @@ char **argv;
     gettimeofday(&tv5, &tz);
 #ifndef CDT_ONLY
     if (b.quality) {
-      printf("Quality milliseconds:  %ld\n",
+     Debug::printf("Quality milliseconds:  %ld\n",
              1000l * (tv5.tv_sec - tv4.tv_sec) +
              (tv5.tv_usec - tv4.tv_usec) / 1000l);
     }
@@ -15858,7 +15940,7 @@ char **argv;
     highorder(&m, &b);       /* Promote elements to higher polynomial order. */
   }
   if (!b.quiet) {
-    printf("\n");
+   Debug::printf("\n");
   }
 
 #ifdef TRILIBRARY
@@ -15888,9 +15970,9 @@ char **argv;
   if (b.nonodewritten || (b.noiterationnum && m.readnodefile)) {
     if (!b.quiet) {
 #ifdef TRILIBRARY
-      printf("NOT writing vertices.\n");
+     Debug::printf("NOT writing vertices.\n");
 #else /* not TRILIBRARY */
-      printf("NOT writing a .node file.\n");
+     Debug::printf("NOT writing a .node file.\n");
 #endif /* not TRILIBRARY */
     }
     numbernodes(&m, &b);         /* We must remember to number the vertices. */
@@ -15906,9 +15988,9 @@ char **argv;
   if (b.noelewritten) {
     if (!b.quiet) {
 #ifdef TRILIBRARY
-      printf("NOT writing triangles.\n");
+     Debug::printf("NOT writing triangles.\n");
 #else /* not TRILIBRARY */
-      printf("NOT writing an .ele file.\n");
+     Debug::printf("NOT writing an .ele file.\n");
 #endif /* not TRILIBRARY */
     }
   } else {
@@ -15925,9 +16007,9 @@ char **argv;
     if (b.nopolywritten || b.noiterationnum) {
       if (!b.quiet) {
 #ifdef TRILIBRARY
-        printf("NOT writing segments.\n");
+       Debug::printf("NOT writing segments.\n");
 #else /* not TRILIBRARY */
-        printf("NOT writing a .poly file.\n");
+       Debug::printf("NOT writing a .poly file.\n");
 #endif /* not TRILIBRARY */
       }
     } else {
@@ -15988,10 +16070,10 @@ char **argv;
   if (!b.quiet) {
 #ifndef NO_TIMER
     gettimeofday(&tv6, &tz);
-    printf("\nOutput milliseconds:  %ld\n",
+   Debug::printf("\nOutput milliseconds:  %ld\n",
            1000l * (tv6.tv_sec - tv5.tv_sec) +
            (tv6.tv_usec - tv5.tv_usec) / 1000l);
-    printf("Total running milliseconds:  %ld\n",
+   Debug::printf("Total running milliseconds:  %ld\n",
            1000l * (tv6.tv_sec - tv0.tv_sec) +
            (tv6.tv_usec - tv0.tv_usec) / 1000l);
 #endif /* not NO_TIMER */
@@ -16012,49 +16094,91 @@ char **argv;
 #endif /* not TRILIBRARY */
 }
 
-/// ADDED THIS
-
-static int result = 0;
-
-void TriangulateImpl(char *bin, char *args, char *file)
-{
-  char *argv[3] = {
-    bin, args, file
-  };
-
-  fprintf(stdout, "-----hello from Triangulate thread-------\n");
-  fprintf(stdout, "argv[0]: %s\n", argv[0]);
-  fprintf(stdout, "argv[1]: %s\n", argv[1]);
-  fprintf(stdout, "argv[2]: %s\n", argv[2]);
-
-  try
-  {
-    result = main(3, argv);
-  }
-  catch(const std::exception& e)
-  {
-    result = std::atoi(e.what());
-  }
+//-------------------------------------------------------------------
+void  Debug::Log(const char* message, Color color) {
+    if (callbackInstance != nullptr)
+        callbackInstance(message, (int)color, (int)strlen(message));
 }
 
+void  Debug::Log(const std::string message, Color color) {
+    const char* tmsg = message.c_str();
+    if (callbackInstance != nullptr)
+        callbackInstance(tmsg, (int)color, (int)strlen(tmsg));
+}
+
+void  Debug::Log(const int message, Color color) {
+    std::stringstream ss;
+    ss << message;
+    send_log(ss, color);
+}
+
+void  Debug::Log(const char message, Color color) {
+    std::stringstream ss;
+    ss << message;
+    send_log(ss, color);
+}
+
+void  Debug::Log(const float message, Color color) {
+    std::stringstream ss;
+    ss << message;
+    send_log(ss, color);
+}
+
+void  Debug::Log(const double message, Color color) {
+    std::stringstream ss;
+    ss << message;
+    send_log(ss, color);
+}
+
+void Debug::Log(const bool message, Color color) {
+    std::stringstream ss;
+    if (message)
+        ss << "true";
+    else
+        ss << "false";
+
+    send_log(ss, color);
+}
+
+void Debug::send_log(const std::stringstream &ss, const Color &color) {
+    const std::string tmp = ss.str();
+    const char* tmsg = tmp.c_str();
+    if (callbackInstance != nullptr)
+        callbackInstance(tmsg, (int)color, (int)strlen(tmsg));
+}
+//-------------------------------------------------------------------
+
+//Create a callback delegate
+void RegisterDebugCallback(FuncCallBack cb) {
+    callbackInstance = cb;
+}
+
+/// ADDED THIS
 extern "C"
 { 
 
 __declspec(dllexport)
 int Triangulate(char *bin, char *args, char *file)
 {
-  TriangulateImpl(bin, args, file);
-  return 0;
-  // // Launch the thread.
-  // std::thread thread(TriangulateImpl, bin, args, file);
+  char *argv[3] = {
+    bin, args, file
+  };
 
-  // // Terminate the thread.
-  // auto future = std::async(std::launch::async, &std::thread::join, &thread);
-  // if (future.wait_for(std::chrono::seconds(15)) == std::future_status::timeout) {
-  //   return 124;
-  // }
+  Debug::Log("-----hello from Triangulate thread-------\n");
+  Debug::Log(argv[0]);
+  Debug::Log(argv[1]);
+  Debug::Log(argv[2]);
 
-  // return result;
+  try
+  {
+    return main(3, argv);
+  }
+  catch(const std::exception& e)
+  {
+    return std::atoi(e.what());
+  }
+
+  return 69;
 }
 
-}
+} // extern "C"

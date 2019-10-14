@@ -90,6 +90,11 @@ namespace Transidious
          */
 
         public Button[] settingsIcons;
+
+        /// <summary>
+        ///  The transit editor panel, hidden by default.
+        /// </summary>
+        public GameObject transitEditorPanel;
         
 
         /**
@@ -253,7 +258,7 @@ namespace Transidious
             this.layout = layout;
         }
 
-        void HidePanels(State finalState, int panelIndex)
+        void HidePanels(State finalState, int panelIndex, Action onDone = null)
         {
             if (state != State.Default)
             {
@@ -295,6 +300,7 @@ namespace Transidious
             timePanelAnimator.onFinish = () =>
             {
                 state = finalState;
+                onDone?.Invoke();
             };
 
             // Animate finances panel
@@ -336,9 +342,7 @@ namespace Transidious
             if (detailsPanelAnimator == null)
             {
                 detailsPanelAnimator = panels[3].gameObject.AddComponent<TransformAnimator>();
-                detailsPanelAnimator.SetTargetSizeDelta(
-                    new Vector2(panels[3].transform.parent.GetComponent<RectTransform>().rect.width - timePanelAnimator.targetScale.x,
-                    panels[3].sizeDelta.y));
+                detailsPanelAnimator.SetTargetSizeDelta(new Vector2(40f, panels[3].sizeDelta.y));
 
                 var posDiff = timePanelAnimator.originalScale.x - timePanelAnimator.targetScale.x;
                 detailsPanelAnimator.SetTargetAnchoredPosition(
@@ -361,7 +365,7 @@ namespace Transidious
                         iconAnimator = icon.gameObject.AddComponent<TransformAnimator>();
 
                         iconAnimator.SetTargetAnchoredPosition(
-                            new Vector2(-detailsPanelAnimator.targetScale.x + (rc.rect.width / 2f), rc.anchoredPosition.y));
+                            new Vector2(-detailsPanelAnimator.targetScale.x + (rc.rect.width / 2f) + 7.5f, rc.anchoredPosition.y));
 
                         iconAnimator.SetAnimationType(TransformAnimator.AnimationType.Circular, TransformAnimator.ExecutionMode.Manual);
                     }
@@ -372,12 +376,31 @@ namespace Transidious
                 }
             }
 
+            // Animate multi-use panel.
+            var multiPanelAnimator = panels[4].gameObject.GetComponent<TransformAnimator>();
+            if (multiPanelAnimator == null)
+            {
+                multiPanelAnimator = panels[4].gameObject.AddComponent<TransformAnimator>();
+
+                multiPanelAnimator.SetTargetSizeDelta(
+                    new Vector2(panels[4].transform.parent.GetComponent<RectTransform>().rect.width - timePanelAnimator.targetScale.x - detailsPanelAnimator.targetScale.x,
+                    panels[4].sizeDelta.y));
+
+                var posDiff = timePanelAnimator.originalScale.x - timePanelAnimator.targetScale.x;
+                multiPanelAnimator.SetTargetAnchoredPosition(
+                    new Vector2(timePanelAnimator.targetScale.x + detailsPanelAnimator.targetScale.x,
+                    panels[3].anchoredPosition.y));
+
+                multiPanelAnimator.SetAnimationType(TransformAnimator.AnimationType.Circular, TransformAnimator.ExecutionMode.Manual);
+            }
+
             gameTimeTextAnimator.StartAnimation(duration);
             timePanelAnimator.StartAnimation(duration);
             financePanelAnimator.StartAnimation(duration);
             populationPanelAnimator.StartAnimation(duration);
             detailsPanelAnimator.StartAnimation(duration);
             iconAnimator?.StartAnimation(duration);
+            multiPanelAnimator.StartAnimation(duration);
         }
 
         void ShowPanels()
@@ -386,6 +409,8 @@ namespace Transidious
             {
                 return;
             }
+
+            this.transitEditorPanel.gameObject.SetActive(false);
 
             var duration = .3f;
 
@@ -433,6 +458,9 @@ namespace Transidious
                     iconAnimator = icon.GetComponent<TransformAnimator>();
                 }
             }
+            
+            // Animate multi-use panel.
+            var multiPanelAnimator = panels[4].gameObject.GetComponent<TransformAnimator>();
 
             gameTimeTextAnimator.StartAnimation(duration);
             timePanelAnimator.StartAnimation(duration);
@@ -440,10 +468,14 @@ namespace Transidious
             populationPanelAnimator.StartAnimation(duration);
             detailsPanelAnimator.StartAnimation(duration);
             iconAnimator?.StartAnimation(duration);
+            multiPanelAnimator.StartAnimation(duration);
         }
 
         public void ShowTransitPanel()
         {
+            this.transitEditorPanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            this.transitEditorPanel.gameObject.SetActive(true);
+
             HidePanels(State.TransitEditor, 0);
         }
 

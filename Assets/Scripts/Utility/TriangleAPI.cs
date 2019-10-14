@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using TriangleNet.IO;
+using TriangleNet.Geometry;
+using TriangleNet.Meshing;
 
 namespace Transidious
 {
@@ -37,6 +40,22 @@ namespace Transidious
             get
             {
                 return vertices.Count == 0;
+            }
+        }
+
+        public IEnumerable<Vector2[]> VertexLoops
+        {
+            get
+            {
+                return Outlines.Take(boundaryMarkersForPolygons.Count);
+            }
+        }
+
+        public IEnumerable<Vector2[]> Holes
+        {
+            get
+            {
+                return Outlines.Skip(boundaryMarkersForPolygons.Count);
             }
         }
 
@@ -352,8 +371,8 @@ namespace Transidious
                     {
                         polygonstring += vertex + ", ";
                     }
-                    Debug.LogError("Stuck in while loop. Vertices: " + polygonstring);
-                    break;
+
+                    throw new Exception("Stuck in while loop. Vertices: " + polygonstring);
                 }
             }
             while (!IsPointInPolygon(point));
@@ -423,8 +442,7 @@ namespace Transidious
                         holestring += vertex + ", ";
                     }
 
-                    Debug.LogError("Stuck in while loop. Vertices: " + holestring);
-                    break;
+                    throw new Exception("Stuck in while loop. Vertices: " + holestring);
                 }
             }
             while (!isPointGood);
@@ -450,11 +468,12 @@ namespace Transidious
 #if UNITY_EDITOR_OSX
         [DllImport("UnityTriangle", CallingConvention = CallingConvention.Cdecl)]
 #elif UNITY_EDITOR_WIN
-        [DllImport("triangle", EntryPoint = "Triangulate", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("triangle")]
 #else
         [DllImport("unitytriangle", EntryPoint = "Triangulate", CallingConvention = CallingConvention.Cdecl)]
 #endif
-        static extern int Triangulate(StringBuilder bin, StringBuilder args, StringBuilder file);
+        public static extern int Triangulate(StringBuilder bin, StringBuilder args, StringBuilder file);
+
 
         // Use this for initialization
         public static Polygon2D Triangulate(PSLG pslg)
@@ -501,6 +520,109 @@ namespace Transidious
             }
         }
 
+        static int GetIndex(Vertex v, List<Vector3> vertices, Dictionary<Vector2, int> triMap)
+        {
+            Vector3 vert = new Vector3((float)v.x, (float)v.y, 0f);
+            if (triMap.TryGetValue(vert, out int index))
+            {
+                return index;
+            }
+
+            index = vertices.Count;
+            vertices.Add(vert);
+            triMap.Add(vert, index);
+
+            return index;
+        }
+
+        static Dictionary<Vector2, int> triMap;
+        static List<int> triangles;
+        static List<Vector3> vertices;
+
+        static Mesh GetMesh(IMesh mesh)
+        {
+            if (triMap == null)
+            {
+                triMap = new Dictionary<Vector2, int>();
+                triangles = new List<int>();
+                vertices = new List<Vector3>();
+            }
+            else
+            {
+                triMap.Clear();
+                triangles.Clear();
+                vertices.Clear();
+            }
+
+            foreach (var tri in mesh.Triangles)
+            {
+                triangles.Add(GetIndex(tri.GetVertex(2), vertices, triMap));
+                triangles.Add(GetIndex(tri.GetVertex(1), vertices, triMap));
+                triangles.Add(GetIndex(tri.GetVertex(0), vertices, triMap));
+            }
+
+            var result = new Mesh()
+            {
+                vertices = vertices.ToArray(),
+                triangles = triangles.ToArray(),
+            };
+
+            //MeshBuilder.FixWindingOrder(result);
+            return result;
+        }
+
+        public static Mesh CreateMeshNew(PSLG pslg)
+        {
+            if (pslg.vertices.Count == 0)
+            {
+                Debug.LogWarning("No vertices passed to triangle. hole count: "
+                    + pslg.holes.Count + ", vert count: " + pslg.vertices.Count);
+
+                return null;
+            }
+            else
+            {
+                try
+                {
+                    if (!pslg.Validate())
+                    {
+                        Debug.LogError("Invalid points in PSLG!");
+                        return null;
+                    }
+
+                    var polygon = new Polygon();
+
+                    var i = 0;
+                    foreach (var verts in pslg.Outlines)
+                    {
+                        polygon.Add(new Contour(verts.Select(v => new Vertex(v.x, v.y))), i >= pslg.boundaryMarkersForPolygons.Count);
+                        ++i;
+                    }
+
+                    //var polyFile = WritePolyFile(pslg);
+                    //var polygon = FileProcessor.Read(polyFile);
+
+                    var options = new TriangleNet.Meshing.ConstraintOptions() { ConformingDelaunay = true };
+                    var quality = new TriangleNet.Meshing.QualityOptions() { MinimumAngle = 0 };
+
+                    // Triangulate the polygon
+                    var mesh = (TriangleNet.Mesh)polygon.Triangulate(options, quality);
+                    if (mesh.Vertices.Count > 10000)
+                    {
+                        Debug.LogWarning("mesh has too many vertices (" + mesh.Vertices.Count + ")");
+                        return null;
+                    }
+                    
+                    return GetMesh(mesh);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning(e.GetType().AssemblyQualifiedName + " " + e.Message);
+                    return null;
+                }
+            }
+        }
+
         static Mesh TriangulateSimple(PSLG pslg)
         {
             var mesh = MeshBuilder.PointsToMeshFast(pslg.vertices.ToArray());
@@ -509,7 +631,28 @@ namespace Transidious
             return mesh;
         }
 
-        public static Mesh CreateMesh(PSLG pslg)
+        public static Mesh CreateMesh(PSLG pslg, bool fast = false)
+        {
+            Mesh mesh;
+            if (fast)
+            {
+                mesh = CreateMeshNew(pslg);
+            }
+            else
+            {
+                mesh = CreateMeshOld(pslg);
+            }
+
+            if (mesh == null)
+            {
+                Debug.LogWarning("creating simple mesh without holes");
+                return TriangulateSimple(pslg);
+            }
+
+            return mesh;
+        }
+
+        public static Mesh CreateMeshOld(PSLG pslg)
         {
             if (pslg == null)
             {
@@ -615,31 +758,64 @@ namespace Transidious
 
         static int ExecuteTriangle(string polyFilePath)
         {
-            var process = new System.Diagnostics.Process
+            using (var process = new System.Diagnostics.Process
             {
                 StartInfo =
                 {
                     FileName = @"C:\Users\Jonny\triangle\triangle.exe",
-                    Arguments = "-pP " + polyFilePath,
+                    Arguments = "-pPq0 " + polyFilePath,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                 },
                 EnableRaisingEvents = true
-            };
-
-            process.Start();
-            if (!process.WaitForExit(10000))
+            })
             {
-                return 124;
-            }
+                process.Start();
+                if (!process.WaitForExit(10000))
+                {
+                    return 124;
+                }
 
-            return process.ExitCode;
+                return process.ExitCode;
+            }
         }
+
+        [DllImport("triangle")]
+        static extern void RegisterDebugCallback(debugCallback cb);
+
+        delegate void debugCallback(IntPtr request, int color, int size);
+        enum Color { red, green, blue, black, white, yellow, orange };
+
+        static void OnDebugCallback(IntPtr request, int color, int size)
+        {
+            //Ptr to string
+            string debug_string = Marshal.PtrToStringAnsi(request, size);
+
+            //Add Specified Color
+            debug_string =
+                String.Format("{0}{1}{2}{3}{4}",
+                "<color=",
+                ((Color)color).ToString(),
+                ">",
+                debug_string,
+                "</color>"
+                );
+
+            UnityEngine.Debug.Log(debug_string);
+        }
+
+        static bool registeredCallback = false;
 
         static int ExecuteTriangleInProcess(string polyFilePath)
         {
+            if (!registeredCallback)
+            {
+                RegisterDebugCallback(OnDebugCallback);
+                registeredCallback = true;
+            }
+
             if (polyFilePath == null)
             {
                 throw new InvalidOperationException("no poly file path!");
@@ -647,7 +823,7 @@ namespace Transidious
 
             Debug.Log("calling triangle");
             return Triangulate(new StringBuilder("/usr/local/bin/triangle"),
-                               new StringBuilder("-pPq0"),
+                               new StringBuilder("-pPq0VVV"),
                                new StringBuilder(polyFilePath));
         }
 

@@ -337,7 +337,11 @@ namespace Transidious
             input.DisableControls();
 
             this.snapController = new SnapController(this);
-            StartCoroutine(LoadMap(areaToLoad));
+
+            if (areaToLoad != OSMImportHelper.Area.Default)
+            {
+                StartCoroutine(LoadMap(areaToLoad));
+            }
 
             input.EnableControls();
         }

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package Transidious.Serialization;
+option csharp_namespace = "Transidious.Serialization";
+
+import "Common.proto";
+
+message StreetIntersection {
+    MapObject mapObject = 1;
+    Vector2 position = 2;
+}
+
+message StreetSegment {
+    MapObject mapObject = 1;
+    repeated Vector2 positions = 2;
+    uint32 startIntersectionID = 3;
+    uint32 endIntersectionID = 4;
+    bool hasTramTracks = 5;
+}
+
+message Street {
+    enum Type {
+        Primary = 0;
+        Secondary = 1;
+        Tertiary = 2;
+        Residential = 3;
+        Link = 4;
+        Path = 5;
+        River = 6;
+    }
+
+    MapObject mapObject = 1;
+    string displayName = 2;
+    Type type = 3;
+    repeated StreetSegment segments = 4;
+    bool lit = 5;
+    bool oneway = 6;
+    uint32 maxspeed = 7;
+    uint32 lanes = 8;
+}

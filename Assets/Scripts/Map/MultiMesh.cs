@@ -11,7 +11,7 @@ namespace Transidious
         [System.Serializable]
         public struct SerializableMultiMeshData
         {
-            public SerializableMesh[] meshes;
+            public SerializableMesh2D[] meshes;
             public SerializableColor color;
             public RenderingDistance distance;
         }
@@ -43,8 +43,7 @@ namespace Transidious
         public Map map;
         Dictionary<RenderingDistance, MeshData> meshData;
 
-        public GameObject[] renderingObjects;
-
+        public List<GameObject> renderingObjects;
         private static GameObject prefab;
 
         public static MultiMesh Create(Map map, string name, Transform parent = null)
@@ -67,9 +66,6 @@ namespace Transidious
         public void AddMesh(Color c, Mesh mesh, float z = 0f)
         {
             AddMesh(c, mesh, RenderingDistance.Near, z);
-            AddMesh(c, mesh, RenderingDistance.Far, z);
-            AddMesh(c, mesh, RenderingDistance.VeryFar, z);
-            AddMesh(c, mesh, RenderingDistance.Farthest, z);
         }
 
         public void AddMesh(Color c, Mesh mesh, RenderingDistance dist, float z = 0f)
@@ -100,17 +96,12 @@ namespace Transidious
 
         public void CreateMeshes()
         {
-            int neededObjects = 0;
-
             foreach (var data in meshData)
             {
-                int currNeededObjects = 0;
-
                 foreach (var entry in data.Value.meshMap)
                 {
                     if (entry.Value.meshes != null)
                     {
-                        currNeededObjects = entry.Value.meshes.Length;
                         continue;
                     }
 
@@ -198,40 +189,14 @@ namespace Transidious
                     }
 
                     entry.Value.meshes = meshes.ToArray();
-                    currNeededObjects += meshes.Count;
                 }
-
-                neededObjects = System.Math.Max(neededObjects, currNeededObjects);
             }
 
-            renderingObjects = new GameObject[neededObjects];
-
-            for (int i = 0; i < neededObjects; ++i)
-            {
-                var obj = Instantiate(map.meshPrefab);
-                obj.transform.SetParent(this.transform);
-
-                var meshFilter = obj.GetComponent<MeshFilter>();
-                var meshRenderer = obj.GetComponent<MeshRenderer>();
-
-                renderingObjects[i] = obj;
-            }
+            renderingObjects = new List<GameObject>();
         }
 
-        public void CopyData(RenderingDistance fromDistance,
-                             RenderingDistance toDistance)
+        void LoadMeshes(RenderingDistance distance, ref int i)
         {
-            if (!meshData.TryGetValue(fromDistance, out MeshData data))
-            {
-                return;
-            }
-
-            meshData.Add(toDistance, data);
-        }
-
-        public void UpdateScale(RenderingDistance distance)
-        {
-            int i = 0;
             if (meshData.TryGetValue(distance, out MeshData data))
             {
                 foreach (var entry in data.meshMap)
@@ -243,6 +208,14 @@ namespace Transidious
 
                     foreach (var mesh in entry.Value.meshes)
                     {
+                        if (i >= renderingObjects.Count)
+                        {
+                            var nextObj = Instantiate(map.meshPrefab);
+                            nextObj.transform.SetParent(this.transform);
+
+                            renderingObjects.Add(nextObj);
+                        }
+
                         var obj = renderingObjects[i];
                         var meshFilter = obj.GetComponent<MeshFilter>();
                         var meshRenderer = obj.GetComponent<MeshRenderer>();
@@ -254,8 +227,38 @@ namespace Transidious
                     }
                 }
             }
+        }
 
-            while (i < renderingObjects.Length)
+        public void UpdateScale(RenderingDistance distance)
+        {
+            var i = 0;
+            switch (distance)
+            {
+                case RenderingDistance.Near:
+                    LoadMeshes(RenderingDistance.Near, ref i);
+                    LoadMeshes(RenderingDistance.Far, ref i);
+                    LoadMeshes(RenderingDistance.VeryFar, ref i);
+                    LoadMeshes(RenderingDistance.Farthest, ref i);
+
+                    break;
+                case RenderingDistance.Far:
+                    LoadMeshes(RenderingDistance.Far, ref i);
+                    LoadMeshes(RenderingDistance.VeryFar, ref i);
+                    LoadMeshes(RenderingDistance.Farthest, ref i);
+
+                    break;
+                case RenderingDistance.VeryFar:
+                    LoadMeshes(RenderingDistance.VeryFar, ref i);
+                    LoadMeshes(RenderingDistance.Farthest, ref i);
+
+                    break;
+                case RenderingDistance.Farthest:
+                    LoadMeshes(RenderingDistance.Farthest, ref i);
+
+                    break;
+            }
+
+            while (i < renderingObjects.Count)
             {
                 var obj = renderingObjects[i];
                 var meshFilter = obj.GetComponent<MeshFilter>();
@@ -294,12 +297,12 @@ namespace Transidious
             {
                 foreach (var entry in data.Value.meshMap)
                 {
-                    var meshes = new SerializableMesh[entry.Value.meshes.Length];
+                    var meshes = new SerializableMesh2D[entry.Value.meshes.Length];
 
                     int i = 0;
                     foreach (var mesh in entry.Value.meshes)
                     {
-                        meshes[i++] = new SerializableMesh(mesh);
+                        meshes[i++] = new SerializableMesh2D(mesh);
                     }
 
                     serializedMeshData.Add(new SerializableMultiMeshData

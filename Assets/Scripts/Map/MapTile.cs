@@ -28,8 +28,9 @@ namespace Transidious
         public HashSet<IMapObject> mapObjects;
         public Rect rect;
         RenderingDistance? currentRenderingDist;
-        public MultiMesh mesh;
         public HashSet<IMapObject> orphanedObjects;
+
+        Dictionary<string, MultiMesh> meshes;
 
         BoxCollider2D[] boxColliders;
         List<ColliderInfo> colliderInfo;
@@ -55,7 +56,7 @@ namespace Transidious
         public void Initialize(Map map, int x, int y)
         {
             this.map = map;
-            this.mesh.map = map;
+            this.meshes = new Dictionary<string, MultiMesh>();
             this.name = "Tile " + x + " " + y;
             this.transform.SetParent(map.transform);
             this.x = x;
@@ -144,11 +145,34 @@ namespace Transidious
                         shouldHighlight);
         }
 
+        public MultiMesh GetMesh(string category)
+        {
+            if (meshes.TryGetValue(category, out MultiMesh mesh))
+            {
+                return mesh;
+            }
+
+            mesh = MultiMesh.Create(map, category, this.transform);
+            meshes.Add(category, mesh);
+
+            return mesh;
+        }
+
+        public void AddMesh(string category, Mesh mesh, Color c, float z = 0f, RenderingDistance dist = RenderingDistance.Near)
+        {
+            var multiMesh = GetMesh(category);
+            multiMesh.AddMesh(c, mesh, dist, z);
+        }
+
         public void FinalizeTile()
         {
             CreateColliders();
-            mesh.CreateMeshes();
             currentRenderingDist = null;
+
+            foreach (var mesh in meshes)
+            {
+                mesh.Value.CreateMeshes();
+            }
         }
 
         public void CreateColliders()
@@ -231,7 +255,11 @@ namespace Transidious
                 return;
             }
 
-            mesh.UpdateScale(dist);
+            foreach (var mesh in meshes)
+            {
+                mesh.Value.UpdateScale(dist);
+            }
+
             currentRenderingDist = dist;
 
             if (!gameObject.activeSelf)
@@ -247,13 +275,13 @@ namespace Transidious
                 gameObject.SetActive(false);
             }
 
-            if (orphanedObjects != null)
-            {
-                foreach (var obj in orphanedObjects)
-                {
-                    obj.Hide();
-                }
-            }
+            //if (orphanedObjects != null)
+            //{
+            //    foreach (var obj in orphanedObjects)
+            //    {
+            //        obj.Hide();
+            //    }
+            //}
         }
 
         ColliderInfo enteredMapObject = null;
@@ -375,6 +403,54 @@ namespace Transidious
             Unhighlight(enteredMapObject);
             enteredMapObject = null;
             mousePosition = null;
+        }
+
+        public Serialization.MapTile ToProtobuf()
+        {
+            var tile = new Serialization.MapTile
+            {
+                X = (uint)x,
+                Y = (uint)y,
+            };
+
+            tile.MapObjectIDs.AddRange(mapObjects.Select(obj => (uint)obj.Id));
+
+            if (orphanedObjects != null)
+                tile.OrphanedObjectIDs.AddRange(orphanedObjects.Select(obj => (uint)obj.Id));
+
+            return tile;
+        }
+
+        public void Deserialize(Serialization.MapTile tile)
+        {
+            foreach (var id in tile.MapObjectIDs)
+            {
+                var obj = map.GetMapObject((int)id);
+                if (obj == null)
+                {
+                    Debug.LogWarning("missing map object with ID " + id);
+                    continue;
+                }
+
+                this.mapObjects.Add(obj);
+            }
+
+            if (tile.OrphanedObjectIDs != null)
+            {
+                this.orphanedObjects = new HashSet<IMapObject>();
+
+                foreach (var id in tile.OrphanedObjectIDs)
+                {
+                    var obj = map.GetMapObject((int)id);
+                    if (obj == null)
+                    {
+                        Debug.LogWarning("missing map object with ID " + id);
+                        continue;
+                    }
+
+                    this.orphanedObjects.Add(obj);
+                }
+            }
         }
 
         public SerializableMapTile Serialize()

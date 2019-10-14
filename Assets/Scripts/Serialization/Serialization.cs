@@ -6,62 +6,6 @@ using System.Security.Permissions;
 
 namespace Transidious
 {
-    public interface IPersistable
-    {
-        object Serialize(SerializationContext context);
-
-        object Deserialize(SerializationContext context, object data);
-
-        void Finalize(SerializationContext context,
-                      object deserializedObject,
-                      object data);
-    }
-
-    [System.Serializable]
-    public class SerializationContext : System.Runtime.Serialization.ISerializable
-    {
-        object subject;
-        Dictionary<int, object> serializedClasses;
-        int lastAssignedID;
-
-        public SerializationContext(object subject)
-        {
-            this.subject = subject;
-            this.serializedClasses = new Dictionary<int, object>();
-            this.lastAssignedID = 0;
-        }
-
-        public int AddClassInstance<T>(T value) where T : class
-        {
-            var id = lastAssignedID++;
-            serializedClasses.Add(id, value);
-
-            return id;
-        }
-
-        public T GetClassInstance<T>(int id) where T : class
-        {
-            if (serializedClasses.TryGetValue(id, out object value))
-            {
-                return value as T;
-            }
-
-            return null;
-        }
-
-        protected SerializationContext(SerializationInfo info, StreamingContext context)
-        {
-            this.subject = info.GetValue("subject", typeof(object));
-        }
-
-        [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
-        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("subject", subject);
-            info.AddValue("classTable", serializedClasses.Serialize());
-        }
-    }
-
     [System.Serializable]
     public struct SerializableVector3
     {
@@ -208,6 +152,114 @@ namespace Transidious
 
     public static class SerializationExtensions
     {
+        public static Serialization.Vector2 ToProtobuf(this Vector2 vec)
+        {
+            return new Serialization.Vector2
+            {
+                X = vec.x,
+                Y = vec.y,
+            };
+        }
+
+        public static Vector2 Deserialize(this Serialization.Vector2 vec)
+        {
+            return new Vector2(vec.X, vec.Y);
+        }
+
+        public static Serialization.Vector3 ToProtobuf(this Vector3 vec)
+        {
+            return new Serialization.Vector3
+            {
+                X = vec.x,
+                Y = vec.y,
+                Z = vec.z,
+            };
+        }
+
+        public static Vector3 Deserialize(this Serialization.Vector3 vec)
+        {
+            return new Vector3(vec.X, vec.Y, vec.Z);
+        }
+
+        public static Serialization.Color ToProtobuf(this Color c)
+        {
+            return new Serialization.Color
+            {
+                R = c.r,
+                G = c.g,
+                B = c.b,
+                A = c.a,
+            };
+        }
+
+        public static Color Deserialize(this Serialization.Color c)
+        {
+            return new Color(c.R, c.G, c.B, c.A);
+        }
+
+        public static Serialization.Mesh2D ToProtobuf2D(this Mesh mesh)
+        {
+            var result = new Serialization.Mesh2D();
+            foreach (var vert in mesh.vertices)
+            {
+                result.Vertices.Add(((Vector2)vert).ToProtobuf());
+            }
+            foreach (var tri in mesh.triangles)
+            {
+                result.Triangles.Add((uint)tri);
+            }
+            foreach (var uv in mesh.uv)
+            {
+                result.Uv.Add(uv.ToProtobuf());
+            }
+
+            return result;
+        }
+
+        public static Mesh Deserialize(this Serialization.Mesh2D m, float z = 0f)
+        {
+            return new Mesh
+            {
+                vertices = m.Vertices.Select(v => new Vector3(v.X, v.Y, z)).ToArray(),
+                triangles = m.Triangles.Select(v => (int)v).ToArray(),
+                uv = m.Uv.Select(v => v.Deserialize()).ToArray(),
+            };
+        }
+
+        public static Serialization.Mesh ToProtobuf(this Mesh mesh)
+        {
+            var result = new Serialization.Mesh();
+            foreach (var vert in mesh.vertices)
+            {
+                result.Vertices.Add(vert.ToProtobuf());
+            }
+            foreach (var tri in mesh.triangles)
+            {
+                result.Triangles.Add((uint)tri);
+            }
+            foreach (var uv in mesh.uv)
+            {
+                result.Uv.Add(uv.ToProtobuf());
+            }
+
+            return result;
+        }
+
+        public static Mesh Deserialize(this Serialization.Mesh m)
+        {
+            return new Mesh
+            {
+                vertices = m.Vertices.Select(v => v.Deserialize()).ToArray(),
+                triangles = m.Triangles.Select(v => (int)v).ToArray(),
+                uv = m.Uv.Select(v => v.Deserialize()).ToArray(),
+            };
+        }
+
+        public static VersionTriple Deserialize(this Serialization.VersionTriple triple)
+        {
+            return new VersionTriple((short)triple.Major, (short)triple.Minor, (short)triple.Patch);
+        }
+
         public static SerializableVector3 Serialize(this Vector3 vec)
         {
             return new SerializableVector3(vec);
@@ -235,13 +287,33 @@ namespace Transidious
         {
             return new SerializableDictionary<TKey, TValue>(dict);
         }
+
+        public static bool Contains(this Google.Protobuf.Collections.MapField<string, string> map, string Key, string Value)
+        {
+            if (!map.TryGetValue(Key, out string val))
+            {
+                return false;
+            }
+
+            return Value == val;
+        }
+
+        public static string GetValue(this Google.Protobuf.Collections.MapField<string, string> map, string Key)
+        {
+            if (map.TryGetValue(Key, out string val))
+            {
+                return val;
+            }
+
+            return string.Empty;
+        }
     }
 
     [System.Serializable]
     public struct SerializableMesh
     {
         public SerializableVector3[] vertices;
-        public int[] triangles;
+        public short[] triangles;
         public SerializableVector2[] uv;
 
         public SerializableMesh(Mesh mesh)
@@ -256,7 +328,7 @@ namespace Transidious
             }
 
             this.vertices = mesh.vertices.Select(v => new SerializableVector3(v)).ToArray();
-            this.triangles = mesh.triangles;
+            this.triangles = mesh.triangles.Select(v=>(short)v).ToArray();
             this.uv = mesh.uv.Select(v => new SerializableVector2(v)).ToArray();
         }
 
@@ -275,7 +347,7 @@ namespace Transidious
             return new Mesh
             {
                 vertices = vertices.Select(v => v.ToVector()).ToArray(),
-                triangles = triangles,
+                triangles = triangles.Select(v=> (int)v).ToArray(),
                 uv = uv.Select(v => v.ToVector()).ToArray()
             };
         }

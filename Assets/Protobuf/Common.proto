@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package Transidious.Serialization;
+option csharp_namespace = "Transidious.Serialization";
+
+message VersionTriple {
+    uint32 major = 1;
+    uint32 minor = 2;
+    uint32 patch = 3;
+}
+
+message Vector2 {
+    float x = 1;
+    float y = 2;
+}
+
+message Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Color {
+    float r = 1;
+    float g = 2;
+    float b = 3;
+    float a = 4;
+}
+
+message Mesh2D {
+    repeated Vector2 vertices  = 1;
+    repeated uint32  triangles = 2;
+    repeated Vector2 uv        = 3;
+}
+
+message Mesh {
+    repeated Vector3 vertices  = 1;
+    repeated uint32  triangles = 2;
+    repeated Vector2 uv        = 3;
+}
+
+message MapObject {
+    message Outline {
+        repeated Vector2 outlinePositions = 1;
+    }
+
+    uint32 id = 1;
+    string name = 2;
+    int32 uniqueTileX = 3;
+    int32 uniqueTileY = 4;
+    repeated Outline outlinePositions = 5;
+    float area = 6;
+    Vector2 centroid = 7;
+}

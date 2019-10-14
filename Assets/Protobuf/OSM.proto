@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package Transidious.Serialization.OSM;
+option csharp_namespace = "Transidious.Serialization.OSM";
+
+import "Common.proto";
+import "Building.proto";
+import "Street.proto";
+import "NaturalFeature.proto";
+
+message OsmGeo {
+    enum Type {
+        Node = 0;
+        Way = 1;
+        Relation = 2;
+    }
+
+    uint64 id = 1;
+    Type type = 2;
+    map<string, string> tags = 3;
+}
+
+message Node {
+    OsmGeo geo = 1;
+    Vector2 position = 2;
+}
+
+message Way {
+    OsmGeo geo = 1;
+    repeated uint64 nodes = 2;
+}
+
+message Relation {
+    message Member {
+        OsmGeo.Type type = 1;
+        uint64 id = 2;
+        string role = 3;
+    }
+
+    OsmGeo geo = 1;
+    repeated Member members = 2;
+}
+
+message Area {
+    message Street {
+        uint64 wayId = 1;
+        Transidious.Serialization.Street.Type type = 2;
+    }
+
+    message NaturalFeature {
+        uint64 geoId = 1;
+        Transidious.Serialization.NaturalFeature.Type type = 2;
+    }
+
+    message Building {
+        uint64 geoId = 1;
+        Transidious.Serialization.Building.Type type = 2;
+    }
+
+    repeated Node nodes = 1;
+    repeated Way ways = 2;
+    repeated Relation relations = 3;
+    uint64 boundary = 4;
+
+    repeated Street streets = 5;
+    repeated NaturalFeature features = 6;
+    repeated Building buildings = 7;
+
+    float minX = 8;
+    float maxX = 9;
+    float minY = 10;
+    float maxY = 11;
+}

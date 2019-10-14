@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package Transidious.Serialization;
+option csharp_namespace = "Transidious.Serialization";
+
+import "Common.proto";
+
+message NaturalFeature {
+    enum Type {
+        Park = 0;
+        Lake = 1;
+        Green = 2;
+        SportsPitch = 3;
+        Allotment = 4;
+        Cemetery = 5;
+        FootpathArea = 6;
+        Beach = 7;
+        Forest = 8;
+        Parking = 9;
+        Footpath = 10;
+    }
+
+    MapObject mapObject = 1;
+    Mesh2D mesh = 2;
+    Type type = 3;
+}

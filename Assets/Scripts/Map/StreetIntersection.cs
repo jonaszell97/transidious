@@ -178,6 +178,23 @@ namespace Transidious
             this.streetAngles = new Dictionary<StreetSegment, float>();
         }
 
+        public new Serialization.StreetIntersection ToProtobuf()
+        {
+            return new Serialization.StreetIntersection
+            {
+                MapObject = base.ToProtobuf(),
+                Position = ((Vector2)position).ToProtobuf(),
+            };
+        }
+
+        public static StreetIntersection Deserialize(Serialization.StreetIntersection inter, Map map)
+        {
+            var obj = map.CreateIntersection(inter.Position.Deserialize(), (int)inter.MapObject.Id);
+            obj.Deserialize(inter.MapObject);
+
+            return obj;
+        }
+
         public new SerializedStreetIntersection Serialize()
         {
             return new SerializedStreetIntersection
@@ -277,6 +294,17 @@ namespace Transidious
 
         public Vector3 GetNextPosition(StreetSegment seg)
         {
+            if (seg.positions.Count == 1)
+            {
+                Debug.LogWarning("segment has only one position!");
+                return seg.positions[0];
+            }
+            if (seg.positions.Count == 0)
+            {
+                Debug.LogWarning("segment has no positions!");
+                return Vector3.zero;
+            }
+
             if (this == seg.startIntersection)
             {
                 return seg.positions[1];

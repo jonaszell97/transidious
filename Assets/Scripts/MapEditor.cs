@@ -78,19 +78,7 @@ namespace Transidious
 
         void Start()
         {
-            game.input.RegisterEventListener(InputEvent.MouseDown, (DynamicMapObject obj) =>
-            {
-                if (game.editorMode != GameController.MapEditorMode.BulldozeMode)
-                {
-                    return;
-                }
-
-                var s = obj as StreetSegment;
-                if (s != null)
-                {
-                    s.DeleteSegment();
-                }
-            });
+            
         }
 
         void Update()
@@ -231,7 +219,7 @@ namespace Transidious
             startPos.z = 0f;
 
             StreetIntersection startIntersection = null;
-            if (selectedStreetSegment)
+            if (selectedStreetSegment != null)
             {
                 // Attach to start intersection.
                 if (selectedStreetSegment.startIntersection?.position.Equals(startPos) ?? false)
@@ -258,7 +246,7 @@ namespace Transidious
             }
 
             Vector3 endPos;
-            if (hoveredStreetSegment)
+            if (hoveredStreetSegment != null)
             {
                 endPos = game.createCursorObj.transform.position;
             }
@@ -270,7 +258,7 @@ namespace Transidious
             endPos.z = 0f;
 
             StreetIntersection endIntersection = null;
-            if (hoveredStreetSegment)
+            if (hoveredStreetSegment != null)
             {
                 // Attach to start intersection.
                 if (hoveredStreetSegment.startIntersection?.position.Equals(endPos) ?? false)

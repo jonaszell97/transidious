@@ -35,6 +35,7 @@ namespace Transidious
 
         string Name { get; set; }
         MapTile UniqueTile { get; set; }
+        bool Active { get; }
 
         Transform transform { get; }
         Vector2[][] outlinePositions { get; }
@@ -67,6 +68,14 @@ namespace Transidious
             set
             {
                 id = value;
+            }
+        }
+
+        public bool Active
+        {
+            get
+            {
+                return uniqueTile?.gameObject.activeSelf ?? true;
             }
         }
 
@@ -135,6 +144,54 @@ namespace Transidious
         public virtual Color GetColor()
         {
             return Color.clear;
+        }
+
+        public Serialization.MapObject ToProtobuf()
+        {
+            var result = new Serialization.MapObject
+            {
+                Id = (uint)id,
+                Name = name,
+                UniqueTileX = uniqueTile != null ? uniqueTile.x : -1,
+                UniqueTileY = uniqueTile != null ? uniqueTile.y : -1,
+                Area = area,
+                Centroid = centroid.ToProtobuf(),
+            };
+
+            if (outlinePositions != null)
+            {
+                foreach (var outline in outlinePositions)
+                {
+                    var vec = new Serialization.MapObject.Types.Outline();
+                    foreach (var vert in outline)
+                    {
+                        vec.OutlinePositions.Add(vert.ToProtobuf());
+                    }
+
+                    result.OutlinePositions.Add(vec);
+                }
+            }
+
+            return result;
+        }
+
+        public void Deserialize(Serialization.MapObject obj)
+        {
+            this.id = (int)obj.Id;
+            this.name = obj.Name;
+            this.area = obj.Area;
+            this.centroid = obj.Centroid.Deserialize();
+
+            if (obj.UniqueTileX != -1)
+            {
+                var tile = GameController.instance.loadedMap.tiles[obj.UniqueTileX][obj.UniqueTileY];
+                this.uniqueTile = tile;
+            }
+
+            if (obj.OutlinePositions != null)
+            {
+                this.outlinePositions = obj.OutlinePositions.Select(arr => arr.OutlinePositions.Select(v => v.Deserialize()).ToArray()).ToArray();
+            }
         }
 
         public SerializableMapObject Serialize()
@@ -211,6 +268,19 @@ namespace Transidious
             }
         }
 
+        public bool Active
+        {
+            get
+            {
+                return gameObject.activeSelf;
+            }
+
+            set
+            {
+                gameObject.SetActive(value);
+            }
+        }
+
         public MapObjectKind Kind
         {
             get
@@ -259,27 +329,6 @@ namespace Transidious
             }
         }
 
-        public bool ShouldRender(RenderingDistance dist)
-        {
-            switch (kind)
-            {
-            case MapObjectKind.Street:
-            default:
-                return false;
-            case MapObjectKind.StreetIntersection:
-                return dist <= RenderingDistance.Far;
-            case MapObjectKind.StreetSegment:
-                return (this as StreetSegment).GetStreetWidth(dist) > 0f;
-            case MapObjectKind.Building:
-            case MapObjectKind.NaturalFeature:
-                return dist == RenderingDistance.Near;
-            case MapObjectKind.Line:
-            case MapObjectKind.Route:
-            case MapObjectKind.Stop:
-                return true;
-            }
-        }
-
         public void Hide()
         {
             switch (kind)
@@ -295,14 +344,6 @@ namespace Transidious
                 }
 
                 break;
-            case MapObjectKind.StreetSegment:
-                {
-                    var seg = this as StreetSegment;
-                    seg.streetMeshObj?.SetActive(false);
-                    seg.outlineMeshObj?.SetActive(false);
-
-                    break;
-                }
             }
         }
 
@@ -321,18 +362,6 @@ namespace Transidious
                 }
 
                 break;
-            case MapObjectKind.StreetSegment:
-                {
-                    var seg = this as StreetSegment;
-                    seg.outlineMeshObj?.SetActive(true);
-
-                    if (dist <= RenderingDistance.Far)
-                    {
-                        seg.streetMeshObj?.SetActive(true);
-                    }
-
-                    break;
-                }
             }
         }
 
@@ -392,6 +421,18 @@ namespace Transidious
                 uniqueTileX = uniqueTile != null ? uniqueTile.x : -1,
                 uniqueTileY = uniqueTile != null ? uniqueTile.y : -1,
             };
+        }
+
+        public void Deserialize(Serialization.MapObject obj)
+        {
+            this.id = (int)obj.Id;
+            this.name = obj.Name;
+
+            if (obj.UniqueTileX != -1)
+            {
+                var tile = GameController.instance.loadedMap.tiles[obj.UniqueTileX][obj.UniqueTileY];
+                this.uniqueTile = tile;
+            }
         }
 
         public void Deserialize(SerializableMapObject obj)

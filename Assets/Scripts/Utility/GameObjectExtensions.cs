@@ -54,11 +54,11 @@ namespace Transidious
                                     string description,
                                     System.Action callback)
         {
-            var startTime = FrameTimer.instance.FrameDuration;
+            var startTime = FrameTimer.instance.stopwatch.ElapsedMilliseconds;
             callback();
 
             Debug.Log("Timer [" + description + "]: "
-                + (FrameTimer.instance.FrameDuration - startTime) + "ms");
+                + (FrameTimer.instance.stopwatch.ElapsedMilliseconds - startTime) + "ms");
         }
 #endif
 

@@ -35,6 +35,8 @@ namespace Transidious
         public int visitors;
         public int capacity;
 
+        static int maxVertexCount;
+
         public void UpdateMesh(Map map)
         {
             if (mesh == null)
@@ -48,18 +50,20 @@ namespace Transidious
             case NaturalFeature.Type.Park:
                 layer = Map.Layer(MapLayer.Parks, 0);
                 break;
-            case NaturalFeature.Type.Allotment:
+            case NaturalFeature.Type.Green:
+                layer = Map.Layer(MapLayer.Parks, 1);
+                break;
+                case NaturalFeature.Type.Allotment:
             case NaturalFeature.Type.Cemetery:
             case NaturalFeature.Type.SportsPitch:
             case NaturalFeature.Type.FootpathArea:
             case NaturalFeature.Type.Parking:
-                layer = Map.Layer(MapLayer.Parks, 1);
+                layer = Map.Layer(MapLayer.Parks, 2);
                 break;
             case NaturalFeature.Type.Forest:
                 layer = Map.Layer(MapLayer.NatureBackground, 0);
                 break;
             case NaturalFeature.Type.Beach:
-            case NaturalFeature.Type.Green:
                 layer = Map.Layer(MapLayer.NatureBackground, 1);
                 break;
             case NaturalFeature.Type.Lake:
@@ -72,7 +76,7 @@ namespace Transidious
 
             foreach (var tile in map.GetTilesForObject(this))
             {
-                tile.mesh.AddMesh(GetColor(), mesh, layer);
+                tile.AddMesh("Features", mesh, GetColor(), layer);
 
                 if (outlinePositions != null)
                 {
@@ -176,6 +180,27 @@ namespace Transidious
             var map = GameController.instance.loadedMap;
             map.naturalFeatures.Remove(this);
             map.DeleteMapObject(this);
+        }
+
+        public new Serialization.NaturalFeature ToProtobuf()
+        {
+            return new Serialization.NaturalFeature
+            {
+                MapObject = base.ToProtobuf(),
+                Mesh = mesh?.ToProtobuf2D() ?? new Serialization.Mesh2D(),
+                Type = (Serialization.NaturalFeature.Types.Type)type,
+            };
+        }
+
+        public static NaturalFeature Deserialize(Serialization.NaturalFeature feature, Map map)
+        {
+            var newFeature = map.CreateFeature(
+                feature.MapObject.Name, (Type)feature.Type, feature.Mesh.Deserialize(),
+                feature.MapObject.Area, feature.MapObject.Centroid.Deserialize(),
+                (int)feature.MapObject.Id);
+
+            newFeature.Deserialize(feature.MapObject);
+            return newFeature;
         }
 
         public new SerializedFeature Serialize()

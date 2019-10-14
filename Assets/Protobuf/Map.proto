@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package Transidious.Serialization;
+option csharp_namespace = "Transidious.Serialization";
+
+import "Common.proto";
+import "Building.proto";
+import "NaturalFeature.proto";
+import "Street.proto";
+
+message MapTile {
+    uint32 x = 1;
+    uint32 y = 2;
+    repeated uint32 mapObjectIDs = 3;
+    repeated uint32 orphanedObjectIDs = 4;
+}
+
+message Map {
+    VersionTriple triple = 1;
+    repeated Vector2 boundaryPositions = 2;
+    
+    float minX = 3;
+    float maxX = 4;
+    float minY = 5;
+    float maxY = 6;
+
+    Vector3 startingCameraPos = 7;
+    repeated Mesh2D boundaryMeshes = 8;
+
+    repeated Building buildings = 9;
+    repeated NaturalFeature naturalFeatures = 10;
+    repeated Street streets = 11;
+    repeated StreetIntersection streetIntersections = 12;
+
+    bytes backgroundImage = 13;
+    float maxTileSize = 14;
+}
+
+message SaveFile {
+    message MapTiles {
+        repeated MapTile tiles = 1;
+    }
+
+    VersionTriple triple = 1;
+    repeated MapTiles tiles = 2;
+}

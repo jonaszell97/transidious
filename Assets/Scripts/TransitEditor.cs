@@ -428,12 +428,12 @@ namespace Transidious
 
         public void MapObjectHovered(DynamicMapObject obj)
         {
-            var s = obj as StreetSegment;
-            if (s != null)
-            {
-                StreetHovered(s);
-                return;
-            }
+            //var s = obj as StreetSegment;
+            //if (s != null)
+            //{
+            //    StreetHovered(s);
+            //    return;
+            //}
 
             var tmpStop = obj as TemporaryStop;
             if (tmpStop != null)
@@ -452,12 +452,12 @@ namespace Transidious
 
         public void MapObjectHoverExit(DynamicMapObject obj)
         {
-            var s = obj as StreetSegment;
-            if (s != null)
-            {
-                StreetHoverExit(s);
-                return;
-            }
+            //var s = obj as StreetSegment;
+            //if (s != null)
+            //{
+            //    StreetHoverExit(s);
+            //    return;
+            //}
 
             var tmpStop = obj as TemporaryStop;
             if (tmpStop != null)
@@ -476,11 +476,11 @@ namespace Transidious
 
         public void MapObjectClicked(DynamicMapObject obj)
         {
-            var s = obj as StreetSegment;
-            if (s != null)
-            {
-                StreetClicked(s);
-            }
+            //var s = obj as StreetSegment;
+            //if (s != null)
+            //{
+            //    StreetClicked(s);
+            //}
 
             var tmpStop = obj as TemporaryStop;
             if (tmpStop != null)
@@ -524,7 +524,7 @@ namespace Transidious
                         break;
                     }
 
-                    if (street)
+                    if (street != null)
                     {
                         ActivateTooltip(selectedSystem.Value, "Add Stop");
                     }
@@ -559,7 +559,7 @@ namespace Transidious
                         break;
                     }
 
-                    if (street)
+                    if (street != null)
                     {
                         ActivateTooltip(selectedSystem.Value, "Add Stop");
                     }
@@ -608,7 +608,7 @@ namespace Transidious
                 previousStop = AddStop(street);
                 break;
             case TransitType.Tram:
-                if (street && !street.hasTramTracks)
+                if (street != null && !street.hasTramTracks)
                 {
                     street.AddTramTracks();
                     break;

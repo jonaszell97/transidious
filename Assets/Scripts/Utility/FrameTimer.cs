@@ -4,7 +4,7 @@ using UnityEngine;
 public class FrameTimer : MonoBehaviour
 {
     public static FrameTimer instance;
-    private Stopwatch stopwatch;
+    public Stopwatch stopwatch;
 
     public long FrameDuration
     {

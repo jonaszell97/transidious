@@ -163,7 +163,7 @@ namespace Transidious
 
             foreach (var tile in map.GetTilesForObject(this))
             {
-                tile.mesh.AddMesh(GetColor(), mesh, layer);
+                tile.AddMesh("Buildings", mesh, GetColor(), layer);
 
                 if (outlinePositions != null)
                 {
@@ -190,6 +190,18 @@ namespace Transidious
             map.DeleteMapObject(this);
         }
 
+        public new Serialization.Building ToProtobuf()
+        {
+            return new Serialization.Building
+            {
+                MapObject = base.ToProtobuf(),
+                Mesh = mesh.ToProtobuf2D() ?? new Serialization.Mesh2D(),
+                StreetID = (uint)(street?.id ?? 0),
+                Type = (Serialization.Building.Types.Type)type,
+                Position = centroid.ToProtobuf(),
+            };
+        }
+
         public new SerializableBuilding Serialize()
         {
             return new SerializableBuilding
@@ -201,6 +213,18 @@ namespace Transidious
                 type = type,
                 position = new SerializableVector2(centroid),
             };
+        }
+
+        public static Building Deserialize(Serialization.Building b, Map map)
+        {
+            var building = map.CreateBuilding((Type)b.Type, b.Mesh.Deserialize(), b.MapObject.Name, "",
+                                              b.MapObject.Area, b.MapObject.Centroid.Deserialize(),
+                                              (int)b.MapObject.Id);
+
+            building.streetID = (int)b.StreetID;
+            building.Deserialize(b.MapObject);
+
+            return building;
         }
 
         public static Building Deserialize(Map map, SerializableBuilding b)

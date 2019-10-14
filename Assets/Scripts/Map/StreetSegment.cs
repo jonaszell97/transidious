@@ -1,14 +1,12 @@
 ﻿using UnityEngine;
-using UnityEngine.EventSystems;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Transidious.PathPlanning;
 
 namespace Transidious
 {
-    public class StreetSegment : DynamicMapObject, IRoute
+    public class StreetSegment : StaticMapObject, IRoute
     {
         [System.Serializable]
         public struct SerializedStreetSegment
@@ -61,12 +59,6 @@ namespace Transidious
 
         /// The traffic light at the end intersection.
         public TrafficLight endTrafficLight;
-
-        /// Game object carrying the street mesh.
-        public GameObject streetMeshObj;
-
-        /// Game object carrying the outline mesh.
-        public GameObject outlineMeshObj;
 
         class StreetSegmentMeshInfo
         {
@@ -837,8 +829,80 @@ namespace Transidious
         }
 
         public static int totalVerts = 0;
+        public static LineRenderer tmpRenderer;
 
         public void UpdateMesh()
+        {
+#if DEBUG
+            if (GameController.instance.ImportingMap)
+            {
+                return;
+            }
+#endif
+
+            float lineLayer;
+            float lineOutlineLayer;
+
+            if (street.type == Street.Type.River)
+            {
+                lineLayer = Map.Layer(MapLayer.Rivers);
+                lineOutlineLayer = Map.Layer(MapLayer.RiverOutlines);
+            }
+            else
+            {
+                lineLayer = Map.Layer(MapLayer.Streets);
+                lineOutlineLayer = Map.Layer(MapLayer.StreetOutlines);
+            }
+
+            if (tmpRenderer == null)
+            {
+                var tmpObj = new GameObject();
+                tmpRenderer = tmpObj.AddComponent<LineRenderer>();
+                tmpRenderer.enabled = false;
+            }
+
+            tmpRenderer.positionCount = positions.Count;
+            tmpRenderer.SetPositions(
+                positions.Select(v => new Vector3(v.x, v.y, lineLayer)).ToArray());
+
+            tmpRenderer.numCornerVertices = 5;
+
+            if (startIntersection.RelativePosition(this) == 0
+            || endIntersection.RelativePosition(this) == 0)
+            {
+                tmpRenderer.numCapVertices = 10;
+            }
+
+            var streetWidth = 2f * GetStreetWidth(RenderingDistance.Near);
+            tmpRenderer.startWidth = streetWidth;
+            tmpRenderer.endWidth = tmpRenderer.startWidth;
+
+            var streetMesh = new Mesh();
+            tmpRenderer.BakeMesh(streetMesh);
+
+            tmpRenderer.SetPositions(
+                positions.Select(v => new Vector3(v.x, v.y, lineOutlineLayer)).ToArray());
+
+            var borderWidth = streetWidth + 2f * GetBorderWidth(RenderingDistance.Near);
+            tmpRenderer.startWidth = borderWidth;
+            tmpRenderer.endWidth = tmpRenderer.startWidth;
+
+            var outlineMesh = new Mesh();
+            tmpRenderer.BakeMesh(outlineMesh);
+
+            //var collider = GetComponent<PolygonCollider2D>();
+            //collider.pathCount = 0;
+            //MeshBuilder.CreateLineCollider(positions, borderWidth * .5f, collider);
+
+            foreach (var tile in street.map.GetTilesForObject(this))
+            {
+                tile.AddMesh("Streets", streetMesh, GetStreetColor(RenderingDistance.Near), lineLayer);
+                tile.AddMesh("Streets", outlineMesh, GetBorderColor(RenderingDistance.Near), lineOutlineLayer);
+            }
+        }
+
+#if false
+        public void UpdateMeshOld()
         {
 #if DEBUG
             if (GameController.instance.ImportingMap)
@@ -985,15 +1049,12 @@ namespace Transidious
             */
         }
 
+#endif
+
         public void UpdateColor(MapDisplayMode mode)
         {
-            var streetColor = GetStreetColor(RenderingDistance.Near, mode);
-            streetMeshObj.GetComponent<LineRenderer>().sharedMaterial =
-                GameController.GetUnlitMaterial(streetColor);
-
-            var borderColor = GetBorderColor(RenderingDistance.Near, mode);
-            outlineMeshObj.GetComponent<LineRenderer>().sharedMaterial =
-                GameController.GetUnlitMaterial(borderColor);
+            UpdateColor(GetStreetColor(RenderingDistance.Near, mode));
+            UpdateBorderColor(GetBorderColor(RenderingDistance.Near, mode));
         }
 
         Tuple<Mesh, Mesh> GetTramTrackMesh(Vector3[] path, bool isRightLane)
@@ -1089,7 +1150,7 @@ namespace Transidious
             GetIntersectionMeshes(trackMeshes);
 
             meshInfo.outlineMesh = MeshBuilder.CombineMeshes(trackMeshes);
-            UpdateScale(inputController.renderingDistance);
+            UpdateScale(Game.input.renderingDistance);
         }
 
         void UpdateTramTracks(Mesh trackRight, Mesh trackLeft)
@@ -1098,7 +1159,7 @@ namespace Transidious
             meshInfo.outlineMesh = MeshBuilder.CombineMeshes(meshInfo.outlineMesh, trackRight,
                                                              trackLeft);
 
-            UpdateScale(inputController.renderingDistance);
+            UpdateScale(Game.input.renderingDistance);
         }
 
         public void AddTramTracks()
@@ -1301,64 +1362,12 @@ namespace Transidious
         public void UpdateScale(RenderingDistance dist)
         {
             UpdateTextScale(dist);
-            return;
-            if (!meshes.TryGetValue(dist, out StreetSegmentMeshInfo meshInfo))
-            {
-                return;
-            }
-
-            if (streetMeshObj == null)
-            {
-                float lineLayer;
-                float lineOutlineLayer;
-
-                if (street.type == Street.Type.River)
-                {
-                    lineLayer = Map.Layer(MapLayer.Rivers);
-                    lineOutlineLayer = Map.Layer(MapLayer.RiverOutlines);
-                }
-                else
-                {
-                    lineLayer = Map.Layer(MapLayer.Streets);
-                    lineOutlineLayer = Map.Layer(MapLayer.StreetOutlines);
-                }
-
-                streetMeshObj = Instantiate(street.map.meshPrefab);
-                streetMeshObj.transform.SetParent(this.transform);
-                streetMeshObj.transform.position = new Vector3(
-                    streetMeshObj.transform.position.x,
-                    streetMeshObj.transform.position.y,
-                    lineLayer);
-
-                outlineMeshObj = Instantiate(street.map.meshPrefab);
-                outlineMeshObj.transform.SetParent(this.transform);
-                outlineMeshObj.transform.position = new Vector3(
-                    outlineMeshObj.transform.position.x,
-                    outlineMeshObj.transform.position.y,
-                    lineOutlineLayer);
-
-                outlineMeshObj.transform.localScale = new Vector3(1.1f, 1.1f, 1f);
-            }
-
-            var streetRenderer = streetMeshObj.GetComponent<MeshRenderer>();
-            var streetFilter = streetMeshObj.GetComponent<MeshFilter>();
-
-            streetFilter.sharedMesh = meshInfo.streetMesh;
-            streetRenderer.sharedMaterial = GameController.GetUnlitMaterial(GetStreetColor(dist));
-
-            var outlineRenderer = outlineMeshObj.GetComponent<MeshRenderer>();
-            var outlineFilter = outlineMeshObj.GetComponent<MeshFilter>();
-
-            outlineFilter.sharedMesh = meshInfo.streetMesh;
-            // outlineFilter.mesh = meshInfo.outlineMesh;
-            outlineRenderer.material = GameController.GetUnlitMaterial(GetBorderColor(dist));
-            // outlineRenderer.sharedMaterial = streetRenderer.sharedMaterial;
         }
 
         public void UpdateColor(Color c)
         {
-            var streetRenderer = streetMeshObj.GetComponent<MeshRenderer>();
-            streetRenderer.material = GameController.GetUnlitMaterial(c);
+            //var streetRenderer = streetMeshObj.GetComponent<MeshRenderer>();
+            //streetRenderer.material = GameController.GetUnlitMaterial(c);
         }
 
         public void ResetColor(RenderingDistance dist)
@@ -1368,13 +1377,27 @@ namespace Transidious
 
         public void UpdateBorderColor(Color c)
         {
-            var outlineRenderer = outlineMeshObj.GetComponent<MeshRenderer>();
-            outlineRenderer.material = GameController.GetUnlitMaterial(c);
+            //var outlineRenderer = outlineMeshObj.GetComponent<MeshRenderer>();
+            //outlineRenderer.material = GameController.GetUnlitMaterial(c);
         }
 
         public void ResetBorderColor(RenderingDistance dist)
         {
             UpdateBorderColor(GetBorderColor(dist));
+        }
+
+        public new Serialization.StreetSegment ToProtobuf()
+        {
+            var result = new Serialization.StreetSegment
+            {
+                MapObject = base.ToProtobuf(),
+                StartIntersectionID = (uint)(startIntersection?.id ?? 0),
+                EndIntersectionID = (uint)(endIntersection?.id ?? 0),
+                HasTramTracks = hasTramTracks,
+            };
+
+            result.Positions.AddRange(positions.Select(s => ((Vector2)s).ToProtobuf()));
+            return result;
         }
 
         public new SerializedStreetSegment Serialize()
@@ -1403,8 +1426,7 @@ namespace Transidious
                 }
             }
 
-            Destroy(this.gameObject);
-            Destroy(this.streetName?.gameObject);
+            GameObject.Destroy(this.streetName?.gameObject);
         }
 
         public void HighlightBorder(bool bulldozing)

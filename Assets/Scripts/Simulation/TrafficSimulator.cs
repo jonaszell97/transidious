@@ -160,20 +160,20 @@ namespace Transidious
         void Start()
         {
 #if DEBUG
-            if (manualTrafficLightControl)
-            {
-                sim.game.input.RegisterEventListener(InputEvent.MouseDown, (DynamicMapObject obj) =>
-                {
-                    var seg = obj as StreetSegment;
-                    if (seg == null)
-                    {
-                        return;
-                    }
+            //if (manualTrafficLightControl)
+            //{
+            //    sim.game.input.RegisterEventListener(InputEvent.MouseDown, (DynamicMapObject obj) =>
+            //    {
+            //        var seg = obj as StreetSegment;
+            //        if (seg == null)
+            //        {
+            //            return;
+            //        }
 
-                    seg.startTrafficLight?.Switch();
-                    seg.endTrafficLight?.Switch();
-                });
-            }
+            //        seg.startTrafficLight?.Switch();
+            //        seg.endTrafficLight?.Switch();
+            //    });
+            //}
 #endif
         }
 
@@ -1791,6 +1791,11 @@ namespace Transidious
             if (manualTrafficLightControl)
                 return;
 #endif
+
+            if (trafficLights == null)
+            {
+                return;
+            }
 
             foreach (var tl in trafficLights)
             {

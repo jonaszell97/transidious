@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Transidious
 {
-    public class Street : DynamicMapObject
+    public class Street : StaticMapObject
     {
         public enum Type
         {
@@ -283,7 +283,7 @@ namespace Transidious
                     new Color(0.9f, 0.9f, 0.9f, 1f);
             }
 
-            seg.directionArrow.transform.SetParent(seg.transform);
+            seg.directionArrow.transform.SetParent(seg.uniqueTile?.transform ?? map.transform);
             seg.directionArrow.transform.position = new Vector3(posOnStreet.pos.x, posOnStreet.pos.y,
                                                                 Map.Layer(MapLayer.StreetMarkings));
 
@@ -312,6 +312,8 @@ namespace Transidious
 
         public void CreateTextMeshes()
         {
+            return;
+
             switch (type)
             {
             case Type.Path:
@@ -355,7 +357,7 @@ namespace Transidious
                 }
 
                 placedText = true;
-                txt.transform.SetParent(seg.transform);
+                txt.transform.SetParent(seg.uniqueTile?.transform ?? map.transform);
                 txt.transform.position = new Vector3(posAndAngle.pos.x,
                                                      posAndAngle.pos.y,
                                                      Map.Layer(MapLayer.StreetNames));
@@ -370,7 +372,7 @@ namespace Transidious
 
             if (!placedText)
             {
-                Destroy(txt.gameObject);
+                GameObject.Destroy(txt.gameObject);
             }
         }
 
@@ -392,10 +394,7 @@ namespace Transidious
                                         bool hasTramTracks = false,
                                         int segId = -1)
         {
-            var segObj = Instantiate(map.streetSegmentPrefab);
-            segObj.transform.SetParent(this.transform);
-
-            var seg = segObj.GetComponent<StreetSegment>();
+            var seg = new StreetSegment();
             int pos;
 
             if (atPosition == -1)
@@ -417,7 +416,9 @@ namespace Transidious
             seg.Initialize(this, pos, path, startIntersection, endIntersection, hasTramTracks,
                            segId);
 
-            seg.name = this.name + " " + this.segments.Count;
+#if DEBUG
+            seg.name = this.name + ", Segment #" + this.segments.Count;
+#endif
 
             map.RegisterSegment(seg, segId);
             return seg;
@@ -431,6 +432,16 @@ namespace Transidious
                                     -1, seg.hasTramTracks, seg.mapObject.id);
 
             newSeg.Deserialize(seg.mapObject);
+        }
+
+        public void AddSegment(Serialization.StreetSegment seg)
+        {
+            var newSeg = AddSegment(seg.Positions.Select(v => (Vector3)v.Deserialize()).ToList(),
+                                    map.GetMapObject<StreetIntersection>((int)seg.StartIntersectionID),
+                                    map.GetMapObject<StreetIntersection>((int)seg.EndIntersectionID),
+                                    -1, seg.HasTramTracks, (int)seg.MapObject.Id);
+
+            newSeg.Deserialize(seg.MapObject);
         }
 
         public Tuple<StreetSegment, StreetSegment>
@@ -475,6 +486,43 @@ namespace Transidious
             {
                 --segments[i].position;
             }
+        }
+
+        public new Serialization.Street ToProtobuf()
+        {
+            var result = new Serialization.Street
+            {
+                MapObject = base.ToProtobuf(),
+                DisplayName = displayName ?? string.Empty,
+                Lit = lit,
+                Oneway = isOneWay,
+                Maxspeed = (uint)maxspeed,
+                Lanes = (uint)lanes,
+                Type = (Serialization.Street.Types.Type)type,
+            };
+
+            result.Segments.AddRange(segments.Select(s => s.ToProtobuf()));
+            return result;
+        }
+
+        public static Street Deserialize(Serialization.Street street, Map map)
+        {
+            var s = map.CreateStreet(street.MapObject.Name, (Type)street.Type, street.Lit,
+                                     street.Oneway, (int)street.Maxspeed,
+                                     (int)street.Lanes, (int)street.MapObject.Id);
+
+            s.Deserialize(street.MapObject);
+
+            foreach (var seg in street.Segments)
+            {
+                s.AddSegment(seg);
+            }
+
+            s.CalculateLength();
+            s.CreateTextMeshes();
+            s.displayName = street.DisplayName;
+
+            return s;
         }
 
         public new SerializedStreet Serialize()

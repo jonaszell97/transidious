@@ -135,12 +135,6 @@ namespace Transidious
         /// Prefab for creating mesh objects.
         public GameObject meshPrefab;
 
-        /// Prefab for creating streets.
-        public GameObject streetPrefab;
-
-        /// Prefab for creating street segments.
-        public GameObject streetSegmentPrefab;
-
         /// Prefab for creating stops.
         public GameObject stopPrefab;
 
@@ -1020,10 +1014,7 @@ namespace Transidious
 
             id = id == -1 ? lastAssignedMapObjectID++ : id;
 
-            var streetObj = Instantiate(streetPrefab);
-            streetObj.transform.SetParent(this.transform);
-
-            var street = streetObj.GetComponent<Street>();
+            var street = new Street();
             streets.Add(street);
 
             street.Initialize(this, type, currentName, lit, oneWay, maxspeed, lanes, id);
@@ -1140,14 +1131,14 @@ namespace Transidious
 
             foreach (var street in streets)
             {
-                if (!street.gameObject.activeSelf)
+                if (!street.Active)
                 {
                     continue;
                 }
 
                 foreach (var seg in street.segments)
                 {
-                    if (!seg.gameObject.activeSelf)
+                    if (!seg.Active)
                     {
                         continue;
                     }
