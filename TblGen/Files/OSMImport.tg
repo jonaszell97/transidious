@@ -460,3 +460,14 @@ def Paris : DefaultArea {
         Tag<"admin_level", "8">
     ]>
 }
+
+def NiagaraFalls : DefaultArea {
+    country = "NewYorkState"
+    boundary = BoundaryInfo<"NiagaraFalls", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}
