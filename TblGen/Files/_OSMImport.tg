@@ -460,3 +460,47 @@ def Paris : DefaultArea {
         Tag<"admin_level", "8">
     ]>
 }
+
+def NiagaraFalls : DefaultArea {
+    country = "NewYorkState"
+    boundary = BoundaryInfo<"NiagaraFalls", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}
+
+def Konstanz : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"Konstanz", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}
+
+def München : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"München", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "6">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "6">
+    ]>
+}
+
+def Paradise : DefaultArea {
+    country = "United States of America"
+    boundary = BoundaryInfo<"Paradise", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}

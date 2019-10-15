@@ -471,3 +471,36 @@ def NiagaraFalls : DefaultArea {
         Tag<"admin_level", "8">
     ]>
 }
+
+def Konstanz : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"Konstanz", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}
+
+def München : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"München", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "6">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "6">
+    ]>
+}
+
+def Paradise : DefaultArea {
+    country = "California"
+    boundary = BoundaryInfo<"Paradise", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}
