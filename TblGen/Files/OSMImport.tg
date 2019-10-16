@@ -14,6 +14,7 @@ class TransitLineInfo<let type: TransitLineType, let tags: list<Tag> >
 class TransitStopInfo<let tags: list<Tag> >
 
 enum StreetType {
+    Highway,
     Primary,
     Secondary,
     Tertiary,
@@ -88,6 +89,10 @@ class DefaultArea : Area
     override boundary = BoundaryInfo<"", [], []>
 
     override streets = [
+        StreetInfo<.Highway, [
+            Tag<"highway", "motorway">
+        ]>,
+
         StreetInfo<.Residential, [
             Tag<"highway", "residential">
         ]>,
@@ -96,6 +101,9 @@ class DefaultArea : Area
         ]>,
         StreetInfo<.Primary, [
             Tag<"highway", "primary">
+        ]>,
+        StreetInfo<.Link, [
+            Tag<"highway", "motorway_link">
         ]>,
         StreetInfo<.Link, [
             Tag<"highway", "primary_link">
@@ -222,12 +230,7 @@ class DefaultArea : Area
         ], [.Way, .Relation]>,
 
         NaturalFeatureInfo<.Lake, [
-            Tag<"natural", "water">,
-            Tag<"water", "lake">
-        ], [.Way, .Relation]>,
-        NaturalFeatureInfo<.Lake, [
-            Tag<"natural", "water">,
-            Tag<"water", "pond">
+            Tag<"natural", "water">
         ], [.Way, .Relation]>,
 
         NaturalFeatureInfo<.FootpathArea, [
