@@ -304,27 +304,13 @@ def Berlin : DefaultArea {
 }
 
 def Charlottenburg : DefaultArea {
-    nodeFile = "Deutschland/Berlin"
-    //nodeFile = "Deutschland/CharlottenburgWilmersdorf"
-
+    country = "Deutschland/Berlin"
     boundary = BoundaryInfo<"Charlottenburg", [
         Tag<"type", "boundary">,
         Tag<"admin_level", "10">
     ], [
         Tag<"boundary", "administrative">,
         Tag<"admin_level", "10">
-    ]>
-}
-
-def CharlottenburgWilmersdorf : DefaultArea {
-    nodeFile = "Deutschland/Berlin"
-
-    boundary = BoundaryInfo<"Charlottenburg-Wilmersdorf", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "9">
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "9">
     ]>
 }
 
@@ -428,16 +414,7 @@ def NewYorkCity : DefaultArea {
     ]>
 }
 
-def Werder : DefaultArea {
-    country = "Deutschland"
-    boundary = BoundaryInfo<"Werder", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "9">
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "9">
-    ]>
-}
+
 
 def Seattle : DefaultArea {
     country = "WashingtonState"
@@ -513,5 +490,26 @@ def Seaside : DefaultArea {
     ], [
         Tag<"boundary", "administrative">,
         Tag<"admin_level", "8">
+    ]>
+}
+def Salinas : DefaultArea {
+    country = "California"
+    boundary = BoundaryInfo<"Salinas", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}
+
+def Werder : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"Werder", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "9">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "9">
     ]>
 }
