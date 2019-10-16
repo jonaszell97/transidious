@@ -495,7 +495,7 @@ def München : DefaultArea {
 }
 
 def Paradise : DefaultArea {
-    country = "United States of America"
+    country = "California"
     boundary = BoundaryInfo<"Paradise", [
         Tag<"type", "boundary">,
         Tag<"admin_level", "8">

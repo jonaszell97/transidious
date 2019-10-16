@@ -504,3 +504,14 @@ def Paradise : DefaultArea {
         Tag<"admin_level", "8">
     ]>
 }
+
+def Seaside : DefaultArea {
+    country = "California"
+    boundary = BoundaryInfo<"Seaside", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}

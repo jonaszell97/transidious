@@ -5,19 +5,61 @@ import requests
 import subprocess
 import sys
 import io
+import json
+import numpy as np
+import pyclipper as clip
 from xml.etree import ElementTree
 
-api = "https://api.openstreetmap.org/"
+import matplotlib.pyplot as plt
+
+def perpendicular(a):
+    return np.array([a[1], -a[0]])
+
+def normalize(v):
+    return v / np.linalg.norm(v)
+
+def scale_polygon(delta, vertices):
+    pco = clip.PyclipperOffset()
+    scaleFactor = 1000000
+
+    subj = tuple(
+        map(lambda v: (int(v[0] * scaleFactor), int(v[1] * scaleFactor)), vertices))
+
+    pco.AddPath(subj, clip.JT_SQUARE, clip.ET_CLOSEDPOLYGON)
+    result = pco.Execute(delta * scaleFactor)
+
+    result = list(map(lambda t: np.array([float(t[0]) / scaleFactor, float(t[1] / scaleFactor)]), result[0]))
+    result.append(result[0])
+
+    return result
+
+def display_poly(vertices, color):
+    xs, ys = zip(*vertices)
+    plt.plot(xs, ys, color)
+
+# api = "https://api.openstreetmap.org/"
 
 searchTerm = sys.argv[1]
-searchResult = requests.get("http://open.mapquestapi.com/nominatim/v1/search.php", params={
-    'key': 'mWyl2BDPDvj1mqGywsl01UYTGcGTGIY7',
-    'format': 'json',
-    'q': searchTerm,
-})
+cacheFile = ".cache/" + searchTerm
 
-results = searchResult.json()
-results = [res for res in results if res['osm_type'] == 'relation']
+if os.path.isfile(cacheFile):
+    print("loading from cache...")
+    cache = open(cacheFile, 'r')
+    results = json.loads(cache.read())
+else:
+    print("querying...")
+    searchResult = requests.get("http://open.mapquestapi.com/nominatim/v1/search.php", params={
+        'key': 'mWyl2BDPDvj1mqGywsl01UYTGcGTGIY7',
+        'format': 'json',
+        'q': searchTerm,
+    })
+
+    results = searchResult.json()
+    results = [res for res in results if res['osm_type'] == 'relation']
+
+    cache = open(cacheFile, 'w')
+    cache.write(json.dumps(results))
+    cache.close()
 
 if len(results) == 0:
     print('no results found')
@@ -51,19 +93,42 @@ polyResult = requests.get("http://polygons.openstreetmap.fr/get_poly.py", params
 })
 
 polyData = polyResult.text.replace('\t', '  ')
-# vertices = list()
+vertices = list()
 
-# polyLines = polyData.split("\n")[2:-2]
-# for line in polyLines:
+polyLines = polyData.split("\n")[2:-2]
+for line in polyLines:
+    values = line.strip().split("  ")
 
-# with io.StringIO(polyData) as polyBuf:
-#     line = polyBuf.readline()
-#     lineNo = 0
-#     while line:
+    try:
+        x = float(values[0])
+        y = float(values[1])
+    except:
+        break
 
-#         line = polyBuf.readline()
-#         lineNo += 1
+    vertices.append(np.array([x, y]))
 
+###
+
+# display_poly(vertices, 'r')
+# display_poly(scale_polygon(.0001, vertices), 'g')
+# plt.show()
+
+# exit(0)
+
+###
+
+scaledPoly = scale_polygon(.0001, vertices)
+scaledPolyStr = 'polygon\n1\n'
+
+for pt in scaledPoly:
+    scaledPolyStr += '  '
+    scaledPolyStr += str(pt[0])
+    scaledPolyStr += '  '
+    scaledPolyStr += str(pt[1])
+    scaledPolyStr += '\n'
+
+scaledPolyStr += 'END\nEND\n'
+polyData = scaledPolyStr
 
 polyFileName = '../Resources/Poly/' + searchTerm + '.poly'
 polyFile = open(polyFileName, 'w')

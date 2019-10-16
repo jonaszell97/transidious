@@ -10,6 +10,7 @@ Assets/NuGet
 /TblGen/libtransidious-tblgens.dylib
 /TblGen/cmake_install.cmake
 /TblGen/Makefile
+/TblGen/.cache
 
 /[Ll]ibrary/
 /[Tt]emp/
