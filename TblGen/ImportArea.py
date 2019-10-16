@@ -80,12 +80,16 @@ else:
     result = results[0]
 
 id = result['osm_id']
-searchTerm = searchTerm.replace(' ', '')
 
 if len(sys.argv) > 2:
     country = sys.argv[2]
 else:
     country = result['display_name'].split(', ')[-1]
+
+if len(sys.argv) > 3:
+    searchTerm = sys.argv[3]
+else:
+    searchTerm = searchTerm.replace(' ', '')
 
 polyResult = requests.get("http://polygons.openstreetmap.fr/get_poly.py", params={
     'id': id,

@@ -507,9 +507,9 @@ def Werder : DefaultArea {
     country = "Deutschland"
     boundary = BoundaryInfo<"Werder", [
         Tag<"type", "boundary">,
-        Tag<"admin_level", "9">
+        Tag<"admin_level", "8">
     ], [
         Tag<"boundary", "administrative">,
-        Tag<"admin_level", "9">
-    ]>
+        Tag<"admin_level", "8">
+    ], "Werder (Havel)">
 }

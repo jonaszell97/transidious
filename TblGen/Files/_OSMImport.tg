@@ -505,7 +505,7 @@ def Salinas : DefaultArea {
 
 def Werder : DefaultArea {
     country = "Deutschland"
-    boundary = BoundaryInfo<"Werder", [
+    boundary = BoundaryInfo<"Werder (Havel)", [
         Tag<"type", "boundary">,
         Tag<"admin_level", "9">
     ], [

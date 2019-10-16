@@ -6185,7 +6185,7 @@ break;
                   var rel = geo as Relation;
                   
 while (true) {
-if (tags.Contains("name", "Werder")) {if (tags.Contains("type", "boundary") && tags.Contains("admin_level", "9")) {
+if (tags.Contains("name", "Werder")) {if (tags.Contains("type", "boundary") && tags.Contains("admin_level", "8")) {
                 importer.boundary = geo as Relation; AddGeoReference(geo); break;
 
 }}
