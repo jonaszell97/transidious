@@ -28,6 +28,14 @@ namespace Transidious
         /// Array containing all of the ui elements from left to right.
         public RectTransform[] panels;
 
+        /// The instruction panel.
+        public UIInstruction instructionPanel;
+
+        /// <summary>
+        /// The greyed out overlay.
+        /// </summary>
+        [SerializeField] GameObject overlay;
+
         /**
          * Date & Time Tab
          */
@@ -85,6 +93,13 @@ namespace Transidious
         /// </summary>
         public Color[] financeColors;
 
+        /// <summary>
+        /// The panel that shows construction and monthly costs.
+        /// </summary>
+        public GameObject constructionCostPanel;
+        public TMP_Text constructionCostText;
+        public TMP_Text monthlyCostText;
+
         /**
          * Right-hand side icons.
          */
@@ -95,7 +110,11 @@ namespace Transidious
         ///  The transit editor panel, hidden by default.
         /// </summary>
         public GameObject transitEditorPanel;
-        
+
+        /// <summary>
+        /// Reference to the transit UI controller.
+        /// </summary>
+        public TransitUI transitUI;
 
         /**
          * Scale Bar
@@ -111,6 +130,11 @@ namespace Transidious
         ///  Time after which the scale bar should fade.
         /// </summary>
         public float fadeScaleBarTime = 0f;
+
+        /// <summary>
+        /// Reference to the tooltip instance.
+        /// </summary>
+        public UITooltip tooltipInstance;
 
         void RegisterUICallbacks()
         {
@@ -171,8 +195,22 @@ namespace Transidious
             state = State.Default;
 
             RegisterUICallbacks();
-            UpdateDate(game.sim.gameTime);
+            UpdateDate(game.sim.GameTime);
             UpdateFinances();
+
+            transitUI.Initialize();
+            UITooltip.instance = tooltipInstance;
+            UIInstruction.instance = instructionPanel;
+        }
+
+        public void ShowOverlay()
+        {
+            this.overlay.gameObject.SetActive(true);
+        }
+
+        public void HideOverlay()
+        {
+            this.overlay.gameObject.SetActive(false);
         }
 
         void OnPlayPauseClick()
@@ -200,20 +238,15 @@ namespace Transidious
             this.simSpeedButton.GetComponent<Image>().sprite = SpriteManager.instance.simSpeedSprites[newSimSpeed];
         }
 
-        public void UpdateTime(string timeStr)
-        {
-            this.longFormatDate.text = timeStr;
-        }
-
         public void UpdateDate(DateTime date)
         {
-            this.longFormatDate.text = Translator.GetDate(game.sim.gameTime, Translator.DateFormat.DateLong);
+            this.longFormatDate.text = Translator.GetDate(game.sim.GameTime, Translator.DateFormat.DateLong);
         }
 
         public void UpdateFinances()
         {
             var finances = game.financeController;
-            moneyText.text = Translator.GetCurrency(finances.money, true);
+            moneyText.text = Translator.GetCurrency(finances.Money, true);
 
             var income = finances.Income;
             var incomeCmp = income.CompareTo(0);
@@ -229,33 +262,6 @@ namespace Transidious
             
             financesPanel.SetValue("Income", incomeStr);
             financesPanel.GetValue("Income").color = new Color(c.r, c.g, c.b, 1f);
-
-        }
-
-        struct MainUILayout
-        {
-            internal Vector2[] panelSizes;
-            internal Vector2[] panelPositions;
-            internal Vector2[] iconPositions;
-        }
-
-        MainUILayout? layout;
-        
-        void SaveUILayout()
-        {
-            if (this.layout.HasValue)
-            {
-                return;
-            }
-
-            var layout = new MainUILayout()
-            {
-                panelSizes = panels.Select(p => p.sizeDelta).ToArray(),
-                panelPositions = panels.Select(p => (Vector2)p.localPosition).ToArray(),
-                iconPositions = settingsIcons.Select(p => (Vector2)p.GetComponent<RectTransform>().localPosition).ToArray(),
-            };
-
-            this.layout = layout;
         }
 
         void HidePanels(State finalState, int panelIndex, Action onDone = null)
@@ -296,12 +302,6 @@ namespace Transidious
             panels[0].GetComponent<Button>().enabled = false;
             playPauseButton.gameObject.SetActive(false);
             simSpeedButton.gameObject.SetActive(false);
-
-            timePanelAnimator.onFinish = () =>
-            {
-                state = finalState;
-                onDone?.Invoke();
-            };
 
             // Animate finances panel
             var financePanelAnimator = panels[1].gameObject.GetComponent<TransformAnimator>();
@@ -394,6 +394,12 @@ namespace Transidious
                 multiPanelAnimator.SetAnimationType(TransformAnimator.AnimationType.Circular, TransformAnimator.ExecutionMode.Manual);
             }
 
+            timePanelAnimator.onFinish = () =>
+            {
+                state = finalState;
+                onDone?.Invoke();
+            };
+
             gameTimeTextAnimator.StartAnimation(duration);
             timePanelAnimator.StartAnimation(duration);
             financePanelAnimator.StartAnimation(duration);
@@ -408,6 +414,11 @@ namespace Transidious
             if (state == State.Default || state == State.Transitioning)
             {
                 return;
+            }
+
+            if (transitUI.selectedTransitSystem.HasValue)
+            {
+                transitUI.HideTransitSystemOverviewPanel();
             }
 
             this.transitEditorPanel.gameObject.SetActive(false);
@@ -487,6 +498,18 @@ namespace Transidious
         public void ShowSettingsPanel()
         {
             HidePanels(State.Settings, 2);
+        }
+
+        public void ShowConstructionCost(decimal constructionCost = 0m, decimal monthlyCost = 0m)
+        {
+            constructionCostPanel.SetActive(true);
+            constructionCostText.text = Translator.GetCurrency(constructionCost, true);
+            monthlyCostText.text = Translator.GetCurrency(monthlyCost, true);
+        }
+
+        public void HideConstructionCost()
+        {
+            constructionCostPanel.SetActive(false);
         }
 
         public void FadeScaleBar()

@@ -60,11 +60,6 @@ namespace Transidious
         [SerializeField] bool contracting;
 
         /// <summary>
-        ///  The multiplication factor for y-axis animation.
-        /// </summary>
-        float animationYFactor;
-
-        /// <summary>
         ///  The active expandable panel.
         /// </summary>
         public static UIExpandablePanel activePanel;
@@ -83,7 +78,6 @@ namespace Transidious
         {
             onShow = new UnityEvent();
             onHide = new UnityEvent();
-            gameObject.SetActive(true);
         }
 
         void Start()
@@ -96,6 +90,12 @@ namespace Transidious
 
             button.onClick.AddListener(() => this.Toggle());
 
+            Initialize();
+            content.gameObject.SetActive(false);
+        }
+
+        void Initialize()
+        {
             var rectTransform = this.GetComponent<RectTransform>();
             this.expandedScale = rectTransform.localScale;
 
@@ -107,8 +107,6 @@ namespace Transidious
 
             var ydiff = this.expandedScale.y - this.contractedScale.y;
             animationSpeedY = ydiff / animationDuration * 2f;
-
-            content.gameObject.SetActive(false);
         }
 
         public void Toggle()

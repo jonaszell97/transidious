@@ -27,6 +27,8 @@ namespace Transidious
         StreetMarkings,
         StreetNames,
 
+        Citiziens,
+
         TransitLines,
         TemporaryLines,
         Cars,
@@ -45,7 +47,7 @@ namespace Transidious
             { TransitType.Tram, new Color(1.0f, 0.0f, 0.0f)  },
             { TransitType.Subway, new Color(0.09f, 0.02f, 0.69f)  },
             { TransitType.LightRail, new Color(37f/255f, 102f/255f, 10f/255f)  },
-            { TransitType.IntercityRail, new Color(1.0f, 0.0f, 0.0f)  },
+            { TransitType.IntercityRail, new Color(37f/255f, 102f/255f, 10f/255f)  },
             { TransitType.Ferry, new Color(0.14f, 0.66f, 0.79f)  }
         };
 
@@ -214,17 +216,12 @@ namespace Transidious
 
         public void RegisterMapObject(IMapObject obj, Vector3 position, int id = -1)
         {
-            if (!isLoadedFromSaveFile)
+            var tile = GetTile(position);
+            if (tile != null && tile.mapObjects.Add(obj))
             {
-                var tile = GetTile(position);
-                if (tile != null)
-                {
-                    tile.mapObjects.Add(obj);
-
-                    // If the object belongs to a single map tile, parent it.
-                    obj.transform?.SetParent(tile.transform);
-                    obj.UniqueTile = tile;
-                }
+                // If the object belongs to a single map tile, parent it.
+                obj.transform?.SetParent(tile.transform);
+                obj.UniqueTile = tile;
             }
 
             RegisterMapObject(obj, id);
@@ -272,7 +269,7 @@ namespace Transidious
                 id = lastAssignedMapObjectID++;
                 obj.Id = id;
             }
-            else if (id > lastAssignedMapObjectID)
+            else if (id >= lastAssignedMapObjectID)
             {
                 lastAssignedMapObjectID = id + 1;
             }
@@ -314,6 +311,7 @@ namespace Transidious
                 }
             }
 
+            obj.Destroy();
             Destroy(obj.transform?.gameObject);
         }
 
@@ -777,6 +775,41 @@ namespace Transidious
                                     minPnt, prevIdx, disregardRivers);
         }
 
+        public T[] GetMapObjectsInRadius<T>(Vector2 position, float radius, bool sortByDistance = true) where T: IMapObject
+        {
+            var minPos = new Vector2(Mathf.Max(position.x - radius, minX), Mathf.Max(position.y - radius, minY));
+            var maxPos = new Vector2(Mathf.Min(position.x + radius, maxX), Mathf.Min(position.y + radius, maxY));
+
+            var minTile = GetTile(minPos);
+            var maxTile = GetTile(maxPos);
+
+            var sqrDist = radius * radius;
+            var results = new List<Tuple<float, T>>();
+
+            for (var x = minTile.x; x <= maxTile.x; ++x)
+            {
+                for (var y = minTile.y; y <= maxTile.y; ++y)
+                {
+                    var tile = tiles[x][y];
+                    foreach (var obj in tile.mapObjects.OfType<T>())
+                    {
+                        var dst = (obj.Centroid - position).sqrMagnitude;
+                        if (dst <= sqrDist)
+                        {
+                            results.Add(Tuple.Create(dst, obj));
+                        }
+                    }
+                }
+            }
+
+            if (sortByDistance)
+            {
+                results.Sort((Tuple<float, T> t1, Tuple<float, T> t2) => t1.Item1.CompareTo(t2.Item1));
+            }
+
+            return results.Select(t => t.Item2).ToArray();
+        }
+
         void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.red;
@@ -827,13 +860,15 @@ namespace Transidious
 
             public LineBuilder AddStop(string name, Vector2 position,
                                        bool oneWay = false, bool isBackRoute = false,
-                                       List<Vector3> positions = null)
+                                       List<Vector3> positions = null,
+                                       bool automaticPath = false)
             {
-                return AddStop(line.map.GetOrCreateStop(name, position), oneWay, isBackRoute, positions);
+                return AddStop(line.map.GetOrCreateStop(name, position), oneWay, isBackRoute, positions, automaticPath);
             }
 
             public LineBuilder AddStop(Stop stop, bool oneWay = false,
-                                       bool isBackRoute = false, List<Vector3> positions = null)
+                                       bool isBackRoute = false, List<Vector3> positions = null,
+                                       bool automaticPath = false)
             {
                 Debug.Assert(stop != null, "stop is null!");
                 Debug.Assert(oneWay || !isBackRoute, "can't have a two-way back route!");
@@ -846,14 +881,48 @@ namespace Transidious
                     return this;
                 }
 
-                line.AddRoute(lastAddedStop, stop, positions, oneWay, isBackRoute);
+                List<TrafficSimulator.PathSegmentInfo> segmentInfo = null;
+                if (automaticPath)
+                {
+                    Debug.Assert(positions == null, "automatic path but positions are given!");
+                    Debug.Assert(line.type == TransitType.Bus, "invalid system for automatic path");
+
+                    var options = new PathPlanning.PathPlanningOptions { allowWalk = false };
+                    var planner = new PathPlanning.PathPlanner(options);
+                    var result = planner.FindClosestDrive(line.map, lastAddedStop.transform.position,
+                                                          stop.transform.position);
+
+                    if (result != null)
+                    {
+                        segmentInfo = new List<TrafficSimulator.PathSegmentInfo>();
+                        positions = GameController.instance.sim.trafficSim.GetCompletePath(result, segmentInfo);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("no path found from " + lastAddedStop.name + " to " + stop.name);
+                    }
+                }
+
+                var route = line.AddRoute(lastAddedStop, stop, positions, oneWay, isBackRoute);
                 lastAddedStop = stop;
+
+                if (segmentInfo != null)
+                {
+                    // Note which streets this route passes over.
+                    foreach (var segAndLane in segmentInfo)
+                    {
+                        var routesOnSegment = segAndLane.segment.GetTransitRoutes(segAndLane.lane);
+                        routesOnSegment.Add(route);
+                        route.AddStreetSegmentOffset(segAndLane);
+                    }
+                }
 
                 return this;
             }
 
             public Line Finish()
             {
+                line.FinalizeLine();
                 return line;
             }
         }
@@ -920,6 +989,120 @@ namespace Transidious
             return CreateLine(TransitType.Ferry, name,
                               color.a > 0.0f ? color : defaultLineColors[TransitType.Ferry]);
         }
+
+#if DEBUG
+        int lastBusLine = 100;
+        int lastMetroBusLine = 9;
+        int lastSubwayLine = 1;
+        int lastTramLine = 10;
+        int lastIntercityLine = 1;
+        int lastFerryLine = 1;
+
+        public string DefaultLineName(TransitType type)
+        {
+            switch (type)
+            {
+                case TransitType.Bus:
+                default:
+                    if (UnityEngine.Random.value < .5f)
+                    {
+                        return "M" + (lastMetroBusLine++);
+                    }
+                    else
+                    {
+                        return (lastBusLine++).ToString();
+                    }
+                case TransitType.Tram:
+                    return (lastTramLine++).ToString();
+                case TransitType.Subway:
+                    return "U" + (lastSubwayLine++);
+                case TransitType.IntercityRail:
+                    return "R" + (lastIntercityLine++);
+                case TransitType.Ferry:
+                    return "F" + (lastFerryLine++);
+            }
+        }
+
+        Stop GetRandomStop(Stop previousStop = null)
+        {
+            // Max 200m distance
+            float maxDistance = 200f;
+
+            // Min 50m distance
+            float minSqrDistance = 2500f;
+            
+            Vector2 pt;
+            if (previousStop == null)
+            {
+                pt = new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(minY, maxY));
+            }
+            else
+            {
+                var attempts = 0;
+                while (true)
+                {
+                    pt = new Vector2(
+                        UnityEngine.Random.Range(previousStop.location.x - maxDistance, previousStop.location.x + maxDistance),
+                        UnityEngine.Random.Range(previousStop.location.y - maxDistance, previousStop.location.y + maxDistance));
+
+                    if (IsPointOnMap(pt) && (pt - previousStop.location).sqrMagnitude >= minSqrDistance)
+                    {
+                        break;
+                    }
+
+                    if (attempts++ > 1000)
+                    {
+                        Debug.LogError("can't find a close point on the map!");
+                        pt = new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(minY, maxY));
+
+                        break;
+                    }
+                }
+
+            }
+
+            var closestPt = GetClosestStreet(pt);
+            var street = closestPt.seg;
+
+            var closestPtAndPos = street.GetClosestPointAndPosition(closestPt.pos);
+            var positions = GameController.instance.sim.trafficSim.GetPath(
+                street, (closestPtAndPos.Item2 == Math.PointPosition.Right || street.street.isOneWay)
+                    ? street.RightmostLane
+                    : street.LeftmostLane);
+
+            closestPtAndPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positions);
+            closestPt.pos = closestPtAndPos.Item1;
+
+            return GetOrCreateStop(closestPt.seg.street.name, closestPt.pos);
+        }
+
+        public Line CreateRandomizedLine(TransitType type, string name = null, int stops = 2)
+        {
+            var builder = CreateLine(type, name ?? DefaultLineName(type), Utility.RandomColor);
+            Stop firstStop = null;
+            Stop previousStop = null;
+
+            for (var i = 0; i < stops; ++i)
+            {
+                var nextStop = GetRandomStop(previousStop);
+                previousStop = nextStop;
+
+                builder.AddStop(nextStop, true, false, null, type == TransitType.Bus);
+
+                if (firstStop == null)
+                {
+                    firstStop = nextStop;
+                }
+            }
+
+            if (firstStop != null)
+            {
+                builder.AddStop(firstStop, true, false, null, type == TransitType.Bus);
+            }
+
+            return builder.Finish();
+        }
+#endif
 
         /// Create a route.
         public Route CreateRoute(int id = -1)
@@ -1551,8 +1734,11 @@ namespace Transidious
 
         public IEnumerator DoFinalize(float thresholdTime = 50, int tileX = -1, int tileY = -1)
         {
+            var i = 0;
             foreach (var building in buildings)
             {
+                Debug.Log("[BuildingMesh] " + ++i + " / " + buildings.Count);
+
                 building.UpdateMesh(this);
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
@@ -1561,8 +1747,11 @@ namespace Transidious
                 }
             }
 
+            i = 0;
             foreach (var feature in naturalFeatures)
             {
+                Debug.Log("[FeatureMesh] " + ++i + " / " + naturalFeatures.Count);
+
                 feature.UpdateMesh(this);
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
@@ -1571,8 +1760,11 @@ namespace Transidious
                 }
             }
 
+            i = 0;
             foreach (var seg in streetSegments)
             {
+                Debug.Log("[StreetMesh] " + ++i + " / " + streetSegments.Count);
+
                 seg.UpdateMesh();
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
@@ -1630,9 +1822,9 @@ namespace Transidious
 
             if (isLoadedFromSaveFile)
             {
-                foreach (var i in streetIntersections)
+                foreach (var inter in streetIntersections)
                 {
-                    i.GenerateTrafficLights(this);
+                    inter.GenerateTrafficLights(this);
                 }
             }
 

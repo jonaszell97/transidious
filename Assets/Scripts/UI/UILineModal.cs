@@ -31,6 +31,9 @@ namespace Transidious
         /// The currently selected line.
         public Line selectedLine;
 
+        /// The info panel.
+        public UIInfoPanel infoPanel;
+
         void Start()
         {
             var maxCharacters = 32;
@@ -91,6 +94,10 @@ namespace Transidious
                     colorPicker.gameObject.SetActive(false);
                 }
             });
+
+#if DEBUG
+            infoPanel.AddItem("NumVehicles", "Vehicles");
+#endif
         }
 
         public void SetLine(Line line, Route route = null)
@@ -124,6 +131,10 @@ namespace Transidious
 
             lineColorButtonImg.color = line.color;
             logo.SetLine(line);
+
+#if DEBUG
+            infoPanel.SetValue("NumVehicles", line.vehicles.Count.ToString());
+#endif
         }
 
         IEnumerator UpdateColorPickerNextFrame(ColorPicker colorPicker)

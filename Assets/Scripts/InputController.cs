@@ -43,7 +43,7 @@ namespace Transidious
         public GameController controller;
         public RenderingDistance renderingDistance = RenderingDistance.Near;
 
-        public delegate void InputEventListener(DynamicMapObject mapObject);
+        public delegate void InputEventListener(IMapObject mapObject);
         Dictionary<int, InputEventListener>[] inputEventListeners;
         int eventListenerCount;
         HashSet<int> disabledListeners;
@@ -52,11 +52,7 @@ namespace Transidious
         Dictionary<KeyCode, List<KeyboardEventListener>> keyboardEventListeners;
         public bool controlListenersEnabled = true;
 
-        bool zooming = false;
-
         float aspectRatio = 0.0f;
-        float windowWidth = 0.0f;
-        float windowHeight = 0.0f;
 
         public float maxX = float.PositiveInfinity;
         public float maxY = float.PositiveInfinity;
@@ -236,7 +232,7 @@ namespace Transidious
             }
         }
 
-        public void MouseOverMapObject(DynamicMapObject obj)
+        public void MouseOverMapObject(IMapObject obj)
         {
             if (IsPointerOverUIElement())
             {
@@ -254,7 +250,7 @@ namespace Transidious
             }
         }
 
-        public void MouseEnterMapObject(DynamicMapObject obj)
+        public void MouseEnterMapObject(IMapObject obj)
         {
             if (IsPointerOverUIElement())
             {
@@ -272,7 +268,7 @@ namespace Transidious
             }
         }
 
-        public void MouseExitMapObject(DynamicMapObject obj)
+        public void MouseExitMapObject(IMapObject obj)
         {
             if (IsPointerOverUIElement())
             {
@@ -290,7 +286,7 @@ namespace Transidious
             }
         }
 
-        public void MouseDownMapObject(DynamicMapObject obj)
+        public void MouseDownMapObject(IMapObject obj)
         {
             if (IsPointerOverUIElement())
             {
@@ -430,7 +426,7 @@ namespace Transidious
 
         public void UpdateRenderingDistance()
         {
-            if (controller.ImportingMap || controller.Editing)
+            if (controller.ImportingMap)
             {
                 renderingDistance = RenderingDistance.Near;
                 return;
@@ -603,8 +599,6 @@ namespace Transidious
 
             camera = Camera.main;
             aspectRatio = camera.aspect;
-            windowWidth = camera.pixelRect.width;
-            windowHeight = camera.pixelRect.height;
             camera.orthographicSize = 5000f * Map.Meters;
 
             UpdateRenderingDistance();
@@ -641,7 +635,7 @@ namespace Transidious
         StreetSegment highlighted = null;
 
         public bool debugRouteTest = false;
-        Vector3 fromPos = Vector3.zero;
+        Vector3? fromPos;
         MultiMesh routeMesh;
 #endif
 
@@ -688,6 +682,47 @@ namespace Transidious
             }
 
 #if DEBUG
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                var cursorPos = camera.ScreenToWorldPoint(Input.mousePosition);
+                var stops = controller.loadedMap.GetMapObjectsInRadius<IMapObject>(cursorPos, 500f);
+
+                transform.position = cursorPos;
+                gameObject.DrawCircle(500f, 2f, Color.red);
+
+                foreach (var s in stops)
+                {
+                    Debug.Log(s.Name);
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Y))
+            {
+                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if (fromPos == null)
+                {
+                    fromPos = clickedPos;
+                }
+                else
+                {
+                    var options = new PathPlanning.PathPlanningOptions();
+                    var planner = new PathPlanning.PathPlanner(options);
+
+                    var ppResult = planner.FindFastestTransitRoute(controller.loadedMap,
+                                                                   fromPos.Value, clickedPos);
+
+                    fromPos = null;
+                    if (ppResult == null)
+                    {
+                        Debug.Log("no result");
+                    }
+                    else
+                    {
+                        Debug.Log(ppResult.ToString());
+                    }
+                }
+            }
+
             if (debugClickTest && Input.GetMouseButtonDown(0))
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -708,11 +743,10 @@ namespace Transidious
                 }
             }
 
-            if (debugRouteTest && Input.GetMouseButtonDown(0) && controller.Viewing
-                && !IsPointerOverUIElement())
+            if (debugRouteTest && Input.GetMouseButtonDown(0) && !IsPointerOverUIElement())
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                if (fromPos.Equals(Vector3.zero))
+                if (fromPos == null)
                 {
                     fromPos = clickedPos;
                 }
@@ -722,9 +756,9 @@ namespace Transidious
                     var planner = new PathPlanning.PathPlanner(options);
 
                     var ppResult = planner.FindClosestDrive(controller.loadedMap,
-                                                            fromPos, clickedPos);
+                                                            fromPos.Value, clickedPos);
 
-                    fromPos = Vector3.zero;
+                    fromPos = null;
                     if (ppResult == null)
                     {
                         Debug.Log("no result");

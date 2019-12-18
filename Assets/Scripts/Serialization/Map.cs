@@ -26,33 +26,37 @@ namespace Transidious.Serialization {
           string.Concat(
             "CglNYXAucHJvdG8SGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24aDENvbW1v",
             "bi5wcm90bxoOQnVpbGRpbmcucHJvdG8aFE5hdHVyYWxGZWF0dXJlLnByb3Rv",
-            "GgxTdHJlZXQucHJvdG8iUAoHTWFwVGlsZRIJCgF4GAEgASgNEgkKAXkYAiAB",
-            "KA0SFAoMbWFwT2JqZWN0SURzGAMgAygNEhkKEW9ycGhhbmVkT2JqZWN0SURz",
-            "GAQgAygNItoECgNNYXASOAoGdHJpcGxlGAEgASgLMiguVHJhbnNpZGlvdXMu",
-            "U2VyaWFsaXphdGlvbi5WZXJzaW9uVHJpcGxlEj0KEWJvdW5kYXJ5UG9zaXRp",
-            "b25zGAIgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3Iy",
-            "EgwKBG1pblgYAyABKAISDAoEbWF4WBgEIAEoAhIMCgRtaW5ZGAUgASgCEgwK",
-            "BG1heFkYBiABKAISPQoRc3RhcnRpbmdDYW1lcmFQb3MYByABKAsyIi5UcmFu",
-            "c2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjMSOQoOYm91bmRhcnlNZXNo",
-            "ZXMYCCADKAsyIS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1lc2gyRBI2",
-            "CglidWlsZGluZ3MYCSADKAsyIy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
-            "LkJ1aWxkaW5nEkIKD25hdHVyYWxGZWF0dXJlcxgKIAMoCzIpLlRyYW5zaWRp",
-            "b3VzLlNlcmlhbGl6YXRpb24uTmF0dXJhbEZlYXR1cmUSMgoHc3RyZWV0cxgL",
-            "IAMoCzIhLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0EkoKE3N0",
-            "cmVldEludGVyc2VjdGlvbnMYDCADKAsyLS5UcmFuc2lkaW91cy5TZXJpYWxp",
-            "emF0aW9uLlN0cmVldEludGVyc2VjdGlvbhIXCg9iYWNrZ3JvdW5kSW1hZ2UY",
-            "DSABKAwSEwoLbWF4VGlsZVNpemUYDiABKAIiwAEKCFNhdmVGaWxlEjgKBnRy",
-            "aXBsZRgBIAEoCzIoLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVyc2lv",
-            "blRyaXBsZRI7CgV0aWxlcxgCIAMoCzIsLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uU2F2ZUZpbGUuTWFwVGlsZXMaPQoITWFwVGlsZXMSMQoFdGlsZXMY",
-            "ASADKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1hcFRpbGVCHKoC",
-            "GVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
+            "GgxTdHJlZXQucHJvdG8aDVRyYW5zaXQucHJvdG8iUAoHTWFwVGlsZRIJCgF4",
+            "GAEgASgNEgkKAXkYAiABKA0SFAoMbWFwT2JqZWN0SURzGAMgAygNEhkKEW9y",
+            "cGhhbmVkT2JqZWN0SURzGAQgAygNItsECgNNYXASOAoGdHJpcGxlGAEgASgL",
+            "MiguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZXJzaW9uVHJpcGxlEj0K",
+            "EWJvdW5kYXJ5UG9zaXRpb25zGAIgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbi5WZWN0b3IyEgwKBG1pblgYAyABKAISDAoEbWF4WBgEIAEoAhIM",
+            "CgRtaW5ZGAUgASgCEgwKBG1heFkYBiABKAISPQoRc3RhcnRpbmdDYW1lcmFQ",
+            "b3MYByABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjMS",
+            "OQoOYm91bmRhcnlNZXNoZXMYCCADKAsyIS5UcmFuc2lkaW91cy5TZXJpYWxp",
+            "emF0aW9uLk1lc2gyRBI2CglidWlsZGluZ3MYCSADKAsyIy5UcmFuc2lkaW91",
+            "cy5TZXJpYWxpemF0aW9uLkJ1aWxkaW5nEkIKD25hdHVyYWxGZWF0dXJlcxgK",
+            "IAMoCzIpLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTmF0dXJhbEZlYXR1",
+            "cmUSMgoHc3RyZWV0cxgLIAMoCzIhLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
+            "b24uU3RyZWV0EkoKE3N0cmVldEludGVyc2VjdGlvbnMYDCADKAsyLS5UcmFu",
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uLlN0cmVldEludGVyc2VjdGlvbhIXCg9i",
+            "YWNrZ3JvdW5kSW1hZ2UYDSABKAwSFAoMbWluaU1hcEltYWdlGA4gASgMItIC",
+            "CghTYXZlRmlsZRI4CgZ0cmlwbGUYASABKAsyKC5UcmFuc2lkaW91cy5TZXJp",
+            "YWxpemF0aW9uLlZlcnNpb25UcmlwbGUSOwoFdGlsZXMYAiADKAsyLC5UcmFu",
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uLlNhdmVGaWxlLk1hcFRpbGVzEi4KBWxp",
+            "bmVzGAMgAygLMh8uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5MaW5lEi4K",
+            "BXN0b3BzGAQgAygLMh8uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5TdG9w",
+            "EjAKBnJvdXRlcxgFIAMoCzIgLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24u",
+            "Um91dGUaPQoITWFwVGlsZXMSMQoFdGlsZXMYASADKAsyIi5UcmFuc2lkaW91",
+            "cy5TZXJpYWxpemF0aW9uLk1hcFRpbGVCHKoCGVRyYW5zaWRpb3VzLlNlcmlh",
+            "bGl6YXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.TransitReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapTile), global::Transidious.Serialization.MapTile.Parser, new[]{ "X", "Y", "MapObjectIDs", "OrphanedObjectIDs" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Map), global::Transidious.Serialization.Map.Parser, new[]{ "Triple", "BoundaryPositions", "MinX", "MaxX", "MinY", "MaxY", "StartingCameraPos", "BoundaryMeshes", "Buildings", "NaturalFeatures", "Streets", "StreetIntersections", "BackgroundImage", "MaxTileSize" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile), global::Transidious.Serialization.SaveFile.Parser, new[]{ "Triple", "Tiles" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile.Types.MapTiles), global::Transidious.Serialization.SaveFile.Types.MapTiles.Parser, new[]{ "Tiles" }, null, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Map), global::Transidious.Serialization.Map.Parser, new[]{ "Triple", "BoundaryPositions", "MinX", "MaxX", "MinY", "MaxY", "StartingCameraPos", "BoundaryMeshes", "Buildings", "NaturalFeatures", "Streets", "StreetIntersections", "BackgroundImage", "MiniMapImage" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile), global::Transidious.Serialization.SaveFile.Parser, new[]{ "Triple", "Tiles", "Lines", "Stops", "Routes" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile.Types.MapTiles), global::Transidious.Serialization.SaveFile.Types.MapTiles.Parser, new[]{ "Tiles" }, null, null, null, null)})
           }));
     }
     #endregion
@@ -296,7 +300,7 @@ namespace Transidious.Serialization {
       streets_ = other.streets_.Clone();
       streetIntersections_ = other.streetIntersections_.Clone();
       backgroundImage_ = other.backgroundImage_;
-      maxTileSize_ = other.maxTileSize_;
+      miniMapImage_ = other.miniMapImage_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -442,14 +446,14 @@ namespace Transidious.Serialization {
       }
     }
 
-    /// <summary>Field number for the "maxTileSize" field.</summary>
-    public const int MaxTileSizeFieldNumber = 14;
-    private float maxTileSize_;
+    /// <summary>Field number for the "miniMapImage" field.</summary>
+    public const int MiniMapImageFieldNumber = 14;
+    private pb::ByteString miniMapImage_ = pb::ByteString.Empty;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float MaxTileSize {
-      get { return maxTileSize_; }
+    public pb::ByteString MiniMapImage {
+      get { return miniMapImage_; }
       set {
-        maxTileSize_ = value;
+        miniMapImage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -479,7 +483,7 @@ namespace Transidious.Serialization {
       if(!streets_.Equals(other.streets_)) return false;
       if(!streetIntersections_.Equals(other.streetIntersections_)) return false;
       if (BackgroundImage != other.BackgroundImage) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(MaxTileSize, other.MaxTileSize)) return false;
+      if (MiniMapImage != other.MiniMapImage) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -499,7 +503,7 @@ namespace Transidious.Serialization {
       hash ^= streets_.GetHashCode();
       hash ^= streetIntersections_.GetHashCode();
       if (BackgroundImage.Length != 0) hash ^= BackgroundImage.GetHashCode();
-      if (MaxTileSize != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(MaxTileSize);
+      if (MiniMapImage.Length != 0) hash ^= MiniMapImage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -547,9 +551,9 @@ namespace Transidious.Serialization {
         output.WriteRawTag(106);
         output.WriteBytes(BackgroundImage);
       }
-      if (MaxTileSize != 0F) {
-        output.WriteRawTag(117);
-        output.WriteFloat(MaxTileSize);
+      if (MiniMapImage.Length != 0) {
+        output.WriteRawTag(114);
+        output.WriteBytes(MiniMapImage);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -586,8 +590,8 @@ namespace Transidious.Serialization {
       if (BackgroundImage.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeBytesSize(BackgroundImage);
       }
-      if (MaxTileSize != 0F) {
-        size += 1 + 4;
+      if (MiniMapImage.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(MiniMapImage);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -633,8 +637,8 @@ namespace Transidious.Serialization {
       if (other.BackgroundImage.Length != 0) {
         BackgroundImage = other.BackgroundImage;
       }
-      if (other.MaxTileSize != 0F) {
-        MaxTileSize = other.MaxTileSize;
+      if (other.MiniMapImage.Length != 0) {
+        MiniMapImage = other.MiniMapImage;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -705,8 +709,8 @@ namespace Transidious.Serialization {
             BackgroundImage = input.ReadBytes();
             break;
           }
-          case 117: {
-            MaxTileSize = input.ReadFloat();
+          case 114: {
+            MiniMapImage = input.ReadBytes();
             break;
           }
         }
@@ -742,6 +746,9 @@ namespace Transidious.Serialization {
     public SaveFile(SaveFile other) : this() {
       triple_ = other.triple_ != null ? other.triple_.Clone() : null;
       tiles_ = other.tiles_.Clone();
+      lines_ = other.lines_.Clone();
+      stops_ = other.stops_.Clone();
+      routes_ = other.routes_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -771,6 +778,36 @@ namespace Transidious.Serialization {
       get { return tiles_; }
     }
 
+    /// <summary>Field number for the "lines" field.</summary>
+    public const int LinesFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Line> _repeated_lines_codec
+        = pb::FieldCodec.ForMessage(26, global::Transidious.Serialization.Line.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Line> lines_ = new pbc::RepeatedField<global::Transidious.Serialization.Line>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.Line> Lines {
+      get { return lines_; }
+    }
+
+    /// <summary>Field number for the "stops" field.</summary>
+    public const int StopsFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Stop> _repeated_stops_codec
+        = pb::FieldCodec.ForMessage(34, global::Transidious.Serialization.Stop.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Stop> stops_ = new pbc::RepeatedField<global::Transidious.Serialization.Stop>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.Stop> Stops {
+      get { return stops_; }
+    }
+
+    /// <summary>Field number for the "routes" field.</summary>
+    public const int RoutesFieldNumber = 5;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Route> _repeated_routes_codec
+        = pb::FieldCodec.ForMessage(42, global::Transidious.Serialization.Route.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Route> routes_ = new pbc::RepeatedField<global::Transidious.Serialization.Route>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.Route> Routes {
+      get { return routes_; }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SaveFile);
@@ -786,6 +823,9 @@ namespace Transidious.Serialization {
       }
       if (!object.Equals(Triple, other.Triple)) return false;
       if(!tiles_.Equals(other.tiles_)) return false;
+      if(!lines_.Equals(other.lines_)) return false;
+      if(!stops_.Equals(other.stops_)) return false;
+      if(!routes_.Equals(other.routes_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -794,6 +834,9 @@ namespace Transidious.Serialization {
       int hash = 1;
       if (triple_ != null) hash ^= Triple.GetHashCode();
       hash ^= tiles_.GetHashCode();
+      hash ^= lines_.GetHashCode();
+      hash ^= stops_.GetHashCode();
+      hash ^= routes_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -812,6 +855,9 @@ namespace Transidious.Serialization {
         output.WriteMessage(Triple);
       }
       tiles_.WriteTo(output, _repeated_tiles_codec);
+      lines_.WriteTo(output, _repeated_lines_codec);
+      stops_.WriteTo(output, _repeated_stops_codec);
+      routes_.WriteTo(output, _repeated_routes_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -824,6 +870,9 @@ namespace Transidious.Serialization {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Triple);
       }
       size += tiles_.CalculateSize(_repeated_tiles_codec);
+      size += lines_.CalculateSize(_repeated_lines_codec);
+      size += stops_.CalculateSize(_repeated_stops_codec);
+      size += routes_.CalculateSize(_repeated_routes_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -842,6 +891,9 @@ namespace Transidious.Serialization {
         Triple.MergeFrom(other.Triple);
       }
       tiles_.Add(other.tiles_);
+      lines_.Add(other.lines_);
+      stops_.Add(other.stops_);
+      routes_.Add(other.routes_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -862,6 +914,18 @@ namespace Transidious.Serialization {
           }
           case 18: {
             tiles_.AddEntriesFrom(input, _repeated_tiles_codec);
+            break;
+          }
+          case 26: {
+            lines_.AddEntriesFrom(input, _repeated_lines_codec);
+            break;
+          }
+          case 34: {
+            stops_.AddEntriesFrom(input, _repeated_stops_codec);
+            break;
+          }
+          case 42: {
+            routes_.AddEntriesFrom(input, _repeated_routes_codec);
             break;
           }
         }

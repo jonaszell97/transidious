@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Transidious.PathPlanning;
@@ -34,6 +32,8 @@ namespace Transidious
         public Line line;
 
         public List<Vector3> positions;
+        public float length;
+
         List<Vector3> overlapAwarePositions;
         List<float> overlapAwareWidths;
         public Path path;
@@ -60,7 +60,7 @@ namespace Transidious
         public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector3> positions,
                                bool isBackRoute = false, int id = -1)
         {
-            base.Initialize(MapObjectKind.Line, id);
+            base.Initialize(MapObjectKind.Line, id, new Vector2());
 
             this.line = line;
             this.positions = positions;
@@ -186,7 +186,7 @@ namespace Transidious
 
         public DateTime NextDeparture(DateTime after)
         {
-            return after;
+            return beginStop.NextDeparture(line, after);
         }
 
         public void AddStreetSegmentOffset(TrafficSimulator.PathSegmentInfo info)
@@ -235,10 +235,15 @@ namespace Transidious
                 return;
             }
 
-            var collider = this.GetComponent<PolygonCollider2D>();
-            collider.pathCount = 0;
+            for (var i = 1; i < positions.Count; ++i)
+            {
+                length += (positions[i] - positions[i - 1]).magnitude;
+            }
 
-            mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 20, 0, collider);
+            var collider = this.GetComponent<PolygonCollider2D>();
+            //mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 20, 0, collider);
+            mesh = MeshBuilder.CreateBakedLineMesh(positions, line.LineWidth, collider);
+
             UpdateMesh();
         }
 
@@ -370,44 +375,6 @@ namespace Transidious
 
         void UpdateMesh()
         {
-            // if (isBackRoute && !line.map.input.renderBackRoutes)
-            // {
-            //     return;
-            // }
-
-            // if (!name.Contains("M45") && !name.Contains("309"))
-            // {
-            //     return;
-            // }
-
-            // var lineRenderer = GetComponent<LineRenderer>();
-            // lineRenderer.enabled = true;
-            // lineRenderer.numCornerVertices = 5;
-            // lineRenderer.sharedMaterial = line.material;
-            // lineRenderer.positionCount = CurrentPositions.Count;
-            // lineRenderer.SetPositions(CurrentPositions.Select(
-            //     v => new Vector3(v.x, v.y, Map.Layer(MapLayer.TransitLines))).ToArray());
-
-            // if (true || CurrentWidths == null)
-            // {
-            //     lineRenderer.startWidth = line.LineWidth * 2f;
-            //     lineRenderer.endWidth = line.LineWidth * 2f;
-
-            //     return;
-            // }
-
-            // var curve = new AnimationCurve();
-            // var time = 0f;
-            // var timeStep = 1f / (CurrentWidths.Count - 1);
-
-            // foreach (var width in CurrentWidths)
-            // {
-            //     curve.AddKey(time, width);
-            //     time += timeStep;
-            // }
-
-            // lineRenderer.widthCurve = curve;
-
             meshFilter.mesh = mesh;
             meshRenderer.sharedMaterial = line.material;
             transform.position = new Vector3(transform.position.x,
@@ -419,6 +386,21 @@ namespace Transidious
         {
             meshFilter = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();
+        }
+
+        public new Serialization.Route ToProtobuf()
+        {
+            var result = new Serialization.Route
+            {
+                MapObject = base.ToProtobuf(),
+            };
+
+            return result;
+        }
+
+        public void Deserialize(Serialization.Route stop, Map map)
+        {
+            base.Deserialize(stop.MapObject);
         }
 
         public new SerializedRoute Serialize()
@@ -485,20 +467,10 @@ namespace Transidious
             originalPath = Path.Deserialize(route.originalPath);
         }
 
-        // Use this for initialization
-        void Start()
+        public override void OnMouseEnter()
         {
+            base.OnMouseEnter();
 
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-
-        protected override void OnMouseEnter()
-        {
             if (GameController.instance.input.IsPointerOverUIElement())
             {
                 return;
@@ -526,8 +498,10 @@ namespace Transidious
             line.gradient = new ColorGradient(line.color, high, 1.25f);
         }
 
-        protected override void OnMouseExit()
+        public override void OnMouseExit()
         {
+            base.OnMouseExit();
+
             if (selectedLine == line)
             {
                 return;
@@ -545,8 +519,15 @@ namespace Transidious
             }
         }
 
-        protected override void OnMouseDown()
+        public override void OnMouseDown()
         {
+            if (!Game.MouseDownActive(MapObjectKind.Line))
+            {
+                return;
+            }
+
+            base.OnMouseDown();
+
             if (GameController.instance.input.IsPointerOverUIElement())
             {
                 return;
@@ -559,14 +540,10 @@ namespace Transidious
                 modal.selectedLine.material.color = selectedLine.color;
             }
 
-            modal.modal.Enable();
             modal.SetLine(line, this);
 
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            this.RunNextFrame(() =>
-            {
-                modal.modal.PositionAt(pos);
-            });
+            modal.modal.EnableAt(pos);
         }
     }
 }

@@ -283,7 +283,6 @@ namespace Transidious
         public Dictionary<PointOfInterest, Building> pointsOfInterest;
 
         public Vector3 currentPosition;
-
         public ScheduledEvent dailySchedule;
 
         public static readonly float UniversityProbability = 0.7f;
@@ -292,27 +291,107 @@ namespace Transidious
         {
             this.sim = sim;
             this.sim.totalCitizienCount++;
-
-            this.lastName = RandomNameGenerator.LastName;
-
-            var genderAndAge = RandomNameGenerator.GenderAndAge;
-            this.female = genderAndAge.Item1;
-            this.firstName = this.female ? RandomNameGenerator.FemaleFirstName
-                                         : RandomNameGenerator.MaleFirstName;
-            this.birthday = (short)Random.Range(0, 365);
-            this.age = (short)genderAndAge.Item2;
-            this.happiness = 100;
-            this.money = (decimal)Random.Range(0f, 1000000f);
+            this.sim.citiziens.Add(this);
 
             this.pointsOfInterest = new Dictionary<PointOfInterest, Building>();
             this.relationships = new Dictionary<Relationship, Citizien>();
+        }
 
+        public void AssignRandomValues(string firstName = null,
+                                       string lastName = null,
+                                       short? age = null,
+                                       short? birthday = null,
+                                       bool? female = null,
+                                       Citizien.Occupation? occupation = null,
+                                       decimal? money = null,
+                                       bool? educated = null,
+                                       byte? happiness = null,
+                                       Car car = null)
+        {
+            if (lastName == null)
+            {
+                this.lastName = RandomNameGenerator.LastName;
+            }
+            else
+            {
+                this.lastName = lastName;
+            }
+
+            var genderAndAge = RandomNameGenerator.GenderAndAge;
+
+            if (!female.HasValue)
+            {
+                this.female = genderAndAge.Item1;
+            }
+            else
+            {
+                this.female = female.Value;
+            }
+            
+            if (!age.HasValue)
+            {
+                this.age = (short)genderAndAge.Item2;
+            }
+            else
+            {
+                this.age = age.Value;
+            }
+            
+            if (firstName == null)
+            {
+                this.firstName = this.female ? RandomNameGenerator.FemaleFirstName
+                                         : RandomNameGenerator.MaleFirstName;
+            }
+            else
+            {
+                this.firstName = firstName;
+            }
+            
+            if (!birthday.HasValue)
+            {
+                this.birthday = (short)Random.Range(0, 365);
+            }
+            else
+            {
+                this.birthday = birthday.Value;
+            }
+
+            if (!happiness.HasValue)
+            {
+                this.happiness = 100;
+            }
+            else
+            {
+                this.happiness = happiness.Value;
+            }
+
+            if (!money.HasValue)
+            {
+                this.money = (decimal)Random.Range(0f, 1000000f);
+            }
+            else
+            {
+                this.money = money.Value;
+            }
+
+            AssignOccupation(occupation);
+        }
+
+        public void AssignRandomHome()
+        {
             var home = sim.RandomUnoccupiedBuilding(Building.Type.Residential);
+            if (home == null)
+            {
+                Debug.LogError("could not find home!");
+                return;
+            }
+
             ++home.occupants;
-
             this.pointsOfInterest.Add(PointOfInterest.Home, home);
+        }
 
-            AssignOccupation();
+        public void Initialize()
+        {
             CreateSchedules();
 
             var groceryStore = sim.RandomUnoccupiedBuilding(Building.Type.GroceryStore);
@@ -321,10 +400,10 @@ namespace Transidious
                 pointsOfInterest.Add(PointOfInterest.GroceryStore, groceryStore);
             }
 
-            this.currentPosition = home.centroid;
+            this.currentPosition = Home.centroid;
             UpdateDailySchedule(sim.MinuteOfDay);
 
-            Debug.Log(dailySchedule?.ToString());
+            sim.game.financeController.taxes.amount += GetTaxes();
         }
 
         bool IsThresholdAge(int age)
@@ -342,9 +421,13 @@ namespace Transidious
             }
         }
 
-        void AssignOccupation()
+        void AssignOccupation(Occupation? occupation = null)
         {
-            if (age < 7)
+            if (occupation.HasValue)
+            {
+                this.occupation = occupation.Value;
+            }
+            else if (age < 7)
             {
                 this.occupation = Occupation.Kindergarden;
             }
@@ -469,7 +552,7 @@ namespace Transidious
 
         public void UpdateAge()
         {
-            if (sim.gameTime.DayOfYear != birthday)
+            if (sim.GameTime.DayOfYear != birthday)
             {
                 return;
             }
@@ -480,6 +563,24 @@ namespace Transidious
             {
                 AssignOccupation();
                 CreateSchedules();
+            }
+        }
+        
+        public decimal GetTaxes()
+        {
+            switch (occupation)
+            {
+                case Citizien.Occupation.Worker:
+                    return 2m;
+                case Citizien.Occupation.UniversityStudent:
+                case Citizien.Occupation.Trainee:
+                    return 1m;
+                case Citizien.Occupation.Retired:
+                case Citizien.Occupation.Kindergarden:
+                case Citizien.Occupation.ElementarySchoolStudent:
+                case Citizien.Occupation.HighSchoolStudent:
+                default:
+                    return 0m;
             }
         }
 
@@ -520,7 +621,7 @@ namespace Transidious
 
         public void UpdateDailySchedule(int minuteOfDay)
         {
-            var schedule = schedules[sim.gameTime.Day];
+            var schedule = schedules[sim.GameTime.Day];
             if (schedule == null)
             {
                 return;
@@ -543,9 +644,14 @@ namespace Transidious
                     continue;
                 }
 
-                var pathOptions = new PathPlanning.PathPlanningOptions();
+                var pathOptions = new PathPlanning.PathPlanningOptions
+                {
+                    // For walking, we still want a car path.
+                    allowCar = true,
+                };
+
                 var planner = new PathPlanning.PathPlanner(pathOptions);
-                var path = planner.FindClosestDrive(sim.game.loadedMap, currentPosition, poi.centroid);
+                var path = planner.FindClosestPath(sim.game.loadedMap, currentPosition, poi.centroid);
                 var pathDuration = (int)Mathf.Ceil(path.duration * 60);
 
                 // Schedule immediately after preceding event.
@@ -573,7 +679,7 @@ namespace Transidious
                     break;
                 }
 
-                // Don't schedule unflexible events we can't get to in time.
+                // Don't schedule non-flexible events we can't get to in time.
                 if (!e.flexible)
                 {
                     continue;
@@ -607,7 +713,7 @@ namespace Transidious
 
             if (dailySchedule.path != null)
             {
-                sim.trafficSim.Drive(car, dailySchedule.path);
+                sim.trafficSim.FollowPath(this, dailySchedule.path);
             }
 
             dailySchedule = dailySchedule.nextEvent;
@@ -638,6 +744,7 @@ namespace Transidious
             }
         }
 
+#if DEBUG
         public static string GetDestinationString(PointOfInterest poi)
         {
             var msg = "Driving ";
@@ -691,5 +798,6 @@ namespace Transidious
 
             return s;
         }
+#endif
     }
 }

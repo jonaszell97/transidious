@@ -47,6 +47,24 @@ namespace Transidious
 
 #if DEBUG
             panel.AddItem("Area", "ui:building:area");
+            panel.AddItem("Triangles", "Triangles");
+            
+            panel.AddClickableItem("Delete", "Delete", Color.red, () =>
+            {
+                this.building.DeleteMesh();
+            });
+
+            panel.AddClickableItem("Simplify", "Simplify", Color.green, () =>
+            {
+                this.building.DeleteMesh();
+
+                var simplifier = new UnityMeshSimplifier.MeshSimplifier(this.building.mesh);
+                simplifier.SimplifyMesh(.8f);
+
+                var newMesh = Instantiate(GameController.instance.loadedMap.meshPrefab);
+                newMesh.GetComponent<MeshFilter>().sharedMesh = simplifier.ToMesh();
+                newMesh.GetComponent<MeshRenderer>().material = GameController.GetUnlitMaterial(this.building.GetColor());
+            });
 #endif
         }
 
@@ -85,6 +103,7 @@ namespace Transidious
 
 #if DEBUG
             this.panel.SetValue("Area", building.area.ToString() + " m²");
+            this.panel.SetValue("Triangles", (building.mesh?.triangles.Length ?? 0).ToString());
 #endif
         }
     }

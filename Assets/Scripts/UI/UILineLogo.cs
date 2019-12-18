@@ -29,6 +29,10 @@ namespace Transidious
         public void SetColor(Color c)
         {
             backgroundImage.color = c;
+
+            var textColor = Math.ContrastColor(c);
+            inputField.textComponent.color = textColor;
+            placeholderText.color = textColor;
         }
 
         string GetTruncatedLineName(Line line)
@@ -39,7 +43,7 @@ namespace Transidious
         public void SetLine(Line line, bool truncateName = false)
         {
             this.line = line;
-            backgroundImage.color = line.color;
+            SetColor(line.color);
 
             if (truncateName)
             {

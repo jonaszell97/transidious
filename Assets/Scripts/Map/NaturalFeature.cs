@@ -226,6 +226,13 @@ namespace Transidious
 
         public override void OnMouseDown()
         {
+            if (!Game.MouseDownActive(MapObjectKind.NaturalFeature))
+            {
+                return;
+            }
+
+            base.OnMouseDown();
+
             if (GameController.instance.input.IsPointerOverUIElement())
             {
                 return;
@@ -234,8 +241,8 @@ namespace Transidious
             var modal = GameController.instance.sim.featureModal;
             modal.SetFeature(this);
 
-            modal.modal.PositionAt(centroid);
-            modal.modal.Enable();
+            var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            modal.modal.EnableAt(pos);
         }
     }
 }

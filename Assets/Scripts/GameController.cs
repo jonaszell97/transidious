@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
@@ -42,28 +43,12 @@ namespace Transidious
             Disabled,
         }
 
-        public enum MapEditorMode
-        {
-            /// The map is in view mode.
-            ViewMode,
-
-            /// The map is in edit mode.
-            EditMode,
-
-            TransitMode,
-
-            /// The map is in bulldoze mode.
-            BulldozeMode,
-        }
-
         /// The current game status.
         public GameStatus status;
 
         /// The current map display mode.
         public MapDisplayMode displayMode;
 
-        /// The current game play mode.
-        public MapEditorMode editorMode;
         public SnapController snapController;
         public SaveManager saveManager;
 
@@ -109,8 +94,16 @@ namespace Transidious
         /// Prefab for line renderers.
         public GameObject lineRendererPrefab;
 
+        /// <summary>
+        /// Callback to be executed once the game is loaded.
+        /// </summary>
+        public UnityEvent onLoad;
+
+#if DEBUG
+        public string missionToLoad;
         // Only for debugging.
         public OSMImportHelper.Area areaToLoad;
+#endif
 
         // *** Shaders ***
         public Shader circleShader;
@@ -137,22 +130,11 @@ namespace Transidious
         /// The UI canvas.
         public Canvas uiCanvas;
 
-        /// <summary>
-        /// The UI bulldoze button.
-        /// </summary>
-        public Button bulldozeButton;
+        /// Mask of active click events for map objects.
+        public MapObjectKind activeMouseDownEvents = MapObjectKind.All;
 
-        /// <summary>
-        /// The bulldozer cursor texture.
-        /// </summary>
-        public Texture2D bulldozeCursorTex;
-
-        /// <summary>
-        /// The UI edit button.
-        /// </summary>
-        public Button editButton;
-
-        public Button transitEditorButton;
+        /// Mask of active click events for map objects.
+        public MapObjectKind activeMouseOverEvents = MapObjectKind.All;
 
         /// The street creation cursor sprite.
         public Sprite createStreetSprite;
@@ -219,6 +201,16 @@ namespace Transidious
             return tooltip;
         }
 
+        public bool MouseDownActive(MapObjectKind k)
+        {
+            return activeMouseDownEvents.HasFlag(k);
+        }
+
+        public bool MouseOverActive(MapObjectKind k)
+        {
+            return activeMouseOverEvents.HasFlag(k);
+        }
+
         public GameObject CreateCursorSprite
         {
             get
@@ -232,26 +224,11 @@ namespace Transidious
             }
         }
 
-        public bool Bulldozing
+        public bool Playing
         {
             get
             {
-                return editorMode == MapEditorMode.BulldozeMode;
-            }
-        }
-        public bool Editing
-        {
-            get
-            {
-                return editorMode == MapEditorMode.EditMode;
-            }
-        }
-
-        public bool Viewing
-        {
-            get
-            {
-                return editorMode == MapEditorMode.ViewMode;
+                return status == GameStatus.Playing;
             }
         }
 
@@ -285,24 +262,55 @@ namespace Transidious
             loadingScreen.gameObject.SetActive(true);
 
             yield return SaveManager.LoadSave(this, area.ToString());
-            
+            this.onLoad.Invoke();
+
             this.status = GameStatus.Playing;
             loadingScreen.gameObject.SetActive(false);
+            input.EnableControls();
 
-            // #if UNITY_EDITOR
-            //             UnityEditor.EditorApplication.ExitPlaymode();
-            //             UnityEditor.SceneManagement.EditorSceneManager.SaveScene(
-            //                 UnityEngine.SceneManagement.SceneManager.GetActiveScene(), "Assets/Scenes/" +
-            //                 loadedMap.name + ".unity", true);
-            //             UnityEditor.EditorApplication.EnterPlaymode();
-            // #endif
-        }
+            for (var i = 0; i < 50; ++i)
+            {
+                var type = (TransitType)UnityEngine.Random.Range(0, 5);
+                var numStops = 0;
+                
+                if (type == TransitType.Bus)
+                {
+                    numStops = UnityEngine.Random.Range(3, 10);
+                }
 
-        void RegisterUICallbacks()
-        {
-            this.bulldozeButton.onClick.AddListener(OnUIBulldozeButtonPressed);
-            this.editButton.onClick.AddListener(OnUIEditButtonPressed);
-            this.transitEditorButton.onClick.AddListener(OnUITransitEditorButtonClick);
+                loadedMap.CreateRandomizedLine(type, null, numStops);
+            }
+
+            loadedMap.CreateRandomizedLine(TransitType.Subway, "Piccadilly Line", 0);
+            transitEditor.InitOverlappingRoutes();
+
+            //var sched = new Schedule
+            //{
+            //    dayHours = Tuple.Create(4, 22),
+            //    nightHours = Tuple.Create(22, 1),
+            //    operatingDays = Weekday.All & ~Weekday.Sunday,
+            //    dayInterval = 7,
+            //    nightInterval = 30,
+            //};
+
+            //var dates = new DateTime[]
+            //{
+            //    DateTime.Parse("01/01/2001 10:00"),
+            //    DateTime.Parse("01/01/2001 02:00"),
+            //    DateTime.Parse("01/03/2001 03:59"),
+            //    DateTime.Parse("01/01/2001 04:01"),
+            //    DateTime.Parse("01/01/2001 22:30"),
+            //    DateTime.Parse("01/03/2001 00:50"),
+            //    DateTime.Parse("01/05/2001 00:59"),
+            //    DateTime.Parse("12/31/2000 10:00"),
+            //};
+
+            //foreach (var date in dates)
+            //{
+            //    var nextDep = sched.GetNextDeparture(date);
+            //    Debug.Log("next departure after " + Translator.GetDate(date, Translator.DateFormat.DateTimeLong) + ": " +
+            //        Translator.GetDate(nextDep, Translator.DateFormat.DateTimeLong));
+            //}
         }
 
         void Awake()
@@ -316,8 +324,9 @@ namespace Transidious
             }
 
             this.lang = new Translator("en_US");
-            this.editorMode = MapEditorMode.ViewMode;
             this.mapEditor.gameObject.SetActive(false);
+
+            this.onLoad = new UnityEvent();
 
             this.circleShader = Resources.Load("Shaders/CircleShader") as Shader;
             this.defaultShader = Shader.Find("Unlit/Color");
@@ -328,7 +337,7 @@ namespace Transidious
             this.highlightColor = new Color(96f / 255f, 208f / 255f, 230f / 255f);
             this.bulldozeHighlightColor = new Color(189f / 255f, 41f / 255f, 56f / 255f);
 
-            RegisterUICallbacks();
+            this.snapController = new SnapController(this);
         }
 
         // Use this for initialization
@@ -336,14 +345,14 @@ namespace Transidious
         {
             input.DisableControls();
 
-            this.snapController = new SnapController(this);
-
-            if (areaToLoad != OSMImportHelper.Area.Default)
+            if (!string.IsNullOrEmpty(missionToLoad))
+            {
+                Mission.FromFile(missionToLoad).Load();
+            }
+            else if (areaToLoad != OSMImportHelper.Area.Default)
             {
                 StartCoroutine(LoadMap(areaToLoad));
             }
-
-            input.EnableControls();
         }
 
         // Update is called once per frame
@@ -377,154 +386,6 @@ namespace Transidious
             }
         }
 
-        void EnterViewMode()
-        {
-            switch (editorMode)
-            {
-            case MapEditorMode.BulldozeMode:
-                ExitBulldozeMode();
-                break;
-            case MapEditorMode.EditMode:
-                ExitEditMode();
-                break;
-            default:
-                break;
-            }
-
-            this.editorMode = MapEditorMode.ViewMode;
-        }
-
-        void OnUIBulldozeButtonPressed()
-        {
-            if (editorMode == MapEditorMode.BulldozeMode)
-            {
-                EnterViewMode();
-            }
-            else
-            {
-                EnterViewMode();
-                EnterBulldozeMode();
-            }
-        }
-
-        void EnterBulldozeMode()
-        {
-            var halfSize = bulldozeCursorTex.width * .5f;
-            Cursor.SetCursor(bulldozeCursorTex, new Vector2(halfSize, halfSize), CursorMode.Auto);
-
-            this.editorMode = MapEditorMode.BulldozeMode;
-        }
-
-        void ExitBulldozeMode()
-        {
-            Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-            this.editorMode = MapEditorMode.ViewMode;
-        }
-
-        void OnUIEditButtonPressed()
-        {
-            if (editorMode == MapEditorMode.EditMode)
-            {
-                EnterViewMode();
-            }
-            else
-            {
-                EnterViewMode();
-                EnterEditMode();
-            }
-        }
-
-        void EnterEditMode()
-        {
-            if (!Paused)
-                EnterPause();
-
-            this.editorMode = MapEditorMode.EditMode;
-            this.mapEditor.gameObject.SetActive(true);
-            this.mapEditor.Activate();
-            this.loadedMap.SetBackgroundColor(new Color(148f / 255f, 213f / 255f, 255f / 255f));
-
-            var dist = input.renderingDistance;
-            this.input.UpdateRenderingDistance();
-
-            if (dist != input.renderingDistance)
-            {
-                loadedMap.UpdateScale();
-                loadedMap.UpdateTextScale();
-            }
-
-            mainUI.playPauseButton.enabled = false;
-            mainUI.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
-        }
-
-        void ExitEditMode()
-        {
-            ExitPause();
-
-            this.editorMode = MapEditorMode.ViewMode;
-            this.mapEditor.gameObject.SetActive(false);
-            this.mapEditor.Deactivate();
-            this.loadedMap.ResetBackgroundColor();
-
-            var dist = input.renderingDistance;
-            this.input.UpdateRenderingDistance();
-
-            if (dist != input.renderingDistance)
-            {
-                loadedMap.UpdateScale();
-                loadedMap.UpdateTextScale();
-            }
-
-            if (createCursorObj != null)
-            {
-                createCursorObj.SetActive(false);
-            }
-
-            mainUI.playPauseButton.enabled = true;
-            mainUI.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
-        }
-
-        void EnterTransitMode()
-        {
-            if (!Paused)
-                EnterPause();
-
-            this.editorMode = MapEditorMode.TransitMode;
-            this.transitEditor.Activate();
-
-            var dist = input.renderingDistance;
-            this.input.UpdateRenderingDistance();
-
-            if (dist != input.renderingDistance)
-            {
-                loadedMap.UpdateScale();
-                loadedMap.UpdateTextScale();
-            }
-
-            mainUI.playPauseButton.enabled = false;
-            mainUI.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
-        }
-
-        void ExitTransitMode()
-        {
-            ExitPause();
-
-            this.editorMode = MapEditorMode.ViewMode;
-            this.transitEditor.Deactivate();
-
-            var dist = input.renderingDistance;
-            this.input.UpdateRenderingDistance();
-
-            if (dist != input.renderingDistance)
-            {
-                loadedMap.UpdateScale();
-                loadedMap.UpdateTextScale();
-            }
-
-            mainUI.playPauseButton.enabled = true;
-            mainUI.playPauseButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
-        }
-
         public void EnterPause()
         {
             this.status = GameStatus.Paused;
@@ -534,29 +395,9 @@ namespace Transidious
 
         public void ExitPause()
         {
-            if (Editing)
-            {
-                return;
-            }
-
             this.status = GameStatus.Playing;
             mainUI.playPauseButton.GetComponent<Image>().sprite = SpriteManager.instance.pauseSprite;
             mainUI.simSpeedButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
-        }
-
-        void OnUITransitEditorButtonClick()
-        {
-            switch (this.editorMode)
-            {
-            case MapEditorMode.ViewMode:
-                EnterTransitMode();
-                break;
-            case MapEditorMode.TransitMode:
-                ExitTransitMode();
-                break;
-            default:
-                break;
-            }
         }
     }
 }

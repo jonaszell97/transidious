@@ -284,6 +284,22 @@ namespace Transidious
             //}
         }
 
+        public void HideMeshes()
+        {
+            foreach (var mesh in meshes)
+            {
+                mesh.Value.gameObject.SetActive(false);
+            }
+        }
+
+        public void ShowMeshes()
+        {
+            foreach (var mesh in meshes)
+            {
+                mesh.Value.gameObject.SetActive(true);
+            }
+        }
+
         ColliderInfo enteredMapObject = null;
         Vector3? mousePosition = null;
 
@@ -321,6 +337,11 @@ namespace Transidious
 
         void Highlight(ColliderInfo info)
         {
+            if (!map.Game.MouseOverActive(info.obj.Kind))
+            {
+                return;
+            }
+
             var pointArr = info.obj.outlinePositions;
             if (pointArr == null)
             {
@@ -352,10 +373,12 @@ namespace Transidious
             }
         }
 
+        bool checkMouseOver = false;
+
         void OnMouseOver()
         {
             var mousePosWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            if (mousePosition.HasValue && mousePosWorld == mousePosition.Value)
+            if (mousePosition.HasValue && mousePosWorld == mousePosition.Value && !checkMouseOver)
             {
                 return;
             }
@@ -368,6 +391,17 @@ namespace Transidious
                 {
                     if (enteredMapObject != null)
                     {
+                        if (enteredMapObject.obj == info.obj)
+                        {
+                            if (checkMouseOver)
+                            {
+                                info.obj.OnMouseOver();
+                            }
+
+                            found = true;
+                            break;
+                        }
+
                         enteredMapObject.obj.OnMouseExit();
                         Unhighlight(enteredMapObject);
                     }
@@ -382,6 +416,12 @@ namespace Transidious
                     mousePosition = mousePosWorld;
                     info.obj.OnMouseEnter();
 
+                    if (info.obj.ShouldCheckMouseOver())
+                    {
+                        checkMouseOver = true;
+                        info.obj.OnMouseOver();
+                    }
+                    
                     break;
                 }
             }
@@ -403,6 +443,7 @@ namespace Transidious
             Unhighlight(enteredMapObject);
             enteredMapObject = null;
             mousePosition = null;
+            checkMouseOver = false;
         }
 
         public Serialization.MapTile ToProtobuf()

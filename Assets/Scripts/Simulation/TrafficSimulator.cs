@@ -1052,7 +1052,26 @@ namespace Transidious
             }
         }
 
-        void InitStep(Car car, PathPlanningResult result, int stepNo, float startingVelocity = 0f)
+        void InitWalk(Citizien citizien, List<Vector3> positions, PathPlanningResult result, int stepNo)
+        {
+            var walkingCitizienObj = Instantiate(sim.walkingCitizienPrefab);
+            var wc = walkingCitizienObj.GetComponent<WalkingCitizien>();
+            wc.Initialize(sim, citizien, Utility.RandomColor);
+            wc.transform.position = new Vector3(positions[0].x, positions[0].y, wc.transform.position.z);
+
+            var finalStep = stepNo == result.steps.Count - 1;
+            wc.FollowPath(positions, finalStep, (PathFollowingObject obj) =>
+            {
+                GameObject.Destroy(walkingCitizienObj);
+
+                if (!finalStep)
+                {
+                    InitStep(citizien, result, stepNo + 1);
+                }
+            });
+        }
+
+        void InitStep(Citizien citizien, PathPlanningResult result, int stepNo, float startingVelocity = 0f)
         {
             List<Vector3> positions;
             StreetSegment segment;
@@ -1061,14 +1080,27 @@ namespace Transidious
             bool finalStep = false;
 
             var step = result.steps[stepNo];
-            if (!(step is DriveStep) && !(step is PartialDriveStep))
+            switch (step.type)
             {
-                if (stepNo + 1 == result.steps.Count)
-                {
-                    sim.DestroyCar(car);
-                }
+                case PathStep.Type.Walk:
+                    {
+                        var walk = step as WalkStep;
+                        InitWalk(citizien, new List<Vector3> { walk.from, walk.to }, result, stepNo);
 
-                return;
+                        if (stepNo + 1 == result.steps.Count)
+                        {
+                            citizien.car?.gameObject.SetActive(false);
+                        }
+
+                        return;
+                    }
+                case PathStep.Type.Drive:
+                case PathStep.Type.PartialDrive:
+                    break;
+                case PathStep.Type.PublicTransit:
+                default:
+                    Debug.LogError("unhandled path step type: " + step.type);
+                    return;
             }
 
             GetStepPath(step, out segment, out backward, out finalStep, out lane, out positions,
@@ -1076,7 +1108,14 @@ namespace Transidious
 
             if (positions == null || positions.Count == 0)
             {
-                InitStep(car, result, stepNo + 1);
+                InitStep(citizien, result, stepNo + 1);
+                return;
+            }
+
+            var car = citizien.car;
+            if (car == null)
+            {
+                InitWalk(citizien, positions, result, stepNo);
                 return;
             }
 
@@ -1185,7 +1224,7 @@ namespace Transidious
                                       (PathFollowingObject obj) =>
             {
                 ExitIntersection(coi, drivingCar.nextIntersection);
-                InitStep(drivingCar.car, result, nextStep, currentVelocity);
+                InitStep(drivingCar.car.driver, result, nextStep, currentVelocity);
             });
         }
 
@@ -1203,12 +1242,12 @@ namespace Transidious
                 UnityEngine.Random.Range(0f, 1f)
             ));
 
-            Drive(car, result);
+            FollowPath(driver, result);
         }
 
-        public void Drive(Car car, PathPlanningResult result)
+        public void FollowPath(Citizien citizien, PathPlanningResult result)
         {
-            InitStep(car, result, 1);
+            InitStep(citizien, result, 1);
         }
 
         float sStar(float s0, float T, float v, float deltaV, float a)

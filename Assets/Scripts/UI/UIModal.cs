@@ -98,24 +98,13 @@ namespace Transidious
 
         void Start()
         {
+            active = true;
+
             if (!visibleByDefault)
             {
-                active = false;
-                gameObject.SetActive(false);
-            }
-            else
-            {
-                active = true;
+                Disable();
             }
         }
-
-        // void Update()
-        // {
-        //     if (active && Input.GetMouseButton(0) && !GameController.instance.input.IsPointerOverUIElement())
-        //     {
-        //         Disable();
-        //     }
-        // }
 
         public void SetColor(Color color)
         {
@@ -242,6 +231,15 @@ namespace Transidious
             stickToPosition = false;
         }
 
+        public void EnableAt(Vector3 pos)
+        {
+            Enable();
+            this.RunNextFrame(() =>
+            {
+                PositionAt(pos);
+            });
+        }
+
         public void Enable()
         {
             if (active)
@@ -263,7 +261,7 @@ namespace Transidious
             if (zoomListenerID == -1)
             {
                 zoomListenerID = GameController.instance?.input?.RegisterEventListener(
-                    InputEvent.Zoom, (DynamicMapObject _) =>
+                    InputEvent.Zoom, (IMapObject _) =>
                 {
                     if (!gameObject.activeSelf)
                     {
@@ -274,7 +272,7 @@ namespace Transidious
                     AdjustPosition();
                 }) ?? -1;
                 panListenerID = GameController.instance?.input?.RegisterEventListener(
-                    InputEvent.Pan, (DynamicMapObject _) =>
+                    InputEvent.Pan, (IMapObject _) =>
                 {
                     if (!gameObject.activeSelf)
                     {
@@ -286,7 +284,13 @@ namespace Transidious
             }
 
             AdjustSize();
-            this.gameObject.SetActive(true);
+
+            var cg = GetComponent<CanvasGroup>();
+            cg.alpha = 1f;
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+
+            //this.gameObject.SetActive(true);
 
             GameController.instance?.input?.EnableEventListener(zoomListenerID);
             active = true;
@@ -299,7 +303,13 @@ namespace Transidious
                 return;
             }
 
-            this.gameObject.SetActive(false);
+            //this.gameObject.SetActive(false);
+
+            var cg = GetComponent<CanvasGroup>();
+            cg.alpha = 0f;
+            cg.interactable = false;
+            cg.blocksRaycasts = false;
+
             GameController.instance?.input?.DisableEventListener(zoomListenerID);
             this.onClose.Invoke();
             active = false;

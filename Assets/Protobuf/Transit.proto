@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package Transidious.Serialization;
+option csharp_namespace = "Transidious.Serialization";
+
+import "Common.proto";
+
+enum TransitType
+{
+    /// A bus line.
+    Bus = 0;
+
+    /// A tram line.
+    Tram = 1;
+
+    /// A subway line.
+    Subway = 2;
+
+    /// A regional train line.
+    IntercityRail = 3;
+
+    /// A ferry line.
+    Ferry = 4;
+
+    /// A light rail line.
+    LightRail = 5;
+}
+
+message Line {
+    MapObject mapObject = 1;
+    TransitType type = 2;
+    uint32 depotID = 3;
+    repeated uint32 stopIDs = 4;
+    repeated uint32 routeIDs = 5;
+    Color color = 6;
+}
+
+message Stop {
+    MapObject mapObject = 1;
+    Vector2 position = 2;
+}
+
+message Route {
+    MapObject mapObject = 1;
+}

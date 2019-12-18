@@ -151,9 +151,9 @@ namespace Transidious
             var center = p1;
             var centerIdx = vertices.Count;
             vertices.Add(new Vector3(center.x, center.y, useZ ? z : 0f));
-
+            
             // Just add a straight line, the connection is too short to notice.
-            if (true || neededSegments <= 1)
+            if (neededSegments <= 1)
             {
                 // Clockwise
                 triangles.Add(centerIdx);
@@ -230,32 +230,6 @@ namespace Transidious
             }
 
             return neededSegments;
-
-            // var fromAngle = Math.toRadians(Math.Angle(from, center));
-            // var toAngle = Math.toRadians(Math.Angle(center, to));
-
-            // var step = (toAngle - fromAngle) / segments;
-            // var steps = (int)((toAngle - fromAngle) / step);
-
-            //             var dir = to - from;
-            //             var middle = from + (dir * .5f);
-            //             var extendedMiddle = middle + (dir.normalized * radius);
-
-            //             var centerIdx = vertices.Count;
-            //             vertices.Add(center);
-
-            //             AddQuadraticBezierCurve(vertices, from, to, extendedMiddle, segments);
-
-            //             for (var i = centerIdx + 2; i < vertices.Count; ++i)
-            //             {
-            //                 triangles.Add(centerIdx);
-            //                 triangles.Add(i);
-            //                 triangles.Add(i - 1);
-
-            // #if DEBUG
-            //                 circleVerts += 3;
-            // #endif
-            //             }
         }
 
         public static void AddCirclePart(List<Vector3> vertices,
@@ -407,9 +381,10 @@ namespace Transidious
 
             if (i > 1 && i < positions.Count - 1 && quads > 1)
             {
-                connectionOffset = AddSmoothIntersection(positions, i, vertices, triangles, uv,
-                                                         endWidth, cornerVertices,
-                                                         z, useZ, connectionOffset);
+                AddCirclePart(vertices, triangles, uv, p1, endWidth, line, 10, z);
+                //connectionOffset = AddSmoothIntersection(positions, i, vertices, triangles, uv,
+                //                                         endWidth, cornerVertices,
+                //                                         z, useZ, connectionOffset);
             }
             else if (i == positions.Count - 1 && endCap)
             {
@@ -708,6 +683,16 @@ namespace Transidious
                                               PolygonCollider2D collider,
                                               float offset = 0f)
         {
+            var colliderPath = CreateLineCollider(positions, widths, offset);
+            var prevPathCount = collider.pathCount;
+            collider.pathCount = prevPathCount + 1;
+            collider.SetPath(prevPathCount, colliderPath);
+        }
+
+        public static Vector2[] CreateLineCollider(IReadOnlyList<Vector3> positions,
+                                                   IReadOnlyList<float> widths,
+                                                   float offset = 0f)
+        {
             var colliderPath = Enumerable.Repeat(
                 Vector2.positiveInfinity, positions.Count * 2).ToArray();
 
@@ -719,19 +704,23 @@ namespace Transidious
                 AddColliderPart(positions, colliderPath, i, startWidth, endWidth, offset);
             }
 
-            if (collider != null)
-            {
-                var prevPathCount = collider.pathCount;
-                collider.pathCount = prevPathCount + 1;
-                collider.SetPath(prevPathCount,
-                    colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray());
-            }
+            return colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray();
         }
 
         public static void CreateLineCollider(IReadOnlyList<Vector3> positions,
                                               float width,
                                               PolygonCollider2D collider,
                                               float offset = 0f)
+        {
+            var colliderPath = CreateLineCollider(positions, width, offset);
+            var prevPathCount = collider.pathCount;
+            collider.pathCount = prevPathCount + 1;
+            collider.SetPath(prevPathCount, colliderPath);
+        }
+
+        public static Vector2[] CreateLineCollider(IReadOnlyList<Vector3> positions,
+                                                   float width,
+                                                   float offset = 0f)
         {
             var colliderPath = Enumerable.Repeat(
                 Vector2.positiveInfinity, positions.Count * 2).ToArray();
@@ -741,13 +730,132 @@ namespace Transidious
                 AddColliderPart(positions, colliderPath, i, width, width, offset);
             }
 
+            return colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray();
+        }
+
+        static LineRenderer tmpRenderer;
+
+        public static Mesh CreateBakedLineMesh(IReadOnlyList<Vector3> positions,
+                                               float width,
+                                               PolygonCollider2D collider = null,
+                                               int cornerVerts = 5, int capVerts = 5)
+        {
+            if (positions == null)
+            {
+                return null;
+            }
+
+            if (tmpRenderer == null)
+            {
+                var tmpObj = new GameObject();
+                tmpRenderer = tmpObj.AddComponent<LineRenderer>();
+                tmpRenderer.enabled = false;
+            }
+
+            tmpRenderer.positionCount = positions.Count;
+            tmpRenderer.SetPositions(positions.ToArray());
+            //tmpRenderer.SetPositions(
+            //    positions.Select(v => new Vector3(v.x, v.y, Map.Layer(MapLayer.TransitLines))).ToArray());
+
+            tmpRenderer.numCornerVertices = cornerVerts;
+            tmpRenderer.numCapVertices = capVerts;
+            tmpRenderer.startWidth = width * 2;
+            tmpRenderer.endWidth = tmpRenderer.startWidth;
+
+            var mesh = new Mesh();
+            tmpRenderer.BakeMesh(mesh);
+
             if (collider != null)
             {
-                var prevPathCount = collider.pathCount;
-                collider.pathCount = prevPathCount + 1;
-                collider.SetPath(prevPathCount,
-                    colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray());
+                var colliderPath = MeshBuilder.CreateLineCollider(positions, width);
+                collider.pathCount = 0;
+                collider.SetPath(0, colliderPath);
             }
+
+            return mesh;
+        }
+
+        public static AnimationCurve GetWidthCurve(IReadOnlyList<float> widths, IReadOnlyList<Vector3> positions)
+        {
+            var totalDistance = 0f;
+            var distances = new float[positions.Count];
+
+            for (var i = 1; i < positions.Count; ++i)
+            {
+                var p0 = positions[i - 1];
+                var p1 = positions[i];
+
+                var dist = (p1 - p0).sqrMagnitude;
+                totalDistance += dist;
+                distances[i - 1] = dist;
+            }
+
+            var curve = new AnimationCurve();
+
+            var time = 0f;
+            for (var i = 1; i < positions.Count; ++i)
+            {
+                curve.AddKey(time, widths[i]);
+                time += distances[i - 1] / totalDistance;
+            }
+
+            curve.AddKey(1f, widths.Last());
+            Debug.Assert(Mathf.Approximately(time, 1f));
+            Debug.Assert(curve.length == widths.Count);
+
+            return curve;
+        }
+
+        public static AnimationCurve GetWidthCurve(IReadOnlyList<float> widths)
+        {
+            var curve = new AnimationCurve();
+            var timeStep = 1f / (widths.Count - 1);
+            var time = 0f;
+
+            for (var i = 0; i < widths.Count; ++i)
+            {
+                curve.AddKey(time, widths[i]);
+                time += timeStep;
+            }
+
+            Debug.Assert(widths.Count == 0 || Mathf.Approximately(time, 1f + timeStep));
+            Debug.Assert(curve.length == widths.Count);
+
+            return curve;
+        }
+
+        public static Mesh CreateBakedLineMesh(IReadOnlyList<Vector3> positions,
+                                               IReadOnlyList<float> widths,
+                                               PolygonCollider2D collider = null,
+                                               int cornerVerts = 5, int capVerts = 5)
+        {
+            if (tmpRenderer == null)
+            {
+                var tmpObj = new GameObject();
+                tmpRenderer = tmpObj.AddComponent<LineRenderer>();
+                tmpRenderer.enabled = false;
+            }
+
+            tmpRenderer.positionCount = positions.Count;
+            tmpRenderer.SetPositions(
+                positions.Select(v => new Vector3(v.x, v.y, Map.Layer(MapLayer.TransitLines))).ToArray());
+
+            tmpRenderer.numCornerVertices = cornerVerts;
+            tmpRenderer.numCapVertices = capVerts;
+            tmpRenderer.widthCurve = GetWidthCurve(widths, positions);
+            tmpRenderer.widthMultiplier = 2f;
+
+            var mesh = new Mesh();
+            tmpRenderer.BakeMesh(mesh);
+
+            if (collider != null)
+            {
+                var colliderPath = MeshBuilder.CreateLineCollider(positions, widths);
+                collider.pathCount = 0;
+                collider.SetPath(0, colliderPath);
+            }
+
+            return mesh;
         }
 
         static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
@@ -1213,7 +1321,18 @@ namespace Transidious
             return GetSmallestSurroundingRect(mesh.vertices.Select(v => (Vector2)v).ToList());
         }
 
+        public static Vector2[] GetSmallestSurroundingRect(Mesh mesh, ref float minAngle)
+        {
+            return GetSmallestSurroundingRect(mesh.vertices.Select(v => (Vector2)v).ToList(), ref minAngle);
+        }
+
         public static Vector2[] GetSmallestSurroundingRect(IList<Vector2> points)
+        {
+            float minAngle = 0f;
+            return GetSmallestSurroundingRect(points, ref minAngle);
+        }
+
+        public static Vector2[] GetSmallestSurroundingRect(IList<Vector2> points, ref float minAngle)
         {
             var hull = Math.MakeHull(points);
 
@@ -1221,7 +1340,6 @@ namespace Transidious
             // according to that edge. Return the smallest area found.
             Rect? minRect = null;
             var minArea = float.MaxValue;
-            var minAngle = 0f;
 
             for (var i = 1; i < hull.Count; ++i)
             {
@@ -1265,6 +1383,21 @@ namespace Transidious
                 RotateToXAxis(new Vector2(rect.x, rect.y + rect.height),              -minAngle),
                 RotateToXAxis(new Vector2(rect.x + rect.width, rect.y + rect.height), -minAngle),
                 RotateToXAxis(new Vector2(rect.x + rect.width, rect.y),               -minAngle),
+            };
+        }
+
+        public static Mesh RotateMesh(Mesh mesh, Vector3 centroid, Quaternion rot)
+        {
+            var vertices = mesh.vertices;
+            for (var i = 0; i < vertices.Length; ++i)
+            {
+                vertices[i] = rot * (vertices[i] - centroid) + centroid;
+            }
+
+            return new Mesh
+            {
+                vertices = vertices,
+                triangles = mesh.triangles,
             };
         }
 

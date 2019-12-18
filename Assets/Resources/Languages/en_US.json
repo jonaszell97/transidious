@@ -38,6 +38,19 @@
             "key": "ui:finances:earnings",
             "text": "Earnings"
         },
+        {
+            "key": "ui:finances:taxes",
+            "text": "Taxes"
+        },
+
+        {
+            "key": "ui:confirm",
+            "text": "Confirm"
+        },
+        {
+            "key": "ui:cancel",
+            "text": "Cancel"
+        },
 
         {
             "key": "ui:citizien:happiness",
@@ -111,6 +124,53 @@
         {
             "key": "ui:citizien:destination:GroceryStore",
             "text": "GroceryStore"
+        },
+
+        {
+            "key": "ui:line",
+            "text": "Line"
+        },
+        {
+            "key": "ui:line:passengers",
+            "text": "Passengers"
+        },
+        {
+            "key": "ui:line:efficiency",
+            "text": "Efficiency"
+        }, {
+            "key": "ui:line:create",
+            "text": "Create Line"
+        }, {
+            "key": "ui:line:edit",
+            "text": "Edit Line"
+        }, {
+            "key": "ui:line:delete",
+            "text": "Delete Line"
+        },
+        {
+            "key": "ui:line:bus:create_instruction0",
+            "text": "Click anywhere on a street to create the first stop on the line."
+        },
+        {
+            "key": "ui:line:confirm_message",
+            "text": "Are you sure you want to create this line?"
+        },
+        {
+            "key": "ui:line:num_stops",
+            "text": "Stops"
+        },
+        {
+            "key": "ui:line:total_length",
+            "text": "Length"
+        },
+
+        {
+            "key": "ui:construction_cost",
+            "text": "Construction Cost"
+        },
+        {
+            "key": "ui:monthly_cost",
+            "text": "Monthly Cost"
         },
 
         {

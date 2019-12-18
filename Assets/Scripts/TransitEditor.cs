@@ -34,6 +34,9 @@ namespace Transidious
         public int stopSnapSettingsId;
         public Tooltip tooltip;
 
+        public Color disabledSystemColor;
+        public Color[] transitSystemColors;
+
         TemporaryLine currentLine;
         DynamicMapObject previousStop;
         List<Vector3> currentPath;
@@ -157,37 +160,29 @@ namespace Transidious
 
         void RegisterCallbacks()
         {
-            for (int i = 0; i < systemButtons.Length; ++i)
-            {
-                var system = (TransitType)(i);
-                systemButtons[i].onClick.AddListener(() =>
-                {
-                    this.ActivateSystem(system);
-                });
-            }
 
             this.listenerIDs = new int[] {
-                game.input.RegisterEventListener(InputEvent.MouseOver, (DynamicMapObject obj) => {
-                    this.MapObjectHovered(obj);
+                game.input.RegisterEventListener(InputEvent.MouseOver, (IMapObject obj) => {
+                    //this.MapObjectHovered(obj);
                 }, false),
-                game.input.RegisterEventListener(InputEvent.MouseExit, (DynamicMapObject obj) => {
-                    this.MapObjectHoverExit(obj);
+                game.input.RegisterEventListener(InputEvent.MouseExit, (IMapObject obj) => {
+                    //this.MapObjectHoverExit(obj);
                 }, false),
-                game.input.RegisterEventListener(InputEvent.MouseDown, (DynamicMapObject obj) => {
-                    this.MapObjectClicked(obj);
+                game.input.RegisterEventListener(InputEvent.MouseDown, (IMapObject obj) => {
+                    //this.MapObjectClicked(obj);
                 }, false),
             };
 
             game.input.RegisterEventListener(InputEvent.MouseEnter,
-                                             (DynamicMapObject obj) =>
+                                             (IMapObject obj) =>
             {
-                this.MapObjectEntered(obj);
+                //this.MapObjectEntered(obj);
             });
 
             game.input.RegisterEventListener(InputEvent.MouseExit,
-                                             (DynamicMapObject obj) =>
+                                             (IMapObject obj) =>
             {
-                this.MapObjectExited(obj);
+                //this.MapObjectExited(obj);
             });
         }
 
@@ -264,7 +259,7 @@ namespace Transidious
 
             foreach (var stop in currentLine.stops)
             {
-                Destroy(stop.gameObject);
+                stop.Destroy();
             }
 
             currentLine = null;
@@ -295,9 +290,6 @@ namespace Transidious
             this.map = game.loadedMap;
             this.transitUI.SetActive(true);
 
-            this.game.transitEditorButton.GetComponent<Image>().color =
-                this.game.transitEditorButton.colors.highlightedColor;
-
             // Disable collision for all existing routes while we're editing.
             foreach (var route in map.transitRoutes)
             {
@@ -323,9 +315,6 @@ namespace Transidious
             this.active = false;
             this.map = null;
             this.transitUI.SetActive(false);
-
-            this.game.transitEditorButton.GetComponent<Image>().color =
-                this.game.transitEditorButton.colors.normalColor;
         }
 
         void EnterMode(EditingMode mode)
@@ -726,7 +715,7 @@ namespace Transidious
             {
                 name = Translator.Get("tooltip:new_line",
                                       game.GetSystemName(selectedSystem.Value)),
-                stops = new List<DynamicMapObject>(),
+                stops = new List<IMapObject>(),
                 completePath = new List<Vector3>(),
                 paths = new List<int>(),
                 streetSegments = new List<List<TrafficSimulator.PathSegmentInfo>>(),
@@ -898,7 +887,7 @@ namespace Transidious
             CheckOverlappingRoutes(crossedStreets);
         }
 
-        void CheckOverlappingRoutes(HashSet<Tuple<StreetSegment, int>> segments)
+        public void CheckOverlappingRoutes(HashSet<Tuple<StreetSegment, int>> segments)
         {
             var linesPerPositionMap = new Dictionary<Tuple<StreetSegment, int>, int>();
             var affectedRoutes = new HashSet<Route>();
@@ -1323,9 +1312,7 @@ namespace Transidious
                              Dictionary<Tuple<StreetSegment, int>, int> latestOffsetMap)
         {
             var positions = route.positions;
-            var currentPositions = route.CurrentPositions;
-            var currentWidths = route.CurrentWidths;
-
+            
             var newPositions = Enumerable.Repeat(Vector3.zero, positions.Count).ToList();
             var newWidths = Enumerable.Repeat(0f, positions.Count).ToList();
 
@@ -1352,7 +1339,6 @@ namespace Transidious
                     continue;
                 }
 
-                Vector2 pos = route.positions[i];
                 var lane = pathSegment.lane;
                 var streetSeg = pathSegment.segment;
                 var startIdx = i;
@@ -1581,6 +1567,7 @@ namespace Transidious
             var collider = route.GetComponent<PolygonCollider2D>();
             collider.pathCount = 0;
 
+            //var mesh = MeshBuilder.CreateBakedLineMesh(newPositions, newWidths, collider);
             var mesh = MeshBuilder.CreateSmoothLine(
                 newPositions, newWidths, 20, float.NaN, collider);
 

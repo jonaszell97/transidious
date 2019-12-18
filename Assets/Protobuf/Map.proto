@@ -7,6 +7,7 @@ import "Common.proto";
 import "Building.proto";
 import "NaturalFeature.proto";
 import "Street.proto";
+import "Transit.proto";
 
 message MapTile {
     uint32 x = 1;
@@ -33,7 +34,7 @@ message Map {
     repeated StreetIntersection streetIntersections = 12;
 
     bytes backgroundImage = 13;
-    float maxTileSize = 14;
+    bytes miniMapImage = 14;
 }
 
 message SaveFile {
@@ -43,4 +44,7 @@ message SaveFile {
 
     VersionTriple triple = 1;
     repeated MapTiles tiles = 2;
+    repeated Line lines = 3;
+    repeated Stop stops = 4;
+    repeated Route routes = 5;
 }

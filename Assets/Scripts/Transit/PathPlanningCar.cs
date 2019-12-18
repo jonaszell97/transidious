@@ -57,7 +57,21 @@ namespace Transidious.PathPlanning
 
     public class PathStep
     {
+        public enum Type
+        {
+            Walk,
+            Drive,
+            PartialDrive,
+            PublicTransit,
+        }
+
         public DateTime time;
+        public Type type { get; }
+
+        protected PathStep(Type type)
+        {
+            this.type = type;
+        }
     }
 
     public class WalkStep : PathStep
@@ -68,7 +82,7 @@ namespace Transidious.PathPlanning
         /// The ending point of the walk.
         public Vector3 to;
 
-        public WalkStep(Vector3 from, Vector3 to)
+        public WalkStep(Vector3 from, Vector3 to) : base(Type.Walk)
         {
             this.from = from;
             this.to = to;
@@ -83,7 +97,7 @@ namespace Transidious.PathPlanning
         /// The routes to follow.
         public Route[] routes;
 
-        public PublicTransitStep(DateTime time, Line line, Route[] routes)
+        public PublicTransitStep(DateTime time, Line line, Route[] routes) : base(Type.PublicTransit)
         {
             this.time = time;
             this.line = line;
@@ -102,7 +116,7 @@ namespace Transidious.PathPlanning
         /// The street segments to follow.
         public DriveSegment driveSegment;
 
-        public DriveStep(DriveSegment driveSegment)
+        public DriveStep(DriveSegment driveSegment) : base(Type.Drive)
         {
             this.driveSegment = driveSegment;
         }
@@ -126,7 +140,7 @@ namespace Transidious.PathPlanning
         public bool partialEnd;
 
         public PartialDriveStep(Vector3 startPos, Vector3 endPos, DriveSegment segment,
-                                bool partialStart, bool partialEnd)
+                                bool partialStart, bool partialEnd) : base(Type.PartialDrive)
         {
             this.startPos = startPos;
             this.endPos = endPos;
@@ -193,6 +207,9 @@ namespace Transidious.PathPlanning
 
     public class PathPlanningOptions
     {
+        /// Whether or not a car can be used.
+        public bool allowCar = true;
+
         /// Whether or not to allow walking.
         public bool allowWalk = true;
 
@@ -204,6 +221,9 @@ namespace Transidious.PathPlanning
 
         /// The time of the trip.
         public DateTime time;
+
+        /// The maximum acceptable walking distance between stations.
+        public float maxWalkingDistance = 1000f;
 
         /// Factor that walking time is multiplied with for scoring.
         public float walkingTimeFactor = 3.0f;
@@ -835,6 +855,65 @@ namespace Transidious.PathPlanning
 
             result.steps.Add(new WalkStep(endPos, to));
             return result;
+        }
+
+        public PathPlanningResult FindFastestTransitRoute(Map map, Vector2 from, Vector2 to)
+        {
+            var nearbyStopsFrom = map.GetMapObjectsInRadius<Stop>(from, options.maxWalkingDistance);
+            var nearbyStopsTo = map.GetMapObjectsInRadius<Stop>(from, options.maxWalkingDistance);
+
+            foreach (var fromStop in nearbyStopsFrom)
+            {
+                foreach (var toStop in nearbyStopsTo)
+                {
+                    if (fromStop == toStop)
+                    {
+                        continue;
+                    }
+
+                    var options = new PathPlanningOptions
+                    {
+                        start = fromStop,
+                        goal = toStop,
+                    };
+
+                    var planner = new PathPlanner(options);
+                    var path = planner.GetPath();
+                    
+                    if (path != null)
+                    {
+                        path.steps.Insert(0, new WalkStep(from, fromStop.location));
+                        path.steps.Add(new WalkStep(toStop.location, to));
+
+                        return path;
+                    }
+                }
+            }
+
+            return CreateWalk(from, to);
+        }
+
+        public PathPlanningResult FindClosestPath(Map map, Vector2 from, Vector2 to)
+        {
+            var distance = (from - to).magnitude;
+            if (distance <= options.maxWalkingDistance)
+            {
+                return CreateWalk(from, to);
+            }
+
+            var transitResult = FindFastestTransitRoute(map, from, to);
+            if (!options.allowCar)
+            {
+                return transitResult;
+            }
+
+            var carResult = FindClosestDrive(map, from, to);
+            if (carResult.duration < transitResult.duration)
+            {
+                return carResult;
+            }
+
+            return transitResult;
         }
     }
 }

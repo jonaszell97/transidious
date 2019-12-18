@@ -9,6 +9,7 @@ namespace Transidious
     {
         public enum Type
         {
+            Highway,
             Primary,
             Secondary,
             Tertiary,
@@ -105,6 +106,8 @@ namespace Transidious
         {
             switch (type)
             {
+            case Type.Highway:
+                return 4;
             case Type.Primary:
             case Type.Secondary:
                 return 2;
@@ -124,6 +127,8 @@ namespace Transidious
         {
             switch (type)
             {
+            case Type.Highway:
+                return 100;
             case Type.Primary:
                 return 70;
             case Type.Secondary:
@@ -312,8 +317,6 @@ namespace Transidious
 
         public void CreateTextMeshes()
         {
-            return;
-
             switch (type)
             {
             case Type.Path:

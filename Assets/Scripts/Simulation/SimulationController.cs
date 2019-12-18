@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Transidious
 {
@@ -12,7 +13,7 @@ namespace Transidious
         public GameController game;
 
         /// The current in-game time.
-        public DateTime gameTime;
+        [SerializeField] DateTime gameTime;
 
         /// The simulation speed.
         public int simulationSpeed;
@@ -34,6 +35,12 @@ namespace Transidious
 
         /// The car prefab.
         public GameObject carPrefab;
+
+        /// The walking citizien prefab.
+        public GameObject walkingCitizienPrefab;
+
+        /// The transit vehicle prefab.
+        public GameObject transitVehiclePrefab;
 
         /// The traffic simulator.
         public TrafficSimulator trafficSim;
@@ -62,6 +69,22 @@ namespace Transidious
 
         int lastScheduledEvent = 0;
         Dictionary<int, TimedEventInfo> scheduledEvents;
+        List<Tuple<DateTime, TimedEvent>> timedEvents;
+
+        public DateTime GameTime
+        {
+            get
+            {
+                return gameTime;
+            }
+
+            set
+            {
+                gameTime = value;
+                UpdateGameTimeString();
+                game.mainUI.UpdateDate(gameTime);
+            }
+        }
 
         public int MinuteOfDay
         {
@@ -76,20 +99,20 @@ namespace Transidious
             this.gameTime = new DateTime(2000, 1, 1, 7, 0, 0);
             this.simulationSpeed = 0;
             this.citiziens = new List<Citizien>();
+            this.timeStringBuffer = new char[Translator.MaxTimeStringLength];
+            this.scheduledEvents = new Dictionary<int, TimedEventInfo>();
+            this.timedEvents = new List<Tuple<DateTime, TimedEvent>>();
         }
 
         void Start()
         {
-            this.timeStringBuffer = new char[Translator.MaxTimeStringLength];
-            this.scheduledEvents = new Dictionary<int, TimedEventInfo>();
-
             EventManager.current.RegisterEventListener(this);
             UpdateCitizienUI();
         }
 
         void Update()
         {
-            if (game.Paused)
+            if (!game.Playing)
             {
                 return;
             }
@@ -155,6 +178,16 @@ namespace Transidious
             return id;
         }
 
+        public void ScheduleEvent(DateTime gameTime, TimedEvent callback)
+        {
+            Debug.Assert(gameTime > this.gameTime, "scheduled time is in the past");
+            timedEvents.Add(Tuple.Create(gameTime, callback));
+            timedEvents.Sort((Tuple<DateTime, TimedEvent> t1, Tuple<DateTime, TimedEvent> t2) =>
+            {
+                return t1.Item1.CompareTo(t2.Item1);
+            });
+        }
+
         public void DeactivateEvent(int id)
         {
             scheduledEvents[id].active = false;
@@ -215,6 +248,18 @@ namespace Transidious
                     info.Value.action();
                 }
             }
+
+            while (timedEvents.Count > 0)
+            {
+                var nextEvent = timedEvents.First();
+                if (gameTime < nextEvent.Item1)
+                {
+                    break;
+                }
+
+                nextEvent.Item2();
+                timedEvents.RemoveAt(0);
+            }
         }
 
         void UpdateGameTimeString()
@@ -223,9 +268,11 @@ namespace Transidious
             game.mainUI.gameTimeText.SetCharArray(timeStringBuffer);
         }
 
+        public static float MinutesPerFrame = 1f / 60f;
+
         bool UpdateGameTime()
         {
-            var minutesPerFrame = 0.02f * SpeedMultiplier;
+            var minutesPerFrame = MinutesPerFrame * SpeedMultiplier;
             var prevDay = gameTime.DayOfYear;
             var prevMinute = gameTime.Minute;
 
@@ -290,6 +337,24 @@ namespace Transidious
             Destroy(c.gameObject);
         }
 
+        public TransitVehicle CreateVehicle(Line line)
+        {
+            var obj = Instantiate(transitVehiclePrefab); ;
+            obj.transform.SetParent(this.transform, false);
+
+            if (line.stops.Count > 0)
+            {
+                var pos = line.stops.First().transform.position;
+                obj.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.TransitStops, 1));
+            }
+
+            var vehicle = obj.GetComponent<TransitVehicle>();
+            vehicle.Initialize(line);
+            vehicle.gameObject.SetActive(false);
+
+            return vehicle;
+        }
+
         public Building RandomBuilding()
         {
             var idx = UnityEngine.Random.Range(0, game.loadedMap.buildings.Count);
@@ -346,6 +411,55 @@ namespace Transidious
             return closestBuilding;
         }
 
+        public Citizien CreateCitizien(bool init)
+        {
+            var c = new Citizien(this);
+            c.AssignRandomHome();
+            c.AssignRandomValues();
+
+            if (init)
+            {
+                c.Initialize();
+            }
+
+            return c;
+        }
+
+        public Citizien CreateCitizien(string firstName = null,
+                                       string lastName = null,
+                                       short? age = null,
+                                       short? birthday = null,
+                                       bool? female = null,
+                                       Citizien.Occupation? occupation = null,
+                                       decimal? money = null,
+                                       bool? educated = null,
+                                       byte? happiness = null,
+                                       Car car = null)
+        {
+            var c = new Citizien(this, car);
+            c.AssignRandomHome();
+            c.AssignRandomValues(firstName, lastName, age, birthday, female, occupation,
+                                 money, educated, happiness, car);
+
+            c.Initialize();
+
+            return c;
+        }
+
+        public void SpawnRandomCitiziens(int amount)
+        {
+            for (int i = 0; i < amount; ++i)
+            {
+                var citizien = CreateCitizien(false);
+                if (citizien.age >= 20 && UnityEngine.Random.value >= .3f)
+                {
+                    citizien.car = CreateCar(citizien, Vector3.zero, Utility.RandomColor);
+                }
+
+                citizien.Initialize();
+            }
+        }
+
 #if DEBUG
         public IEnumerator SpawnTestCars(int amount = 100)
         {
@@ -359,7 +473,7 @@ namespace Transidious
                 var result = planner.FindClosestDrive(game.loadedMap, start.centroid,
                                                       goal.centroid);
 
-                trafficSim.SpawnCar(result, new Citizien(this));
+                trafficSim.SpawnCar(result, CreateCitizien());
 
                 if (FrameTimer.instance.FrameDuration >= 8)
                 {
@@ -374,7 +488,7 @@ namespace Transidious
         {
             for (int i = 0; i < amount; ++i)
             {
-                var citizien = new Citizien(this);
+                var citizien = CreateCitizien();
                 citizien.car = CreateCar(citizien, Vector3.zero, Utility.RandomColor);
                 citiziens.Add(citizien);
 
@@ -390,7 +504,7 @@ namespace Transidious
         bool measuring = false;
         Vector2? firstMeasurePos;
 
-        public void OnGUI()
+        public void OnGUIX()
         {
             if (GUI.Button(new Rect(25, 25, 100, 30), "Spawn Cars"))
             {

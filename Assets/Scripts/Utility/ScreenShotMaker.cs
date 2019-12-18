@@ -242,11 +242,123 @@ namespace Transidious
             RenderTexture.active = null;
             renderCamera.targetTexture = null;
 
+            map.boundaryOutlineObj.SetActive(true);
             map.boundaryBackgroundObj.SetActive(true);
             map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial = prevMaterial;
             GameController.instance.input.SetRenderingDistance(prevRenderingDist);
 
             return virtualPhoto.ResizeNonDestructive(xRes, yRes);
+        }
+
+        public Texture2D CreateMiniMap(Map map)
+        {
+            var prevRenderingDist = GameController.instance.input.renderingDistance;
+            GameController.instance.input.SetRenderingDistance(RenderingDistance.Near, true);
+
+            foreach (var tile in map.AllTiles)
+            {
+                tile.HideMeshes();
+            }
+
+            float cameraDistance = map.input.camera.transform.position.z;
+
+            Camera renderCamera = GetComponent<Camera>();
+            if (renderCamera == null)
+            {
+                renderCamera = gameObject.AddComponent<Camera>();
+            }
+
+            renderCamera.enabled = true;
+            renderCamera.cameraType = CameraType.Game;
+            renderCamera.forceIntoRenderTexture = true;
+            renderCamera.orthographic = true;
+            renderCamera.orthographicSize = 650f;
+            renderCamera.aspect = 1.0f;
+            renderCamera.targetDisplay = 2;
+
+            int xRes, yRes;
+            var maxSize = 8192;
+            var minX = map.minX;
+            var maxX = map.maxX;
+            var minY = map.minY;
+            var maxY = map.maxY;
+
+            var resolution = 256;
+            while (true)
+            {
+                xRes = Mathf.RoundToInt(resolution * ((maxX - minX) / (renderCamera.orthographicSize * 2)));
+                yRes = Mathf.RoundToInt(resolution * ((maxY - minY) / (renderCamera.orthographicSize * 2)));
+
+                if (xRes <= maxSize && yRes <= maxSize)
+                {
+                    break;
+                }
+
+                resolution -= 100;
+                if (resolution < 0)
+                {
+                    Debug.LogError("unable to find acceptable resolution!");
+                    return new Texture2D(0, 0);
+                }
+            }
+
+            var renderTexture = new RenderTexture(resolution, resolution, 24);
+            renderCamera.targetTexture = renderTexture;
+
+            var imageResX = (int)Mathf.Ceil((float)xRes / resolution) * resolution;
+            var imageResY = (int)Mathf.Ceil((float)yRes / resolution) * resolution;
+
+            Texture2D virtualPhoto = new Texture2D(imageResX, imageResY, TextureFormat.RGBA32, false);
+            RenderTexture.active = renderTexture;
+
+            for (float i = minX, xPos = 0, spaceLeftX = xRes; i < maxX;
+                 i += renderCamera.orthographicSize * 2, xPos++, spaceLeftX -= resolution)
+            {
+                for (float j = minY, yPos = 0, spaceLeftY = yRes; j < maxY;
+                     j += renderCamera.orthographicSize * 2, yPos++, spaceLeftY -= resolution)
+                {
+                    gameObject.transform.position = new Vector3(
+                        i + renderCamera.orthographicSize,
+                        j + renderCamera.orthographicSize, cameraDistance);
+
+                    renderCamera.Render();
+
+                    virtualPhoto.ReadPixels(new Rect(0, 0, resolution, resolution),
+                                            (int)xPos * resolution, (int)yPos * resolution);
+                }
+            }
+
+            RenderTexture.active = null;
+            renderCamera.targetTexture = null;
+
+            GameController.instance.input.SetRenderingDistance(prevRenderingDist);
+
+            foreach (var tile in map.AllTiles)
+            {
+                tile.ShowMeshes();
+            }
+
+            for (var x = 0; x < virtualPhoto.width; ++x)
+            {
+                for (var y = 0; y < virtualPhoto.height; ++y)
+                {
+                    var c = virtualPhoto.GetPixel(x, y);
+                    if (c.Equals(Color.white))
+                    {
+                        virtualPhoto.SetPixel(x, y, Color.clear);
+                    }
+                }
+            }
+
+            virtualPhoto = virtualPhoto.ResizeNonDestructive(xRes, yRes);
+
+#if DEBUG
+            var bytes = virtualPhoto.EncodeToPNG();
+            var path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+            System.IO.File.WriteAllBytes(path + "/" + map.name + "_minimap.png", bytes);
+#endif
+
+            return virtualPhoto;
         }
     }
 }

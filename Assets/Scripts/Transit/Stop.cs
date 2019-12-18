@@ -271,7 +271,7 @@ namespace Transidious
         public float spacePerSlotHorizontal;
 
         public GameObject spritePrefab;
-
+        
         SpriteRenderer spriteRenderer;
 
         Sprite circleSprite;
@@ -286,7 +286,7 @@ namespace Transidious
 
         public void Initialize(Map map, string name, Vector3 position, int id)
         {
-            base.Initialize(MapObjectKind.Line, id);
+            base.Initialize(MapObjectKind.Line, id, position);
 
             this.map = map;
             this.name = name;
@@ -334,6 +334,12 @@ namespace Transidious
             {
                 return false;
             }
+        }
+
+        public DateTime NextDeparture(Line line, DateTime after)
+        {
+            var offset = line.scheduleOffsets[this];
+            return line.schedule.GetNextDeparture(after.AddMinutes(-offset)).AddMinutes(offset);
         }
 
         /// \return The incoming route from the direction of the line's depot stop.
@@ -1463,6 +1469,22 @@ namespace Transidious
             }
         }
 
+        public new Serialization.Stop ToProtobuf()
+        {
+            var result = new Serialization.Stop
+            {
+                MapObject = base.ToProtobuf(),
+                Position = location.ToProtobuf(),
+            };
+
+            return result;
+        }
+
+        public void Deserialize(Serialization.Stop stop, Map map)
+        {
+            base.Deserialize(stop.MapObject);
+        }
+
         public new SerializedStop Serialize()
         {
             return new SerializedStop
@@ -1514,18 +1536,21 @@ namespace Transidious
         public void ActivateModal()
         {
             var modal = GameController.instance.transitEditor.stopInfoModal;
-            modal.modal.Enable();
             modal.SetStop(this);
 
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            this.RunNextFrame(() =>
-            {
-                modal.modal.PositionAt(pos);
-            });
+            modal.modal.EnableAt(pos);
         }
 
-        protected override void OnMouseDown()
+        public override void OnMouseDown()
         {
+            if (!Game.MouseDownActive(MapObjectKind.Stop))
+            {
+                return;
+            }
+
+            base.OnMouseDown();
+
             if (GameController.instance.input.IsPointerOverUIElement())
             {
                 return;

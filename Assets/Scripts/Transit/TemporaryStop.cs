@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Transidious
 {
-    class TemporaryStop : DynamicMapObject
+    public class TemporaryStop : DynamicMapObject
     {
         internal Vector3 position;
 
@@ -16,10 +16,10 @@ namespace Transidious
         }
     }
 
-    class TemporaryLine
+    public class TemporaryLine
     {
         internal string name;
-        internal List<DynamicMapObject> stops;
+        internal List<IMapObject> stops;
         internal List<Vector3> completePath;
         internal List<int> paths;
         internal List<List<TrafficSimulator.PathSegmentInfo>> streetSegments;

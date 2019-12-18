@@ -56,7 +56,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2078720439277823100}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
@@ -76,7 +76,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2078720439277823100}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -2095666955, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -103,7 +103,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2583e6737d9d46cbb637862c050789b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  labelAlignment: 513
+  valueAlignment: 516
+  fontSize: -1
   titlePrefab: {fileID: 6349229831910870152, guid: abc5c2cadf0e64d19bbac10835da7fb9,
     type: 3}
   valuePrefab: {fileID: 759222831859244656, guid: 8e74a6aff7c194294a4a7c418ed7c711,
+    type: 3}
+  iconPrefab: {fileID: 2082929484702357304, guid: d619015190676b5458bf5ddabea2a0ef,
     type: 3}

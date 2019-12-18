@@ -1,25 +1,49 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 using TMPro;
 
 namespace Transidious
 {
     public class UIInfoPanel : MonoBehaviour
     {
+        public TextAlignmentOptions labelAlignment = TextAlignmentOptions.Left;
+        public TextAlignmentOptions valueAlignment = TextAlignmentOptions.Right;
+        public int fontSize = -1;
+
         Dictionary<string, UIText> titles;
         Dictionary<string, TMP_Text> values;
 
         [SerializeField] GameObject titlePrefab;
         [SerializeField] GameObject valuePrefab;
+        [SerializeField] GameObject iconPrefab;
 
-        void Awake()
+        private void Awake()
         {
+            Initialize();
+        }
+
+        public void Initialize()
+        {
+            if (titles != null)
+            {
+                return;
+            }
+
             titles = new Dictionary<string, UIText>();
             values = new Dictionary<string, TMP_Text>();
 
             foreach (var txt in GetComponentsInChildren<UIText>())
             {
+                if (fontSize != -1)
+                {
+                    txt.textMesh.fontSizeMax = fontSize;
+                    txt.textMesh.fontSizeMin = System.Math.Min(fontSize, txt.textMesh.fontSizeMin);
+                }
+
+                txt.textMesh.alignment = labelAlignment;
                 titles.Add(txt.name, txt);
             }
 
@@ -27,6 +51,13 @@ namespace Transidious
             {
                 if (txt.name.Contains("Value"))
                 {
+                    if (fontSize != -1)
+                    {
+                        txt.fontSizeMax = fontSize;
+                        txt.fontSizeMin = System.Math.Min(fontSize, txt.fontSizeMin);
+                    }
+
+                    txt.alignment = valueAlignment;
                     values.Add(txt.name.Replace("Value", ""), txt);
                 }
             }
@@ -55,6 +86,11 @@ namespace Transidious
         public Tuple<UIText, TMP_Text> GetItem(string name)
         {
             return Tuple.Create(GetTitle(name), GetValue(name));
+        }
+
+        public bool HasItem(string name)
+        {
+            return titles.ContainsKey(name);
         }
 
         public UIText GetTitle(string name)
@@ -95,7 +131,26 @@ namespace Transidious
             }
         }
 
-        public void AddItem(string name, string titleKey, string valueText = "")
+        public class IconSettings
+        {
+            public Sprite icon;
+            public float scale = .75f;
+            public float margin = 5;
+            public Color color = Color.white;
+        }
+
+        public void AddClickableItem(string name, string titleKey, Color c, UnityAction callback)
+        {
+            AddItem(name, titleKey);
+
+            var item = GetTitle(name);
+            item.textMesh.color = c;
+
+            var btn = item.gameObject.AddComponent<Button>();
+            btn.onClick.AddListener(callback);
+        }
+
+        public void AddItem(string name, string titleKey, string valueText = "", IconSettings icon = null)
         {
             var titleObj = this.InstantiateInactive(titlePrefab);
             var uiTitle = titleObj.GetComponent<UIText>();
@@ -109,6 +164,24 @@ namespace Transidious
 
             uiTitle.gameObject.SetActive(true);
 
+            if (icon != null)
+            {
+                var iconObj = Instantiate(iconPrefab);
+                var img = iconObj.GetComponent<Image>();
+                img.sprite = icon.icon;
+                img.preserveAspect = true;
+                img.color = icon.color;
+                img.transform.SetParent(uiTitle.transform, false);
+
+                var height = GetComponent<GridLayoutGroup>().cellSize.y * icon.scale;
+                
+                var rc = img.GetComponent<RectTransform>();
+                rc.sizeDelta = new Vector2(height, height);
+                rc.anchoredPosition = new Vector2(height / 2f + icon.margin, rc.anchoredPosition.y);
+
+                uiTitle.textMesh.margin = new Vector4(height + icon.margin * 2, 0f, 0f, 0f);
+            }
+
             var valueObj = Instantiate(valuePrefab);
             var value = valueObj.GetComponent<TMP_Text>();
 
@@ -119,6 +192,18 @@ namespace Transidious
                                                    this.transform.position.z);
 
             value.text = valueText;
+
+            if (fontSize != -1)
+            {
+                uiTitle.textMesh.fontSizeMax = fontSize;
+                uiTitle.textMesh.fontSizeMin = System.Math.Min(fontSize, uiTitle.textMesh.fontSizeMin);
+
+                value.fontSizeMax = fontSize;
+                value.fontSizeMin = System.Math.Min(fontSize, value.fontSizeMin);
+            }
+
+            uiTitle.textMesh.alignment = labelAlignment;
+            value.alignment = valueAlignment;
 
             titles.Add(name, uiTitle);
             values.Add(name, value);

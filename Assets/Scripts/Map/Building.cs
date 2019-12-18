@@ -161,20 +161,25 @@ namespace Transidious
                 break;
             }
 
+            var minAngle = 0f;
+            var surroundingRect = MeshBuilder.GetSmallestSurroundingRect(mesh, ref minAngle);
+
+            //Quaternion q = Quaternion.Euler(0f, 0f, minAngle * Mathf.Rad2Deg);
+            //mesh = MeshBuilder.RotateMesh(mesh, centroid, q);
+
+            var collisionRect = MeshBuilder.GetCollisionRect(mesh);
             foreach (var tile in map.GetTilesForObject(this))
             {
                 tile.AddMesh("Buildings", mesh, GetColor(), layer);
 
                 if (outlinePositions != null)
                 {
-                    tile.AddCollider(this, outlinePositions,
-                                     MeshBuilder.GetCollisionRect(mesh), true);
+                    tile.AddCollider(this, outlinePositions, collisionRect, true);
                 }
                 else
                 {
                     Debug.Log("using simple bounding box for '" + name + "'");
-                    tile.AddCollider(this, MeshBuilder.GetSmallestSurroundingRect(mesh),
-                                     MeshBuilder.GetCollisionRect(mesh), true);
+                    tile.AddCollider(this, surroundingRect, collisionRect, true);
                 }
             }
         }
@@ -188,6 +193,15 @@ namespace Transidious
             var map = GameController.instance.loadedMap;
             map.buildings.Remove(this);
             map.DeleteMapObject(this);
+        }
+
+        public void DeleteMesh()
+        {
+            var map = GameController.instance.loadedMap;
+            foreach (var tile in map.GetTilesForObject(this))
+            {
+                tile.GetMesh("Buildings").RemoveMesh(mesh);
+            }
         }
 
         public new Serialization.Building ToProtobuf()
@@ -257,12 +271,19 @@ namespace Transidious
             var modal = GameController.instance.sim.buildingInfoModal;
             modal.SetBuilding(this);
 
-            modal.modal.PositionAt(centroid);
-            modal.modal.Enable();
+            var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            modal.modal.EnableAt(pos);
         }
 
         public override void OnMouseDown()
         {
+            if (!Game.MouseDownActive(MapObjectKind.Building))
+            {
+                return;
+            }
+
+            base.OnMouseDown();
+
             if (GameController.instance.input.IsPointerOverUIElement())
             {
                 return;

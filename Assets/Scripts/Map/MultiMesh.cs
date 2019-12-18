@@ -229,6 +229,37 @@ namespace Transidious
             }
         }
 
+        public void RemoveMesh(Mesh meshToRemove)
+        {
+            var vertsToRemove = meshToRemove.vertices;
+            foreach (var obj in renderingObjects)
+            {
+                var meshFilter = obj.GetComponent<MeshFilter>();
+                var mesh = meshFilter.sharedMesh;
+                var verts = mesh.vertices;
+
+                var newTriangles = mesh.triangles.Where(idx =>
+                {
+                    var vert = verts[idx];
+                    foreach (Vector2 v in vertsToRemove)
+                    {
+                        if (v.Equals(vert))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }).ToArray();
+
+                meshFilter.sharedMesh = new Mesh
+                {
+                    vertices = verts,
+                    triangles = newTriangles,
+                };
+            }
+        }
+
         public void UpdateScale(RenderingDistance distance)
         {
             var i = 0;

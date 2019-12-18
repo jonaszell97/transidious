@@ -47,6 +47,7 @@ namespace Transidious
 
 #if DEBUG
             panel.AddItem("Area", "ui:feature:area");
+            panel.AddItem("Triangles", "Triangles");
 #endif
         }
 
@@ -60,6 +61,7 @@ namespace Transidious
 
 #if DEBUG
             this.panel.SetValue("Area", feature.area.ToString() + " m²");
+            this.panel.SetValue("Triangles", (feature.mesh?.triangles.Length ?? 0).ToString());
 #endif
         }
     }

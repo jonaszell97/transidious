@@ -60,13 +60,7 @@ namespace Transidious
         /// The traffic light at the end intersection.
         public TrafficLight endTrafficLight;
 
-        class StreetSegmentMeshInfo
-        {
-            internal Mesh streetMesh;
-            internal Mesh outlineMesh;
-        }
-
-        Dictionary<RenderingDistance, StreetSegmentMeshInfo> meshes;
+        public GameObject tramTrackMeshObj;
 
         public static readonly float laneWidth = 3f * Map.Meters;
 
@@ -88,7 +82,6 @@ namespace Transidious
             this.startIntersection = startIntersection;
             this.endIntersection = endIntersection;
             this.hasTramTracks = hasTramTracks;
-            this.meshes = new Dictionary<RenderingDistance, StreetSegmentMeshInfo>();
             this.cumulativeDistances = new List<float>();
             this.positions = positions;
 
@@ -498,6 +491,7 @@ namespace Transidious
         {
             switch (type)
             {
+            case Street.Type.Highway:
             case Street.Type.Primary:
                 switch (distance)
                 {
@@ -599,6 +593,7 @@ namespace Transidious
 
             switch (type)
             {
+            case Street.Type.Highway:
             case Street.Type.Primary:
                 switch (distance)
                 {
@@ -682,6 +677,7 @@ namespace Transidious
         {
             switch (type)
             {
+            case Street.Type.Highway:
             case Street.Type.Primary:
             case Street.Type.Secondary:
                 switch (distance)
@@ -760,6 +756,7 @@ namespace Transidious
         {
             switch (type)
             {
+            case Street.Type.Highway:
             case Street.Type.Primary:
             case Street.Type.Secondary:
                 switch (distance)
@@ -890,14 +887,15 @@ namespace Transidious
             var outlineMesh = new Mesh();
             tmpRenderer.BakeMesh(outlineMesh);
 
-            //var collider = GetComponent<PolygonCollider2D>();
-            //collider.pathCount = 0;
-            //MeshBuilder.CreateLineCollider(positions, borderWidth * .5f, collider);
+            var colliderPath = MeshBuilder.CreateLineCollider(positions, borderWidth * .5f);
+            var collisionRect = MeshBuilder.GetCollisionRect(outlineMesh);
 
             foreach (var tile in street.map.GetTilesForObject(this))
             {
                 tile.AddMesh("Streets", streetMesh, GetStreetColor(RenderingDistance.Near), lineLayer);
                 tile.AddMesh("Streets", outlineMesh, GetBorderColor(RenderingDistance.Near), lineOutlineLayer);
+
+                tile.AddCollider(this, colliderPath, collisionRect, false);
             }
         }
 
@@ -1123,7 +1121,7 @@ namespace Transidious
             }
         }
 
-        void CreateTramTrackMesh(StreetSegmentMeshInfo meshInfo)
+        void CreateTramTrackMesh()
         {
             var trafficSim = street.map.Game.sim.trafficSim;
 
@@ -1132,9 +1130,7 @@ namespace Transidious
             var rightPath = trafficSim.GetPath(this, rightLane);
             var rightMeshes = GetTramTrackMesh(rightPath, true);
 
-            var trackMeshes = new List<Mesh> { meshInfo.outlineMesh, rightMeshes.Item1,
-                rightMeshes.Item2 };
-
+            var trackMeshes = new List<Mesh> { rightMeshes.Item1, rightMeshes.Item2 };
             if (!street.isOneWay)
             {
                 // Create tracks for left lane.
@@ -1149,23 +1145,44 @@ namespace Transidious
             // Create meshes for intersections.
             GetIntersectionMeshes(trackMeshes);
 
-            meshInfo.outlineMesh = MeshBuilder.CombineMeshes(trackMeshes);
-            UpdateScale(Game.input.renderingDistance);
+            var tramTrackMesh = MeshBuilder.CombineMeshes(trackMeshes);
+
+            if (tramTrackMeshObj == null)
+            {
+                tramTrackMeshObj = GameObject.Instantiate(GameController.instance.loadedMap.meshPrefab);
+            }
+
+            var filter = tramTrackMeshObj.GetComponent<MeshFilter>();
+            filter.sharedMesh = tramTrackMesh;
+
+            var renderer = tramTrackMeshObj.GetComponent<MeshRenderer>();
+            renderer.material = GameController.GetUnlitMaterial(GetBorderColor(RenderingDistance.Near));
         }
 
         void UpdateTramTracks(Mesh trackRight, Mesh trackLeft)
         {
-            var meshInfo = this.meshes[RenderingDistance.Near];
-            meshInfo.outlineMesh = MeshBuilder.CombineMeshes(meshInfo.outlineMesh, trackRight,
-                                                             trackLeft);
+            if (tramTrackMeshObj == null)
+            {
+                tramTrackMeshObj = GameObject.Instantiate(GameController.instance.loadedMap.meshPrefab);
+                tramTrackMeshObj.GetComponent<MeshFilter>().sharedMesh = MeshBuilder.CombineMeshes(trackRight, trackLeft);
+            }
+            else
+            {
+                var previousMesh = tramTrackMeshObj.GetComponent<MeshFilter>().sharedMesh;
+                tramTrackMeshObj.GetComponent<MeshFilter>().sharedMesh = MeshBuilder.CombineMeshes(previousMesh, trackRight, trackLeft);
+            }
 
-            UpdateScale(Game.input.renderingDistance);
         }
 
         public void AddTramTracks()
         {
+            if (this.hasTramTracks)
+            {
+                return;
+            }
+
             this.hasTramTracks = true;
-            this.CreateTramTrackMesh(meshes[RenderingDistance.Near]);
+            this.CreateTramTrackMesh();
         }
 
 #if DEBUG
@@ -1296,6 +1313,7 @@ namespace Transidious
 
             switch (street.type)
             {
+            case Street.Type.Highway:
             case Street.Type.Primary:
                 min = 9f * Map.Meters;
                 max = 15f * Map.Meters;
@@ -1440,6 +1458,11 @@ namespace Transidious
             {
                 UpdateBorderColor(game.highlightColor);
             }
+        }
+
+        public override bool ShouldCheckMouseOver()
+        {
+            return true;
         }
     }
 }

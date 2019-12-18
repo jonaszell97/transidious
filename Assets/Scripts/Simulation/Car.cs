@@ -174,10 +174,7 @@ namespace Transidious
 
                 pathFollow.Update();
 
-                var prevPos = drivingCar.exactPosition;
                 drivingCar.exactPosition = transform.position;
-
-                var prevDist = drivingCar.distanceFromStart;
                 drivingCar.distanceFromStart = sim.trafficSim.GetDistanceFromStart(
                     drivingCar.segment,
                     drivingCar.exactPosition,

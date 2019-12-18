@@ -1,0 +1,22 @@
+{
+    "name": "Tutorial (DE)",
+    "area": "Charlottenburg",
+    "startingMoney": 5000,
+    "gameTime": "01/01/2019 07:00:00",
+
+    "startingPopulation": 1000,
+    "citiziens": [{
+        "firstName": "Maria",
+        "lastName": "Berghain",
+        "female": true,
+        "age": 29
+    }],
+
+    "steps": [{
+        "message": "mission:tutorial:introduction",
+        "objectives": [{
+            "type": 3,
+            "requirement": 100
+        }]
+    }]
+}

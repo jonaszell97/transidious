@@ -1,29 +1,43 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.Events;
 
 namespace Transidious
 {
+    public struct SnapSettings
+    {
+        public Sprite snapCursor;
+        public Color snapCursorColor;
+        public Vector3 snapCursorScale;
+
+        public UnityAction onSnapEnter;
+        public UnityAction onSnapOver;
+        public UnityAction onSnapExit;
+
+        public bool hideCursor;
+
+        // Only applies to street snaps.
+        public bool snapToEnd;
+        public bool snapToLane;
+        public bool snapToRivers;
+    }
+
     // BRING ME THANOOOOS!
     public class SnapController
     {
+
         abstract class ActiveSnap
         {
             internal int id;
-            internal Sprite snapCursor;
-            internal Color snapCursorColor;
-            internal Vector3 snapCursorScale;
+            internal SnapSettings settings;
 
             internal abstract Type GetApplicableType();
         }
 
         class StreetSnap : ActiveSnap
         {
-            internal bool snapToEnd;
-            internal bool snapToLane;
-            internal bool snapToRivers;
-
             internal override Type GetApplicableType()
             {
                 return typeof(StreetSegment);
@@ -44,6 +58,7 @@ namespace Transidious
         int snapCount;
         List<ActiveSnap> activeSnaps;
         HashSet<int> disabledSnaps;
+        ActiveSnap activeSnap;
 
         public SnapController(GameController game)
         {
@@ -53,12 +68,12 @@ namespace Transidious
             this.disabledSnaps = new HashSet<int>();
 
             game.input.RegisterEventListener(InputEvent.MouseOver,
-                                             (DynamicMapObject obj) =>
+                                             (IMapObject obj) =>
                                              {
                                                  this.HandleMouseOver(obj);
                                              });
             game.input.RegisterEventListener(InputEvent.MouseExit,
-                                             (DynamicMapObject obj) =>
+                                             (IMapObject obj) =>
                                              {
                                                  this.HandleMouseExit(obj);
                                              });
@@ -68,15 +83,20 @@ namespace Transidious
                                  bool snapToEnd, bool snapToLane, bool snapToRivers)
         {
             int id = snapCount++;
-            var snap = new StreetSnap
+            var settings = new SnapSettings
             {
-                id = id,
                 snapCursor = snapCursor,
                 snapCursorColor = snapCursorColor,
                 snapCursorScale = snapCursorScale,
                 snapToEnd = snapToEnd,
                 snapToLane = snapToLane,
                 snapToRivers = snapToRivers,
+            };
+
+            var snap = new StreetSnap
+            {
+                id = id,
+                settings = settings,
             };
 
             activeSnaps.Add(snap);
@@ -87,16 +107,54 @@ namespace Transidious
                            Type type)
         {
             int id = snapCount++;
-            var snap = new MapObjectSnap
+            var settings = new SnapSettings
             {
-                id = id,
                 snapCursor = snapCursor,
                 snapCursorColor = snapCursorColor,
                 snapCursorScale = snapCursorScale,
+            };
+
+            var snap = new MapObjectSnap
+            {
+                id = id,
+                settings = settings,
                 type = type,
             };
 
             activeSnaps.Add(snap);
+            return id;
+        }
+
+        public int AddSnap(Type type, SnapSettings settings, bool enabled = true)
+        {
+            int id = snapCount++;
+            ActiveSnap snap;
+
+            if (type == typeof(StreetSegment))
+            {
+                snap = new StreetSnap
+                {
+                    id = id,
+                    settings = settings,
+                };
+            }
+            else
+            {
+                snap = new MapObjectSnap
+                {
+                    id = id,
+                    settings = settings,
+                    type = type,
+                };
+            }
+
+            activeSnaps.Add(snap);
+            
+            if (!enabled)
+            {
+                disabledSnaps.Add(id);
+            }
+
             return id;
         }
 
@@ -110,7 +168,7 @@ namespace Transidious
             disabledSnaps.Add(id);
         }
 
-        ActiveSnap GetSnapForObject(DynamicMapObject obj)
+        ActiveSnap GetSnapForObject(IMapObject obj)
         {
             foreach (var snap in activeSnaps)
             {
@@ -129,39 +187,53 @@ namespace Transidious
             return null;
         }
 
-        public void HandleMouseOver(DynamicMapObject obj)
+        public void HandleMouseOver(IMapObject obj)
         {
-            //var snap = GetSnapForObject(obj);
-            //if (snap == null)
-            //{
-            //    return;
-            //}
+            var snap = GetSnapForObject(obj);
+            if (snap == null)
+            {
+                return;
+            }
 
-            //if (snap.GetApplicableType() != obj.GetType())
-            //{
-            //    return;
-            //}
+            if (snap.GetApplicableType() != obj.GetType())
+            {
+                return;
+            }
 
-            //if (snap is StreetSnap)
-            //{
-            //    SnapToStreet(snap as StreetSnap, obj as StreetSegment);
-            //}
-            //else if (snap is MapObjectSnap)
-            //{
-            //    SnapToMapObject(snap as MapObjectSnap, obj);
-            //}
+            if (activeSnap != snap)
+            {
+                activeSnap = snap;
+                snap.settings.onSnapEnter?.Invoke();
+            }
+
+            snap.settings.onSnapOver?.Invoke();
+
+            if (snap is StreetSnap)
+            {
+                SnapToStreet(snap as StreetSnap, obj as StreetSegment);
+            }
+            else if (snap is MapObjectSnap)
+            {
+                SnapToMapObject(snap as MapObjectSnap, obj);
+            }
         }
 
-        public void HandleMouseExit(DynamicMapObject obj)
+        public void HandleMouseExit(IMapObject obj)
         {
+            if (activeSnap != null)
+            {
+                activeSnap.settings.onSnapExit?.Invoke();
+            }
+
             Unsnap();
+            activeSnap = null;
         }
 
         static readonly float endSnapThreshold = 5f * Map.Meters;
 
         void SnapToStreet(StreetSnap snapSettings, StreetSegment street)
         {
-            if (snapSettings.snapToRivers)
+            if (snapSettings.settings.snapToRivers)
             {
                 if (street.street.type != Street.Type.River)
                 {
@@ -173,12 +245,15 @@ namespace Transidious
                 return;
             }
 
-            Cursor.visible = false;
+            if (snapSettings.settings.hideCursor)
+            {
+                Cursor.visible = false;
+            }
 
             var cursorPos = game.input.NativeCursorPosition;
 
             System.Tuple<Vector3, Math.PointPosition> closestPtAndPos;
-            if (snapSettings.snapToLane)
+            if (snapSettings.settings.snapToLane)
             {
                 closestPtAndPos = street.GetClosestPointAndPosition(cursorPos);
                 var positions = game.sim.trafficSim.GetPath(
@@ -197,7 +272,7 @@ namespace Transidious
             var closestPt = closestPtAndPos.Item1;
             var pos = closestPtAndPos.Item2;
 
-            if (snapSettings.snapToEnd)
+            if (snapSettings.settings.snapToEnd)
             {
                 var distanceFromStart = (street.drivablePositions.First() - closestPt).magnitude;
                 if (distanceFromStart < endSnapThreshold)
@@ -217,9 +292,9 @@ namespace Transidious
             var cursorObj = game.CreateCursorSprite;
             var spriteRenderer = cursorObj.GetComponent<SpriteRenderer>();
 
-            spriteRenderer.sprite = snapSettings.snapCursor;
-            spriteRenderer.color = snapSettings.snapCursorColor;
-            spriteRenderer.transform.localScale = snapSettings.snapCursorScale;
+            spriteRenderer.sprite = snapSettings.settings.snapCursor;
+            spriteRenderer.color = snapSettings.settings.snapCursorColor;
+            spriteRenderer.transform.localScale = snapSettings.settings.snapCursorScale;
 
             cursorObj.SetActive(true);
             cursorObj.transform.position = new Vector3(closestPt.x, closestPt.y,
@@ -228,14 +303,14 @@ namespace Transidious
             game.input.gameCursorPosition = cursorObj.transform.position;
         }
 
-        void SnapToMapObject(MapObjectSnap snapSettings, DynamicMapObject obj)
+        void SnapToMapObject(MapObjectSnap snapSettings, IMapObject obj)
         {
             var cursorObj = game.CreateCursorSprite;
             var spriteRenderer = cursorObj.GetComponent<SpriteRenderer>();
 
-            spriteRenderer.sprite = snapSettings.snapCursor;
-            spriteRenderer.color = snapSettings.snapCursorColor;
-            spriteRenderer.transform.localScale = snapSettings.snapCursorScale;
+            spriteRenderer.sprite = snapSettings.settings.snapCursor;
+            spriteRenderer.color = snapSettings.settings.snapCursorColor;
+            spriteRenderer.transform.localScale = snapSettings.settings.snapCursorScale;
 
             Cursor.visible = false;
             cursorObj.SetActive(true);

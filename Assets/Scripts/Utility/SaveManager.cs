@@ -105,18 +105,18 @@ namespace Transidious
         public static readonly int thresholdTime = 30;
 #endif
 
-        static Serialization.Map GetProtobufMap(Map map, byte[] backgroundImage)
+        static Serialization.Map GetProtobufMap(Map map, byte[] backgroundImage, byte[] miniMapImage)
         {
             var result = new Serialization.Map
             {
                 Triple = SaveFormatVersion.ToProtobuf(),
-                MaxTileSize = OSMImporter.maxTileSize,
                 MinX = map.minX,
                 MaxX = map.maxX,
                 MinY = map.minY,
                 MaxY = map.maxY,
                 StartingCameraPos = map.startingCameraPos.ToProtobuf(),
                 BackgroundImage = Google.Protobuf.ByteString.CopyFrom(backgroundImage),
+                MiniMapImage = Google.Protobuf.ByteString.CopyFrom(miniMapImage),
             };
 
             result.Buildings.AddRange(map.buildings.Select(b => b.ToProtobuf()));
@@ -192,6 +192,10 @@ namespace Transidious
 
                 saveFile.Tiles.Add(tileProtoBuf);
             }
+
+            saveFile.Stops.AddRange(map.transitStops.Select(b => b.ToProtobuf()));
+            saveFile.Routes.AddRange(map.transitRoutes.Select(b => b.ToProtobuf()));
+            saveFile.Lines.AddRange(map.transitLines.Select(b => b.ToProtobuf()));
 
             return saveFile;
         }
@@ -306,100 +310,44 @@ namespace Transidious
             }
         }
 
-        public static void SaveMapLayout(Map map, byte[] backgroundImage, int tileX = -1, int tileY = -1)
+        public static void SaveMapLayout(Map map, byte[] backgroundImage, byte[] miniMapImage)
         {
-            string fileName;
-            if (tileX == -1 && tileY == -1)
+            string fileName = "Assets/Resources/Maps/";
+            fileName += map.name;
+
+            if (System.IO.Directory.Exists(fileName))
             {
-                fileName = "Assets/Resources/Maps/";
-                fileName += map.name;
-
-                if (System.IO.Directory.Exists(fileName))
+                var dir = new System.IO.DirectoryInfo(fileName);
+                foreach (var file in dir.GetFiles())
                 {
-                    var dir = new System.IO.DirectoryInfo(fileName);
-                    foreach (var file in dir.GetFiles())
-                    {
-                        file.Delete();
-                    }
-
-                    dir.Delete();
+                    file.Delete();
                 }
 
-                fileName += ".bytes";
-            }
-            else
-            {
-                var directoryPath = "Assets/Resources/Maps/";
-                directoryPath += map.name;
-
-                if (System.IO.File.Exists(directoryPath + ".bytes"))
-                {
-                    System.IO.File.Delete(directoryPath + ".bytes");
-                }
-
-                var dir = System.IO.Directory.CreateDirectory(directoryPath);
-                if (tileX == 0 && tileY == 0)
-                {
-                    foreach (var file in dir.GetFiles())
-                    {
-                        file.Delete();
-                    }
-                }
-
-                fileName = directoryPath + "/" + tileX + "_" + tileY + ".bytes";
+                dir.Delete();
             }
 
-            var sm = GetProtobufMap(map, backgroundImage);
+            fileName += ".bytes";
+
+            var sm = GetProtobufMap(map, backgroundImage, miniMapImage);
             using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
             {
                 CompressGZip(stream, sm);
             }
         }
 
-        public static void SaveMapData(Map map, int tileX = -1, int tileY = -1)
+        public static void SaveMapData(Map map)
         {
-            string fileName;
-            if (tileX == -1 && tileY == -1)
+            var fileName = "Assets/Resources/Saves/";
+            fileName += GameController.instance.missionToLoad;
+
+            if (!System.IO.Directory.Exists(fileName))
             {
-                fileName = "Assets/Resources/Saves/";
-                fileName += map.name;
-
-                if (System.IO.Directory.Exists(fileName))
-                {
-                    var dir = new System.IO.DirectoryInfo(fileName);
-                    foreach (var file in dir.GetFiles())
-                    {
-                        file.Delete();
-                    }
-
-                    dir.Delete();
-                }
-
-                // fileName += "_";
-                // fileName += (new DateTime()).ToString();
-                fileName += ".bytes";
+                System.IO.Directory.CreateDirectory(fileName);
             }
-            else
-            {
-                var directoryPath = "Assets/Resources/Saves/";
-                directoryPath += map.name;
 
-                if (System.IO.File.Exists(directoryPath + ".bytes"))
-                {
-                    System.IO.File.Delete(directoryPath + ".bytes");
-                }
-
-                var dir = System.IO.Directory.CreateDirectory(directoryPath);
-                if (tileX == 0 && tileY == 0)
-                {
-                    foreach (var file in dir.GetFiles())
-                    {
-                        file.Delete();
-                    }
-                }
-
-                fileName = directoryPath + "/" + tileX + "_" + tileY + ".bytes";
-            }
+            fileName += "/";
+            fileName += DateTime.Now.Ticks;
+            fileName += ".bytes";
 
             using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
             {
@@ -494,12 +442,12 @@ namespace Transidious
 
             var bytes = serializedMap.BackgroundImage.ToByteArray();
             LoadBackgroundSprite(map, bytes, MapDisplayMode.Day,
-                                 ref map.backgroundSpriteDay,
-                                 tileX, tileY, serializedMap.MaxTileSize);
+                                 ref map.backgroundSpriteDay);
 
             LoadBackgroundSprite(map, bytes, MapDisplayMode.Night,
-                                 ref map.backgroundSpriteNight,
-                                 tileX, tileY, serializedMap.MaxTileSize);
+                                 ref map.backgroundSpriteNight);
+
+            LoadMiniMapSprite(serializedMap.MiniMapImage.ToByteArray());
         }
 
         static IEnumerator DeserializeGameObjects(Map map, Serialization.Map serializedMap)
@@ -548,11 +496,21 @@ namespace Transidious
             }
         }
 
+        static void LoadMiniMapSprite(byte[] bytes)
+        {
+            var tex = new Texture2D(0, 0, TextureFormat.RGBA32, false);
+            if (!tex.LoadImage(bytes))
+            {
+                Debug.LogError("corrupted PNG file!");
+                return;
+            }
+
+            UIMiniMap.mapTexture = tex;
+        }
+
         static void LoadBackgroundSprite(Map map, byte[] bytes,
                                          MapDisplayMode mode,
-                                         ref GameObject gameObject,
-                                         int tileX, int tileY,
-                                         float maxTileSize)
+                                         ref GameObject gameObject)
         {
             var tex = new Texture2D(0, 0, TextureFormat.RGB24, false);
             if (!tex.LoadImage(bytes))
@@ -594,18 +552,7 @@ namespace Transidious
 
             tex.Apply();
 
-            int minX, minY;
-            if (tileX == -1)
-            {
-                minX = 0;
-                minY = 0;
-            }
-            else
-            {
-                minX = (int)maxTileSize * tileX;
-                minY = (int)maxTileSize * tileY;
-            }
-
+            int minX = 0, minY = 0;
             var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height),
                                        new Vector2(0, 0), 100f);
 
@@ -614,8 +561,8 @@ namespace Transidious
 
             var transform = gameObject.transform;
             var spriteBounds = sprite.bounds;
-            var desiredWidth = Mathf.Min(map.width, maxTileSize);
-            var desiredHeight = Mathf.Min(map.height, maxTileSize);
+            var desiredWidth = map.width;
+            var desiredHeight = map.height;
 
             transform.position = new Vector3(map.minX + minX, map.minY + minY, Map.Layer(MapLayer.Parks));
             transform.localScale = new Vector3(desiredWidth / spriteBounds.size.x,
@@ -666,24 +613,24 @@ namespace Transidious
         static IEnumerator DeserializeGameObjects(Map map, Serialization.SaveFile saveFile)
         {
             // Deserialize raw routes without stops or lines.
-            //foreach (var route in saveFile.transitRoutes)
-            //{
-            //    map.CreateRoute(route.mapObject.id);
-            //}
+            foreach (var route in saveFile.Routes)
+            {
+                map.CreateRoute((int)route.MapObject.Id);
+            }
 
-            //// Deserialize raw routes without routes.
-            //foreach (var stop in saveFile.transitStops)
-            //{
-            //    map.GetOrCreateStop(stop.mapObject.name, stop.position,
-            //                        stop.mapObject.id);
-            //}
+            // Deserialize raw routes without routes.
+            foreach (var stop in saveFile.Stops)
+            {
+                map.GetOrCreateStop(stop.MapObject.Name, stop.Position.Deserialize(),
+                                    (int)stop.MapObject.Id);
+            }
 
-            //// Deserialize raw routes without stops or routes.
-            //foreach (var line in saveFile.transitLines)
-            //{
-            //    map.CreateLine(line.type, line.mapObject.name, line.color,
-            //                   line.mapObject.id).Finish();
-            //}
+            // Deserialize raw routes without stops or routes.
+            foreach (var line in saveFile.Lines)
+            {
+                map.CreateLine((TransitType)line.Type, line.MapObject.Name, line.Color.Deserialize(),
+                               (int)line.MapObject.Id).Finish();
+            }
 
             yield break;
         }
@@ -691,28 +638,28 @@ namespace Transidious
         static IEnumerator InitializeGameObjects(Map map, Serialization.SaveFile saveFile)
         {
             // Connect stops with their lines.
-            //foreach (var stop in saveFile.transitStops)
-            //{
-            //    map.GetMapObject<Stop>(stop.mapObject.id).Deserialize(stop, map);
-            //}
+            foreach (var stop in saveFile.Stops)
+            {
+                map.GetMapObject<Stop>((int)stop.MapObject.Id).Deserialize(stop, map);
+            }
 
-            //// Connect routes with streets and initialize the meshes.
-            //foreach (var route in saveFile.transitRoutes)
-            //{
-            //    map.GetMapObject<Route>(route.mapObject.id).Deserialize(route, map);
+            // Connect routes with streets and initialize the meshes.
+            foreach (var route in saveFile.Routes)
+            {
+                map.GetMapObject<Route>((int)route.MapObject.Id).Deserialize(route, map);
 
-            //    if (FrameTimer.instance.FrameDuration >= thresholdTime)
-            //    {
-            //        yield return null;
-            //    }
-            //}
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
+            }
 
-            //// Connect lines with their routes.
-            //foreach (var line in saveFile.transitLines)
-            //{
-            //    var createdLine = map.GetMapObject<Line>(line.mapObject.id);
-            //    createdLine.Deserialize(line, map);
-            //}
+            // Connect lines with their routes.
+            foreach (var line in saveFile.Lines)
+            {
+                var createdLine = map.GetMapObject<Line>((int)line.MapObject.Id);
+                createdLine.Deserialize(line, map);
+            }
 
             // Initialize the map tiles.
             for (int x = 0; x < saveFile.Tiles.Count; ++x)

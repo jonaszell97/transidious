@@ -310,6 +310,24 @@ namespace Transidious
             return Color.white;
         }
 
+        public static Color DarkenColor(Color c, float factor)
+        {
+            float h, s, v;
+            Color.RGBToHSV(c, out h, out s, out v);
+
+            v = Mathf.Max(0f, v - factor);
+            return Color.HSVToRGB(h, s, v);
+        }
+
+        public static Color BrightenColor(Color c, float factor)
+        {
+            float h, s, v;
+            Color.RGBToHSV(c, out h, out s, out v);
+
+            v = Mathf.Min(1f, v + factor);
+            return Color.HSVToRGB(h, s, v);
+        }
+
         public static Rect GetWorldBoundingRect(RectTransform rectTransform,
                                                 RenderMode renderMode = RenderMode.WorldSpace)
         {

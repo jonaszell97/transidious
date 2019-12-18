@@ -4,17 +4,21 @@ using UnityEngine;
 namespace Transidious
 {
     // Used instead of dynamic dispatch for performance's sake.
-    public enum MapObjectKind
+    [System.Flags] public enum MapObjectKind
     {
-        Street,
-        StreetIntersection,
-        StreetSegment,
-        Building,
-        NaturalFeature,
+        None                 = 0x0,
+        Street               = 0x1,
+        StreetIntersection   = 0x2,
+        StreetSegment        = 0x4,
+        Building             = 0x8,
+        NaturalFeature       = 0x10,
 
-        Line,
-        Route,
-        Stop,
+        Line                 = 0x20,
+        Route                = 0x40,
+        Stop                 = 0x80,
+        TemporaryStop        = 0x100,
+
+        All                  = ~0x0,
     }
 
     [System.Serializable]
@@ -37,16 +41,20 @@ namespace Transidious
         MapTile UniqueTile { get; set; }
         bool Active { get; }
 
+        Vector2 Centroid { get; }
         Transform transform { get; }
         Vector2[][] outlinePositions { get; }
 
         void Hide();
         void Show(RenderingDistance renderingDistance);
-    }
+        void Destroy();
 
-    public static class MapObjectExtensions
-    {
+        void OnMouseOver();
+        void OnMouseEnter();
+        void OnMouseExit();
+        void OnMouseDown();
 
+        bool ShouldCheckMouseOver();
     }
 
     public class StaticMapObject : IMapObject
@@ -124,6 +132,14 @@ namespace Transidious
             get
             {
                 return GameController.instance;
+            }
+        }
+
+        public Vector2 Centroid
+        {
+            get
+            {
+                return centroid;
             }
         }
 
@@ -231,11 +247,32 @@ namespace Transidious
             }
         }
 
-        public virtual void OnMouseDown() { }
+        public virtual void OnMouseOver()
+        {
+            Game.input.MouseOverMapObject(this);
+        }
 
-        public virtual void OnMouseEnter() { }
+        public virtual void OnMouseExit()
+        {
+            Game.input.MouseExitMapObject(this);
+        }
 
-        public virtual void OnMouseExit() { }
+        public virtual void OnMouseDown()
+        {
+            Game.input.MouseDownMapObject(this);
+        }
+
+        public virtual void OnMouseEnter()
+        {
+            Game.input.MouseEnterMapObject(this);
+        }
+
+        public virtual bool ShouldCheckMouseOver()
+        {
+            return false;
+        }
+
+        public virtual void Destroy() { }
     }
 
     public class DynamicMapObject : MonoBehaviour, IMapObject
@@ -246,12 +283,14 @@ namespace Transidious
         public bool highlighted = false;
         public new Renderer renderer;
         public new Collider2D collider;
+        public Vector2 centroid;
         public Vector2[][] outlinePositions { get; }
 
-        protected void Initialize(MapObjectKind kind, int id)
+        protected void Initialize(MapObjectKind kind, int id, Vector2 centroid)
         {
             this.id = id;
             this.kind = kind;
+            this.centroid = centroid;
             this.renderer = GetComponent<Renderer>();
             this.collider = GetComponent<Collider2D>();
         }
@@ -329,6 +368,14 @@ namespace Transidious
             }
         }
 
+        public Vector2 Centroid
+        {
+            get
+            {
+                return centroid;
+            }
+        }
+
         public void Hide()
         {
             switch (kind)
@@ -392,24 +439,56 @@ namespace Transidious
             }
         }
 
-        protected virtual void OnMouseOver()
+        public virtual void OnMouseOver()
         {
             inputController.MouseOverMapObject(this);
         }
 
-        protected virtual void OnMouseExit()
+        public virtual void OnMouseExit()
         {
             inputController.MouseExitMapObject(this);
         }
 
-        protected virtual void OnMouseDown()
+        public virtual void OnMouseDown()
         {
             inputController.MouseDownMapObject(this);
         }
 
-        protected virtual void OnMouseEnter()
+        public virtual void OnMouseEnter()
         {
             inputController.MouseEnterMapObject(this);
+        }
+
+        public virtual bool ShouldCheckMouseOver()
+        {
+            return false;
+        }
+
+        public Serialization.MapObject ToProtobuf()
+        {
+            var result = new Serialization.MapObject
+            {
+                Id = (uint)id,
+                Name = name,
+                UniqueTileX = uniqueTile != null ? uniqueTile.x : -1,
+                UniqueTileY = uniqueTile != null ? uniqueTile.y : -1,
+            };
+
+            if (outlinePositions != null)
+            {
+                foreach (var outline in outlinePositions)
+                {
+                    var vec = new Serialization.MapObject.Types.Outline();
+                    foreach (var vert in outline)
+                    {
+                        vec.OutlinePositions.Add(vert.ToProtobuf());
+                    }
+
+                    result.OutlinePositions.Add(vec);
+                }
+            }
+
+            return result;
         }
 
         public SerializableMapObject Serialize()
@@ -448,6 +527,11 @@ namespace Transidious
                 this.uniqueTile = tile;
                 this.transform.SetParent(tile.transform);
             }
+        }
+
+        public virtual void Destroy()
+        {
+            Destroy(this.gameObject);
         }
     }
 }
