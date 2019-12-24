@@ -495,7 +495,14 @@ namespace Transidious
                 }
             }
 
-            var newLine = line.Finish();
+            var newLine = line.Finish(new Schedule
+            {
+                dayHours = System.Tuple.Create(4, 22),
+                nightHours = System.Tuple.Create(22, 1),
+                operatingDays = Weekday.All,
+                dayInterval = 20,
+                nightInterval = 20,
+            });
             //var crossedStreets = new HashSet<System.Tuple<StreetSegment, int>>();
             //var j = 0;
 

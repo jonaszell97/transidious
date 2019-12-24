@@ -116,6 +116,22 @@ namespace Transidious
         /// </summary>
         public TransitUI transitUI;
 
+        /// <summary>
+        ///  The settings panel, hidden by default.
+        /// </summary>
+        public GameObject settingsPanel;
+
+        /// <summary>
+        ///  The data panel, hidden by default.
+        /// </summary>
+        public GameObject dataPanel;
+
+        /**
+         * Settings buttons
+         */
+        public Button consoleButton;
+        public DeveloperConsole developerConsole;
+
         /**
          * Scale Bar
          */
@@ -188,6 +204,12 @@ namespace Transidious
                         break;
                 }
             });
+
+            // Console
+            this.consoleButton.onClick.AddListener(() =>
+            {
+                this.developerConsole.Toggle();
+            });
         }
 
         void Start()
@@ -199,8 +221,10 @@ namespace Transidious
             UpdateFinances();
 
             transitUI.Initialize();
+
             UITooltip.instance = tooltipInstance;
             UIInstruction.instance = instructionPanel;
+            DeveloperConsole.instance = developerConsole;
         }
 
         public void ShowOverlay()
@@ -422,6 +446,8 @@ namespace Transidious
             }
 
             this.transitEditorPanel.gameObject.SetActive(false);
+            this.dataPanel.gameObject.SetActive(false);
+            this.settingsPanel.gameObject.SetActive(false);
 
             var duration = .3f;
 
@@ -492,11 +518,17 @@ namespace Transidious
 
         public void ShowDataPanel()
         {
+            this.dataPanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            this.dataPanel.gameObject.SetActive(true);
+
             HidePanels(State.Data, 1);
         }
 
         public void ShowSettingsPanel()
         {
+            this.settingsPanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            this.settingsPanel.gameObject.SetActive(true);
+
             HidePanels(State.Settings, 2);
         }
 

@@ -1,0 +1,171 @@
+
+class Parameter<let name: string,
+                let type: string, 
+                let description: string,
+                let defaultValue: string = ""> {
+
+}
+
+class Command<let cmd: string> {
+    let params: list<Parameter> = []
+    let help: string
+}
+
+def Help : Command<"help"> {
+    params = [
+        Parameter<"command", "string", "the command to get help for", "-">
+    ]
+
+    help = "prints this dialog"
+}
+
+def Exit : Command<"exit"> {
+    help = "exit the game"
+}
+
+def Pause : Command<"pause"> {
+    help = "pause the game"
+}
+
+def Unpause : Command<"unpause"> {
+    help = "unpause the game"
+}
+
+def Save : Command<"save"> {
+    params = [
+        Parameter<"filename", "string", "the filename to save as", "null">
+    ]
+
+    help = "save the game"
+}
+
+def Load : Command<"load"> {
+    params = [
+        Parameter<"filename", "string", "the save file to load">
+    ]
+
+    help = "load a save file"
+} 
+
+def ExportMap : Command<"export_map"> {
+    params = [
+        Parameter<"filename", "string", "the file to save as">
+    ]
+
+    help = "export an image of the map"
+}
+
+def SetSimSpeed : Command<"set_sim_speed"> {
+    params = [
+        Parameter<"speed", "int", "simulation speed (0: 1x; 1: 5x; 2: 10x; 3: 100x)">
+    ]
+
+    help = "set the simulation speed"
+}
+
+def SetTime : Command<"set_time"> {
+    params = [
+        Parameter<"time", "string", "game time in format HH:MM">
+    ]
+
+    help = "set the game time"
+}
+
+def SetLang : Command<"set_lang"> {
+    params = [
+        Parameter<"language", "string", "language (e.g. en_US)">
+    ]
+
+    help = "set the game language"
+}
+
+def Earn : Command<"earn"> {
+    params = [
+        Parameter<"amount", "decimal", "amount of cash to earn">
+    ]
+
+    help = "award the specified amount of cash"
+}
+
+def Spend : Command<"spend"> {
+    params = [
+        Parameter<"amount", "decimal", "amount of cash to spend">
+    ]
+
+    help = "spend the specified amount of cash"
+}
+
+def SpawnCitiziens : Command<"spawn_citiziens"> {
+    params = [
+        Parameter<"amount", "int", "amount of citiziens to spawn", "1">
+    ]
+
+    help = "spawn a specified amount of randomly generated citiziens"
+}
+
+def SpawnCars : Command<"spawn_cars"> {
+    params = [
+        Parameter<"amount", "int", "amount of cars to spawn", "1">
+    ]
+
+    help = "spawn a specified amount of randomly generated cars"
+}
+
+def CreateRandomLine : Command<"create_random_line"> {
+    params = [
+        Parameter<"system", "string", "transit system (bus, tram, subway, rail or ferry)">,
+        Parameter<"stops", "int", "number of stops", "5">,
+        Parameter<"name", "string", "name">
+    ]
+
+    help = "create a randomized transit line"
+}
+
+/*
+def _ : Command<"_"> {
+    params = [
+        
+    ]
+
+    help = ""
+}
+
+def _ : Command<"_"> {
+    params = [
+        
+    ]
+
+    help = ""
+}
+
+def _ : Command<"_"> {
+    params = [
+        
+    ]
+
+    help = ""
+}
+
+def _ : Command<"_"> {
+    params = [
+        
+    ]
+
+    help = ""
+}
+
+def _ : Command<"_"> {
+    params = [
+        
+    ]
+
+    help = ""
+}
+
+def _ : Command<"_"> {
+    params = [
+        
+    ]
+
+    help = ""
+}*/

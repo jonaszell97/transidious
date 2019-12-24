@@ -2,9 +2,11 @@
 #include <tblgen/Record.h>
 #include <tblgen/Value.h>
 
+#include <llvm/ADT/ArrayRef.h>
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/raw_ostream.h>
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -15,9 +17,9 @@ namespace
 
 class OSMImportBackend
 {
-   llvm::raw_ostream &OS;
+   std::ostream &OS;
    RecordKeeper &RK;
-   llvm::SmallVector<Record *, 16> areas;
+   std::vector<Record*> areas;
 
    std::vector<std::string> nodeCode;
    std::vector<std::string> wayCode;
@@ -87,7 +89,7 @@ class OSMImportBackend
    void EmitBuildings(Record *area);
 
 public:
-   OSMImportBackend(llvm::raw_ostream &os, RecordKeeper &rk)
+   OSMImportBackend(std::ostream &os, RecordKeeper &rk)
        : OS(os), RK(rk)
    {
    }
@@ -494,8 +496,6 @@ void OSMImportBackend::EmitParks(Record *area)
    llvm::raw_string_ostream WAY(way);
 
    auto parks = llvm::cast<ListLiteral>(area->getFieldValue("nature"))->getValues();
-   int i = 0;
-
    for (auto *val : parks)
    {
       auto *park = llvm::cast<RecordVal>(val)->getRecord();
@@ -534,8 +534,6 @@ void OSMImportBackend::EmitBuildings(Record *area)
    llvm::raw_string_ostream WAY(way);
 
    auto buildings = llvm::cast<ListLiteral>(area->getFieldValue("buildings"))->getValues();
-   int i = 0;
-
    for (auto *val : buildings)
    {
       auto *building = llvm::cast<RecordVal>(val)->getRecord();
@@ -567,7 +565,7 @@ void OSMImportBackend::EmitBuildings(Record *area)
 
 extern "C"
 {
-   void EmitOSMImport(llvm::raw_ostream &OS, RecordKeeper &RK)
+   void EmitOSMImport(std::ostream &OS, RecordKeeper &RK)
    {
       OSMImportBackend(OS, RK).Emit();
    }
