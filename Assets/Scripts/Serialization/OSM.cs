@@ -60,14 +60,14 @@ namespace Transidious.Serialization.OSM {
             "cm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.OsmGeo), global::Transidious.Serialization.OSM.OsmGeo.Parser, new[]{ "Id", "Type", "Tags" }, null, new[]{ typeof(global::Transidious.Serialization.OSM.OsmGeo.Types.Type) }, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Node), global::Transidious.Serialization.OSM.Node.Parser, new[]{ "Geo", "Position" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Way), global::Transidious.Serialization.OSM.Way.Parser, new[]{ "Geo", "Nodes" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Relation), global::Transidious.Serialization.OSM.Relation.Parser, new[]{ "Geo", "Members" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Relation.Types.Member), global::Transidious.Serialization.OSM.Relation.Types.Member.Parser, new[]{ "Type", "Id", "Role" }, null, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area), global::Transidious.Serialization.OSM.Area.Parser, new[]{ "Nodes", "Ways", "Relations", "Boundary", "Streets", "Features", "Buildings", "MinX", "MaxX", "MinY", "MaxY" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Street), global::Transidious.Serialization.OSM.Area.Types.Street.Parser, new[]{ "WayId", "Type" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.NaturalFeature), global::Transidious.Serialization.OSM.Area.Types.NaturalFeature.Parser, new[]{ "GeoId", "Type" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Building), global::Transidious.Serialization.OSM.Area.Types.Building.Parser, new[]{ "GeoId", "Type" }, null, null, null, null)})
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.OsmGeo), global::Transidious.Serialization.OSM.OsmGeo.Parser, new[]{ "Id", "Type", "Tags" }, null, new[]{ typeof(global::Transidious.Serialization.OSM.OsmGeo.Types.Type) }, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Node), global::Transidious.Serialization.OSM.Node.Parser, new[]{ "Geo", "Position" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Way), global::Transidious.Serialization.OSM.Way.Parser, new[]{ "Geo", "Nodes" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Relation), global::Transidious.Serialization.OSM.Relation.Parser, new[]{ "Geo", "Members" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Relation.Types.Member), global::Transidious.Serialization.OSM.Relation.Types.Member.Parser, new[]{ "Type", "Id", "Role" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area), global::Transidious.Serialization.OSM.Area.Parser, new[]{ "Nodes", "Ways", "Relations", "Boundary", "Streets", "Features", "Buildings", "MinX", "MaxX", "MinY", "MaxY" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Street), global::Transidious.Serialization.OSM.Area.Types.Street.Parser, new[]{ "WayId", "Type" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.NaturalFeature), global::Transidious.Serialization.OSM.Area.Types.NaturalFeature.Parser, new[]{ "GeoId", "Type" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Building), global::Transidious.Serialization.OSM.Area.Types.Building.Parser, new[]{ "GeoId", "Type" }, null, null, null)})
           }));
     }
     #endregion
@@ -123,7 +123,7 @@ namespace Transidious.Serialization.OSM {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 2;
-    private global::Transidious.Serialization.OSM.OsmGeo.Types.Type type_ = global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node;
+    private global::Transidious.Serialization.OSM.OsmGeo.Types.Type type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Transidious.Serialization.OSM.OsmGeo.Types.Type Type {
       get { return type_; }
@@ -135,7 +135,7 @@ namespace Transidious.Serialization.OSM {
     /// <summary>Field number for the "tags" field.</summary>
     public const int TagsFieldNumber = 3;
     private static readonly pbc::MapField<string, string>.Codec _map_tags_codec
-        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForString(18, ""), 26);
+        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 26);
     private readonly pbc::MapField<string, string> tags_ = new pbc::MapField<string, string>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<string, string> Tags {
@@ -165,7 +165,7 @@ namespace Transidious.Serialization.OSM {
     public override int GetHashCode() {
       int hash = 1;
       if (Id != 0UL) hash ^= Id.GetHashCode();
-      if (Type != global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node) hash ^= Type.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
       hash ^= Tags.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -184,7 +184,7 @@ namespace Transidious.Serialization.OSM {
         output.WriteRawTag(8);
         output.WriteUInt64(Id);
       }
-      if (Type != global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node) {
+      if (Type != 0) {
         output.WriteRawTag(16);
         output.WriteEnum((int) Type);
       }
@@ -200,7 +200,7 @@ namespace Transidious.Serialization.OSM {
       if (Id != 0UL) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(Id);
       }
-      if (Type != global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node) {
+      if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
       size += tags_.CalculateSize(_map_tags_codec);
@@ -218,7 +218,7 @@ namespace Transidious.Serialization.OSM {
       if (other.Id != 0UL) {
         Id = other.Id;
       }
-      if (other.Type != global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node) {
+      if (other.Type != 0) {
         Type = other.Type;
       }
       tags_.Add(other.tags_);
@@ -784,7 +784,7 @@ namespace Transidious.Serialization.OSM {
 
         /// <summary>Field number for the "type" field.</summary>
         public const int TypeFieldNumber = 1;
-        private global::Transidious.Serialization.OSM.OsmGeo.Types.Type type_ = global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node;
+        private global::Transidious.Serialization.OSM.OsmGeo.Types.Type type_ = 0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public global::Transidious.Serialization.OSM.OsmGeo.Types.Type Type {
           get { return type_; }
@@ -837,7 +837,7 @@ namespace Transidious.Serialization.OSM {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override int GetHashCode() {
           int hash = 1;
-          if (Type != global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node) hash ^= Type.GetHashCode();
+          if (Type != 0) hash ^= Type.GetHashCode();
           if (Id != 0UL) hash ^= Id.GetHashCode();
           if (Role.Length != 0) hash ^= Role.GetHashCode();
           if (_unknownFields != null) {
@@ -853,7 +853,7 @@ namespace Transidious.Serialization.OSM {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          if (Type != global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node) {
+          if (Type != 0) {
             output.WriteRawTag(8);
             output.WriteEnum((int) Type);
           }
@@ -873,7 +873,7 @@ namespace Transidious.Serialization.OSM {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
-          if (Type != global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node) {
+          if (Type != 0) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
           }
           if (Id != 0UL) {
@@ -893,7 +893,7 @@ namespace Transidious.Serialization.OSM {
           if (other == null) {
             return;
           }
-          if (other.Type != global::Transidious.Serialization.OSM.OsmGeo.Types.Type.Node) {
+          if (other.Type != 0) {
             Type = other.Type;
           }
           if (other.Id != 0UL) {
@@ -1347,7 +1347,7 @@ namespace Transidious.Serialization.OSM {
 
         /// <summary>Field number for the "type" field.</summary>
         public const int TypeFieldNumber = 2;
-        private global::Transidious.Serialization.Street.Types.Type type_ = global::Transidious.Serialization.Street.Types.Type.Primary;
+        private global::Transidious.Serialization.Street.Types.Type type_ = 0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public global::Transidious.Serialization.Street.Types.Type Type {
           get { return type_; }
@@ -1378,7 +1378,7 @@ namespace Transidious.Serialization.OSM {
         public override int GetHashCode() {
           int hash = 1;
           if (WayId != 0UL) hash ^= WayId.GetHashCode();
-          if (Type != global::Transidious.Serialization.Street.Types.Type.Primary) hash ^= Type.GetHashCode();
+          if (Type != 0) hash ^= Type.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -1396,7 +1396,7 @@ namespace Transidious.Serialization.OSM {
             output.WriteRawTag(8);
             output.WriteUInt64(WayId);
           }
-          if (Type != global::Transidious.Serialization.Street.Types.Type.Primary) {
+          if (Type != 0) {
             output.WriteRawTag(16);
             output.WriteEnum((int) Type);
           }
@@ -1411,7 +1411,7 @@ namespace Transidious.Serialization.OSM {
           if (WayId != 0UL) {
             size += 1 + pb::CodedOutputStream.ComputeUInt64Size(WayId);
           }
-          if (Type != global::Transidious.Serialization.Street.Types.Type.Primary) {
+          if (Type != 0) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
           }
           if (_unknownFields != null) {
@@ -1428,7 +1428,7 @@ namespace Transidious.Serialization.OSM {
           if (other.WayId != 0UL) {
             WayId = other.WayId;
           }
-          if (other.Type != global::Transidious.Serialization.Street.Types.Type.Primary) {
+          if (other.Type != 0) {
             Type = other.Type;
           }
           _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1504,7 +1504,7 @@ namespace Transidious.Serialization.OSM {
 
         /// <summary>Field number for the "type" field.</summary>
         public const int TypeFieldNumber = 2;
-        private global::Transidious.Serialization.NaturalFeature.Types.Type type_ = global::Transidious.Serialization.NaturalFeature.Types.Type.Park;
+        private global::Transidious.Serialization.NaturalFeature.Types.Type type_ = 0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public global::Transidious.Serialization.NaturalFeature.Types.Type Type {
           get { return type_; }
@@ -1535,7 +1535,7 @@ namespace Transidious.Serialization.OSM {
         public override int GetHashCode() {
           int hash = 1;
           if (GeoId != 0UL) hash ^= GeoId.GetHashCode();
-          if (Type != global::Transidious.Serialization.NaturalFeature.Types.Type.Park) hash ^= Type.GetHashCode();
+          if (Type != 0) hash ^= Type.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -1553,7 +1553,7 @@ namespace Transidious.Serialization.OSM {
             output.WriteRawTag(8);
             output.WriteUInt64(GeoId);
           }
-          if (Type != global::Transidious.Serialization.NaturalFeature.Types.Type.Park) {
+          if (Type != 0) {
             output.WriteRawTag(16);
             output.WriteEnum((int) Type);
           }
@@ -1568,7 +1568,7 @@ namespace Transidious.Serialization.OSM {
           if (GeoId != 0UL) {
             size += 1 + pb::CodedOutputStream.ComputeUInt64Size(GeoId);
           }
-          if (Type != global::Transidious.Serialization.NaturalFeature.Types.Type.Park) {
+          if (Type != 0) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
           }
           if (_unknownFields != null) {
@@ -1585,7 +1585,7 @@ namespace Transidious.Serialization.OSM {
           if (other.GeoId != 0UL) {
             GeoId = other.GeoId;
           }
-          if (other.Type != global::Transidious.Serialization.NaturalFeature.Types.Type.Park) {
+          if (other.Type != 0) {
             Type = other.Type;
           }
           _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1661,7 +1661,7 @@ namespace Transidious.Serialization.OSM {
 
         /// <summary>Field number for the "type" field.</summary>
         public const int TypeFieldNumber = 2;
-        private global::Transidious.Serialization.Building.Types.Type type_ = global::Transidious.Serialization.Building.Types.Type.Residential;
+        private global::Transidious.Serialization.Building.Types.Type type_ = 0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public global::Transidious.Serialization.Building.Types.Type Type {
           get { return type_; }
@@ -1692,7 +1692,7 @@ namespace Transidious.Serialization.OSM {
         public override int GetHashCode() {
           int hash = 1;
           if (GeoId != 0UL) hash ^= GeoId.GetHashCode();
-          if (Type != global::Transidious.Serialization.Building.Types.Type.Residential) hash ^= Type.GetHashCode();
+          if (Type != 0) hash ^= Type.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -1710,7 +1710,7 @@ namespace Transidious.Serialization.OSM {
             output.WriteRawTag(8);
             output.WriteUInt64(GeoId);
           }
-          if (Type != global::Transidious.Serialization.Building.Types.Type.Residential) {
+          if (Type != 0) {
             output.WriteRawTag(16);
             output.WriteEnum((int) Type);
           }
@@ -1725,7 +1725,7 @@ namespace Transidious.Serialization.OSM {
           if (GeoId != 0UL) {
             size += 1 + pb::CodedOutputStream.ComputeUInt64Size(GeoId);
           }
-          if (Type != global::Transidious.Serialization.Building.Types.Type.Residential) {
+          if (Type != 0) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
           }
           if (_unknownFields != null) {
@@ -1742,7 +1742,7 @@ namespace Transidious.Serialization.OSM {
           if (other.GeoId != 0UL) {
             GeoId = other.GeoId;
           }
-          if (other.Type != global::Transidious.Serialization.Building.Types.Type.Residential) {
+          if (other.Type != 0) {
             Type = other.Type;
           }
           _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);

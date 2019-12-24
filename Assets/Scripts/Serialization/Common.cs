@@ -45,14 +45,14 @@ namespace Transidious.Serialization {
             "YWxpemF0aW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.VersionTriple), global::Transidious.Serialization.VersionTriple.Parser, new[]{ "Major", "Minor", "Patch" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Vector2), global::Transidious.Serialization.Vector2.Parser, new[]{ "X", "Y" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Vector3), global::Transidious.Serialization.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Color), global::Transidious.Serialization.Color.Parser, new[]{ "R", "G", "B", "A" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Mesh2D), global::Transidious.Serialization.Mesh2D.Parser, new[]{ "Vertices", "Triangles", "Uv" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Mesh), global::Transidious.Serialization.Mesh.Parser, new[]{ "Vertices", "Triangles", "Uv" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapObject), global::Transidious.Serialization.MapObject.Parser, new[]{ "Id", "Name", "UniqueTileX", "UniqueTileY", "OutlinePositions", "Area", "Centroid" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapObject.Types.Outline), global::Transidious.Serialization.MapObject.Types.Outline.Parser, new[]{ "OutlinePositions" }, null, null, null, null)})
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.VersionTriple), global::Transidious.Serialization.VersionTriple.Parser, new[]{ "Major", "Minor", "Patch" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Vector2), global::Transidious.Serialization.Vector2.Parser, new[]{ "X", "Y" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Vector3), global::Transidious.Serialization.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Color), global::Transidious.Serialization.Color.Parser, new[]{ "R", "G", "B", "A" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Mesh2D), global::Transidious.Serialization.Mesh2D.Parser, new[]{ "Vertices", "Triangles", "Uv" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Mesh), global::Transidious.Serialization.Mesh.Parser, new[]{ "Vertices", "Triangles", "Uv" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapObject), global::Transidious.Serialization.MapObject.Parser, new[]{ "Id", "Name", "UniqueTileX", "UniqueTileY", "OutlinePositions", "Area", "Centroid" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapObject.Types.Outline), global::Transidious.Serialization.MapObject.Types.Outline.Parser, new[]{ "OutlinePositions" }, null, null, null)})
           }));
     }
     #endregion

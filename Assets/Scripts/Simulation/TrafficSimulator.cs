@@ -279,6 +279,19 @@ namespace Transidious
                 direction = data.direction.ToVector();
             }
 
+            public PathSegmentInfo(Serialization.Route.Types.PathSegmentInfo data)
+            {
+                segment = GameController.instance.loadedMap.GetMapObject<StreetSegment>(
+                    (int)data.SegmentID);
+                lane = data.Lane;
+                offset = data.Offset;
+                length = data.Length;
+                partialStart = data.PartialStart;
+                partialEnd = data.PartialEnd;
+                backward = data.Backward;
+                direction = data.Direction.Deserialize();
+            }
+
             public PathSegmentInfo()
             {
 

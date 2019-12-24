@@ -41,5 +41,42 @@ message Stop {
 }
 
 message Route {
+    message PathSegmentInfo {
+        uint32 segmentID = 1;
+        int32 lane = 2;
+        int32 offset = 3;
+        int32 length = 4;
+        bool partialStart = 5;
+        bool partialEnd = 6;
+        bool backward = 7;
+        Vector2 direction = 8;
+    }
+
+    message StreetSegmentKey {
+        int32 segment = 1;
+        int32 lane = 2;
+    }
+
+    message StreetSegmentOffsetMapEntry {
+        StreetSegmentKey key = 1;
+        repeated PathSegmentInfo value = 2;
+    }
+
+    message PathSegmentInfoMapEntry {
+        uint32 key = 1;
+        PathSegmentInfo value = 2;
+    }
+
     MapObject mapObject = 1;
+
+    uint32 lineID = 2;
+    repeated Vector2 positions = 3;
+
+    uint32 beginStopID = 4;
+    uint32 endStopID = 5;
+
+    float totalTravelTime = 6;
+
+    repeated StreetSegmentOffsetMapEntry streetSegmentOffsetMap = 7;
+    repeated PathSegmentInfoMapEntry pathSegmentInfoMap = 8;
 }

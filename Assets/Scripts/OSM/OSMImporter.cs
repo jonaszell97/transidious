@@ -402,7 +402,7 @@ namespace Transidious
         public List<Tuple<ulong, NaturalFeature.Type>> naturalFeatures = new List<Tuple<ulong, NaturalFeature.Type>>();
         public List<Tuple<ulong, Building.Type>> buildings = new List<Tuple<ulong, Building.Type>>();
 
-        public int maxUniqueBuildings = 10;
+        public int maxUniqueBuildings = 100;
         public int registeredUniqueBuildings = 0;
         List<BuildingMesh> uniqueBuildings = new List<BuildingMesh>();
 
@@ -496,6 +496,7 @@ namespace Transidious
             Resources.UnloadUnusedAssets();
 
             SaveManager.SaveMapData(map);
+            MapExporter.ExportMap(map, map.name);
 
             Debug.Log("Done!");
             done = true;
@@ -1739,58 +1740,71 @@ namespace Transidious
             var minAngle = 0f;
             var _ = MeshBuilder.GetSmallestSurroundingRect(mesh, ref minAngle);
             var rot = Quaternion.Euler(0f, 0f, minAngle * Mathf.Rad2Deg);
-            var diff = existingMesh.centroid - centroid;
+            var diff = centroid - existingMesh.centroid;
 
             var vertices = existingMesh.mesh.vertices;
             for (var i = 0; i < vertices.Length; ++i)
             {
-                vertices[i] += diff;
-                //vertices[i] = rot * (vertices[i] - centroid) + centroid;
+                var v = vertices[i];
+                vertices[i] = new Vector3(v.x + diff.x, v.y + diff.y, v.z);
             }
 
-            return new Mesh
+            var m = new Mesh
             {
                 vertices = vertices,
                 triangles = existingMesh.mesh.triangles,
             };
+
+            return MeshBuilder.RotateMesh(m, centroid, rot);
         }
 
-        Mesh GetBuildingMesh(PartialBuilding building, Vector2 centroid, float area)
+        Mesh GetBuildingMesh(PartialBuilding building, Vector2 centroid)
         {
             Mesh mesh = TriangleAPI.CreateMesh(building.pslg, importType == ImportType.Fast);
-            
+            return mesh;
+            /*
+            var minAngle = 0f;
+            var rect = MeshBuilder.GetSmallestSurroundingRect(mesh, ref minAngle);
+            var rectArea = (rect[0] - rect[1]).magnitude * (rect[2] - rect[1]).magnitude;
+            var rectCentroid = rect[0] + ((rect[2] - rect[0]) * .5f);
+
             // Don't replace special buildings.
             if (building.geo?.Tags.ContainsKey("name") ?? false)
             {
                 return mesh;
             }
 
+            float threshold = 25f;
             if (registeredUniqueBuildings >= maxUniqueBuildings)
             {
                 foreach (var b in uniqueBuildings)
                 {
-                    if (b.area < area)
+                    if (b.area < rectArea && (rectArea - b.area) < threshold)
                     {
+                        this.gameObject.transform.position = centroid;
+                        this.gameObject.DrawCircle(10f, 1f, Color.red);
+
                         return ModifyBuildingMesh(mesh, centroid, b);
                     }
                 }
             }
-
+            
             // Register a new unique building.
-            var minAngle = 0f;
-            var _ = MeshBuilder.GetSmallestSurroundingRect(mesh, ref minAngle);
             var rot = Quaternion.Euler(0f, 0f, minAngle * Mathf.Rad2Deg);
 
             var id = ++registeredUniqueBuildings;
+            var rotated = MeshBuilder.RotateMesh(mesh, centroid, rot);
+
             uniqueBuildings.Add(new BuildingMesh
             {
                 id = id,
-                area = area,
-                mesh = MeshBuilder.RotateMesh(mesh, centroid, rot),
+                area = rectArea,
+                mesh = rotated,
+                centroid = centroid,
             });
 
             uniqueBuildings.Sort((BuildingMesh b1, BuildingMesh b2) => b2.area.CompareTo(b1.area));
-            return mesh;
+            return mesh;*/
         }
 
         IEnumerator LoadBuildings()
@@ -1893,7 +1907,7 @@ namespace Transidious
                 //Mesh mesh = TriangleAPI.CreateMesh(building.pslg, importType == ImportType.Fast);
                 //totalVerts += mesh?.triangles.Length ?? 0;
 
-                Mesh mesh = GetBuildingMesh(building, centroid, area);
+                Mesh mesh = GetBuildingMesh(building, centroid);
 
                 var b = map.CreateBuilding(type, mesh, GetBuildingName(building, area), "", area, centroid);
                 if (outlinePositions != null)
@@ -1914,6 +1928,7 @@ namespace Transidious
 
             Debug.Log("yeeted " + smallBuildings + " buildings because of small area");
             Debug.Log("building verts: " + totalVerts);
+            Debug.Log("'nique buildings: " + uniqueBuildings.Count);
         }
     }
 }

@@ -1,1 +1,0 @@
-﻿cl /DTRIANGLELIB /DNO_TIMER /LD /DEBUG triangle.cpp && copy triangle.dll \Users\Jonny\transidious\Assets\Plugins

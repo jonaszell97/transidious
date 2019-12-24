@@ -1,7 +1,8 @@
-using System;
+
+using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Transidious
 {
@@ -29,6 +30,8 @@ namespace Transidious
         public Rect rect;
         RenderingDistance? currentRenderingDist;
         public HashSet<IMapObject> orphanedObjects;
+
+        [SerializeField] SpriteRenderer backgroundImage;
 
         Dictionary<string, MultiMesh> meshes;
 
@@ -65,6 +68,20 @@ namespace Transidious
             this.colliderInfo = new List<ColliderInfo>();
             this.rect = new Rect(x * Map.tileSize, y * Map.tileSize,
                                  Map.tileSize, Map.tileSize);
+
+            var sprite = SpriteManager.GetSprite($"Maps/{map.name}/{x}_{y}");
+            if (sprite != null)
+            {
+                backgroundImage.sprite = sprite;
+                backgroundImage.transform.position = new Vector3(
+                    x * Map.tileSize + Map.tileSize * .5f,
+                    y * Map.tileSize + Map.tileSize * .5f,
+                    Map.Layer(MapLayer.NatureBackground));
+
+                float spriteSize = backgroundImage.bounds.size.x;
+                backgroundImage.transform.localScale = new Vector3(
+                    Map.tileSize / spriteSize, Map.tileSize / spriteSize, 1f);
+            }
 
             this.gameObject.SetActive(false);
         }

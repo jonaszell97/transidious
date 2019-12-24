@@ -37,6 +37,9 @@ namespace Transidious
 
             /// Intersection info about the line.
             internal LineIntersectionInfo intersectionInfo = new LineIntersectionInfo();
+
+            /// The schedule for this line at this stop.
+            internal ISchedule schedule;
         }
 
         [System.Serializable]
@@ -338,8 +341,10 @@ namespace Transidious
 
         public DateTime NextDeparture(Line line, DateTime after)
         {
-            var offset = line.scheduleOffsets[this];
-            return line.schedule.GetNextDeparture(after.AddMinutes(-offset)).AddMinutes(offset);
+            Debug.Assert(lineData.ContainsKey(line), "line does not stop here!");
+            return lineData[line].schedule.GetNextDeparture(after);
+            //var offset = line.scheduleOffsets[this];
+            //return line.schedule.GetNextDeparture(after.AddMinutes(-offset)).AddMinutes(offset);
         }
 
         /// \return The incoming route from the direction of the line's depot stop.
@@ -402,6 +407,12 @@ namespace Transidious
             }
 
             return lineData[line];
+        }
+
+        public void SetSchedule(Line line, ISchedule schedule)
+        {
+            Debug.Assert(lineData.ContainsKey(line), "line does not stop here!");
+            lineData[line].schedule = schedule;
         }
 
         /// Add an incoming a route to this stop.

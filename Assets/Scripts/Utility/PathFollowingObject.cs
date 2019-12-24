@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Transidious
@@ -55,6 +54,8 @@ namespace Transidious
             threshold = dir.magnitude;
             direction = dir.normalized;
             prevRotation = obj.transform.rotation;
+
+            _expectedProgress += threshold;
         }
 
         void UpdateRotation(float progress)
@@ -66,24 +67,28 @@ namespace Transidious
             obj.transform.rotation = Quaternion.Lerp(prevRotation, rot, progress);
         }
 
-        public void Update()
+        public float _expectedProgress = 0f;
+        public float _totalProgress = 0f;
+
+        public void FixedUpdate()
         {
-            progress += Time.deltaTime * velocity * sim.SpeedMultiplier;
+            progress += Time.fixedDeltaTime * velocity * sim.SpeedMultiplier;
 
             var diff = threshold - progress;
             // Kind of a hack, but who am I to judge
-            if (diff > 0 && !(isFinalStep && diff < 1 && velocity.Equals(0f)))
+            if (diff > 0f && !(isFinalStep && diff < 1f && velocity.Equals(0f)))
             {
-                var progress = this.progress / threshold;
-                var lerpedPos = Vector2.Lerp(startPosition, nextPosition, progress);
+                var progressPercentage = this.progress / threshold;
+                var lerpedPos = Vector2.Lerp(startPosition, nextPosition, progressPercentage);
 
                 obj.transform.position = new Vector3(lerpedPos.x, lerpedPos.y,
                                                      obj.transform.position.z);
 
-                UpdateRotation(progress);
+                UpdateRotation(progressPercentage);
             }
             else if (currentNode < pathNodes.Count)
             {
+                _totalProgress += progress;
                 obj.transform.position = new Vector3(nextPosition.x, nextPosition.y,
                                                      obj.transform.position.z);
 
@@ -92,6 +97,8 @@ namespace Transidious
             }
             else if (completionCallback != null)
             {
+                _totalProgress += progress;
+
                 completionCallback(this);
                 completionCallback = null;
             }

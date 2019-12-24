@@ -23,12 +23,14 @@ namespace Transidious
         /// <summary>
         /// The current route this vehicle is driving on.
         /// </summary>
-        int currentRoute;
+        int currentRoute = -1;
 
         /// <summary>
         /// The path following component.
         /// </summary>
         PathFollowingObject pathFollow;
+
+        float velocity;
 
         public Stop NextStop
         {
@@ -43,18 +45,39 @@ namespace Transidious
             }
         }
 
-        public void Initialize(Line line)
+        public void Initialize(Line line, float? velocity = null)
         {
             this.line = line;
             this.spriteRenderer.color = line.color;
             this.sim = GameController.instance.sim;
+
+            if (velocity != null)
+            {
+                this.velocity = velocity.Value;
+            }
+            else
+            {
+                this.velocity = line.AverageSpeed / 3.6f;
+            }
         }
+
+        static System.Collections.Generic.Dictionary<Stop, DateTime> lastStopAtStation
+            = new System.Collections.Generic.Dictionary<Stop, DateTime>();
+
+        DateTime _startTime;
+        float _length;
 
         public void StartDrive(int routeIndex = 0)
         {
             if (routeIndex >= line.routes.Count)
             {
                 return;
+            }
+
+            if (routeIndex == 0)
+            {
+                _length = 0f;
+                _startTime = sim.GameTime;
             }
 
             this.currentRoute = routeIndex;
@@ -66,22 +89,39 @@ namespace Transidious
             }
 
             this.gameObject.SetActive(true);
+            this.transform.position = new Vector3(route.positions[0].x, route.positions[0].y, transform.position.z);
             this.pathFollow = new PathFollowingObject(sim, this.gameObject, route.positions,
-                                                      line.AverageSpeed, 5f, false,
+                                                      velocity, 0f, false,
                                                       (PathFollowingObject _) =>
                                                       {
-                                                          pathFollow = null;
-
                                                           if (currentRoute < line.routes.Count - 1)
                                                           {
-                                                              var earliestDeparture = sim.GameTime.AddSeconds(line.AverageStopDuration);
-                                                              var nextDep = line.routes[currentRoute].endStop.NextDeparture(line, earliestDeparture);
-                                                              nextStopTime = nextDep;
+                                                              nextStopTime = sim.GameTime.AddSeconds(line.stopDuration);
                                                           }
                                                           else
                                                           {
-                                                              Debug.Log("vehicle at end of line " + line.name);
+                                                              nextStopTime = sim.GameTime.AddSeconds(line.stopDuration + line.endOfLineWaitTime);
+
+                                                              var estimateSeconds = (line.length / (line.AverageSpeed / 3.6f)) * sim.BaseSpeedMultiplier;
+                                                              estimateSeconds += line.stops.Count * line.stopDuration;
+                                                              var realSeconds = (sim.GameTime - _startTime).TotalSeconds;
+
+                                                              Debug.Log($"estimate {estimateSeconds}s <-> real {realSeconds}s, diff {realSeconds - estimateSeconds}s");
                                                           }
+
+                                                          pathFollow = null;
+
+                                                          var stop = route.endStop;
+                                                          if (lastStopAtStation.ContainsKey(stop))
+                                                          {
+                                                              Debug.Log($"time between stops: {(sim.GameTime - lastStopAtStation[stop]).TotalMinutes}m");
+                                                              lastStopAtStation[stop] = sim.GameTime;
+                                                          }
+                                                          else
+                                                          {
+                                                              lastStopAtStation.Add(stop, sim.GameTime);
+                                                          }
+
                                                       });
 
             // Make sure to update the velocity right away.
@@ -90,7 +130,7 @@ namespace Transidious
         }
 
         /// The time at which we should continue along the route.
-        DateTime? nextStopTime;
+        public DateTime? nextStopTime;
 
         /// Total time elapsed while driving.
         public float timeElapsed;
@@ -103,11 +143,11 @@ namespace Transidious
             // SetVelocity(sim.trafficSim.GetCarVelocity(drivingCar));
 
             // Must be updated after the velocity calculation.
-            timeElapsed += Time.deltaTime * sim.SpeedMultiplier;
+            timeElapsed += Time.fixedDeltaTime * sim.SpeedMultiplier;
             timeSinceLastUpdate = 0f;
         }
 
-        void Update()
+        void FixedUpdate()
         {
             if (sim.game.Paused)
             {
@@ -116,14 +156,25 @@ namespace Transidious
 
             if (pathFollow != null)
             {
-                pathFollow.Update();
+                pathFollow.FixedUpdate();
                 return;
             }
 
             if (nextStopTime.HasValue && sim.GameTime >= nextStopTime.Value)
             {
+                //Debug.Assert(sim.GameTime == nextStopTime.Value);
                 nextStopTime = null;
-                StartDrive(currentRoute + 1);
+
+                if (currentRoute + 1 >= line.routes.Count)
+                {
+                    StartDrive();
+                }
+                else
+                {
+                    StartDrive(currentRoute + 1);
+                }
+
+                pathFollow.FixedUpdate();
             }
 
             //if (!sim.game.Paused && pathFollow != null)

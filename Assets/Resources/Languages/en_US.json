@@ -51,6 +51,18 @@
             "key": "ui:cancel",
             "text": "Cancel"
         },
+        {
+            "key": "ui:clear",
+            "text": "Clear"
+        },
+        {
+            "key": "ui:run",
+            "text": "Run"
+        },
+        {
+            "key": "ui:developer_console",
+            "text": "Developer Console"
+        },
 
         {
             "key": "ui:citizien:happiness",

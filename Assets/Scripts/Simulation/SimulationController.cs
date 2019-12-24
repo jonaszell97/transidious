@@ -110,7 +110,7 @@ namespace Transidious
             UpdateCitizienUI();
         }
 
-        void Update()
+        void FixedUpdate()
         {
             if (!game.Playing)
             {
@@ -181,11 +181,36 @@ namespace Transidious
         public void ScheduleEvent(DateTime gameTime, TimedEvent callback)
         {
             Debug.Assert(gameTime > this.gameTime, "scheduled time is in the past");
+
+#if DEBUG
+            if ((gameTime.Millisecond % (Time.fixedDeltaTime * 1000)) > .01f)
+            {
+                Debug.LogWarning($"scheduling event at invalid millisecond {gameTime.Millisecond}");
+            }
+#endif
+
             timedEvents.Add(Tuple.Create(gameTime, callback));
             timedEvents.Sort((Tuple<DateTime, TimedEvent> t1, Tuple<DateTime, TimedEvent> t2) =>
             {
                 return t1.Item1.CompareTo(t2.Item1);
             });
+        }
+
+        public float FixedUpdateInterval
+        {
+            get
+            {
+                return Time.fixedDeltaTime * 1000 * BaseSpeedMultiplier;
+            }
+        }
+
+        public DateTime RoundToNextFixedUpdate(DateTime gameTime)
+        {
+            var interval = FixedUpdateInterval;
+            var millis = gameTime.Second * 1000f + gameTime.Millisecond;
+            var missingMillis = interval - (millis % FixedUpdateInterval);
+
+            return gameTime.AddMilliseconds(missingMillis);
         }
 
         public void DeactivateEvent(int id)
@@ -197,6 +222,8 @@ namespace Transidious
         {
             scheduledEvents[id].active = true;
         }
+
+        public readonly int BaseSpeedMultiplier = 60;
 
         public int SpeedMultiplier
         {
@@ -224,6 +251,14 @@ namespace Transidious
             }
         }
 
+        public void SetSimulationSpeed(int speed)
+        {
+            var newSimSpeed = speed % 4;
+            this.simulationSpeed = newSimSpeed;
+            game.mainUI.simSpeedButton.GetComponent<Image>().sprite =
+                SpriteManager.instance.simSpeedSprites[Mathf.Min(newSimSpeed, 2)];
+        }
+
         void OnLanguageChange()
         {
             if (this.timeStringBuffer.Length != Translator.MaxTimeStringLength)
@@ -234,7 +269,7 @@ namespace Transidious
             UpdateGameTimeString();
         }
 
-        void FireTimedEvents(int minute)
+        void FireScheduledEvents(int minute)
         {
             foreach (var info in scheduledEvents)
             {
@@ -248,7 +283,10 @@ namespace Transidious
                     info.Value.action();
                 }
             }
+        }
 
+        void FireTimedEvents()
+        {
             while (timedEvents.Count > 0)
             {
                 var nextEvent = timedEvents.First();
@@ -256,6 +294,13 @@ namespace Transidious
                 {
                     break;
                 }
+
+#if DEBUG
+                if (nextEvent.Item1 != gameTime)
+                {
+                    Debug.LogWarning($"scheduled time: {nextEvent.Item1.ToString("yyyyMMddhhmmss fff")} <-> real time {gameTime.ToString("yyyyMMddhhmmss fff")}");
+                }
+#endif
 
                 nextEvent.Item2();
                 timedEvents.RemoveAt(0);
@@ -268,21 +313,29 @@ namespace Transidious
             game.mainUI.gameTimeText.SetCharArray(timeStringBuffer);
         }
 
-        public static float MinutesPerFrame = 1f / 60f;
-
         bool UpdateGameTime()
         {
-            var minutesPerFrame = MinutesPerFrame * SpeedMultiplier;
             var prevDay = gameTime.DayOfYear;
             var prevMinute = gameTime.Minute;
 
-            gameTime = gameTime.AddMinutes(minutesPerFrame);
+            for (var i = 0; i < SpeedMultiplier; ++i)
+            {
+                gameTime = gameTime.AddSeconds(BaseSpeedMultiplier * Time.fixedDeltaTime);
+                FireTimedEvents();
+
+                if (gameTime.Minute == prevMinute)
+                {
+                    continue;
+                }
+
+                FireScheduledEvents(gameTime.Minute);
+            }
+
             if (gameTime.Minute == prevMinute)
             {
                 return false;
             }
 
-            FireTimedEvents(gameTime.Minute);
             UpdateGameTimeString();
             UpdateCitizienUI();
 
@@ -300,6 +353,36 @@ namespace Transidious
 
             var newDay = gameTime.DayOfYear;
             return prevDay != newDay;
+        }
+
+        public void SetGameTime(DateTime time)
+        {
+            var prevDay = gameTime.DayOfYear;
+            var prevYear = gameTime.Year;
+
+            gameTime = time;
+
+            FireTimedEvents();
+            FireScheduledEvents(gameTime.Minute);
+            UpdateGameTimeString();
+            UpdateCitizienUI();
+
+            var hour = gameTime.Hour;
+            if (hour == 7)
+            {
+                game.displayMode = MapDisplayMode.Day;
+                game.input.FireEvent(InputEvent.DisplayModeChange);
+            }
+            else if (hour == 19)
+            {
+                game.displayMode = MapDisplayMode.Night;
+                game.input.FireEvent(InputEvent.DisplayModeChange);
+            }
+
+            if (prevDay != gameTime.DayOfYear || prevYear != gameTime.Year)
+            {
+                game.mainUI.UpdateDate(gameTime);
+            }
         }
 
         void UpdateCitizienUI()
@@ -347,6 +430,20 @@ namespace Transidious
                 var pos = line.stops.First().transform.position;
                 obj.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.TransitStops, 1));
             }
+
+            var vehicle = obj.GetComponent<TransitVehicle>();
+            vehicle.Initialize(line);
+
+            return vehicle;
+        }
+
+        public TransitVehicle CreateVehicle(Line line, Stop stop)
+        {
+            var obj = Instantiate(transitVehiclePrefab); ;
+            obj.transform.SetParent(this.transform, false);
+
+            var pos = stop.transform.position;
+            obj.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.TransitStops, 1));
 
             var vehicle = obj.GetComponent<TransitVehicle>();
             vehicle.Initialize(line);
@@ -446,7 +543,7 @@ namespace Transidious
             return c;
         }
 
-        public void SpawnRandomCitiziens(int amount)
+        public void SpawnRandomCitiziens(int amount, List<Citizien> citiziens = null)
         {
             for (int i = 0; i < amount; ++i)
             {
@@ -457,6 +554,7 @@ namespace Transidious
                 }
 
                 citizien.Initialize();
+                citiziens?.Add(citizien);
             }
         }
 

@@ -1308,6 +1308,24 @@ namespace Transidious
             return new Rect(bounds.min.x, bounds.min.y, bounds.size.x, bounds.size.y);
         }
 
+        public static Rect GetCollisionRect(IReadOnlyList<Vector2> points)
+        {
+            var minX = float.PositiveInfinity;
+            var maxX = 0f;
+            var minY = float.PositiveInfinity;
+            var maxY = 0f;
+
+            foreach (var pt in points)
+            {
+                minX = Mathf.Min(minX, pt.x);
+                maxX = Mathf.Max(maxX, pt.x);
+                minY = Mathf.Min(minY, pt.y);
+                maxY = Mathf.Max(maxY, pt.y);
+            }
+
+            return new Rect(minX, minY, maxX - minX, maxY - minY);
+        }
+
         static Vector2 RotateToXAxis(Vector2 v, float angle)
         {
             var newX = v.x * Mathf.Cos(angle) - v.y * Mathf.Sin(angle);

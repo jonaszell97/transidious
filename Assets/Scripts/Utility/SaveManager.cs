@@ -94,7 +94,6 @@ namespace Transidious
             public MapTile.SerializableMapTile[][] tiles;
             public Route.SerializedRoute[] transitRoutes;
             public Stop.SerializedStop[] transitStops;
-            public Line.SerializedLine[] transitLines;
         }
 
         public static Map loadedMap;
@@ -245,7 +244,6 @@ namespace Transidious
                 tiles = stiles,
                 transitRoutes = map.transitRoutes.Select(r => r.Serialize()).ToArray(),
                 transitStops = map.transitStops.Select(r => r.Serialize()).ToArray(),
-                transitLines = map.transitLines.Select(r => r.Serialize()).ToArray(),
             };
         }
 
@@ -312,21 +310,7 @@ namespace Transidious
 
         public static void SaveMapLayout(Map map, byte[] backgroundImage, byte[] miniMapImage)
         {
-            string fileName = "Assets/Resources/Maps/";
-            fileName += map.name;
-
-            if (System.IO.Directory.Exists(fileName))
-            {
-                var dir = new System.IO.DirectoryInfo(fileName);
-                foreach (var file in dir.GetFiles())
-                {
-                    file.Delete();
-                }
-
-                dir.Delete();
-            }
-
-            fileName += ".bytes";
+            string fileName = $"Assets/Resources/Maps/{map.name}.bytes";
 
             var sm = GetProtobufMap(map, backgroundImage, miniMapImage);
             using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
@@ -335,7 +319,7 @@ namespace Transidious
             }
         }
 
-        public static void SaveMapData(Map map)
+        public static void SaveMapData(Map map, string saveFile = null)
         {
             var fileName = "Assets/Resources/Saves/";
             fileName += GameController.instance.missionToLoad;
@@ -346,7 +330,15 @@ namespace Transidious
             }
 
             fileName += "/";
-            fileName += DateTime.Now.Ticks;
+            if (saveFile != null)
+            {
+                fileName += saveFile;
+            }
+            else
+            {
+                fileName += DateTime.Now.Ticks;
+            }
+
             fileName += ".bytes";
 
             using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
@@ -572,7 +564,7 @@ namespace Transidious
             gameObject.SetActive(false);
         }
 
-        static IEnumerator LoadSave(Map map, string mapName)
+        public static IEnumerator LoadSave(Map map, string mapName)
         {
             var resourceName = "Saves/" + mapName;
             var asyncResource = Resources.LoadAsync(resourceName);
@@ -581,10 +573,6 @@ namespace Transidious
             if (asyncResource.asset != null)
             {
                 yield return LoadSave(map, asyncResource);
-            }
-            else
-            {
-                Debug.LogError("failed loading save file!");
             }
 
             // Finalize the map.

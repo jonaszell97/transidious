@@ -682,7 +682,7 @@ namespace Transidious
             }
 
 #if DEBUG
-            if (Input.GetKeyDown(KeyCode.X))
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F1))
             {
                 var cursorPos = camera.ScreenToWorldPoint(Input.mousePosition);
                 var stops = controller.loadedMap.GetMapObjectsInRadius<IMapObject>(cursorPos, 500f);
@@ -696,7 +696,7 @@ namespace Transidious
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.Y))
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F2))
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 if (fromPos == null)

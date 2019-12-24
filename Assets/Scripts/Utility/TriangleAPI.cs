@@ -485,38 +485,36 @@ namespace Transidious
 
                 return null;
             }
-            else
+
+            try
             {
-                try
+                if (!pslg.Validate())
                 {
-                    if (!pslg.Validate())
-                    {
-                        Debug.LogError("Invalid points in PSLG!");
-                        return null;
-                    }
-
-                    // Write poly file
-                    var polyFilePath = WritePolyFile(pslg);
-
-                    // Execute Triangle
-                    var exitCode = ExecuteTriangle(polyFilePath);
-                    if (exitCode != 0)
-                    {
-                        Debug.LogWarning("'triangle' failed with exit code " + exitCode);
-                        return null;
-                    }
-
-                    // Read output
-                    Vector3[] vertices = ReadVerticesFile(polyFilePath, pslg.z);
-                    int[] triangles = ReadTrianglesFile(polyFilePath);
-
-                    return new Polygon2D(triangles, vertices);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning(e.GetType().AssemblyQualifiedName + " " + e.Message);
+                    Debug.LogError("Invalid points in PSLG!");
                     return null;
                 }
+
+                // Write poly file
+                var polyFilePath = WritePolyFile(pslg);
+
+                // Execute Triangle
+                var exitCode = ExecuteTriangle(polyFilePath);
+                if (exitCode != 0)
+                {
+                    Debug.LogWarning("'triangle' failed with exit code " + exitCode);
+                    return null;
+                }
+
+                // Read output
+                Vector3[] vertices = ReadVerticesFile(polyFilePath, pslg.z);
+                int[] triangles = ReadTrianglesFile(polyFilePath);
+
+                return new Polygon2D(triangles, vertices);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e.GetType().AssemblyQualifiedName + " " + e.Message);
+                return null;
             }
         }
 
@@ -756,13 +754,21 @@ namespace Transidious
             return polyFilePath;
         }
 
+#if UNITY_EDITOR_OSX
+        static string triangleBin = "/usr/local/bin/triangle";
+#elif UNITY_EDITOR_WIN
+        static string triangleBin = @"C:\Users\Jonny\triangle\triangle.exe";
+#else
+        static string triangleBin = "triangle";
+#endif
+
         static int ExecuteTriangle(string polyFilePath)
         {
             using (var process = new System.Diagnostics.Process
             {
                 StartInfo =
                 {
-                    FileName = @"C:\Users\Jonny\triangle\triangle.exe",
+                    FileName = triangleBin,
                     Arguments = "-pPq0 " + polyFilePath,
                     UseShellExecute = false,
                     CreateNoWindow = true,
@@ -782,7 +788,13 @@ namespace Transidious
             }
         }
 
+#if UNITY_EDITOR_OSX
+        [DllImport("UnityTriangle", CallingConvention = CallingConvention.Cdecl)]
+#elif UNITY_EDITOR_WIN
         [DllImport("triangle")]
+#else
+        [DllImport("unitytriangle", EntryPoint = "Triangulate", CallingConvention = CallingConvention.Cdecl)]
+#endif
         static extern void RegisterDebugCallback(debugCallback cb);
 
         delegate void debugCallback(IntPtr request, int color, int size);

@@ -148,29 +148,26 @@ namespace Transidious
 
         public void UpdateMesh(Map map)
         {
-            if (mesh == null)
+            if (outlinePositions == null || outlinePositions.Length == 0)
             {
                 return;
             }
 
-            float layer = 0f;
-            switch (type)
-            {
-            default:
-                layer = Map.Layer(MapLayer.Buildings);
-                break;
-            }
+            //float layer = 0f;
+            //switch (type)
+            //{
+            //default:
+            //    layer = Map.Layer(MapLayer.Buildings);
+            //    break;
+            //}
 
             var minAngle = 0f;
-            var surroundingRect = MeshBuilder.GetSmallestSurroundingRect(mesh, ref minAngle);
+            var surroundingRect = MeshBuilder.GetSmallestSurroundingRect(outlinePositions[0], ref minAngle);
 
-            //Quaternion q = Quaternion.Euler(0f, 0f, minAngle * Mathf.Rad2Deg);
-            //mesh = MeshBuilder.RotateMesh(mesh, centroid, q);
-
-            var collisionRect = MeshBuilder.GetCollisionRect(mesh);
+            var collisionRect = MeshBuilder.GetCollisionRect(outlinePositions[0]);
             foreach (var tile in map.GetTilesForObject(this))
             {
-                tile.AddMesh("Buildings", mesh, GetColor(), layer);
+                // tile.AddMesh("Buildings", mesh, GetColor(), layer);
 
                 if (outlinePositions != null)
                 {
@@ -209,7 +206,7 @@ namespace Transidious
             return new Serialization.Building
             {
                 MapObject = base.ToProtobuf(),
-                Mesh = mesh.ToProtobuf2D() ?? new Serialization.Mesh2D(),
+                // Mesh = mesh.ToProtobuf2D() ?? new Serialization.Mesh2D(),
                 StreetID = (uint)(street?.id ?? 0),
                 Type = (Serialization.Building.Types.Type)type,
                 Position = centroid.ToProtobuf(),

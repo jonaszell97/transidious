@@ -36,8 +36,8 @@ namespace Transidious.Serialization {
             "HKoCGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.NaturalFeature), global::Transidious.Serialization.NaturalFeature.Parser, new[]{ "MapObject", "Mesh", "Type" }, null, new[]{ typeof(global::Transidious.Serialization.NaturalFeature.Types.Type) }, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.NaturalFeature), global::Transidious.Serialization.NaturalFeature.Parser, new[]{ "MapObject", "Mesh", "Type" }, null, new[]{ typeof(global::Transidious.Serialization.NaturalFeature.Types.Type) }, null)
           }));
     }
     #endregion
@@ -104,7 +104,7 @@ namespace Transidious.Serialization {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 3;
-    private global::Transidious.Serialization.NaturalFeature.Types.Type type_ = global::Transidious.Serialization.NaturalFeature.Types.Type.Park;
+    private global::Transidious.Serialization.NaturalFeature.Types.Type type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Transidious.Serialization.NaturalFeature.Types.Type Type {
       get { return type_; }
@@ -137,7 +137,7 @@ namespace Transidious.Serialization {
       int hash = 1;
       if (mapObject_ != null) hash ^= MapObject.GetHashCode();
       if (mesh_ != null) hash ^= Mesh.GetHashCode();
-      if (Type != global::Transidious.Serialization.NaturalFeature.Types.Type.Park) hash ^= Type.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -159,7 +159,7 @@ namespace Transidious.Serialization {
         output.WriteRawTag(18);
         output.WriteMessage(Mesh);
       }
-      if (Type != global::Transidious.Serialization.NaturalFeature.Types.Type.Park) {
+      if (Type != 0) {
         output.WriteRawTag(24);
         output.WriteEnum((int) Type);
       }
@@ -177,7 +177,7 @@ namespace Transidious.Serialization {
       if (mesh_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Mesh);
       }
-      if (Type != global::Transidious.Serialization.NaturalFeature.Types.Type.Park) {
+      if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
       if (_unknownFields != null) {
@@ -203,7 +203,7 @@ namespace Transidious.Serialization {
         }
         Mesh.MergeFrom(other.Mesh);
       }
-      if (other.Type != global::Transidious.Serialization.NaturalFeature.Types.Type.Park) {
+      if (other.Type != 0) {
         Type = other.Type;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);

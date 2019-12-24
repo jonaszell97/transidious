@@ -37,8 +37,8 @@ namespace Transidious.Serialization {
             "CEIcqgIZVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Building), global::Transidious.Serialization.Building.Parser, new[]{ "MapObject", "Mesh", "StreetID", "Type", "Position" }, null, new[]{ typeof(global::Transidious.Serialization.Building.Types.Type) }, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Building), global::Transidious.Serialization.Building.Parser, new[]{ "MapObject", "Mesh", "StreetID", "Type", "Position" }, null, new[]{ typeof(global::Transidious.Serialization.Building.Types.Type) }, null)
           }));
     }
     #endregion
@@ -118,7 +118,7 @@ namespace Transidious.Serialization {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 4;
-    private global::Transidious.Serialization.Building.Types.Type type_ = global::Transidious.Serialization.Building.Types.Type.Residential;
+    private global::Transidious.Serialization.Building.Types.Type type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Transidious.Serialization.Building.Types.Type Type {
       get { return type_; }
@@ -165,7 +165,7 @@ namespace Transidious.Serialization {
       if (mapObject_ != null) hash ^= MapObject.GetHashCode();
       if (mesh_ != null) hash ^= Mesh.GetHashCode();
       if (StreetID != 0) hash ^= StreetID.GetHashCode();
-      if (Type != global::Transidious.Serialization.Building.Types.Type.Residential) hash ^= Type.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -192,7 +192,7 @@ namespace Transidious.Serialization {
         output.WriteRawTag(24);
         output.WriteUInt32(StreetID);
       }
-      if (Type != global::Transidious.Serialization.Building.Types.Type.Residential) {
+      if (Type != 0) {
         output.WriteRawTag(32);
         output.WriteEnum((int) Type);
       }
@@ -217,7 +217,7 @@ namespace Transidious.Serialization {
       if (StreetID != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(StreetID);
       }
-      if (Type != global::Transidious.Serialization.Building.Types.Type.Residential) {
+      if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
       if (position_ != null) {
@@ -249,7 +249,7 @@ namespace Transidious.Serialization {
       if (other.StreetID != 0) {
         StreetID = other.StreetID;
       }
-      if (other.Type != global::Transidious.Serialization.Building.Types.Type.Residential) {
+      if (other.Type != 0) {
         Type = other.Type;
       }
       if (other.position_ != null) {

@@ -52,13 +52,8 @@ namespace Transidious
 
         public static Translator current;
 
-        public Translator(string langId)
+        public Translator(TextAsset file, string langId)
         {
-#if UNITY_EDITOR
-            UnityEditor.AssetDatabase.Refresh();
-#endif
-
-            var file = Resources.Load("Languages/" + langId) as TextAsset;
             this.loadedLanguage = JsonUtility.FromJson<Language>(file.text);
 
             this.items = new Dictionary<string, string>();
@@ -67,8 +62,33 @@ namespace Transidious
                 this.items.Add(item.key, item.text);
             }
 
-            current = this;
-            culture = CultureInfo.CreateSpecificCulture(langId.Replace("_", "-"));
+            this.loadedLanguage = JsonUtility.FromJson<Language>(file.text);
+
+            this.items = new Dictionary<string, string>();
+            foreach (var item in this.loadedLanguage.items)
+            {
+                this.items.Add(item.key, item.text);
+            }
+
+            this.culture = CultureInfo.CreateSpecificCulture(langId.Replace("_", "-"));
+        }
+
+        public static Translator SetActiveLanguage(string langId)
+        {
+#if UNITY_EDITOR
+            UnityEditor.AssetDatabase.Refresh();
+#endif
+
+            var file = Resources.Load("Languages/" + langId) as TextAsset;
+            if (file == null)
+            {
+                return null;
+            }
+
+            current = new Translator(file, langId);
+            EventManager.current.TriggerEvent("LanguageChange");
+
+            return current;
         }
 
         public string Translate(string key)

@@ -86,11 +86,11 @@ namespace Transidious
                                                       PathDone);
         }
 
-        void Update()
+        void FixedUpdate()
         {
             if (!sim.game.Paused && pathFollow != null)
             {
-                pathFollow.Update();
+                pathFollow.FixedUpdate();
             }
 
             if (isFocused)

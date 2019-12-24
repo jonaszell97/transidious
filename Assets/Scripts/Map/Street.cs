@@ -360,7 +360,6 @@ namespace Transidious
                 }
 
                 placedText = true;
-                txt.transform.SetParent(seg.uniqueTile?.transform ?? map.transform);
                 txt.transform.position = new Vector3(posAndAngle.pos.x,
                                                      posAndAngle.pos.y,
                                                      Map.Layer(MapLayer.StreetNames));

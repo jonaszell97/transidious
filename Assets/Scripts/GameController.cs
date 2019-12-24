@@ -256,6 +256,10 @@ namespace Transidious
             }
         }
 
+#if DEBUG
+        public int numRandomLines = 50;
+#endif
+
         public System.Collections.IEnumerator LoadMap(OSMImportHelper.Area area)
         {
             this.status = GameStatus.Loading;
@@ -268,7 +272,7 @@ namespace Transidious
             loadingScreen.gameObject.SetActive(false);
             input.EnableControls();
 
-            for (var i = 0; i < 50; ++i)
+            for (var i = 0; i < numRandomLines; ++i)
             {
                 var type = (TransitType)UnityEngine.Random.Range(0, 5);
                 var numStops = 0;
@@ -281,7 +285,6 @@ namespace Transidious
                 loadedMap.CreateRandomizedLine(type, null, numStops);
             }
 
-            loadedMap.CreateRandomizedLine(TransitType.Subway, "Piccadilly Line", 0);
             transitEditor.InitOverlappingRoutes();
 
             //var sched = new Schedule
@@ -323,7 +326,7 @@ namespace Transidious
                 return;
             }
 
-            this.lang = new Translator("en_US");
+            this.lang = Translator.SetActiveLanguage("en_US");
             this.mapEditor.gameObject.SetActive(false);
 
             this.onLoad = new UnityEvent();
@@ -358,13 +361,22 @@ namespace Transidious
         // Update is called once per frame
         void Update()
         {
-
+            if (Input.GetKeyDown(KeyCode.F12))
+            {
+                DeveloperConsole.instance.Toggle();
+            }
         }
 
-        public void SetLanguage(string newLang)
+        public bool SetLanguage(string newLang)
         {
-            this.lang = new Translator(newLang);
-            EventManager.current.TriggerEvent("LanguageChange");
+            var translator = Translator.SetActiveLanguage(newLang);
+            if (translator == null)
+            {
+                return true;
+            }
+
+            this.lang = translator;
+            return false;
         }
 
         public Color GetDefaultSystemColor(TransitType system)

@@ -218,6 +218,16 @@ namespace Transidious
 
         public static Mesh Deserialize(this Serialization.Mesh2D m, float z = 0f)
         {
+            if (m == null)
+            {
+                return null;
+            }
+
+            if (m.Triangles.Count == 0)
+            {
+                return null;
+            }
+
             return new Mesh
             {
                 vertices = m.Vertices.Select(v => new Vector3(v.X, v.Y, z)).ToArray(),

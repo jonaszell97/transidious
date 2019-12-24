@@ -18,7 +18,37 @@ namespace Transidious
         Saturday = 0x40,
     }
 
-    public class Schedule
+    public interface ISchedule
+    {
+        DateTime GetNextDeparture(DateTime currentTime);
+    }
+
+    public class ContinuousSchedule : ISchedule
+    {
+        public DateTime firstDeparture;
+        public float interval;
+
+        public ContinuousSchedule(DateTime firstDeparture, float intervalSeconds)
+        {
+            this.firstDeparture = firstDeparture;
+            this.interval = intervalSeconds;
+        }
+
+        public DateTime GetNextDeparture(DateTime currentTime)
+        {
+            if (currentTime <= firstDeparture)
+            {
+                return firstDeparture;
+            }
+
+            var secondDiff = (currentTime - firstDeparture).TotalSeconds;
+            var nextDeparture = Mathf.Ceil((float)secondDiff / interval) * interval;
+
+            return firstDeparture.AddSeconds(nextDeparture);
+        }
+    }
+
+    public class Schedule : ISchedule
     {
         /// <summary>
         /// The time interval (in hours from 0-24) during which the day schedule is used.
@@ -125,6 +155,16 @@ namespace Transidious
             }
 
             return defaultSchedules[(int)type];
+        }
+
+        public OffsetSchedule OffsetBy(float minutes)
+        {
+            return new OffsetSchedule(this, minutes);
+        }
+
+        public DelayedSchedule DelayedBy(DateTime firstDeparture, float delay)
+        {
+            return new DelayedSchedule(this, firstDeparture, delay);
         }
 
         public enum ActiveSchedule
@@ -241,6 +281,47 @@ namespace Transidious
             }
 
             return result;
+        }
+    }
+
+    public class OffsetSchedule : ISchedule
+    {
+        Schedule baseSchedule;
+        float offsetMinutes;
+
+        public OffsetSchedule(Schedule baseSchedule, float offsetMinutes)
+        {
+            this.baseSchedule = baseSchedule;
+            this.offsetMinutes = offsetMinutes;
+        }
+
+        public DateTime GetNextDeparture(DateTime currentTime)
+        {
+            return baseSchedule.GetNextDeparture(currentTime).AddMinutes(offsetMinutes);
+        }
+    }
+
+    public class DelayedSchedule : ISchedule
+    {
+        Schedule baseSchedule;
+        DateTime firstDeparture;
+        float delay;
+
+        public DelayedSchedule(Schedule baseSchedule, DateTime firstDeparture, float delay)
+        {
+            this.baseSchedule = baseSchedule;
+            this.firstDeparture = firstDeparture.AddMinutes(delay);
+            this.delay = delay;
+        }
+
+        public DateTime GetNextDeparture(DateTime currentTime)
+        {
+            if (firstDeparture > currentTime)
+            {
+                return firstDeparture;
+            }
+
+            return baseSchedule.GetNextDeparture(currentTime.AddMinutes(-delay)).AddMinutes(delay);
         }
     }
 }

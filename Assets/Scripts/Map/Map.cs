@@ -920,8 +920,13 @@ namespace Transidious
                 return this;
             }
 
-            public Line Finish()
+            public Line Finish(Schedule sched = null)
             {
+                if (sched != null)
+                {
+                    line.schedule = sched;
+                }
+
                 line.FinalizeLine();
                 return line;
             }
@@ -1023,7 +1028,73 @@ namespace Transidious
             }
         }
 
-        Stop GetRandomStop(Stop previousStop = null)
+        Tuple<Stop, Stop> GetRandomStopPair(Stop previousStop = null)
+        {
+            // Max 200m distance
+            float maxDistance = 200f;
+
+            // Min 50m distance
+            float minSqrDistance = 2500f;
+
+            Vector2 pt;
+            if (previousStop == null)
+            {
+                pt = new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(minY, maxY));
+            }
+            else
+            {
+                var attempts = 0;
+                while (true)
+                {
+                    pt = new Vector2(
+                        UnityEngine.Random.Range(previousStop.location.x - maxDistance, previousStop.location.x + maxDistance),
+                        UnityEngine.Random.Range(previousStop.location.y - maxDistance, previousStop.location.y + maxDistance));
+
+                    if (IsPointOnMap(pt) && (pt - previousStop.location).sqrMagnitude >= minSqrDistance)
+                    {
+                        break;
+                    }
+
+                    if (attempts++ > 1000)
+                    {
+                        Debug.LogError("can't find a close point on the map!");
+                        pt = new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(minY, maxY));
+
+                        break;
+                    }
+                }
+            }
+
+            var closestPt = GetClosestStreet(pt);
+            var street = closestPt.seg;
+
+            if (street.OneWay)
+            {
+                return GetRandomStopPair(previousStop);
+            }
+
+            Stop fwd;
+            {
+                var positionsFwd = GameController.instance.sim.trafficSim.GetPath(
+                    street, street.RightmostLane);
+
+                var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsFwd);
+                fwd = GetOrCreateStop(closestPt.seg.street.name, newPtPos.Item1);
+            }
+
+            Stop bwd;
+            {
+                var positionsBwd = GameController.instance.sim.trafficSim.GetPath(
+                    street, street.LeftmostLane);
+
+                var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsBwd);
+                bwd = GetOrCreateStop(closestPt.seg.street.name, newPtPos.Item1);
+            }
+
+            return Tuple.Create(fwd, bwd);
+        }
+
+        Stop GetRandomStop(HashSet<StreetSegment> usedSegments, Stop previousStop = null)
         {
             // Max 200m distance
             float maxDistance = 200f;
@@ -1064,6 +1135,13 @@ namespace Transidious
             var closestPt = GetClosestStreet(pt);
             var street = closestPt.seg;
 
+            if (usedSegments.Contains(street))
+            {
+                return GetRandomStop(usedSegments, previousStop);
+            }
+
+            usedSegments.Add(street);
+
             var closestPtAndPos = street.GetClosestPointAndPosition(closestPt.pos);
             var positions = GameController.instance.sim.trafficSim.GetPath(
                 street, (closestPtAndPos.Item2 == Math.PointPosition.Right || street.street.isOneWay)
@@ -1081,18 +1159,25 @@ namespace Transidious
             var builder = CreateLine(type, name ?? DefaultLineName(type), Utility.RandomColor);
             Stop firstStop = null;
             Stop previousStop = null;
-
+            
+            var bwdStops = new List<Stop>();
             for (var i = 0; i < stops; ++i)
             {
-                var nextStop = GetRandomStop(previousStop);
-                previousStop = nextStop;
+                var nextStops = GetRandomStopPair(previousStop);
+                bwdStops.Add(nextStops.Item2);
+                previousStop = nextStops.Item1;
 
-                builder.AddStop(nextStop, true, false, null, type == TransitType.Bus);
+                builder.AddStop(nextStops.Item1, true, false, null, type == TransitType.Bus);
 
                 if (firstStop == null)
                 {
-                    firstStop = nextStop;
+                    firstStop = nextStops.Item1;
                 }
+            }
+
+            for (var i = bwdStops.Count - 1; i >= 0; --i)
+            {
+                builder.AddStop(bwdStops[i], true, false, null, type == TransitType.Bus);
             }
 
             if (firstStop != null)

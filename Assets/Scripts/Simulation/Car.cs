@@ -142,15 +142,15 @@ namespace Transidious
             SetVelocity(sim.trafficSim.GetCarVelocity(drivingCar));
 
             // Must be updated after the velocity calculation.
-            timeElapsed += Time.deltaTime * sim.SpeedMultiplier;
+            timeElapsed += Time.fixedDeltaTime * sim.SpeedMultiplier;
             timeSinceLastUpdate = 0f;
         }
 
-        void Update()
+        void FixedUpdate()
         {
             if (!sim.game.Paused && pathFollow != null)
             {
-                var elapsedTime = Time.deltaTime * sim.SpeedMultiplier;
+                var elapsedTime = Time.fixedDeltaTime * sim.SpeedMultiplier;
                 timeSinceLastUpdate += elapsedTime;
 
                 if (timeSinceLastUpdate < TrafficSimulator.VelocityUpdateInterval)
@@ -172,7 +172,7 @@ namespace Transidious
                     drivingCar.waitingForTrafficLight = null;
                 }
 
-                pathFollow.Update();
+                pathFollow.FixedUpdate();
 
                 drivingCar.exactPosition = transform.position;
                 drivingCar.distanceFromStart = sim.trafficSim.GetDistanceFromStart(

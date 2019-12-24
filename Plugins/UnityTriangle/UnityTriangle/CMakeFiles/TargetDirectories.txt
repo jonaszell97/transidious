@@ -1,3 +1,0 @@
-/home/jonas/transidious/Plugins/UnityTriangle/UnityTriangle/CMakeFiles/rebuild_cache.dir
-/home/jonas/transidious/Plugins/UnityTriangle/UnityTriangle/CMakeFiles/unitytriangle.dir
-/home/jonas/transidious/Plugins/UnityTriangle/UnityTriangle/CMakeFiles/edit_cache.dir

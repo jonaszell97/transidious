@@ -393,14 +393,92 @@ namespace Transidious
             var result = new Serialization.Route
             {
                 MapObject = base.ToProtobuf(),
+
+                LineID = (uint)line.Id,
+                BeginStopID = (uint)beginStop.Id,
+                EndStopID = (uint)endStop.Id,
+
+                TotalTravelTime = totalTravelTime,
             };
 
+            foreach (var entry in pathSegmentInfoMap)
+            {
+                var info = new Serialization.Route.Types.PathSegmentInfoMapEntry
+                {
+                    Key = (uint)entry.Key,
+                    Value = new Serialization.Route.Types.PathSegmentInfo
+                    {
+                        SegmentID = (uint)entry.Value.segment.Id,
+                        Lane = entry.Value.lane,
+                        Offset = entry.Value.offset,
+                        Length = entry.Value.length,
+                        PartialStart = entry.Value.partialStart,
+                        PartialEnd = entry.Value.partialEnd,
+                        Direction = entry.Value.direction.ToProtobuf(),
+                    },
+                };
+
+                result.PathSegmentInfoMap.Add(info);
+            }
+
+            foreach (var entry in streetSegmentOffsetMap)
+            {
+                var info = new Serialization.Route.Types.StreetSegmentOffsetMapEntry
+                {
+                    Key = new Serialization.Route.Types.StreetSegmentKey
+                    {
+                        Segment = entry.Key.Item1.Id,
+                        Lane = entry.Key.Item2,
+                    },
+                };
+
+                info.Value.AddRange(entry.Value.Select(e => new Serialization.Route.Types.PathSegmentInfo
+                {
+                    SegmentID = (uint)e.segment.Id,
+                    Lane = e.lane,
+                    Offset = e.offset,
+                    Length = e.length,
+                    PartialStart = e.partialStart,
+                    PartialEnd = e.partialEnd,
+                    Direction = e.direction.ToProtobuf(),
+                }));
+
+                result.StreetSegmentOffsetMap.Add(info);
+            }
+
+            result.Positions.AddRange(positions.Select(s => ((Vector2)s).ToProtobuf()));
             return result;
         }
 
-        public void Deserialize(Serialization.Route stop, Map map)
+        public void Deserialize(Serialization.Route route, Map map)
         {
-            base.Deserialize(stop.MapObject);
+            base.Deserialize(route.MapObject);
+
+            Initialize(map.GetMapObject<Line>((int)route.LineID),
+                       map.GetMapObject<Stop>((int)route.BeginStopID),
+                       map.GetMapObject<Stop>((int)route.EndStopID),
+                       route.Positions?.Select(
+                            v => new Vector3(v.X, v.Y, Map.Layer(MapLayer.TransitLines))).ToList()
+                                ?? null,
+                       false);
+
+            for (var i = 0; i < route.PathSegmentInfoMap.Count; ++i)
+            {
+                var key = route.PathSegmentInfoMap[i].Key;
+                var value = route.PathSegmentInfoMap[i].Value;
+
+                pathSegmentInfoMap.Add((int)key, new TrafficSimulator.PathSegmentInfo(value));
+            }
+
+            for (var i = 0; i < route.StreetSegmentOffsetMap.Count; ++i)
+            {
+                var key = route.StreetSegmentOffsetMap[i].Key;
+                var value = route.StreetSegmentOffsetMap[i].Value;
+
+                streetSegmentOffsetMap.Add(
+                    Tuple.Create(map.GetMapObject<StreetSegment>(key.Segment), key.Lane),
+                    value.Select(info => new TrafficSimulator.PathSegmentInfo(info)).ToList());
+            }
         }
 
         public new SerializedRoute Serialize()

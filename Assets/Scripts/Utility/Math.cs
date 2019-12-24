@@ -455,9 +455,15 @@ namespace Transidious
             return false;
         }
 
-            public static bool IsPointInPolygon(Vector2 pt, IReadOnlyList<Vector2> poly)
+        public static bool IsPointInPolygon(Vector2 pt, IReadOnlyList<Vector2> poly)
         {
-            Debug.Assert(poly.Count >= 3, "invalid polygon");
+#if DEBUG
+            if (poly.Count < 3)
+            {
+                Debug.LogWarning("invalid polygon");
+                return false;
+            }
+#endif
 
             var inside = false;
             var j = poly.Count - 1;
@@ -474,7 +480,13 @@ namespace Transidious
 
         public static bool IsPointInPolygon(Vector2 pt, Vector2[] poly)
         {
-            Debug.Assert(poly.Length >= 3, "invalid polygon");
+#if DEBUG
+            if (poly.Length < 3)
+            {
+                Debug.LogWarning("invalid polygon");
+                return false;
+            }
+#endif
 
             var inside = false;
             var j = poly.Length - 1;

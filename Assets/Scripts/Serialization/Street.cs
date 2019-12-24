@@ -44,10 +44,10 @@ namespace Transidious.Serialization {
             "GVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetIntersection), global::Transidious.Serialization.StreetIntersection.Parser, new[]{ "MapObject", "Position" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetSegment), global::Transidious.Serialization.StreetSegment.Parser, new[]{ "MapObject", "Positions", "StartIntersectionID", "EndIntersectionID", "HasTramTracks" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Street), global::Transidious.Serialization.Street.Parser, new[]{ "MapObject", "DisplayName", "Type", "Segments", "Lit", "Oneway", "Maxspeed", "Lanes" }, null, new[]{ typeof(global::Transidious.Serialization.Street.Types.Type) }, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetIntersection), global::Transidious.Serialization.StreetIntersection.Parser, new[]{ "MapObject", "Position" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetSegment), global::Transidious.Serialization.StreetSegment.Parser, new[]{ "MapObject", "Positions", "StartIntersectionID", "EndIntersectionID", "HasTramTracks" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Street), global::Transidious.Serialization.Street.Parser, new[]{ "MapObject", "DisplayName", "Type", "Segments", "Lit", "Oneway", "Maxspeed", "Lanes" }, null, new[]{ typeof(global::Transidious.Serialization.Street.Types.Type) }, null)
           }));
     }
     #endregion
@@ -527,7 +527,7 @@ namespace Transidious.Serialization {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 3;
-    private global::Transidious.Serialization.Street.Types.Type type_ = global::Transidious.Serialization.Street.Types.Type.Primary;
+    private global::Transidious.Serialization.Street.Types.Type type_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Transidious.Serialization.Street.Types.Type Type {
       get { return type_; }
@@ -619,7 +619,7 @@ namespace Transidious.Serialization {
       int hash = 1;
       if (mapObject_ != null) hash ^= MapObject.GetHashCode();
       if (DisplayName.Length != 0) hash ^= DisplayName.GetHashCode();
-      if (Type != global::Transidious.Serialization.Street.Types.Type.Primary) hash ^= Type.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
       hash ^= segments_.GetHashCode();
       if (Lit != false) hash ^= Lit.GetHashCode();
       if (Oneway != false) hash ^= Oneway.GetHashCode();
@@ -646,7 +646,7 @@ namespace Transidious.Serialization {
         output.WriteRawTag(18);
         output.WriteString(DisplayName);
       }
-      if (Type != global::Transidious.Serialization.Street.Types.Type.Primary) {
+      if (Type != 0) {
         output.WriteRawTag(24);
         output.WriteEnum((int) Type);
       }
@@ -681,7 +681,7 @@ namespace Transidious.Serialization {
       if (DisplayName.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(DisplayName);
       }
-      if (Type != global::Transidious.Serialization.Street.Types.Type.Primary) {
+      if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
       size += segments_.CalculateSize(_repeated_segments_codec);
@@ -717,7 +717,7 @@ namespace Transidious.Serialization {
       if (other.DisplayName.Length != 0) {
         DisplayName = other.DisplayName;
       }
-      if (other.Type != global::Transidious.Serialization.Street.Types.Type.Primary) {
+      if (other.Type != 0) {
         Type = other.Type;
       }
       segments_.Add(other.segments_);

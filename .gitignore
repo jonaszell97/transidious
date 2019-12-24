@@ -1,6 +1,9 @@
+.vscode/
 .idea/
 .history/
 iOS/
+Logs/
+Plugins/
 Assets/NuGet
 
 # ignore OSM files
@@ -11,6 +14,12 @@ Assets/NuGet
 /TblGen/cmake_install.cmake
 /TblGen/Makefile
 /TblGen/.cache
+
+Assets/Resources/Saves
+Assets/Plugins/UnityTriangle.bundle
+Assets/Plugins/UnityTriangle.bundle.meta
+Assets/Scripts/Utility/DeveloperConsoleInternals.cs
+Assets/Scripts/Utility/DeveloperConsoleInternals.cs
 
 /[Ll]ibrary/
 /[Tt]emp/

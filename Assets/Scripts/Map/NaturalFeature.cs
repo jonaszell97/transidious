@@ -39,55 +39,55 @@ namespace Transidious
 
         public void UpdateMesh(Map map)
         {
-            if (mesh == null)
+            if (outlinePositions == null)
             {
                 return;
             }
 
-            float layer = 0f;
-            switch (type)
-            {
-            case NaturalFeature.Type.Park:
-                layer = Map.Layer(MapLayer.Parks, 0);
-                break;
-            case NaturalFeature.Type.Green:
-                layer = Map.Layer(MapLayer.Parks, 1);
-                break;
-                case NaturalFeature.Type.Allotment:
-            case NaturalFeature.Type.Cemetery:
-            case NaturalFeature.Type.SportsPitch:
-            case NaturalFeature.Type.FootpathArea:
-            case NaturalFeature.Type.Parking:
-                layer = Map.Layer(MapLayer.Parks, 2);
-                break;
-            case NaturalFeature.Type.Forest:
-                layer = Map.Layer(MapLayer.NatureBackground, 0);
-                break;
-            case NaturalFeature.Type.Beach:
-                layer = Map.Layer(MapLayer.NatureBackground, 1);
-                break;
-            case NaturalFeature.Type.Lake:
-                layer = Map.Layer(MapLayer.Lakes);
-                break;
-            case NaturalFeature.Type.Footpath:
-                layer = Map.Layer(MapLayer.Rivers, 1);
-                break;
-            }
+            //float layer = 0f;
+            //switch (type)
+            //{
+            //case NaturalFeature.Type.Park:
+            //    layer = Map.Layer(MapLayer.Parks, 0);
+            //    break;
+            //case NaturalFeature.Type.Green:
+            //    layer = Map.Layer(MapLayer.Parks, 1);
+            //    break;
+            //    case NaturalFeature.Type.Allotment:
+            //case NaturalFeature.Type.Cemetery:
+            //case NaturalFeature.Type.SportsPitch:
+            //case NaturalFeature.Type.FootpathArea:
+            //case NaturalFeature.Type.Parking:
+            //    layer = Map.Layer(MapLayer.Parks, 2);
+            //    break;
+            //case NaturalFeature.Type.Forest:
+            //    layer = Map.Layer(MapLayer.NatureBackground, 0);
+            //    break;
+            //case NaturalFeature.Type.Beach:
+            //    layer = Map.Layer(MapLayer.NatureBackground, 1);
+            //    break;
+            //case NaturalFeature.Type.Lake:
+            //    layer = Map.Layer(MapLayer.Lakes);
+            //    break;
+            //case NaturalFeature.Type.Footpath:
+            //    layer = Map.Layer(MapLayer.Rivers, 1);
+            //    break;
+            //}
 
+            var collisionRect = MeshBuilder.GetCollisionRect(outlinePositions[0]);
+            var surroundingRect = MeshBuilder.GetSmallestSurroundingRect(outlinePositions[0]);
             foreach (var tile in map.GetTilesForObject(this))
             {
-                tile.AddMesh("Features", mesh, GetColor(), layer);
+                // tile.AddMesh("Features", mesh, GetColor(), layer);
 
                 if (outlinePositions != null)
                 {
-                    tile.AddCollider(this, outlinePositions,
-                                     MeshBuilder.GetCollisionRect(mesh), true);
+                    tile.AddCollider(this, outlinePositions, collisionRect, true);
                 }
                 else
                 {
                     Debug.Log("using simple bounding box for '" + name + "'");
-                    tile.AddCollider(this, MeshBuilder.GetSmallestSurroundingRect(mesh),
-                                     MeshBuilder.GetCollisionRect(mesh), true);
+                    tile.AddCollider(this, surroundingRect, collisionRect, true);
                 }
             }
         }
@@ -187,7 +187,7 @@ namespace Transidious
             return new Serialization.NaturalFeature
             {
                 MapObject = base.ToProtobuf(),
-                Mesh = mesh?.ToProtobuf2D() ?? new Serialization.Mesh2D(),
+                // Mesh = mesh?.ToProtobuf2D() ?? new Serialization.Mesh2D(),
                 Type = (Serialization.NaturalFeature.Types.Type)type,
             };
         }
