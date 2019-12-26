@@ -317,6 +317,19 @@ def Charlottenburg : DefaultArea {
     ]>
 }
 
+def CharlottenburgWilmersdorf : DefaultArea {
+    country = "Deutschland/Berlin"
+    nodeFile = "Deutschland/Berlin"
+
+    boundary = BoundaryInfo<"Charlottenburg-Wilmersdorf", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "9">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "9">
+    ]>
+}
+
 def Mitte : DefaultArea {
     nodeFile = "Deutschland/Berlin"
 

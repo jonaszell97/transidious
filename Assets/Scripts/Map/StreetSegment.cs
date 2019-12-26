@@ -8,16 +8,6 @@ namespace Transidious
 {
     public class StreetSegment : StaticMapObject, IRoute
     {
-        [System.Serializable]
-        public struct SerializedStreetSegment
-        {
-            public SerializableMapObject mapObject;
-            public List<SerializableVector2> positions;
-            public int startIntersectionID;
-            public int endIntersectionID;
-            public bool hasTramTracks;
-        }
-
         /// The street this segment is part of.
         public Street street;
 
@@ -426,6 +416,33 @@ namespace Transidious
             return GetOffsetPointFromEnd(EndStopLineDistance);
         }
 
+        public Vector2 RandomPoint
+        {
+            get
+            {
+                var offset = UnityEngine.Random.Range(0f, length);
+                for (var i = 0; i < positions.Count; ++i)
+                {
+                    var dist = cumulativeDistances[i];
+                    if (dist.Equals(offset))
+                    {
+                        return positions[i];
+                    }
+                    if (offset < dist)
+                    {
+                        continue;
+                    }
+
+                    var p0 = positions[i];
+                    var p1 = positions[i + 1];
+
+                    return p0 + ((p1 - p0).normalized * (dist - offset));
+                }
+
+                return positions.First();
+            }
+        }
+
         public IStop Begin
         {
             get
@@ -454,10 +471,7 @@ namespace Transidious
         {
             get
             {
-                var kmPerMinute = street.maxspeed / 60f;
-                var lengthInKm = length / 1000f;
-
-                return kmPerMinute * lengthInKm;
+                return (length / (street.AverageSpeedKPH / 3.6f)) / 60f;
             }
         }
 
@@ -465,7 +479,7 @@ namespace Transidious
         {
             get
             {
-                return street.maxspeed;
+                return street.AverageSpeedKPH;
             }
         }
 
@@ -825,6 +839,32 @@ namespace Transidious
             throw new System.ArgumentException(string.Format("Illegal enum value {0}", distance));
         }
 
+        public static RenderingDistance GetMaxVisibleRenderingDistance(Street.Type type)
+        {
+            switch (type)
+            {
+                case Street.Type.Highway:
+                case Street.Type.Primary:
+                case Street.Type.River:
+                    return RenderingDistance.Farthest;
+                case Street.Type.Secondary:
+                case Street.Type.Tertiary:
+                    return RenderingDistance.VeryFar;
+                case Street.Type.Residential:
+                    return RenderingDistance.Far;
+                default:
+                    return RenderingDistance.Near;
+
+            }
+
+            throw new ArgumentException($"Illegal enum value {type}");
+        }
+
+        public RenderingDistance GetMaxVisibleRenderingDistance()
+        {
+            return GetMaxVisibleRenderingDistance(street.type);
+        }
+
         public static int totalVerts = 0;
         public static LineRenderer tmpRenderer;
 
@@ -889,11 +929,17 @@ namespace Transidious
 
             var colliderPath = MeshBuilder.CreateLineCollider(positions, borderWidth * .5f);
             var collisionRect = MeshBuilder.GetCollisionRect(outlineMesh);
+            var renderingDist = GetMaxVisibleRenderingDistance();
 
             foreach (var tile in street.map.GetTilesForObject(this))
             {
-                tile.AddMesh("Streets", streetMesh, GetStreetColor(RenderingDistance.Near), lineLayer);
-                tile.AddMesh("Streets", outlineMesh, GetBorderColor(RenderingDistance.Near), lineOutlineLayer);
+                tile.AddMesh("Streets", streetMesh,
+                             GetStreetColor(RenderingDistance.Near),
+                             lineLayer, renderingDist);
+
+                tile.AddMesh("Streets", outlineMesh,
+                             GetBorderColor(RenderingDistance.Near),
+                             lineOutlineLayer, renderingDist);
 
                 tile.AddCollider(this, colliderPath, collisionRect, false);
             }
@@ -1416,18 +1462,6 @@ namespace Transidious
 
             result.Positions.AddRange(positions.Select(s => ((Vector2)s).ToProtobuf()));
             return result;
-        }
-
-        public new SerializedStreetSegment Serialize()
-        {
-            return new SerializedStreetSegment
-            {
-                mapObject = base.Serialize(),
-                positions = positions.Select(p => new SerializableVector2(p)).ToList(),
-                startIntersectionID = startIntersection?.id ?? 0,
-                endIntersectionID = endIntersection?.id ?? 0,
-                hasTramTracks = hasTramTracks,
-            };
         }
 
         public void DeleteSegment()

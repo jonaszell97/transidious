@@ -162,7 +162,6 @@ namespace Transidious
 
             if (nextStopTime.HasValue && sim.GameTime >= nextStopTime.Value)
             {
-                //Debug.Assert(sim.GameTime == nextStopTime.Value);
                 nextStopTime = null;
 
                 if (currentRoute + 1 >= line.routes.Count)
@@ -174,7 +173,7 @@ namespace Transidious
                     StartDrive(currentRoute + 1);
                 }
 
-                pathFollow.FixedUpdate();
+                pathFollow?.FixedUpdate();
             }
 
             //if (!sim.game.Paused && pathFollow != null)

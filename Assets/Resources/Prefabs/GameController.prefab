@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2155688493315652350}
   - component: {fileID: 4230323441957945562}
+  - component: {fileID: 798117563}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -43,7 +44,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d27b70ac4fd94852931fca8c3b1907d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loadedMap: {fileID: 0}
+  status: 3
+  displayMode: 0
+  loadedMapObj: {fileID: 0}
+  mapEditor: {fileID: 0}
+  transitEditor: {fileID: 0}
+  sim: {fileID: 0}
+  financeController: {fileID: 0}
   input: {fileID: 0}
+  mapPrefab: {fileID: 9190714009779694726, guid: eddea55ecfab44f73b861f5cddf87737,
+    type: 3}
+  tooltipPrefab: {fileID: 9057704092043789160, guid: 1184753116bd74945b36a9d79a3cf7cd,
+    type: 3}
+  lineRendererPrefab: {fileID: 556322108948291748, guid: 7a79ae037ba8b4614b4b251088b1b0ed,
+    type: 3}
+  onLoad:
+    m_PersistentCalls:
+      m_Calls: []
+  missionToLoad: 
   areaToLoad: 2
-  reload: 0
+  circleShader: {fileID: 0}
+  defaultShader: {fileID: 0}
+  silhouetteDiffuseShader: {fileID: 0}
+  highlightedMaterial: {fileID: 2100000, guid: 4388dc391fb3b4922a3d5b911fe04cf8, type: 2}
+  highlightColor: {r: 0, g: 0, b: 0, a: 0}
+  bulldozeHighlightColor: {r: 0, g: 0, b: 0, a: 0}
+  mainUI: {fileID: 0}
+  loadingScreen: {fileID: 0}
+  uiCanvas: {fileID: 0}
+  activeMouseDownEvents: -1
+  activeMouseOverEvents: -1
+  createStreetSprite: {fileID: 21300000, guid: 2cc40e782192248bc91d674a8054241a, type: 3}
+  createCursorObj: {fileID: 0}
+  developerConsole: {fileID: 798117563}
+  numRandomLines: 50
+--- !u!114 &798117563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8936710921022106518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: beaf4479f24464573a7db14bb9ca5a91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  runButton: {fileID: 0}
+  clearButton: {fileID: 0}
+  closeButton: {fileID: 0}
+  commandPrefab: {fileID: 6479792829035835585, guid: cca32b62ac4164d7eba999e92ca7ae56,
+    type: 3}
+  scrollViewContent: {fileID: 0}
+  commandInput: {fileID: 0}

@@ -28,7 +28,7 @@ namespace Transidious.Serialization {
             "bi5wcm90bxoOQnVpbGRpbmcucHJvdG8aFE5hdHVyYWxGZWF0dXJlLnByb3Rv",
             "GgxTdHJlZXQucHJvdG8aDVRyYW5zaXQucHJvdG8iUAoHTWFwVGlsZRIJCgF4",
             "GAEgASgNEgkKAXkYAiABKA0SFAoMbWFwT2JqZWN0SURzGAMgAygNEhkKEW9y",
-            "cGhhbmVkT2JqZWN0SURzGAQgAygNItsECgNNYXASOAoGdHJpcGxlGAEgASgL",
+            "cGhhbmVkT2JqZWN0SURzGAQgAygNIqwECgNNYXASOAoGdHJpcGxlGAEgASgL",
             "MiguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZXJzaW9uVHJpcGxlEj0K",
             "EWJvdW5kYXJ5UG9zaXRpb25zGAIgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFs",
             "aXphdGlvbi5WZWN0b3IyEgwKBG1pblgYAyABKAISDAoEbWF4WBgEIAEoAhIM",
@@ -40,22 +40,21 @@ namespace Transidious.Serialization {
             "IAMoCzIpLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTmF0dXJhbEZlYXR1",
             "cmUSMgoHc3RyZWV0cxgLIAMoCzIhLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
             "b24uU3RyZWV0EkoKE3N0cmVldEludGVyc2VjdGlvbnMYDCADKAsyLS5UcmFu",
-            "c2lkaW91cy5TZXJpYWxpemF0aW9uLlN0cmVldEludGVyc2VjdGlvbhIXCg9i",
-            "YWNrZ3JvdW5kSW1hZ2UYDSABKAwSFAoMbWluaU1hcEltYWdlGA4gASgMItIC",
-            "CghTYXZlRmlsZRI4CgZ0cmlwbGUYASABKAsyKC5UcmFuc2lkaW91cy5TZXJp",
-            "YWxpemF0aW9uLlZlcnNpb25UcmlwbGUSOwoFdGlsZXMYAiADKAsyLC5UcmFu",
-            "c2lkaW91cy5TZXJpYWxpemF0aW9uLlNhdmVGaWxlLk1hcFRpbGVzEi4KBWxp",
-            "bmVzGAMgAygLMh8uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5MaW5lEi4K",
-            "BXN0b3BzGAQgAygLMh8uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5TdG9w",
-            "EjAKBnJvdXRlcxgFIAMoCzIgLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24u",
-            "Um91dGUaPQoITWFwVGlsZXMSMQoFdGlsZXMYASADKAsyIi5UcmFuc2lkaW91",
-            "cy5TZXJpYWxpemF0aW9uLk1hcFRpbGVCHKoCGVRyYW5zaWRpb3VzLlNlcmlh",
-            "bGl6YXRpb25iBnByb3RvMw=="));
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uLlN0cmVldEludGVyc2VjdGlvbiLSAgoI",
+            "U2F2ZUZpbGUSOAoGdHJpcGxlGAEgASgLMiguVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbi5WZXJzaW9uVHJpcGxlEjsKBXRpbGVzGAIgAygLMiwuVHJhbnNp",
+            "ZGlvdXMuU2VyaWFsaXphdGlvbi5TYXZlRmlsZS5NYXBUaWxlcxIuCgVsaW5l",
+            "cxgDIAMoCzIfLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTGluZRIuCgVz",
+            "dG9wcxgEIAMoCzIfLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RvcBIw",
+            "CgZyb3V0ZXMYBSADKAsyIC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlJv",
+            "dXRlGj0KCE1hcFRpbGVzEjEKBXRpbGVzGAEgAygLMiIuVHJhbnNpZGlvdXMu",
+            "U2VyaWFsaXphdGlvbi5NYXBUaWxlQhyqAhlUcmFuc2lkaW91cy5TZXJpYWxp",
+            "emF0aW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.TransitReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapTile), global::Transidious.Serialization.MapTile.Parser, new[]{ "X", "Y", "MapObjectIDs", "OrphanedObjectIDs" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Map), global::Transidious.Serialization.Map.Parser, new[]{ "Triple", "BoundaryPositions", "MinX", "MaxX", "MinY", "MaxY", "StartingCameraPos", "BoundaryMeshes", "Buildings", "NaturalFeatures", "Streets", "StreetIntersections", "BackgroundImage", "MiniMapImage" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Map), global::Transidious.Serialization.Map.Parser, new[]{ "Triple", "BoundaryPositions", "MinX", "MaxX", "MinY", "MaxY", "StartingCameraPos", "BoundaryMeshes", "Buildings", "NaturalFeatures", "Streets", "StreetIntersections" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile), global::Transidious.Serialization.SaveFile.Parser, new[]{ "Triple", "Tiles", "Lines", "Stops", "Routes" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile.Types.MapTiles), global::Transidious.Serialization.SaveFile.Types.MapTiles.Parser, new[]{ "Tiles" }, null, null, null)})
           }));
     }
@@ -299,8 +298,6 @@ namespace Transidious.Serialization {
       naturalFeatures_ = other.naturalFeatures_.Clone();
       streets_ = other.streets_.Clone();
       streetIntersections_ = other.streetIntersections_.Clone();
-      backgroundImage_ = other.backgroundImage_;
-      miniMapImage_ = other.miniMapImage_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -435,28 +432,6 @@ namespace Transidious.Serialization {
       get { return streetIntersections_; }
     }
 
-    /// <summary>Field number for the "backgroundImage" field.</summary>
-    public const int BackgroundImageFieldNumber = 13;
-    private pb::ByteString backgroundImage_ = pb::ByteString.Empty;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pb::ByteString BackgroundImage {
-      get { return backgroundImage_; }
-      set {
-        backgroundImage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    /// <summary>Field number for the "miniMapImage" field.</summary>
-    public const int MiniMapImageFieldNumber = 14;
-    private pb::ByteString miniMapImage_ = pb::ByteString.Empty;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pb::ByteString MiniMapImage {
-      get { return miniMapImage_; }
-      set {
-        miniMapImage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Map);
@@ -482,8 +457,6 @@ namespace Transidious.Serialization {
       if(!naturalFeatures_.Equals(other.naturalFeatures_)) return false;
       if(!streets_.Equals(other.streets_)) return false;
       if(!streetIntersections_.Equals(other.streetIntersections_)) return false;
-      if (BackgroundImage != other.BackgroundImage) return false;
-      if (MiniMapImage != other.MiniMapImage) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -502,8 +475,6 @@ namespace Transidious.Serialization {
       hash ^= naturalFeatures_.GetHashCode();
       hash ^= streets_.GetHashCode();
       hash ^= streetIntersections_.GetHashCode();
-      if (BackgroundImage.Length != 0) hash ^= BackgroundImage.GetHashCode();
-      if (MiniMapImage.Length != 0) hash ^= MiniMapImage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -547,14 +518,6 @@ namespace Transidious.Serialization {
       naturalFeatures_.WriteTo(output, _repeated_naturalFeatures_codec);
       streets_.WriteTo(output, _repeated_streets_codec);
       streetIntersections_.WriteTo(output, _repeated_streetIntersections_codec);
-      if (BackgroundImage.Length != 0) {
-        output.WriteRawTag(106);
-        output.WriteBytes(BackgroundImage);
-      }
-      if (MiniMapImage.Length != 0) {
-        output.WriteRawTag(114);
-        output.WriteBytes(MiniMapImage);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -587,12 +550,6 @@ namespace Transidious.Serialization {
       size += naturalFeatures_.CalculateSize(_repeated_naturalFeatures_codec);
       size += streets_.CalculateSize(_repeated_streets_codec);
       size += streetIntersections_.CalculateSize(_repeated_streetIntersections_codec);
-      if (BackgroundImage.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeBytesSize(BackgroundImage);
-      }
-      if (MiniMapImage.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeBytesSize(MiniMapImage);
-      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -634,12 +591,6 @@ namespace Transidious.Serialization {
       naturalFeatures_.Add(other.naturalFeatures_);
       streets_.Add(other.streets_);
       streetIntersections_.Add(other.streetIntersections_);
-      if (other.BackgroundImage.Length != 0) {
-        BackgroundImage = other.BackgroundImage;
-      }
-      if (other.MiniMapImage.Length != 0) {
-        MiniMapImage = other.MiniMapImage;
-      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -703,14 +654,6 @@ namespace Transidious.Serialization {
           }
           case 98: {
             streetIntersections_.AddEntriesFrom(input, _repeated_streetIntersections_codec);
-            break;
-          }
-          case 106: {
-            BackgroundImage = input.ReadBytes();
-            break;
-          }
-          case 114: {
-            MiniMapImage = input.ReadBytes();
             break;
           }
         }

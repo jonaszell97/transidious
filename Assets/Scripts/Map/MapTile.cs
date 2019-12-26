@@ -1,6 +1,5 @@
 
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,14 +7,6 @@ namespace Transidious
 {
     public class MapTile : MonoBehaviour
     {
-        [System.Serializable]
-        public struct SerializableMapTile
-        {
-            public int x, y;
-            public int[] mapObjectIDs;
-            public int[] orphanedObjectIDs;
-        }
-
         class ColliderInfo
         {
             internal Rect boundingBox;
@@ -31,7 +22,11 @@ namespace Transidious
         RenderingDistance? currentRenderingDist;
         public HashSet<IMapObject> orphanedObjects;
 
+
+        public Canvas canvas;
         [SerializeField] SpriteRenderer backgroundImage;
+
+        [SerializeField] GameObject[] mapObjectContainers;
 
         Dictionary<string, MultiMesh> meshes;
 
@@ -70,18 +65,21 @@ namespace Transidious
                                  Map.tileSize, Map.tileSize);
 
             var sprite = SpriteManager.GetSprite($"Maps/{map.name}/{x}_{y}");
-            if (sprite != null)
+            if (sprite == null)
             {
-                backgroundImage.sprite = sprite;
-                backgroundImage.transform.position = new Vector3(
-                    x * Map.tileSize + Map.tileSize * .5f,
-                    y * Map.tileSize + Map.tileSize * .5f,
-                    Map.Layer(MapLayer.NatureBackground));
-
-                float spriteSize = backgroundImage.bounds.size.x;
-                backgroundImage.transform.localScale = new Vector3(
-                    Map.tileSize / spriteSize, Map.tileSize / spriteSize, 1f);
+                backgroundImage.color = map.GetDefaultBackgroundColor(MapDisplayMode.Day);
+                sprite = SpriteManager.GetSprite("Sprites/ui_square");
             }
+
+            backgroundImage.sprite = sprite;
+            backgroundImage.transform.position = new Vector3(
+                x * Map.tileSize + Map.tileSize * .5f,
+                y * Map.tileSize + Map.tileSize * .5f,
+                Map.Layer(MapLayer.NatureBackground));
+
+            float spriteSize = backgroundImage.bounds.size.x;
+            backgroundImage.transform.localScale = new Vector3(
+                Map.tileSize / spriteSize, Map.tileSize / spriteSize, 1f);
 
             this.gameObject.SetActive(false);
         }
@@ -115,11 +113,6 @@ namespace Transidious
                                 Rect boundingBox,
                                 bool shouldHighlight = false)
         {
-            // var pathCount = polygonCollider.pathCount;
-            // polygonCollider.pathCount++;
-            // polygonCollider.SetPath(pathCount, boundingBox.Points());
-            // polygonCollider.SetPath(pathCount, points);
-
             colliderInfo.Add(new ColliderInfo
             {
                 boundingBox = boundingBox,
@@ -500,49 +493,6 @@ namespace Transidious
                 foreach (var id in tile.OrphanedObjectIDs)
                 {
                     var obj = map.GetMapObject((int)id);
-                    if (obj == null)
-                    {
-                        Debug.LogWarning("missing map object with ID " + id);
-                        continue;
-                    }
-
-                    this.orphanedObjects.Add(obj);
-                }
-            }
-        }
-
-        public SerializableMapTile Serialize()
-        {
-            return new SerializableMapTile
-            {
-                x = x,
-                y = y,
-                mapObjectIDs = mapObjects.Select(obj => obj.Id).ToArray(),
-                orphanedObjectIDs = orphanedObjects?.Select(obj => obj.Id).ToArray(),
-            };
-        }
-
-        public void Deserialize(Map map, SerializableMapTile tile)
-        {
-            foreach (var id in tile.mapObjectIDs)
-            {
-                var obj = map.GetMapObject(id);
-                if (obj == null)
-                {
-                    Debug.LogWarning("missing map object with ID " + id);
-                    continue;
-                }
-
-                this.mapObjects.Add(obj);
-            }
-
-            if (tile.orphanedObjectIDs != null)
-            {
-                this.orphanedObjects = new HashSet<IMapObject>();
-
-                foreach (var id in tile.orphanedObjectIDs)
-                {
-                    var obj = map.GetMapObject(id);
                     if (obj == null)
                     {
                         Debug.LogWarning("missing map object with ID " + id);

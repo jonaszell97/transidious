@@ -6,17 +6,6 @@ namespace Transidious
 {
     public class Building : StaticMapObject
     {
-        [System.Serializable]
-        public struct SerializableBuilding
-        {
-            public SerializableMapObject mapObject;
-            public SerializableMesh2D mesh;
-            public int streetID;
-            public string number;
-            public Type type;
-            public SerializableVector2 position;
-        }
-
         public enum Type
         {
             Residential,
@@ -132,7 +121,7 @@ namespace Transidious
 #if DEBUG
             if (GameController.instance.ImportingMap)
             {
-                return Color.black;
+                // return Color.black;
             }
 #endif
 
@@ -148,7 +137,7 @@ namespace Transidious
 
         public void UpdateMesh(Map map)
         {
-            if (outlinePositions == null || outlinePositions.Length == 0)
+            if (outlinePositions == null || outlinePositions.Length == 0 || outlinePositions[0].Length == 0)
             {
                 return;
             }
@@ -213,42 +202,17 @@ namespace Transidious
             };
         }
 
-        public new SerializableBuilding Serialize()
-        {
-            return new SerializableBuilding
-            {
-                mapObject = base.Serialize(),
-                mesh = new SerializableMesh2D(mesh),
-                streetID = street?.id ?? 0,
-                number = number,
-                type = type,
-                position = new SerializableVector2(centroid),
-            };
-        }
-
         public static Building Deserialize(Serialization.Building b, Map map)
         {
-            var building = map.CreateBuilding((Type)b.Type, b.Mesh.Deserialize(), b.MapObject.Name, "",
-                                              b.MapObject.Area, b.MapObject.Centroid.Deserialize(),
-                                              (int)b.MapObject.Id);
+            var building = map.CreateBuilding(
+                (Type)b.Type,
+                b.MapObject.OutlinePositions.First().OutlinePositions.Select(v => v.Deserialize()),
+                b.MapObject.Name, "",
+                b.MapObject.Area, b.MapObject.Centroid.Deserialize(),
+                (int)b.MapObject.Id);
 
             building.streetID = (int)b.StreetID;
             building.Deserialize(b.MapObject);
-
-            return building;
-        }
-
-        public static Building Deserialize(Map map, SerializableBuilding b)
-        {
-            Mesh mesh = b.mesh.GetMesh();
-
-            var building = map.CreateBuilding(b.type, mesh, b.mapObject.name, b.number,
-                                              b.mapObject.area, b.mapObject.centroid,
-                                              b.mapObject.id);
-
-            building.streetID = b.streetID;
-            building.number = b.number;
-            building.Deserialize(b.mapObject);
 
             return building;
         }

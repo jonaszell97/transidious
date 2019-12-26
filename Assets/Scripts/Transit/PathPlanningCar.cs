@@ -234,6 +234,9 @@ namespace Transidious.PathPlanning
         /// Factor that waiting time is multiplied with for scoring.
         public float waitingTimeFactor = 2.0f;
 
+        /// Factor that driving time is multiplied with for scoring.
+        public float carTimeFactor = 2.0f;
+
         /// Number of minutes that a change is penalized with.
         public float changingPenalty = 10.0f;
     }
@@ -345,7 +348,7 @@ namespace Transidious.PathPlanning
                 else if (step is DriveStep)
                 {
                     var driveStep = step as DriveStep;
-                    s += "drive";
+                    s += "drive on " + driveStep.driveSegment.segment.name;
                 }
             }
 
@@ -471,6 +474,9 @@ namespace Transidious.PathPlanning
         // For each node, the duration of getting from the start node to that node.
         Dictionary<IStop, float> durationMap;
 
+        // For each node, the waiting time at that node.
+        Dictionary<IStop, float> waitingTimeMap;
+
         // For each node, the cost of getting from the start node to that node.
         Dictionary<IStop, float> gScore;
 
@@ -486,6 +492,7 @@ namespace Transidious.PathPlanning
             this.cameFrom = new Dictionary<IStop, IStop>();
             this.cameFromRoute = new Dictionary<IStop, IRoute>();
             this.durationMap = new Dictionary<IStop, float>();
+            this.waitingTimeMap = new Dictionary<IStop, float>();
             this.gScore = new Dictionary<IStop, float>();
             this.fScore = new Dictionary<IStop, float>();
         }
@@ -528,8 +535,8 @@ namespace Transidious.PathPlanning
 
         PathPlanningResult ReconstructPath()
         {
-            IStop current = options.goal;
-            List<IStop> stops = new List<IStop> { current };
+            var current = options.goal;
+            var stops = new List<IStop> { current };
 
             while (cameFrom.TryGetValue(current, out IStop prev))
             {
@@ -537,11 +544,13 @@ namespace Transidious.PathPlanning
                 current = prev;
             }
 
-            DateTime time = options.time;
+            var time = options.time;
             Line currentLine = null;
-            IStop previous = stops[stops.Count - 1];
-            List<Tuple<IRoute, bool>> routes = new List<Tuple<IRoute, bool>>();
-            List<PathStep> steps = new List<PathStep>();
+            var previous = stops[stops.Count - 1];
+            var routes = new List<Tuple<IRoute, bool>>();
+            var steps = new List<PathStep>();
+            var cost = 0f;
+            var firstTransitStop = true;
 
             for (int i = stops.Count - 2; i >= 0; --i)
             {
@@ -559,8 +568,16 @@ namespace Transidious.PathPlanning
                     }
                 }
 
+                var preferenceMultiplier = 1f;
                 if (stop is Stop)
                 {
+                    if (!firstTransitStop)
+                    {
+                        cost += options.changingPenalty;
+                    }
+
+                    firstTransitStop = false;
+
                     var transitRoute = route as Route;
                     if (!currentLine)
                     {
@@ -572,8 +589,13 @@ namespace Transidious.PathPlanning
                         routes.Clear();
                     }
                 }
+                else
+                {
+                    preferenceMultiplier = options.carTimeFactor;
+                }
 
                 time = time.AddMinutes(route.TravelTime);
+                cost += route.TravelTime * options.travelTimeFactor * preferenceMultiplier;
 
                 Debug.Assert(route != null, "No route found!");
                 routes.Add(new Tuple<IRoute, bool>(route, backward));
@@ -583,9 +605,11 @@ namespace Transidious.PathPlanning
 
             if (routes.Count != 0)
             {
-                if (routes.First().Item1 is Route)
+                var route = routes.First().Item1 as Route;
+                if (route != null)
                 {
-                    steps.Add(new PublicTransitStep(time, currentLine, routes.Select(r => r.Item1 as Route).ToArray()));
+                    //steps.Add(new PublicTransitStep(time, currentLine, routes.Select(r => r.Item1 as Route).ToArray()));
+                    //cost += route.TravelTime * options.travelTimeFactor;
                 }
                 else
                 {
@@ -596,12 +620,16 @@ namespace Transidious.PathPlanning
                             segment = r.Item1 as StreetSegment,
                             backward = r.Item2,
                         }));
+
+                        cost += r.Item1.TravelTime * options.travelTimeFactor * options.carTimeFactor;
                     }
                 }
             }
 
+            cost += GetScore(waitingTimeMap, options.goal) * options.waitingTimeFactor;
+
             return new PathPlanningResult(
-                GetScore(gScore, options.goal),
+                cost,
                 GetScore(durationMap, options.goal),
                 options.time,
                 time,
@@ -619,6 +647,7 @@ namespace Transidious.PathPlanning
             // The cost of going from start to start is zero.
             gScore[start] = 0.0f;
             durationMap[start] = 0.0f;
+            waitingTimeMap[start] = 0.0f;
 
             // For the first node, that value is completely heuristic.
             fScore[start] = start.EstimatedDistance(goal);
@@ -666,6 +695,8 @@ namespace Transidious.PathPlanning
                     float duration = GetScore(durationMap, current)
                        + route.TravelTime;
 
+                    float waitingTime = GetScore(waitingTimeMap, current);
+
                     // If we need to change, calculate a penalty.
                     if (cameFromRoute.TryGetValue(current, out IRoute prevRoute))
                     {
@@ -676,23 +707,15 @@ namespace Transidious.PathPlanning
                     }
 
                     // Find the next departure of this line at the station.
-                    if (options.time != null && (prevRoute == null || route.AssociatedID != prevRoute.AssociatedID))
+                    if ((prevRoute == null || route.AssociatedID != prevRoute.AssociatedID))
                     {
                         DateTime arrival = options.time.AddMinutes(GetScore(durationMap, current));
                         var nextDep = route.NextDeparture(arrival);
-                        var waitingTime = (nextDep - arrival).Minutes;
+                        var wait = (nextDep - arrival).Minutes;
 
-                        /*auto nextDepartureOpt = route->nextDeparture(arrival);
-                        if (!nextDepartureOpt)
-                        {
-                            continue;
-                        }
-
-                        Time & nextDepartureTime = nextDepartureOpt.getValue();
-                        unsigned long long waitingTime = (nextDepartureTime - arrival).value;*/
-
-                        tentative_gScore += waitingTime * options.waitingTimeFactor;
-                        duration += waitingTime;
+                        tentative_gScore += wait * options.waitingTimeFactor;
+                        duration += wait;
+                        waitingTime += wait;
                     }
 
                     if (!openSet.Add(neighbor))
@@ -709,6 +732,8 @@ namespace Transidious.PathPlanning
 
                     gScore[neighbor] = tentative_gScore;
                     durationMap[neighbor] = duration;
+                    waitingTimeMap[neighbor] = waitingTime;
+
                     fScore[neighbor] = gScore[neighbor]
                        + neighbor.EstimatedDistance(goal, route);
                 }
@@ -857,10 +882,10 @@ namespace Transidious.PathPlanning
             return result;
         }
 
-        public PathPlanningResult FindFastestTransitRoute(Map map, Vector2 from, Vector2 to)
+        public PathPlanningResult FindFastestTransitRoute(Map map, Vector2 from, Vector2 to, int tries = 3)
         {
             var nearbyStopsFrom = map.GetMapObjectsInRadius<Stop>(from, options.maxWalkingDistance);
-            var nearbyStopsTo = map.GetMapObjectsInRadius<Stop>(from, options.maxWalkingDistance);
+            var nearbyStopsTo = map.GetMapObjectsInRadius<Stop>(to, options.maxWalkingDistance);
 
             foreach (var fromStop in nearbyStopsFrom)
             {
@@ -871,11 +896,8 @@ namespace Transidious.PathPlanning
                         continue;
                     }
 
-                    var options = new PathPlanningOptions
-                    {
-                        start = fromStop,
-                        goal = toStop,
-                    };
+                    options.start = fromStop;
+                    options.goal = toStop;
 
                     var planner = new PathPlanner(options);
                     var path = planner.GetPath();
@@ -888,6 +910,12 @@ namespace Transidious.PathPlanning
                         return path;
                     }
                 }
+            }
+
+            if (tries != 0)
+            {
+                options.maxWalkingDistance *= 2;
+                return FindFastestTransitRoute(map, from, to, tries - 1);
             }
 
             return CreateWalk(from, to);
@@ -908,7 +936,7 @@ namespace Transidious.PathPlanning
             }
 
             var carResult = FindClosestDrive(map, from, to);
-            if (carResult.duration < transitResult.duration)
+            if (carResult.cost < transitResult.cost)
             {
                 return carResult;
             }

@@ -122,13 +122,6 @@ namespace Transidious
 
     public class StreetIntersection : StaticMapObject, IStop
     {
-        [System.Serializable]
-        public struct SerializedStreetIntersection
-        {
-            public SerializableMapObject mapObject;
-            public SerializableVector2 position;
-        }
-
         /// Position of the intersection.
         public Vector3 position;
 
@@ -192,24 +185,6 @@ namespace Transidious
             var obj = map.CreateIntersection(inter.Position.Deserialize(), (int)inter.MapObject.Id);
             obj.Deserialize(inter.MapObject);
 
-            return obj;
-        }
-
-        public new SerializedStreetIntersection Serialize()
-        {
-            return new SerializedStreetIntersection
-            {
-                mapObject = base.Serialize(),
-                position = new SerializableVector2(position),
-            };
-        }
-
-        public static StreetIntersection Deserialize(Map map, SerializedStreetIntersection inter)
-        {
-            var obj = map.CreateIntersection(inter.position.ToVector(),
-                                             inter.mapObject.id);
-
-            obj.Deserialize(inter.mapObject);
             return obj;
         }
 

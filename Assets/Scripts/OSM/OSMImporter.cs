@@ -380,6 +380,8 @@ namespace Transidious
         public Map map;
         public ImportType importType = ImportType.Complete;
 
+        public MapExporter exporter;
+
         public int thresholdTime = 1000;
         public bool loadGame = true;
         public bool importOnly = false;
@@ -425,6 +427,8 @@ namespace Transidious
             map = mapObj.GetComponent<Map>();
             map.name = this.area.ToString();
             map.input = GameController.instance.input;
+
+            this.exporter = new MapExporter(map, 8192);
 
             await this.ImportArea();
 
@@ -486,17 +490,12 @@ namespace Transidious
             //yield return LoadTransitLines();
             Debug.Log("loaded transit lines");
 
-            var backgroundTex = ScreenShotMaker.Instance.MakeScreenshotSingle(map);
-            var miniMapTex = ScreenShotMaker.Instance.CreateMiniMap(map);
+            SaveManager.SaveMapLayout(map);
+            SaveManager.SaveMapData(map, map.name);
 
-            SaveManager.SaveMapLayout(map, backgroundTex.EncodeToPNG(), miniMapTex.EncodeToPNG());
-
-            Destroy(backgroundTex);
-            Destroy(miniMapTex);
-            Resources.UnloadUnusedAssets();
-
-            SaveManager.SaveMapData(map);
-            MapExporter.ExportMap(map, map.name);
+            exporter.ExportMap(map.name);
+            exporter.ExportMinimap(map.name);
+            // exporter.ExportLOD(map.name);
 
             Debug.Log("Done!");
             done = true;
@@ -1284,7 +1283,7 @@ namespace Transidious
         {
             foreach (var member in rel.Members)
             {
-                if (!String.IsNullOrEmpty(outer) && member.Role == outer)
+                if (!string.IsNullOrEmpty(outer) && member.Role == outer)
                 {
                     var way = FindWay(member.Id);
                     if (way == null)
@@ -1301,7 +1300,7 @@ namespace Transidious
 
                     pslg.AddVertexLoop(wayPositions);
                 }
-                else if (!String.IsNullOrEmpty(inner) && member.Role == inner)
+                else if (!string.IsNullOrEmpty(inner) && member.Role == inner)
                 {
                     var way = FindWay(member.Id);
                     if (way == null)
@@ -1365,12 +1364,15 @@ namespace Transidious
                     Debug.Log("loading natural feature '" + featureName + "'...");
 
                     Mesh mesh;
+                    PSLG pslg = null;
+                    Vector3[] wayPositionsArr = null;
+
                     if (rel != null)
                     {
-                        var pslg = new PSLG();
+                        pslg = new PSLG();
                         LoadPolygon(pslg, rel);
 
-                        mesh = TriangleAPI.CreateMesh(pslg, importType == ImportType.Fast);
+                        mesh = null; // TriangleAPI.CreateMesh(pslg, importType == ImportType.Fast);
                         outlinePositions = pslg?.Outlines;
                         area = pslg?.Area ?? 0f;
                         centroid = pslg?.Centroid ?? Vector2.zero;
@@ -1383,9 +1385,9 @@ namespace Transidious
                             continue;
                         }
 
-                        var wayPositionsArr = wayPositions.ToArray();
-                        mesh = MeshBuilder.PointsToMeshFast(wayPositionsArr);
-                        MeshBuilder.FixWindingOrder(mesh);
+                        wayPositionsArr = wayPositions.ToArray();
+                        mesh = null; // MeshBuilder.PointsToMeshFast(wayPositionsArr);
+                        // MeshBuilder.FixWindingOrder(mesh);
 
                         outlinePositions = new Vector2[][]
                         {
@@ -1404,13 +1406,26 @@ namespace Transidious
 
                     totalVerts += mesh?.triangles.Length ?? 0;
 
-                    var f = map.CreateFeature(featureName, feature.Item2, mesh, area, centroid);
+                    var f = map.CreateFeature(featureName, feature.Item2, outlinePositions[0], area, centroid);
                     if (outlinePositions != null)
                     {
                         outlinePositions = outlinePositions.Select(
                             arr => MeshBuilder.RemoveDetailByDistance(arr, 1f).ToArray()).ToArray();
 
                         f.outlinePositions = outlinePositions;
+                    }
+
+                    if (pslg != null)
+                    {
+                        exporter.RegisterMesh(f, pslg,
+                            (int)Map.Layer(MapLayer.NatureBackground),
+                            f.GetColor());
+                    }
+                    else if (wayPositionsArr != null)
+                    {
+                        exporter.RegisterMesh(f, wayPositionsArr,
+                            (int)Map.Layer(MapLayer.Buildings),
+                            f.GetColor());
                     }
                 }
                 catch (Exception e)
@@ -1448,7 +1463,7 @@ namespace Transidious
                                                         2 * StreetSegment.laneWidth * 0.3f,
                                                         10);
 
-                map.CreateFeature(name, NaturalFeature.Type.Footpath, mesh, 0f, Vector2.zero);
+                map.CreateFeature(name, NaturalFeature.Type.Footpath, null, 0f, Vector2.zero);
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
@@ -1907,15 +1922,23 @@ namespace Transidious
                 //Mesh mesh = TriangleAPI.CreateMesh(building.pslg, importType == ImportType.Fast);
                 //totalVerts += mesh?.triangles.Length ?? 0;
 
-                Mesh mesh = GetBuildingMesh(building, centroid);
+                var b = map.CreateBuilding(type, outlinePositions[0],
+                                           GetBuildingName(building, area),
+                                           "", area, centroid);
 
-                var b = map.CreateBuilding(type, mesh, GetBuildingName(building, area), "", area, centroid);
                 if (outlinePositions != null)
                 {
                     outlinePositions = outlinePositions.Select(
                         arr => MeshBuilder.RemoveDetailByDistance(arr, 1f).ToArray()).ToArray();
 
                     b.outlinePositions = outlinePositions;
+                }
+
+                if (building.pslg != null)
+                {
+                    exporter.RegisterMesh(b, building.pslg,
+                            (int)Map.Layer(MapLayer.Buildings),
+                            b.GetColor());
                 }
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)

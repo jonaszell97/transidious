@@ -130,7 +130,7 @@ namespace Transidious
          * Settings buttons
          */
         public Button consoleButton;
-        public DeveloperConsole developerConsole;
+        public GameObject developerConsole;
 
         /**
          * Scale Bar
@@ -208,23 +208,24 @@ namespace Transidious
             // Console
             this.consoleButton.onClick.AddListener(() =>
             {
-                this.developerConsole.Toggle();
+                game.developerConsole.Toggle();
             });
+        }
+
+        void Awake()
+        {
+            state = State.Default;
+            UITooltip.instance = tooltipInstance;
+            UIInstruction.instance = instructionPanel;
         }
 
         void Start()
         {
-            state = State.Default;
-
             RegisterUICallbacks();
             UpdateDate(game.sim.GameTime);
             UpdateFinances();
 
             transitUI.Initialize();
-
-            UITooltip.instance = tooltipInstance;
-            UIInstruction.instance = instructionPanel;
-            DeveloperConsole.instance = developerConsole;
         }
 
         public void ShowOverlay()

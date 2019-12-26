@@ -330,6 +330,23 @@ namespace Transidious
                         nextIntersection = nextSegment.startIntersection;
                     }
 
+#if DEBUG
+                    var _ids = nextIntersection.intersectingStreets.Select(s => s.id);
+                    if (!(_ids.Contains(segment.Id) && _ids.Contains(nextSegment.Id)))
+                    {
+                        gameObject.transform.position = nextIntersection.position;
+                        gameObject.DrawCircle(5f, 5f, Color.red);
+
+                        gameObject.transform.position = segment.positions[segment.positions.Count / 2];
+                        gameObject.DrawCircle(5f, 5f, Color.blue);
+
+                        gameObject.transform.position = nextSegment.positions[segment.positions.Count / 2];
+                        gameObject.DrawCircle(5f, 5f, Color.green);
+
+                        Debug.LogWarning(nextIntersection.intersectingStreets.Count);
+                    }
+#endif
+
                     var intersectionPath = GetPath(nextIntersection, segment,
                                                    nextSegment, prevLane);
 

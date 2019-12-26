@@ -23,8 +23,6 @@ namespace Transidious
             this.onSelect = new UnityEvent();
 
             var rc = GetComponent<RectTransform>();
-            Debug.Log(rc.localPosition.z);
-            Debug.Log(rc.position.z);
             rc.localScale = new Vector3(1f, 1f, 1f);
             rc.localPosition = new Vector3(rc.localPosition.x, rc.localPosition.y, 0f);
             

@@ -32,9 +32,6 @@ message Map {
     repeated NaturalFeature naturalFeatures = 10;
     repeated Street streets = 11;
     repeated StreetIntersection streetIntersections = 12;
-
-    bytes backgroundImage = 13;
-    bytes miniMapImage = 14;
 }
 
 message SaveFile {

@@ -1,81 +1,58 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UI.Extensions;
 
 namespace Transidious
 {
     public class UIMiniMap : MonoBehaviour
     {
-        public static Texture2D mapTexture;
+        public static Sprite mapSprite;
+        [SerializeField] UILineRenderer lineRenderer;
 
         void Start()
         {
-            if (mapTexture == null)
+            if (mapSprite == null)
             {
                 Debug.LogWarning("no mini map texture loaded");
                 return;
             }
 
-            Debug.Log(mapTexture.GetPixel(mapTexture.width / 2, mapTexture.height / 2));
-
             var img = GetComponent<Image>();
-            img.sprite = Sprite.Create(mapTexture, new Rect(0, 0, mapTexture.width, mapTexture.height), new Vector2(.5f, .5f));
+            img.sprite = mapSprite;
             img.preserveAspect = true;
+            lineRenderer.gameObject.SetActive(false);
         }
 
-        public void DrawLine(IReadOnlyList<Vector3> worldPath, Color c, float width = 5f)
+        public void DrawLine(IReadOnlyList<Vector3> worldPath, Color c, float lineWidth = .4f)
         {
-            var renderer = gameObject.GetComponent<LineRenderer>();
-            if (renderer == null)
-            {
-                renderer = gameObject.AddComponent<LineRenderer>();
-            }
-
-            renderer.positionCount = worldPath.Count;
-
-            var cam = Camera.main;
             var rt = GetComponent<RectTransform>();
-            var worldCorners = new Vector3[4];
-            rt.GetWorldCorners(worldCorners);
-
+            var rect = rt.rect;
             var map = GameController.instance.loadedMap;
-            var screenMin = cam.WorldToScreenPoint(worldCorners[0]);
-            var screenMax = cam.WorldToScreenPoint(worldCorners[2]);
-            var screenWidth = screenMax.x - screenMin.x;
-            var screenHeight = screenMax.y - screenMin.y;
-            
-            var aspect = (float)mapTexture.width / (float)mapTexture.height;
-            if (aspect > 1f)
-            {
-                var newHeight = ((float)mapTexture.height / (float)mapTexture.width) * screenWidth;
-                screenMin.y += (screenHeight - screenHeight) / 2;
-                screenHeight = newHeight;
-            }
-            else if (aspect < 1f)
-            {
-                var newWidth = aspect * screenHeight;
-                screenMin.x += (screenWidth - newWidth) / 2;
-                screenWidth = newWidth;
-            }
 
-            var screenPositions = new Vector3[worldPath.Count];
+            var width = rect.width;
+            var height = rect.height;
+
+            var minX = 0f;
+            var minY = (height - width) * .5f;
+
+            height -= (height - width);
+
+            var screenPositions = new Vector2[worldPath.Count];
             for (var i = 0; i < worldPath.Count; ++i)
             {
                 var pt = worldPath[i];
                 screenPositions[i] = new Vector3(
-                    screenMin.x + ((pt.x - map.minX) / map.width) * screenWidth,
-                    screenMin.y + ((pt.y - map.minY) / map.height) * screenHeight,
-                    0f
+                    minX + (map.minX + pt.x / map.width) * width,
+                    minY + (map.minY + pt.y / map.height) * height
                 );
-
-                screenPositions[i] = cam.ScreenToWorldPoint(screenPositions[i]);
-                screenPositions[i].z = cam.transform.position.z - 30f;
             }
 
-            renderer.SetPositions(screenPositions);
-            renderer.sharedMaterial = GameController.GetUnlitMaterial(c);
-            renderer.startWidth = width;
-            renderer.endWidth = width;
+            lineRenderer.color = c;
+            lineRenderer.LineThickness = lineWidth;
+
+            lineRenderer.gameObject.SetActive(true);
+            lineRenderer.Points = screenPositions;
         }
     }
 }

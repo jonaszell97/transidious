@@ -38,6 +38,8 @@ message Line {
 message Stop {
     MapObject mapObject = 1;
     Vector2 position = 2;
+    repeated uint32 outgoingRouteIDs = 3;
+    repeated uint32 routeIDs = 4;
 }
 
 message Route {

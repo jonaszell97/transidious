@@ -227,7 +227,44 @@ namespace Transidious
             RegisterMapObject(obj, id);
         }
 
-        public void RegisterMapObject(IMapObject obj, IEnumerable<Vector3> positions,
+        public void RegisterMapObject(IMapObject obj,
+                                      IEnumerable<Vector2> positions,
+                                      int id = -1)
+        {
+            if (!isLoadedFromSaveFile && positions != null)
+            {
+                var tiles = new HashSet<MapTile>();
+                foreach (var pos in positions)
+                {
+                    var tile = GetTile(pos);
+                    if (tile != null)
+                    {
+                        tile.mapObjects.Add(obj);
+                        tiles.Add(tile);
+                    }
+                }
+
+                // If the object belongs to a single map tile, parent it.
+                if (tiles.Count == 1)
+                {
+                    // If the object belongs to a single map tile, parent it.
+                    obj.transform?.SetParent(tiles.First().transform);
+                    obj.UniqueTile = tiles.First();
+                }
+                else
+                {
+                    foreach (var tile in tiles)
+                    {
+                        tile.AddOrphanedObject(obj);
+                    }
+                }
+            }
+
+            RegisterMapObject(obj, id);
+        }
+
+        public void RegisterMapObject(IMapObject obj,
+                                      IEnumerable<Vector3> positions,
                                       int id = -1)
         {
             if (!isLoadedFromSaveFile && positions != null)
@@ -426,10 +463,10 @@ namespace Transidious
             pslg = new PSLG(Map.Layer(MapLayer.Boundary));
             pslg.AddOrderedVertices(new Vector3[]
             {
-                new Vector3(minX, minY),
-                new Vector3(minX, maxY),
-                new Vector3(maxX, maxY),
-                new Vector3(maxX, minY)
+                new Vector3(minX - 1000f, minY - 1000f),
+                new Vector3(minX - 1000f, maxY + 1000f),
+                new Vector3(maxX + 1000f, maxY + 1000f),
+                new Vector3(maxX + 1000f, minY - 1000f)
             });
 
             pslg.AddHole(positionList);
@@ -1028,7 +1065,7 @@ namespace Transidious
             }
         }
 
-        Tuple<Stop, Stop> GetRandomStopPair(Stop previousStop = null)
+        Tuple<Stop, Stop, StreetSegment, StreetIntersection> GetRandomStopPair(Tuple<Stop, Stop, StreetSegment, StreetIntersection> previousStop = null)
         {
             // Max 200m distance
             float maxDistance = 200f;
@@ -1036,21 +1073,23 @@ namespace Transidious
             // Min 50m distance
             float minSqrDistance = 2500f;
 
-            Vector2 pt;
+            Vector2? pt = null;
             if (previousStop == null)
             {
                 pt = new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(minY, maxY));
             }
-            else
+            else if (previousStop.Item4.intersectingStreets.Count == 1)
             {
                 var attempts = 0;
+                var loc = previousStop.Item1.location;
+
                 while (true)
                 {
                     pt = new Vector2(
-                        UnityEngine.Random.Range(previousStop.location.x - maxDistance, previousStop.location.x + maxDistance),
-                        UnityEngine.Random.Range(previousStop.location.y - maxDistance, previousStop.location.y + maxDistance));
+                        UnityEngine.Random.Range(loc.x - maxDistance, loc.x + maxDistance),
+                        UnityEngine.Random.Range(loc.y - maxDistance, loc.y + maxDistance));
 
-                    if (IsPointOnMap(pt) && (pt - previousStop.location).sqrMagnitude >= minSqrDistance)
+                    if (IsPointOnMap(pt.Value) && (pt.Value - loc).sqrMagnitude >= minSqrDistance)
                     {
                         break;
                     }
@@ -1065,33 +1104,93 @@ namespace Transidious
                 }
             }
 
-            var closestPt = GetClosestStreet(pt);
-            var street = closestPt.seg;
+            StreetSegment street;
+            StreetIntersection nextIntersection;
+            Stop fwd, bwd;
 
-            if (street.OneWay)
+            if (pt.HasValue)
             {
-                return GetRandomStopPair(previousStop);
+                var closestPt = GetClosestStreet(pt.Value);
+                if (closestPt.seg.OneWay)
+                {
+                    return GetRandomStopPair(previousStop);
+                }
+
+                street = closestPt.seg;
+                nextIntersection = closestPt.seg.endIntersection;
+
+                {
+                    var positionsFwd = GameController.instance.sim.trafficSim.GetPath(
+                        street, street.RightmostLane);
+
+                    var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsFwd);
+                    fwd = GetOrCreateStop(closestPt.seg.street.name, newPtPos.Item1);
+                }
+                {
+                    var positionsBwd = GameController.instance.sim.trafficSim.GetPath(
+                        street, street.LeftmostLane);
+
+                    var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsBwd);
+                    bwd = GetOrCreateStop(closestPt.seg.street.name, newPtPos.Item1);
+                }
+            }
+            else {
+                var rnd = UnityEngine.Random.Range(0, previousStop.Item4.intersectingStreets.Count - 1);
+                var i = 0;
+                street = null;
+                
+                foreach (var s in previousStop.Item4.intersectingStreets)
+                {
+                    if (s == previousStop.Item3)
+                    {
+                        continue;
+                    }
+
+                    if (i++ == rnd)
+                    {
+                        street = s;
+                        break;
+                    }
+                }
+
+                var backward = false;
+                if (street.endIntersection == previousStop.Item4)
+                {
+                    backward = true;
+                    nextIntersection = street.startIntersection;
+                }
+                else
+                {
+                    nextIntersection = street.endIntersection;
+                }
+
+                Vector2 randomPt = street.RandomPoint;
+                var dist = (previousStop.Item1.location - randomPt).sqrMagnitude;
+
+                if (street.OneWay || dist < minSqrDistance)
+                {
+                    return GetRandomStopPair(
+                        Tuple.Create(previousStop.Item1, previousStop.Item2,
+                                     street, nextIntersection));
+                }
+
+                {
+                    var positionsFwd = GameController.instance.sim.trafficSim.GetPath(
+                        street, backward ? street.LeftmostLane : street.RightmostLane);
+
+                    var newPtPos = StreetSegment.GetClosestPointAndPosition(randomPt, positionsFwd);
+                    fwd = GetOrCreateStop(street.name, newPtPos.Item1);
+                }
+                {
+                    var positionsBwd = GameController.instance.sim.trafficSim.GetPath(
+                        street, backward ? street.RightmostLane : street.LeftmostLane);
+
+                    var newPtPos = StreetSegment.GetClosestPointAndPosition(randomPt, positionsBwd);
+                    bwd = GetOrCreateStop(street.name, newPtPos.Item1);
+                }
             }
 
-            Stop fwd;
-            {
-                var positionsFwd = GameController.instance.sim.trafficSim.GetPath(
-                    street, street.RightmostLane);
-
-                var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsFwd);
-                fwd = GetOrCreateStop(closestPt.seg.street.name, newPtPos.Item1);
-            }
-
-            Stop bwd;
-            {
-                var positionsBwd = GameController.instance.sim.trafficSim.GetPath(
-                    street, street.LeftmostLane);
-
-                var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsBwd);
-                bwd = GetOrCreateStop(closestPt.seg.street.name, newPtPos.Item1);
-            }
-
-            return Tuple.Create(fwd, bwd);
+            return Tuple.Create(fwd, bwd, street, nextIntersection);
         }
 
         Stop GetRandomStop(HashSet<StreetSegment> usedSegments, Stop previousStop = null)
@@ -1158,14 +1257,14 @@ namespace Transidious
         {
             var builder = CreateLine(type, name ?? DefaultLineName(type), Utility.RandomColor);
             Stop firstStop = null;
-            Stop previousStop = null;
+            Tuple<Stop, Stop, StreetSegment, StreetIntersection> previousStop = null;
             
             var bwdStops = new List<Stop>();
             for (var i = 0; i < stops; ++i)
             {
                 var nextStops = GetRandomStopPair(previousStop);
                 bwdStops.Add(nextStops.Item2);
-                previousStop = nextStops.Item1;
+                previousStop = nextStops;
 
                 builder.AddStop(nextStops.Item1, true, false, null, type == TransitType.Bus);
 
@@ -1340,7 +1439,7 @@ namespace Transidious
         }
 
         public NaturalFeature CreateFeature(string name, NaturalFeature.Type type,
-                                            Mesh mesh, float area,
+                                            IEnumerable<Vector2> outline, float area,
                                             Vector2 centroid, int id = -1)
         {
             id = id == -1 ? lastAssignedMapObjectID++ : id;
@@ -1354,14 +1453,15 @@ namespace Transidious
             }
 
             var nf = new NaturalFeature();
-            nf.Initialize(this, currentName, type, mesh, area, centroid, id);
-            RegisterMapObject(nf, mesh?.vertices, id);
+            nf.Initialize(this, currentName, type, null, area, centroid, id);
+            RegisterMapObject(nf, outline, id);
 
             naturalFeatures.Add(nf);
             return nf;
         }
 
-        public Building CreateBuilding(Building.Type type, Mesh mesh,
+        public Building CreateBuilding(Building.Type type,
+                                       IEnumerable<Vector2> outline,
                                        string name, string numberStr,
                                        float area, Vector2 centroid,
                                        int id = -1)
@@ -1377,10 +1477,10 @@ namespace Transidious
             }
 
             var building = new Building();
-            building.Initialize(this, type, null, numberStr, mesh,
+            building.Initialize(this, type, null, numberStr, null,
                                 area, currentName, centroid, id);
 
-            RegisterMapObject(building, mesh?.vertices, id);
+            RegisterMapObject(building, outline, id);
 
             buildings.Add(building);
             if (!buildingsByType.TryGetValue(type, out List<Building> buildingList))
@@ -1495,16 +1595,6 @@ namespace Transidious
                 return;
             }
 
-            if (input.renderingDistance >= RenderingDistance.Far)
-            {
-                foreach (var tile in AllTiles)
-                {
-                    tile.Hide();
-                }
-
-                return;
-            }
-
 #if DEBUG
             if (Game.ImportingMap)
             {
@@ -1593,6 +1683,24 @@ namespace Transidious
             prevCameraRect = cameraRect;
         }
 
+        public void ShowAllTiles()
+        {
+            foreach (var tile in AllTiles)
+            {
+                tile.Show(RenderingDistance.Near);
+
+                if (tile.orphanedObjects == null)
+                {
+                    continue;
+                }
+
+                foreach (var obj in tile.orphanedObjects)
+                {
+                    obj.Show(RenderingDistance.Near);
+                }
+            }
+        }
+
         void UpdateStreetNameScale(RenderingDistance dist)
         {
             if (tiles == null)
@@ -1644,30 +1752,23 @@ namespace Transidious
 
         public void UpdateScale()
         {
-            foreach (var stop in transitStops)
+            switch (input.renderingDistance)
             {
-                stop.UpdateScale();
-            }
+                case RenderingDistance.Near:
+                case RenderingDistance.Far:
+                    foreach (var tile in ActiveTiles)
+                    {
+                        tile.canvas.gameObject.SetActive(true);
+                    }
 
-            foreach (var seg in streetSegments)
-            {
-                seg.UpdateScale(input.renderingDistance);
-            }
+                    break;
+                default:
+                    foreach (var tile in ActiveTiles)
+                    {
+                        tile.canvas.gameObject.SetActive(false);
+                    }
 
-            var dist = input.renderingDistance;
-            switch (dist)
-            {
-            case RenderingDistance.Near:
-                UpdateVisibleTiles();
-                HideBackgroundSprite();
-                break;
-            case RenderingDistance.VeryFar:
-            case RenderingDistance.Farthest:
-            case RenderingDistance.Far:
-                ShowBackgroundSprite();
-                prevCameraRect = null;
-
-                break;
+                    break;
             }
         }
 

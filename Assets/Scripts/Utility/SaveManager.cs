@@ -1,7 +1,6 @@
 ﻿using Google.Protobuf;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -69,33 +68,7 @@ namespace Transidious
 
     public class SaveManager
     {
-        public static readonly VersionTriple SaveFormatVersion = new VersionTriple(0, 0, 1);
-
-        [Serializable]
-        public struct SerializedMap
-        {
-            public VersionTriple saveFormatVersion;
-            public float maxTileSize;
-            public SerializableVector2[] boundaryPositions;
-            public float minX, maxX, minY, maxY;
-            public SerializableVector3 cameraStartingPos;
-            public SerializableMesh2D[] boundaryMeshes;
-            public Building.SerializableBuilding[] buildings;
-            public Street.SerializedStreet[] streets;
-            public StreetIntersection.SerializedStreetIntersection[] streetIntersections;
-            public NaturalFeature.SerializedFeature[] naturalFeatures;
-            public byte[] backgroundImage;
-        }
-
-        [Serializable]
-        public struct SaveFile
-        {
-            public VersionTriple saveFormatVersion;
-            public MapTile.SerializableMapTile[][] tiles;
-            public Route.SerializedRoute[] transitRoutes;
-            public Stop.SerializedStop[] transitStops;
-        }
-
+        public static readonly VersionTriple SaveFormatVersion = new VersionTriple(0, 0, 2);
         public static Map loadedMap;
 
 #if UNITY_EDITOR
@@ -104,7 +77,7 @@ namespace Transidious
         public static readonly int thresholdTime = 30;
 #endif
 
-        static Serialization.Map GetProtobufMap(Map map, byte[] backgroundImage, byte[] miniMapImage)
+        static Serialization.Map GetProtobufMap(Map map)
         {
             var result = new Serialization.Map
             {
@@ -114,8 +87,6 @@ namespace Transidious
                 MinY = map.minY,
                 MaxY = map.maxY,
                 StartingCameraPos = map.startingCameraPos.ToProtobuf(),
-                BackgroundImage = Google.Protobuf.ByteString.CopyFrom(backgroundImage),
-                MiniMapImage = Google.Protobuf.ByteString.CopyFrom(miniMapImage),
             };
 
             result.Buildings.AddRange(map.buildings.Select(b => b.ToProtobuf()));
@@ -127,41 +98,6 @@ namespace Transidious
             result.BoundaryMeshes.Add(map.boundaryBackgroundObj?.GetComponent<MeshFilter>().mesh.ToProtobuf2D());
             result.BoundaryMeshes.Add(map.boundaryOutlineObj?.GetComponent<MeshFilter>().mesh.ToProtobuf2D());
             result.BoundaryMeshes.Add(map.boundaryMaskObj?.GetComponent<MeshFilter>().mesh.ToProtobuf2D());
-
-            return result;
-        }
-
-        static SerializedMap GetSerializedMap(Map map, byte[] backgroundImage, bool includeBoundary)
-        {
-            var result = new SerializedMap
-            {
-                saveFormatVersion = SaveFormatVersion,
-                maxTileSize = OSMImporter.maxTileSize,
-                minX = map.minX,
-                maxX = map.maxX,
-                minY = map.minY,
-                maxY = map.maxY,
-                cameraStartingPos = new SerializableVector3(map.startingCameraPos),
-                buildings = map.buildings.Select(r => r.Serialize()).ToArray(),
-                streets = map.streets.Select(s => s.Serialize()).ToArray(),
-                streetIntersections = map.streetIntersections.Select(
-                    s => s.Serialize()).ToArray(),
-                naturalFeatures = map.naturalFeatures.Select(r => r.Serialize()).ToArray(),
-                backgroundImage = backgroundImage,
-            };
-
-            if (includeBoundary)
-            {
-                result.boundaryPositions = map.boundaryPositions?.Select(
-                    p => new SerializableVector2(p)).ToArray();
-
-                result.boundaryMeshes = new SerializableMesh2D[]
-                {
-                    new SerializableMesh2D(map.boundaryBackgroundObj?.GetComponent<MeshFilter>().mesh),
-                    new SerializableMesh2D(map.boundaryOutlineObj?.GetComponent<MeshFilter>().mesh),
-                    new SerializableMesh2D(map.boundaryMaskObj?.GetComponent<MeshFilter>().mesh),
-                };
-            }
 
             return result;
         }
@@ -197,54 +133,6 @@ namespace Transidious
             saveFile.Lines.AddRange(map.transitLines.Select(b => b.ToProtobuf()));
 
             return saveFile;
-        }
-
-        static SaveFile GetSaveFile(Map map, int tileX, int tileY)
-        {
-            int minX, maxX;
-            if (tileX == -1)
-            {
-                minX = 0;
-                maxX = map.tiles.Length;
-            }
-            else
-            {
-                minX = (int)Mathf.Floor(tileX * (OSMImporter.maxTileSize / Map.tileSize));
-                maxX = Mathf.Min(minX + (int)(OSMImporter.maxTileSize / Map.tileSize), map.tiles.Length);
-            }
-
-            
-
-            var stiles = new MapTile.SerializableMapTile[maxX - minX][];
-            for (int x = minX; x < maxX; ++x)
-            {
-                int minY, maxY;
-                if (tileX == -1)
-                {
-                    minY = 0;
-                    maxY = map.tiles[x].Length;
-                }
-                else
-                {
-                    minY = (int)Mathf.Floor(tileY * (OSMImporter.maxTileSize / Map.tileSize));
-                    maxY = Mathf.Min(minY + (int)(OSMImporter.maxTileSize / Map.tileSize), map.tiles[x].Length);
-                }
-
-                stiles[x - minX] = new MapTile.SerializableMapTile[maxY - minY];
-
-                for (int y = minY; y < maxY; ++y)
-                {
-                    stiles[x - minX][y - minY] = map.tiles[x][y].Serialize();
-                }
-            }
-
-            return new SaveFile
-            {
-                saveFormatVersion = SaveFormatVersion,
-                tiles = stiles,
-                transitRoutes = map.transitRoutes.Select(r => r.Serialize()).ToArray(),
-                transitStops = map.transitStops.Select(r => r.Serialize()).ToArray(),
-            };
         }
 
         public static void CompressGZip<T>(string fileName, IMessage msg)
@@ -308,11 +196,11 @@ namespace Transidious
             }
         }
 
-        public static void SaveMapLayout(Map map, byte[] backgroundImage, byte[] miniMapImage)
+        public static void SaveMapLayout(Map map)
         {
             string fileName = $"Assets/Resources/Maps/{map.name}.bytes";
 
-            var sm = GetProtobufMap(map, backgroundImage, miniMapImage);
+            var sm = GetProtobufMap(map);
             using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
             {
                 CompressGZip(stream, sm);
@@ -321,22 +209,25 @@ namespace Transidious
 
         public static void SaveMapData(Map map, string saveFile = null)
         {
-            var fileName = "Assets/Resources/Saves/";
-            fileName += GameController.instance.missionToLoad;
+            var fileName = "Assets/Resources/Saves";
 
-            if (!System.IO.Directory.Exists(fileName))
+            if (!string.IsNullOrEmpty(GameController.instance.missionToLoad))
             {
-                System.IO.Directory.CreateDirectory(fileName);
+                fileName += $"/{GameController.instance.missionToLoad}";
             }
 
-            fileName += "/";
+            if (!Directory.Exists(fileName))
+            {
+                Directory.CreateDirectory(fileName);
+            }
+
             if (saveFile != null)
             {
-                fileName += saveFile;
+                fileName += $"/{saveFile}";
             }
             else
             {
-                fileName += DateTime.Now.Ticks;
+                fileName += $"/{DateTime.Now.Ticks}";
             }
 
             fileName += ".bytes";
@@ -432,14 +323,8 @@ namespace Transidious
             yield return DeserializeGameObjects(map, serializedMap);
             yield return InitializeGameObjects(map, serializedMap);
 
-            var bytes = serializedMap.BackgroundImage.ToByteArray();
-            LoadBackgroundSprite(map, bytes, MapDisplayMode.Day,
-                                 ref map.backgroundSpriteDay);
-
-            LoadBackgroundSprite(map, bytes, MapDisplayMode.Night,
-                                 ref map.backgroundSpriteNight);
-
-            LoadMiniMapSprite(serializedMap.MiniMapImage.ToByteArray());
+            // LoadBackgroundSprite(map, ref map.backgroundSpriteDay);
+            LoadMiniMapSprite(map);
         }
 
         static IEnumerator DeserializeGameObjects(Map map, Serialization.Map serializedMap)
@@ -488,16 +373,33 @@ namespace Transidious
             }
         }
 
-        static void LoadMiniMapSprite(byte[] bytes)
+        static void LoadMiniMapSprite(Map map)
         {
-            var tex = new Texture2D(0, 0, TextureFormat.RGBA32, false);
-            if (!tex.LoadImage(bytes))
-            {
-                Debug.LogError("corrupted PNG file!");
-                return;
-            }
+            var sprite = SpriteManager.GetSprite($"Maps/{map.name}/minimap");
+            UIMiniMap.mapSprite = sprite;
+        }
 
-            UIMiniMap.mapTexture = tex;
+        static void LoadBackgroundSprite(Map map, ref GameObject gameObject)
+        {
+            var sprite = SpriteManager.GetSprite($"Maps/{map.name}/LOD");
+
+            gameObject.GetComponent<SpriteRenderer>().sprite = sprite;
+            gameObject.name = "LOD Background";
+
+            var transform = gameObject.transform;
+            var spriteBounds = sprite.bounds;
+            var desiredWidth = map.width;
+            var desiredHeight = map.height;
+
+            transform.position = new Vector3(map.minX + map.width * .5f,
+                                             map.minY + map.height * .5f,
+                                             Map.Layer(MapLayer.Parks));
+
+            transform.localScale = new Vector3(desiredWidth / spriteBounds.size.x,
+                                               desiredHeight / spriteBounds.size.y,
+                                               1f);
+
+            gameObject.SetActive(false);
         }
 
         static void LoadBackgroundSprite(Map map, byte[] bytes,

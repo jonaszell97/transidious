@@ -22,14 +22,6 @@ namespace Transidious
             Footpath,
         }
 
-        [System.Serializable]
-        public struct SerializedFeature
-        {
-            public SerializableMapObject mapObject;
-            public Type type;
-            public SerializableMesh2D mesh;
-        }
-
         public Type type;
         public Mesh mesh;
         public int visitors;
@@ -39,7 +31,7 @@ namespace Transidious
 
         public void UpdateMesh(Map map)
         {
-            if (outlinePositions == null)
+            if (outlinePositions == null || outlinePositions.Length == 0 || outlinePositions[0].Length == 0)
             {
                 return;
             }
@@ -195,32 +187,12 @@ namespace Transidious
         public static NaturalFeature Deserialize(Serialization.NaturalFeature feature, Map map)
         {
             var newFeature = map.CreateFeature(
-                feature.MapObject.Name, (Type)feature.Type, feature.Mesh.Deserialize(),
+                feature.MapObject.Name, (Type)feature.Type,
+                feature.MapObject.OutlinePositions.First().OutlinePositions.Select(v => v.Deserialize()),
                 feature.MapObject.Area, feature.MapObject.Centroid.Deserialize(),
                 (int)feature.MapObject.Id);
 
             newFeature.Deserialize(feature.MapObject);
-            return newFeature;
-        }
-
-        public new SerializedFeature Serialize()
-        {
-            return new SerializedFeature
-            {
-                mapObject = base.Serialize(),
-                type = type,
-                mesh = new SerializableMesh2D(mesh),
-            };
-        }
-
-        public static NaturalFeature Deserialize(Map map, SerializedFeature feature)
-        {
-            var newFeature = map.CreateFeature(
-                feature.mapObject.name, feature.type, feature.mesh,
-                feature.mapObject.area, feature.mapObject.centroid,
-                feature.mapObject.id);
-
-            newFeature.Deserialize(feature.mapObject);
             return newFeature;
         }
 

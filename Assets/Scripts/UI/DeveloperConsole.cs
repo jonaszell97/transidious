@@ -33,14 +33,19 @@ namespace Transidious
         List<string> history;
         int currentHistoryEntry = -1;
 
-        void Start()
+        public void Initialize()
         {
+            instance = this;
+
             internals = new DeveloperConsoleInternals(this);
             history = new List<string>();
 
             game = GameController.instance;
             sim = game.sim;
+        }
 
+        void Start()
+        {
             this.closeButton.onClick.AddListener(() =>
             {
                 this.Deactivate();
@@ -109,7 +114,7 @@ namespace Transidious
 
         public void Toggle()
         {
-            if (gameObject.activeSelf)
+            if (game.mainUI.developerConsole.activeSelf)
             {
                 Deactivate();
             }
@@ -121,13 +126,13 @@ namespace Transidious
 
         public void Activate()
         {
+            game.mainUI.developerConsole.SetActive(true);
             GameController.instance.input.DisableControls();
-            gameObject.SetActive(true);
         }
 
         public void Deactivate()
         {
-            gameObject.SetActive(false);
+            game.mainUI.developerConsole.SetActive(false);
             GameController.instance.input.EnableControls();
         }
 
@@ -288,15 +293,64 @@ namespace Transidious
             Log($"loaded save file '{fileName}'");
         }
 
-        public void HandleExportMapCommand(string fileName)
+        public void HandleExportMapCommand(string fileName, int resolution)
         {
             if (fileName == null)
             {
                 fileName = game.loadedMap.name;
             }
 
-            MapExporter.ExportMap(game.loadedMap, fileName);
+            var exporter = new MapExporter(game.loadedMap, resolution);
+            exporter.ExportMap(fileName);
+
             Log($"exported map as {fileName}.png");
+        }
+
+        public void HandleSetPrefCommand(string key, string value)
+        {
+            PlayerPrefs.SetString(key, value);
+        }
+
+        public void HandleGetPrefCommand(string key)
+        {
+            if (!PlayerPrefs.HasKey(key))
+            {
+                Log($"key {key} not found");
+                return;
+            }
+
+            Log(PlayerPrefs.GetString(key));
+        }
+
+        public void HandleClearPrefCommand(string key)
+        {
+            if (!PlayerPrefs.HasKey(key))
+            {
+                Log($"key {key} not found");
+                return;
+            }
+
+            PlayerPrefs.DeleteKey(key);
+        }
+
+        public void HandleAddStartupCommandCommand()
+        {
+            if (history.Count < 2)
+            {
+                Log("no commands exected in current session");
+                return;
+            }
+
+            if (PlayerPrefs.HasKey("dbg_startup_commands"))
+            {
+                PlayerPrefs.SetString("dbg_startup_commands", PlayerPrefs.GetString("dbg_startup_commands") + ";" + history[history.Count - 2]);
+            }
+            else
+            {
+                PlayerPrefs.SetString("dbg_startup_commands", history[history.Count - 2]);
+            }
+
+            Log("added startup command");
         }
 
         public static void Log(string msg)

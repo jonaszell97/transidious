@@ -176,6 +176,8 @@ namespace Transidious
             map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial =
                 GameController.GetUnlitMaterial(Color.white);
 
+            map.ShowAllTiles();
+
             float cameraDistance = map.input.camera.transform.position.z;
 
             Camera renderCamera = GetComponent<Camera>();

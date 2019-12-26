@@ -61,7 +61,7 @@ namespace Transidious
         public float minY = float.NegativeInfinity;
 
         Dictionary<ControlType, Tuple<KeyCode, KeyCode>> keyBindings;
-        public static float minZoom = 45f * Map.Meters;
+        public static float minZoom = 100f * Map.Meters;
         public static float maxZoom = 15000f * Map.Meters;
         static float zoomSensitivityMouse = 25.0f;
         static float zoomSensitivityTrackpad = 5.0f;
@@ -392,12 +392,10 @@ namespace Transidious
 
             ZoomOrthoCamera(camera.ScreenToWorldPoint(Input.mousePosition), input * zoomSensitivity);
 
-            if (prevSize == camera.orthographicSize)
+            if (prevSize.Equals(camera.orthographicSize))
             {
                 return;
             }
-
-            // controller?.loadedMap?.UpdateTextScale();
 
             panSensitivityX = camera.orthographicSize * 0.1f;
             panSensitivityY = camera.orthographicSize * 0.1f;
@@ -701,15 +699,20 @@ namespace Transidious
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 if (fromPos == null)
                 {
+                    Debug.Log("first point set");
                     fromPos = clickedPos;
                 }
                 else
                 {
-                    var options = new PathPlanning.PathPlanningOptions();
-                    var planner = new PathPlanning.PathPlanner(options);
+                    var options = new PathPlanning.PathPlanningOptions
+                    {
+                        maxWalkingDistance = 0f,
+                    };
 
-                    var ppResult = planner.FindFastestTransitRoute(controller.loadedMap,
-                                                                   fromPos.Value, clickedPos);
+                    var planner = new PathPlanning.PathPlanner(options);
+                    var ppResult = planner.FindClosestPath(controller.loadedMap,
+                                                           fromPos.Value,
+                                                           clickedPos);
 
                     fromPos = null;
                     if (ppResult == null)
@@ -720,6 +723,46 @@ namespace Transidious
                     {
                         Debug.Log(ppResult.ToString());
                     }
+                }
+            }
+
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F3))
+            {
+                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if (fromPos == null)
+                {
+                    Debug.Log("first point set");
+                    fromPos = clickedPos;
+                }
+                else
+                {
+                    var options = new PathPlanning.PathPlanningOptions
+                    {
+                        maxWalkingDistance = 100f,
+                        allowCar = false,
+                        time = controller.sim.GameTime,
+                    };
+
+                    var planner = new PathPlanning.PathPlanner(options);
+                    var map = controller.loadedMap;
+                    var from = fromPos.Value;
+                    var to = clickedPos;
+
+                    var transitResult = planner.FindFastestTransitRoute(map, from, to);
+                    if (transitResult != null)
+                    {
+                        Debug.Log($"transit route found with cost {transitResult.cost}");
+                        Debug.Log(transitResult.ToString());
+                    }
+
+                    var carResult = planner.FindClosestDrive(map, from, to);
+                    if (carResult != null)
+                    {
+                        Debug.Log($"car route found with cost {carResult.cost}");
+                        Debug.Log(carResult.ToString());
+                    }
+
+                    fromPos = null;
                 }
             }
 

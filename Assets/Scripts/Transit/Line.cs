@@ -217,10 +217,7 @@ namespace Transidious
             var neededVehicles = (int)Mathf.Ceil(neededVehiclesExact);
 
             var extraPercentage = (neededVehicles / neededVehiclesExact) - 1f;
-            var extraTime = extraPercentage * lineDurationSeconds;// - stopDuration;
-
-            //var actualInterval = lineDurationSeconds / neededVehicles;
-            //Debug.Assert(actualInterval <= interval);
+            var extraTime = extraPercentage * lineDurationSeconds;
 
             // Increase stop duration to ensure equal spacing between vehicles.
             this.endOfLineWaitTime = Mathf.Ceil(
@@ -241,7 +238,7 @@ namespace Transidious
             var totalTravelTimeSeconds = 0f;
             var first = true;
             var firstDeparture = earliestDeparture.AddSeconds(stopDuration);
-            firstDeparture = sim.RoundToNextFixedUpdate(departure);
+            firstDeparture = sim.RoundToNextFixedUpdate(firstDeparture);
 
             foreach (var route in routes)
             {
@@ -251,111 +248,12 @@ namespace Transidious
                     route.beginStop.SetSchedule(this, new ContinuousSchedule(firstDeparture, interval));
                 }
 
-                totalTravelTimeSeconds += (route.length / speedMetersPerSecond) * 60f;
+                totalTravelTimeSeconds += (route.length / speedMetersPerSecond) * sim.BaseSpeedMultiplier;
                 totalTravelTimeSeconds += stopDuration;
 
                 route.endStop.SetSchedule(this, new ContinuousSchedule(
                     firstDeparture.AddSeconds(totalTravelTimeSeconds), interval));
             }
-
-            /*Stop previousStop = null;
-            var stopDurationInSeconds = AverageStopDuration / 60f;
-            var travelTimeSincePrevStop = 0f;
-            var nroute = 0;
-            var vehicleSpawns = new List<int>();
-
-            foreach (var stop in stops)
-            {
-                if (previousStop != null)
-                {
-                    var route = routes[nroute - 1];
-                    travelTimeSincePrevStop += (route.length / (AverageSpeed * 1000f)) * 60f;
-                    travelTimeSincePrevStop += stopDurationInSeconds;
-                }
-
-                if (previousStop == null || travelTimeSincePrevStop >= interval)
-                {
-                    // Spawn a new vehicle at this stop to meet the schedule.
-                    vehicleSpawns.Add(nroute);
-                    stop.SetSchedule(this, schedule.OffsetBy(stopDurationInSeconds));
-
-                    travelTimeSincePrevStop = stopDurationInSeconds;
-                }
-                else
-                {
-                    // No new vehicle required, depart at the earliest possible time.
-                    stop.SetSchedule(this, schedule.OffsetBy(travelTimeSincePrevStop));
-                }
-
-                previousStop = stop;
-                ++nroute;
-            }
-
-            foreach (var routeNo in vehicleSpawns)
-            {
-                var stop = stops[routeNo];
-                var v = sim.CreateVehicle(this, stop);
-                this.vehicles.Add(v);
-
-                var departure = stop.NextDeparture(this, sim.GameTime);
-                sim.ScheduleEvent(departure, () =>
-                {
-                    v.StartDrive(routeNo);
-                });
-            }*/
-
-            /*Debug.Assert(routes.Count > 0, "empty line!");
-            scheduleOffsets = new Dictionary<Stop, float>();
-
-            Stop previousStop = null;
-            var numPreviousStops = 1;
-            
-            foreach (var stop in stops)
-            {
-                if (previousStop == null)
-                {
-                    stop.SetSchedule(this, schedule);
-
-                    scheduleOffsets.Add(stop, 0);
-                    previousStop = stop;
-
-                    continue;
-                }
-                if (scheduleOffsets.ContainsKey(stop))
-                {
-                    break;
-                }
-
-                var distance = (previousStop.location - stop.location).magnitude;
-                var durationInMins = (distance / (AverageSpeed * 1000f)) * 60f;
-                var duration = durationInMins + numPreviousStops * (AverageStopDuration / 60f);
-
-                scheduleOffsets.Add(stop, duration);
-                stop.SetSchedule(this, schedule.OffsetBy(duration));
-
-                numPreviousStops++;
-                previousStop = stop;
-            }
-
-            var sim = Game.sim;
-            var interval = schedule.dayInterval;
-
-            Debug.Assert(60 % interval == 0, "invalid interval");
-
-            var neededVehicles = 60 / interval;
-            var nextDepartures = schedule.NextDepartures(sim.GameTime, neededVehicles);
-            this.vehicles = new List<TransitVehicle>(neededVehicles);
-
-            for (var i = 0; i < neededVehicles; ++i)
-            {
-                var v = sim.CreateVehicle(this);
-                this.vehicles.Add(v);
-
-                sim.ScheduleEvent(nextDepartures[i], () =>
-                {
-                    v.StartDrive();
-                });
-            }*/
         }
 
         public void UpdateMesh()

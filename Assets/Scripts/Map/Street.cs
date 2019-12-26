@@ -19,19 +19,6 @@ namespace Transidious
             River,
         }
 
-        [System.Serializable]
-        public struct SerializedStreet
-        {
-            public SerializableMapObject mapObject;
-            public string displayName;
-            public Type type;
-            public StreetSegment.SerializedStreetSegment[] segments;
-            public bool lit;
-            public bool oneway;
-            public int maxspeed;
-            public int lanes;
-        }
-
         /// The display name of the street. If null, same as name.
         public string displayName;
 
@@ -99,6 +86,22 @@ namespace Transidious
             get
             {
                 return maxspeed * (1f / 3.6f);
+            }
+        }
+
+        public int AverageSpeedKPH
+        {
+            get
+            {
+                switch (maxspeed)
+                {
+                    case 30: return 20;
+                    case 50: return 35;
+                    case 70: return 60;
+                    case 80: return 70;
+                    default:
+                        return maxspeed;
+                }
             }
         }
 
@@ -272,7 +275,7 @@ namespace Transidious
 
         void GenerateDirectionalArrow(StreetSegment seg, PositionOnStreetSegment posOnStreet)
         {
-            if (!seg.street.isOneWay || seg.length < 30f * Map.Meters)
+            if (!seg.street.isOneWay || seg.length < 50f * Map.Meters)
             {
                 return;
             }
@@ -288,7 +291,7 @@ namespace Transidious
                     new Color(0.9f, 0.9f, 0.9f, 1f);
             }
 
-            seg.directionArrow.transform.SetParent(seg.uniqueTile?.transform ?? map.transform);
+            seg.directionArrow.transform.SetParent(seg.uniqueTile?.canvas.transform ?? map.canvas.transform);
             seg.directionArrow.transform.position = new Vector3(posOnStreet.pos.x, posOnStreet.pos.y,
                                                                 Map.Layer(MapLayer.StreetMarkings));
 
@@ -360,11 +363,17 @@ namespace Transidious
                 }
 
                 placedText = true;
+                spaceSinceLastLabel = 0f;
+
+                if (seg.uniqueTile != null)
+                {
+                    txt.transform.SetParent(seg.uniqueTile.canvas.transform);
+                }
+
                 txt.transform.position = new Vector3(posAndAngle.pos.x,
                                                      posAndAngle.pos.y,
                                                      Map.Layer(MapLayer.StreetNames));
 
-                spaceSinceLastLabel = 0f;
 
                 txt.transform.rotation = Quaternion.AngleAxis(posAndAngle.angle, Vector3.forward);
                 seg.streetName = txt;
@@ -424,16 +433,6 @@ namespace Transidious
 
             map.RegisterSegment(seg, segId);
             return seg;
-        }
-
-        public void AddSegment(StreetSegment.SerializedStreetSegment seg)
-        {
-            var newSeg = AddSegment(seg.positions.Select(v => (Vector3)v).ToList(),
-                                    map.GetMapObject<StreetIntersection>(seg.startIntersectionID),
-                                    map.GetMapObject<StreetIntersection>(seg.endIntersectionID),
-                                    -1, seg.hasTramTracks, seg.mapObject.id);
-
-            newSeg.Deserialize(seg.mapObject);
         }
 
         public void AddSegment(Serialization.StreetSegment seg)
@@ -523,42 +522,6 @@ namespace Transidious
             s.CalculateLength();
             s.CreateTextMeshes();
             s.displayName = street.DisplayName;
-
-            return s;
-        }
-
-        public new SerializedStreet Serialize()
-        {
-            return new SerializedStreet
-            {
-                mapObject = base.Serialize(),
-                displayName = displayName,
-                type = type,
-
-                segments = segments.Select(s => s.Serialize()).ToArray(),
-                lit = lit,
-                oneway = isOneWay,
-                maxspeed = maxspeed,
-                lanes = lanes
-            };
-        }
-
-        public static Street Deserialize(Map map, SerializedStreet street)
-        {
-            var s = map.CreateStreet(street.mapObject.name, street.type, street.lit,
-                                     street.oneway, street.maxspeed,
-                                     street.lanes, street.mapObject.id);
-
-            s.Deserialize(street.mapObject);
-
-            foreach (var seg in street.segments)
-            {
-                s.AddSegment(seg);
-            }
-
-            s.CalculateLength();
-            s.CreateTextMeshes();
-            s.displayName = street.displayName;
 
             return s;
         }

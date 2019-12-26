@@ -1488,12 +1488,19 @@ namespace Transidious
                 Position = location.ToProtobuf(),
             };
 
+            result.OutgoingRouteIDs.AddRange(outgoingRoutes.Select(r => (uint)r.Id));
+            result.RouteIDs.AddRange(routes.Select(r => (uint)r.Id));
+
             return result;
         }
 
         public void Deserialize(Serialization.Stop stop, Map map)
         {
             base.Deserialize(stop.MapObject);
+            transform.position = stop.Position.Deserialize();
+
+            outgoingRoutes = stop.OutgoingRouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
+            routes = stop.RouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
         }
 
         public new SerializedStop Serialize()

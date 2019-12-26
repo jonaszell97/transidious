@@ -142,6 +142,9 @@ namespace Transidious
         /// GameObject that renders the creation cursor sprite.
         public GameObject createCursorObj;
 
+        /// The developer console instance.
+        public DeveloperConsole developerConsole;
+
         static GameController _instance;
         public static GameController instance
         {
@@ -262,6 +265,8 @@ namespace Transidious
 
         public System.Collections.IEnumerator LoadMap(OSMImportHelper.Area area)
         {
+            GameController._instance = this;
+
             this.status = GameStatus.Loading;
             loadingScreen.gameObject.SetActive(true);
 
@@ -286,6 +291,15 @@ namespace Transidious
             }
 
             transitEditor.InitOverlappingRoutes();
+
+            if (PlayerPrefs.HasKey("dbg_startup_commands"))
+            {
+                var cmds = PlayerPrefs.GetString("dbg_startup_commands").Split(';');
+                foreach (var cmd in cmds)
+                {
+                    DeveloperConsole.Run(cmd);
+                }
+            }
 
             //var sched = new Schedule
             //{
@@ -319,6 +333,7 @@ namespace Transidious
         void Awake()
         {
             GameController._instance = this;
+            developerConsole.Initialize();
 
             if (status == GameStatus.Disabled || status == GameStatus.ImportingMap)
             {

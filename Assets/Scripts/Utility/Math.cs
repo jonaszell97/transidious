@@ -857,6 +857,17 @@ namespace Transidious
             return list;
         }
 
+        static List<ClipperLib.IntPoint> GetPath(Vector2[] poly)
+        {
+            var list = new List<ClipperLib.IntPoint>();
+            foreach (var pt in poly)
+            {
+                list.Add(GetIntPoint(pt));
+            }
+
+            return list;
+        }
+
         static Vector3[] GetUnityPath(List<ClipperLib.IntPoint> path)
         {
             return path.Select(p => new Vector3((float)p.X / (float)ClipPrecision, (float)p.Y / (float)ClipPrecision)).ToArray();
@@ -895,6 +906,29 @@ namespace Transidious
                 {
                     clipper.AddPath(GetPath(hole), ClipperLib.PolyType.ptSubject, true);
                 }
+            }
+
+            var solution = new ClipperLib.PolyTree();
+            if (!clipper.Execute(ClipperLib.ClipType.ctUnion, solution))
+            {
+                return null;
+            }
+
+            var result = new PSLG();
+            foreach (var node in solution.Childs)
+            {
+                PopulateResultPSLG(result, node, false);
+            }
+
+            return result;
+        }
+
+        public static PSLG PolygonUnion(IEnumerable<Vector2[]> polys)
+        {
+            var clipper = new ClipperLib.Clipper();
+            foreach (var poly in polys)
+            {
+                clipper.AddPath(GetPath(poly), ClipperLib.PolyType.ptSubject, true);
             }
 
             var solution = new ClipperLib.PolyTree();

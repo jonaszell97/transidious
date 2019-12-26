@@ -1394,6 +1394,12 @@ namespace Transidious
                 }
             }
 
+            if (minRect == null)
+            {
+                Debug.Log(points);
+                return null;
+            }
+
             var rect = minRect.Value;
             return new Vector2[]
             {

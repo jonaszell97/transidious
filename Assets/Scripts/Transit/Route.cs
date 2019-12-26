@@ -8,27 +8,6 @@ namespace Transidious
 {
     public class Route : DynamicMapObject, IRoute
     {
-        [System.Serializable]
-        public struct SerializedRoute
-        {
-            public SerializableMapObject mapObject;
-            public int lineID;
-            public SerializableVector2[] positions;
-            public Path.SerializedPath path;
-            public Path.SerializedPath originalPath;
-
-            public int beginStopID;
-            public int endStopID;
-
-            public SerializableDictionary<Tuple<int, int>, TrafficSimulator.PathSegmentInfo.Serializable[]>
-                streetSegmentOffsetMap;
-
-            public SerializableDictionary<int, TrafficSimulator.PathSegmentInfo.Serializable> pathSegmentInfoMap;
-
-            public float totalTravelTime;
-            public bool isBackRoute;
-        }
-
         public Line line;
 
         public List<Vector3> positions;
@@ -111,7 +90,7 @@ namespace Transidious
         {
             get
             {
-                return 0f; // path.length / line.AverageSpeed;
+                return (length / (AverageSpeed / 3.6f)) / 60f;
             }
         }
 
@@ -479,70 +458,6 @@ namespace Transidious
                     Tuple.Create(map.GetMapObject<StreetSegment>(key.Segment), key.Lane),
                     value.Select(info => new TrafficSimulator.PathSegmentInfo(info)).ToList());
             }
-        }
-
-        public new SerializedRoute Serialize()
-        {
-            return new SerializedRoute
-            {
-                mapObject = base.Serialize(),
-                lineID = line.id,
-
-                positions = positions?.Select(v => new SerializableVector2(v)).ToArray() ?? null,
-
-                beginStopID = beginStop.id,
-                endStopID = endStop.id,
-
-                streetSegmentOffsetMap = new SerializableDictionary<Tuple<int, int>,
-                                                        TrafficSimulator.PathSegmentInfo.Serializable[]>
-                {
-                    keys = this.streetSegmentOffsetMap.Keys.Select(key => Tuple.Create(key.Item1.id, key.Item2)).ToArray(),
-                    values = this.streetSegmentOffsetMap.Values.Select(
-                        list => list.Select(info => info.Serialize()).ToArray()).ToArray(),
-                },
-                pathSegmentInfoMap = new SerializableDictionary<int,
-                                                        TrafficSimulator.PathSegmentInfo.Serializable>
-                {
-                    keys = this.pathSegmentInfoMap.Keys.ToArray(),
-                    values = this.pathSegmentInfoMap.Values.Select(info => info.Serialize()).ToArray(),
-                },
-
-                totalTravelTime = totalTravelTime,
-                isBackRoute = isBackRoute
-            };
-        }
-
-        public void Deserialize(SerializedRoute route, Map map)
-        {
-            base.Deserialize(route.mapObject);
-
-            Initialize(map.GetMapObject<Line>(route.lineID),
-                       map.GetMapObject<Stop>(route.beginStopID),
-                       map.GetMapObject<Stop>(route.endStopID),
-                       route.positions?.Select(
-                            v => new Vector3(v.x, v.y, Map.Layer(MapLayer.TransitLines))).ToList()
-                                ?? null,
-                       route.isBackRoute);
-
-            for (var i = 0; i < route.pathSegmentInfoMap.keys.Length; ++i)
-            {
-                var key = route.pathSegmentInfoMap.keys[i];
-                var value = route.pathSegmentInfoMap.values[i];
-
-                pathSegmentInfoMap.Add(key, new TrafficSimulator.PathSegmentInfo(value));
-            }
-
-            for (var i = 0; i < route.streetSegmentOffsetMap.keys.Length; ++i)
-            {
-                var key = route.streetSegmentOffsetMap.keys[i];
-                var value = route.streetSegmentOffsetMap.values[i];
-
-                streetSegmentOffsetMap.Add(
-                    Tuple.Create(map.GetMapObject<StreetSegment>(key.Item1), key.Item2),
-                    value.Select(info => new TrafficSimulator.PathSegmentInfo(info)).ToList());
-            }
-
-            originalPath = Path.Deserialize(route.originalPath);
         }
 
         public override void OnMouseEnter()

@@ -49,7 +49,8 @@ def Load : Command<"load"> {
 
 def ExportMap : Command<"export_map"> {
     params = [
-        Parameter<"filename", "string", "the file to save as">
+        Parameter<"filename", "string", "the file to save as">,
+        Parameter<"resolution", "int", "the resolution of the resulting file", "4096">
     ]
 
     help = "export an image of the map"
@@ -121,47 +122,36 @@ def CreateRandomLine : Command<"create_random_line"> {
     help = "create a randomized transit line"
 }
 
+def SetPref : Command<"set_pref"> {
+    params = [
+        Parameter<"key", "string", "the key of the preference to save">,
+        Parameter<"value", "string", "the value to save">
+    ]
+
+    help = "save a persistent player preference"
+}
+
+def GetPref : Command<"get_pref"> {
+    params = [
+        Parameter<"key", "string", "the key of the preference to return">
+    ]
+
+    help = "return a persistent player preference"
+}
+
+def ClearPref : Command<"clear_pref"> {
+    params = [
+        Parameter<"key", "string", "the key of the preference to clear">
+    ]
+
+    help = "clear a persistent player preference"
+}
+
+def AddStartupCommand : Command<"add_startup_cmd"> {
+    help = "add the most recent to be executed at program startup"
+}
+
 /*
-def _ : Command<"_"> {
-    params = [
-        
-    ]
-
-    help = ""
-}
-
-def _ : Command<"_"> {
-    params = [
-        
-    ]
-
-    help = ""
-}
-
-def _ : Command<"_"> {
-    params = [
-        
-    ]
-
-    help = ""
-}
-
-def _ : Command<"_"> {
-    params = [
-        
-    ]
-
-    help = ""
-}
-
-def _ : Command<"_"> {
-    params = [
-        
-    ]
-
-    help = ""
-}
-
 def _ : Command<"_"> {
     params = [
         
