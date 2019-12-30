@@ -28,6 +28,7 @@ namespace Transidious
         public Type type;
         public int capacity;
         public int occupants;
+        public Rect collisionRect;
 
         public void Initialize(Map map, Type type,
                                StreetSegment street, string numberStr,
@@ -153,7 +154,7 @@ namespace Transidious
             var minAngle = 0f;
             var surroundingRect = MeshBuilder.GetSmallestSurroundingRect(outlinePositions[0], ref minAngle);
 
-            var collisionRect = MeshBuilder.GetCollisionRect(outlinePositions[0]);
+            collisionRect = MeshBuilder.GetCollisionRect(outlinePositions[0]);
             foreach (var tile in map.GetTilesForObject(this))
             {
                 // tile.AddMesh("Buildings", mesh, GetColor(), layer);

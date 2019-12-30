@@ -29,7 +29,7 @@ namespace Transidious
         public Stop endStop;
         public Stop.Slot endSlot;
 
-        public float totalTravelTime;
+        public TimeSpan totalTravelTime;
         public bool isBackRoute = false;
 
         public Mesh mesh;
@@ -48,7 +48,7 @@ namespace Transidious
             this.endStop = endStop;
             this.endSlot = null;
             this.transform.position = new Vector3(0, 0, 0);
-            this.transform.SetParent(line.transform);
+            this.transform.SetParent(line.transform, false);
             this.isBackRoute = isBackRoute;
             this.name = "(" + line.name + ") " + beginStop.name + " -> " + endStop.name;
             this.originalPath = path;
@@ -86,11 +86,11 @@ namespace Transidious
             }
         }
 
-        public float TravelTime
+        public TimeSpan TravelTime
         {
             get
             {
-                return (length / (AverageSpeed / 3.6f)) / 60f;
+                return TimeSpan.FromSeconds(length / (AverageSpeed * Math.Kph2Mps));
             }
         }
 
@@ -377,7 +377,7 @@ namespace Transidious
                 BeginStopID = (uint)beginStop.Id,
                 EndStopID = (uint)endStop.Id,
 
-                TotalTravelTime = totalTravelTime,
+                TotalTravelTime = (float)totalTravelTime.TotalMilliseconds,
             };
 
             foreach (var entry in pathSegmentInfoMap)
@@ -437,8 +437,7 @@ namespace Transidious
                        map.GetMapObject<Stop>((int)route.BeginStopID),
                        map.GetMapObject<Stop>((int)route.EndStopID),
                        route.Positions?.Select(
-                            v => new Vector3(v.X, v.Y, Map.Layer(MapLayer.TransitLines))).ToList()
-                                ?? null,
+                            v => new Vector3(v.X, v.Y, 0f)).ToList(),
                        false);
 
             for (var i = 0; i < route.PathSegmentInfoMap.Count; ++i)

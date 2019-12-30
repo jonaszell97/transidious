@@ -467,12 +467,18 @@ namespace Transidious
             }
         }
 
-        public float TravelTime
+        public TimeSpan TravelTime
         {
             get
             {
-                return (length / (street.AverageSpeedKPH / 3.6f)) / 60f;
+                return GetTravelTime(this.length);
             }
+        }
+
+        public TimeSpan GetTravelTime(float length)
+        {
+            var seconds = (length / (street.AverageSpeedKPH * Math.Kph2Mps));
+            return TimeSpan.FromSeconds(seconds * Game.sim.trafficSim.CurrentTrafficFactor);
         }
 
         public float AverageSpeed
@@ -1361,14 +1367,14 @@ namespace Transidious
             {
             case Street.Type.Highway:
             case Street.Type.Primary:
-                min = 9f * Map.Meters;
-                max = 15f * Map.Meters;
+                min = 7f * Map.Meters;
+                max = 12f * Map.Meters;
                 factor = 6f / (100f * Map.Meters);
 
                 break;
             default:
-                min = 7.5f * Map.Meters;
-                max = 15f * Map.Meters;
+                min = 5f * Map.Meters;
+                max = 10f * Map.Meters;
                 factor = 5f / (100f * Map.Meters);
 
                 break;

@@ -61,7 +61,7 @@ namespace Transidious
         public float minY = float.NegativeInfinity;
 
         Dictionary<ControlType, Tuple<KeyCode, KeyCode>> keyBindings;
-        public static float minZoom = 100f * Map.Meters;
+        public static float minZoom = 50f * Map.Meters;
         public static float maxZoom = 15000f * Map.Meters;
         static float zoomSensitivityMouse = 25.0f;
         static float zoomSensitivityTrackpad = 5.0f;
@@ -411,6 +411,33 @@ namespace Transidious
             FireEvent(InputEvent.ScaleChange);
         }
 
+        public void SetZoomLevel(float zoom)
+        {
+            zoom = Mathf.Clamp(zoom, minZoom, maxZoom);
+
+            if (zoom.Equals(camera.orthographicSize))
+            {
+                return;
+            }
+
+            var currRenderingDist = renderingDistance;
+            camera.orthographicSize = zoom;
+            UpdateRenderingDistance();
+
+            panSensitivityX = camera.orthographicSize * 0.1f;
+            panSensitivityY = camera.orthographicSize * 0.1f;
+            zoomSensitivity = camera.orthographicSize * 0.5f;
+
+            controller.mainUI.UpdateScaleBar();
+
+            FireEvent(InputEvent.Zoom);
+
+            if (currRenderingDist == renderingDistance)
+                return;
+
+            FireEvent(InputEvent.ScaleChange);
+        }
+
         public void SetRenderingDistance(RenderingDistance dist, bool forceUpdate = false)
         {
             var currRenderingDist = renderingDistance;
@@ -531,8 +558,7 @@ namespace Transidious
 
         public void SetCameraPosition(Vector2 position)
         {
-            if (position.x.Equals(camera.transform.position.x)
-            && position.y.Equals(camera.transform.position.y))
+            if (position == (Vector2)camera.transform.position)
             {
                 return;
             }
@@ -549,9 +575,44 @@ namespace Transidious
             FireEvent(InputEvent.Pan);
         }
 
+        bool moving = false;
+        Vector2 movingTowards;
+        float movementSpeed;
+
+        public void MoveTowards(Vector2 worldPos, float speed = 0f)
+        {
+            if (speed <= 0f)
+            {
+                speed = (worldPos - (Vector2)camera.transform.position).magnitude * 2f;
+            }
+
+            movingTowards = worldPos;
+            movementSpeed = speed;
+            moving = true;
+        }
+
+        public enum FollowingMode
+        {
+            Center,
+            Visible,
+        }
+
+        GameObject followObject;
+        FollowingMode followingMode;
+
+        public void FollowObject(GameObject obj, FollowingMode mode = FollowingMode.Visible)
+        {
+            this.followObject = obj;
+            this.followingMode = mode;
+        }
+
+        public void StopFollowing()
+        {
+            followObject = null;
+        }
+
         public void UpdateZoomLevels()
         {
-            minZoom = 30f * Map.Meters;
             maxZoom = (maxY - minY) / 2f;
 
             camera.orthographicSize = maxZoom;
@@ -622,10 +683,11 @@ namespace Transidious
             }
         }
 
-        // Use this for initialization
-        void Start()
-        {
 
+        public bool IsPositionVisibleByCamera(Vector2 worldPos)
+        {
+            var vp = camera.WorldToViewportPoint(worldPos);
+            return vp.x >= 0f && vp.x <= 1f && vp.y >= 0f && vp.y <= 1f;
         }
 
 #if DEBUG
@@ -675,6 +737,34 @@ namespace Transidious
                     {
                         controller.mainUI.fadeScaleBarTime = 0f;
                         controller.mainUI.FadeScaleBar();
+                    }
+                }
+            }
+
+            if (moving)
+            {
+                var newPos = Vector2.MoveTowards(camera.transform.position, movingTowards, movementSpeed * Time.deltaTime);
+                if (newPos.Equals(movingTowards))
+                {
+                    moving = false;
+                }
+
+                SetCameraPosition(newPos);
+            }
+            else if (followObject != null)
+            {
+                Vector2 pos = followObject.transform.position;
+
+                if (followingMode == FollowingMode.Center)
+                {
+                    SetCameraPosition(pos);
+                }
+                else if (followingMode == FollowingMode.Visible)
+                {
+                    if (!IsPositionVisibleByCamera(pos))
+                    {
+                        var direction = pos - (Vector2)camera.transform.position;
+                        SetCameraPosition((Vector2)camera.transform.position + direction.normalized * Time.deltaTime);
                     }
                 }
             }

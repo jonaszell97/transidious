@@ -106,6 +106,39 @@ namespace Transidious
             public StreetSegment goesTo;
         }
 
+        public class ActivePath
+        {
+            public PathPlanningResult path;
+            public int stepIdx;
+            public float currentVelocity;
+            public float progress;
+            public bool isTurn;
+
+            public Serialization.ActivePath ToProtobuf()
+            {
+                return new Serialization.ActivePath
+                {
+                    Path = path.ToProtobuf(),
+                    StepNo = (uint)stepIdx,
+                    CurrentVelocity = currentVelocity,
+                    StepProgress = progress,
+                    IsTurn = isTurn,
+                };
+            }
+
+            public static ActivePath Deserialize(Map map, Serialization.ActivePath ap)
+            {
+                return new ActivePath
+                {
+                    path = PathPlanningResult.Deserialize(map, ap.Path),
+                    stepIdx = (int)ap.StepNo,
+                    currentVelocity = ap.CurrentVelocity,
+                    progress = ap.StepProgress,
+                    isTurn = ap.IsTurn,
+                };
+            }
+        }
+
         /// Reference to the simulation manager.
         public SimulationController sim;
 
@@ -138,7 +171,7 @@ namespace Transidious
         /// List of all traffic lights.
         public List<TrafficLight> trafficLights;
 
-        /// List of computed paths on a street, from stop line to stop line. On for each lane.
+        /// List of computed paths on a street, from stop line to stop line. One for each lane.
         Dictionary<StreetSegment, Vector3[][]> computedPaths;
 
         /// List of computed paths for an intersection.
@@ -147,6 +180,14 @@ namespace Transidious
 #if DEBUG
         public bool manualTrafficLightControl = false;
 #endif
+
+        public float CurrentTrafficFactor
+        {
+            get
+            {
+                return GetTrafficFactor(sim.GameTime.Hour);
+            }
+        }
 
         void Awake()
         {
@@ -175,6 +216,48 @@ namespace Transidious
             //    });
             //}
 #endif
+        }
+
+        public float GetTrafficFactor(int hour)
+        {
+            switch (hour)
+            {
+                case 21:
+                case 22:
+                case 23:
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    return 1.1f;
+                case 4:
+                case 5:
+                case 6:
+                    return 1.3f;
+                case 7:
+                case 8:
+                case 9:
+                    return 2.5f;
+                case 10:
+                case 11:
+                    return 1.7f;
+                case 12:
+                case 13:
+                    return 2.2f;
+                case 14:
+                    return 1.7f;
+                case 15:
+                case 16:
+                case 17:
+                    return 2.2f;
+                case 18:
+                case 19:
+                case 20:
+                    return 1.5f;
+                default:
+                    Debug.LogWarning($"invalid hour {hour}");
+                    return 0f;
+            }
         }
 
         bool IsRightLane(StreetSegment seg, int lane)
@@ -330,7 +413,7 @@ namespace Transidious
                         nextIntersection = nextSegment.startIntersection;
                     }
 
-#if DEBUG
+#if false
                     var _ids = nextIntersection.intersectingStreets.Select(s => s.id);
                     if (!(_ids.Contains(segment.Id) && _ids.Contains(nextSegment.Id)))
                     {
@@ -979,7 +1062,7 @@ namespace Transidious
 
                 if (partialStart)
                 {
-                    var startDistance = (drive.startPos - path[0]).sqrMagnitude;
+                    var startDistance = ((Vector3)drive.startPos - path[0]).sqrMagnitude;
                     for (int i = 0; i < path.Length; ++i)
                     {
                         var pt = path[i];
@@ -1010,7 +1093,7 @@ namespace Transidious
 
                 if (partialEnd)
                 {
-                    var endDistance = (drive.endPos - path[0]).sqrMagnitude;
+                    var endDistance = ((Vector3)drive.endPos - path[0]).sqrMagnitude;
                     for (int i = 0; i < path.Length; ++i)
                     {
                         var pt = path[i];
@@ -1036,7 +1119,6 @@ namespace Transidious
                 // crossed.
                 if (startPos.Equals(endPos))
                 {
-                    // positions = new List<Vector3> { startPos };
                     positions = null;
 
                     if (startPos.Equals(path.First()))
@@ -1082,7 +1164,9 @@ namespace Transidious
             }
         }
 
-        void InitWalk(Citizien citizien, List<Vector3> positions, PathPlanningResult result, int stepNo)
+        void InitWalk(Citizien citizien, List<Vector3> positions,
+                      PathPlanningResult result, int stepNo,
+                      float progress = 0f)
         {
             var walkingCitizienObj = Instantiate(sim.walkingCitizienPrefab);
             var wc = walkingCitizienObj.GetComponent<WalkingCitizien>();
@@ -1092,16 +1176,27 @@ namespace Transidious
             var finalStep = stepNo == result.steps.Count - 1;
             wc.FollowPath(positions, finalStep, (PathFollowingObject obj) =>
             {
-                GameObject.Destroy(walkingCitizienObj);
+                Destroy(walkingCitizienObj);
 
                 if (!finalStep)
                 {
                     InitStep(citizien, result, stepNo + 1);
                 }
+                else
+                {
+                    citizien.activePath = null;
+                }
             });
+
+            if (progress > 0f)
+            {
+                wc.pathFollow.SimulateProgress(progress);
+            }
         }
 
-        void InitStep(Citizien citizien, PathPlanningResult result, int stepNo, float startingVelocity = 0f)
+        void InitStep(Citizien citizien, PathPlanningResult result,
+                      int stepNo, float startingVelocity = 0f,
+                      float progress = 0f, bool initTurn = false)
         {
             List<Vector3> positions;
             StreetSegment segment;
@@ -1109,13 +1204,19 @@ namespace Transidious
             int lane;
             bool finalStep = false;
 
+            citizien.activePath.stepIdx = stepNo;
+            citizien.activePath.progress = 0f;
+            citizien.activePath.isTurn = false;
+            citizien.activePath.currentVelocity = startingVelocity;
+
             var step = result.steps[stepNo];
             switch (step.type)
             {
                 case PathStep.Type.Walk:
                     {
                         var walk = step as WalkStep;
-                        InitWalk(citizien, new List<Vector3> { walk.from, walk.to }, result, stepNo);
+                        InitWalk(citizien, new List<Vector3> { walk.from, walk.to },
+                                 result, stepNo, progress);
 
                         if (stepNo + 1 == result.steps.Count)
                         {
@@ -1133,8 +1234,10 @@ namespace Transidious
                     return;
             }
 
-            GetStepPath(step, out segment, out backward, out finalStep, out lane, out positions,
-                        out bool partialStart, out bool partialEnd, out Vector2 direction);
+            GetStepPath(step, out segment, out backward, out finalStep,
+                        out lane, out positions,
+                        out bool partialStart, out bool partialEnd,
+                        out Vector2 direction);
 
             if (positions == null || positions.Count == 0)
             {
@@ -1151,6 +1254,7 @@ namespace Transidious
 
             var pos = positions.First();
             car.transform.position = new Vector3(pos.x, pos.y, car.transform.position.z);
+            car.gameObject.SetActive(true);
 
             var drivingCar = EnterStreetSegment(car, segment, positions.First(), lane);
             drivingCar.backward = backward;
@@ -1158,19 +1262,36 @@ namespace Transidious
             car.drivingCar = drivingCar;
             SetNextStep(drivingCar, result, stepNo + 1);
 
-            car.FollowPath(positions, startingVelocity, finalStep, (PathFollowingObject obj) =>
+            PathFollowingObject.CompletionCallback callback = (PathFollowingObject obj) =>
             {
                 ExitStreetSegment(segment, drivingCar);
 
                 if (stepNo + 1 != result.steps.Count)
                 {
-                    InitTurn(drivingCar, result, stepNo + 1, drivingCar.CurrentVelocity);
+                    InitTurn(drivingCar, result, stepNo + 1, drivingCar.CurrentVelocity, progress);
                 }
                 else
                 {
-                    sim.DestroyCar(car);
+                    citizien.activePath = null;
+                    car.gameObject.SetActive(false);
                 }
-            });
+            };
+
+            if (initTurn)
+            {
+                var lastPos = positions.Last();
+                car.transform.SetPositionInLayer(lastPos);
+
+                callback.Invoke(null);
+                return;
+            }
+
+            car.FollowPath(positions, startingVelocity, finalStep, callback);
+
+            if (progress > 0f)
+            {
+                car.pathFollow.SimulateProgress(progress);
+            }
         }
 
         Vector3 GetPerpendicularVector(DrivingCar drivingCar, PathPlanningResult result, int nextStep,
@@ -1237,11 +1358,15 @@ namespace Transidious
             path.AddRange(intersectionPath);
         }
 
-        void InitTurn(DrivingCar drivingCar, PathPlanningResult result, int nextStep, float currentVelocity)
+        void InitTurn(DrivingCar drivingCar, PathPlanningResult result,
+                      int nextStep, float currentVelocity, float progress = 0f)
         {
             var step = result.steps[nextStep];
             if (!(step is DriveStep || step is PartialDriveStep))
                 return;
+
+            drivingCar.car.driver.activePath.isTurn = true;
+            drivingCar.car.driver.activePath.progress = 0f;
 
             // First, generate a smooth path crossing the intersection.
             var intersectionPath = new List<Vector3>();
@@ -1256,6 +1381,11 @@ namespace Transidious
                 ExitIntersection(coi, drivingCar.nextIntersection);
                 InitStep(drivingCar.car.driver, result, nextStep, currentVelocity);
             });
+
+            if (progress > 0)
+            {
+                drivingCar.car.pathFollow.SimulateProgress(progress);
+            }
         }
 
         public void SpawnCar(PathPlanningResult result, Citizien driver)
@@ -1266,18 +1396,28 @@ namespace Transidious
                 return;
             }
 
-            var car = sim.CreateCar(driver, Vector3.zero, new Color(
-                UnityEngine.Random.Range(0f, 1f),
-                UnityEngine.Random.Range(0f, 1f),
-                UnityEngine.Random.Range(0f, 1f)
-            ));
-
+            sim.CreateCar(driver, Vector3.zero);
             FollowPath(driver, result);
         }
 
         public void FollowPath(Citizien citizien, PathPlanningResult result)
         {
-            InitStep(citizien, result, 1);
+            citizien.activePath = new ActivePath
+            {
+                path = result,
+                currentVelocity = 0f,
+                stepIdx = 0,
+                isTurn = false,
+                progress = 0f,
+            };
+
+            InitStep(citizien, result, 0);
+        }
+
+        public void FollowPath(Citizien citizien, ActivePath path)
+        {
+            InitStep(citizien, path.path, path.stepIdx, path.currentVelocity,
+                     path.progress, path.isTurn);
         }
 
         float sStar(float s0, float T, float v, float deltaV, float a)

@@ -252,5 +252,52 @@ namespace Transidious
 
             return newTex;
         }
+
+        public static bool Contains2D(this Bounds bounds, Vector2 pos)
+        {
+            return (pos.x >= bounds.center.x - bounds.extents.x)
+                && (pos.x <= bounds.center.x + bounds.extents.x)
+                && (pos.y >= bounds.center.y - bounds.extents.y)
+                && (pos.y <= bounds.center.y + bounds.extents.y);
+        }
+
+        public static void Dump(object o)
+        {
+            var s = new System.Text.StringBuilder();
+            if (o == null)
+            {
+                s.Append("<null>");
+                Debug.Log(s.ToString());
+
+                return;
+            }
+
+            var properties = o.GetType().GetFields();
+
+            s.Append('{');
+            s.Append(o.GetType().Name);
+
+            if (properties.Length != 0)
+            {
+                s.Append(' ');
+
+                for (int i = 0, n = properties.Length; i < n; i++)
+                {
+                    if (i != 0)
+                        s.Append("; ");
+
+                    var property = properties[i];
+
+                    s.Append(property.Name);
+                    s.Append(" = ");
+                    s.Append(property.GetValue(o));
+                }
+            }
+
+            s.Append('}');
+            Debug.Log(s.ToString());
+
+            return;
+        }
     }
 }

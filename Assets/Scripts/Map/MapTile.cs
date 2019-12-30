@@ -155,6 +155,11 @@ namespace Transidious
                         shouldHighlight);
         }
 
+        public bool IsPointInTile(Vector2 pt)
+        {
+            return rect.Contains(pt);
+        }
+
         public MultiMesh GetMesh(string category)
         {
             if (meshes.TryGetValue(category, out MultiMesh mesh))
@@ -315,7 +320,61 @@ namespace Transidious
 
         void OnMouseDown()
         {
-            enteredMapObject?.obj.OnMouseDown();
+            if (enteredMapObject == null)
+            {
+                return;
+            }
+
+            enteredMapObject.obj.OnMouseDown();
+
+            var checkCars = false;
+            switch (enteredMapObject.obj.Kind)
+            {
+                case MapObjectKind.StreetSegment:
+                case MapObjectKind.StreetIntersection:
+                    checkCars = true;
+                    break;
+            }
+
+            var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            if (checkCars)
+            {
+                // Check if a car was clicked.
+                foreach (var car in GameController.instance.sim.cars)
+                {
+                    Vector2 pos = car.Value.transform.position;
+                    if (!IsPointInTile(pos))
+                    {
+                        continue;
+                    }
+
+                    var bounds = car.Value.Bounds;
+                    if (bounds.Contains2D(clickedPos))
+                    {
+                        car.Value.OnMouseDown();
+                        break;
+                    }
+                }
+            }
+
+#if DEBUG
+            // Check if a walking citizien was clicked.
+            foreach (var wc in FindObjectsOfType<WalkingCitizien>())
+            {
+                Vector2 pos = wc.transform.position;
+                if (!IsPointInTile(pos))
+                {
+                    continue;
+                }
+
+                var bounds = wc.Bounds;
+                if (bounds.Contains2D(clickedPos))
+                {
+                    wc.OnMouseDown();
+                    break;
+                }
+            }
+#endif
         }
 
         LineRenderer GetLineRenderer(int i)

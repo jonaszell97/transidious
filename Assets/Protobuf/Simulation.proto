@@ -1,0 +1,148 @@
+syntax = "proto3";
+
+package Transidious.Serialization;
+option csharp_namespace = "Transidious.Serialization";
+
+import "Common.proto";
+import "google/protobuf/any.proto";
+
+message PathStep {
+    enum PathStepKind {
+        Walk = 0;
+        Drive = 1;
+        PartialDrive = 2;
+        PublicTransit = 3;
+    }
+
+    message WalkStep {
+        Vector2 from = 1;
+        Vector2 to = 2;
+    }
+
+    message DriveStep {
+        uint32 segmentID = 1;
+        bool backward = 2;
+    }
+
+    message PartialDriveStep {
+        Vector2 startPos = 1;
+        Vector2 endPos = 2;
+        uint32 segmentID = 3;
+        bool backward = 4;
+        bool partialStart = 5;
+        bool partialEnd = 6;
+    }
+
+    message PublicTransitStep {
+        uint32 lineID = 1;
+        repeated uint32 routeIDs = 2;
+    }
+
+    PathStepKind kind = 1;
+    uint64 timestamp = 2;
+    google.protobuf.Any details = 3;
+}
+
+message PathPlanningResult {
+    float cost = 1;
+    float duration = 2;
+    uint64 leaveBy = 3;
+    uint64 arriveAt = 4;
+    repeated PathStep steps = 5;
+}
+
+message ActivePath {
+    uint32 stepNo = 1;
+    float currentVelocity = 2;
+    float stepProgress = 3;
+    PathPlanningResult path = 4;
+    bool IsTurn = 5;
+}
+
+message Car {
+    // int carModel;
+    // public uint id;
+    // public Citizien driver;
+    // public float maxVelocity;
+    // public float acceleration;
+    // public float length;
+    // public PathFollowingObject pathFollow;
+    // public PathFollowingObject.CompletionCallback callback;
+    // public TrafficSimulator.DrivingCar drivingCar;
+
+    uint32 id = 1;
+    uint32 driverId = 2;
+    uint32 carModel = 3;
+    Vector2 position = 4;
+    Color color = 5;
+}
+
+message Citizien {
+    // public string firstName;
+    // public string lastName;
+    // public short age;
+    // public short birthday;
+    // public bool female;
+    // public Occupation occupation;
+    // public decimal money;
+    // public Car car;
+    // public bool educated;
+    // public byte happiness;
+    // public AbstractSchedule[] schedules;
+    // public Dictionary<Relationship, Citizien> relationships;
+    // public Dictionary<PointOfInterest, Building> pointsOfInterest;
+
+    // public Vector3 currentPosition;
+    // public ScheduledEvent dailySchedule;
+
+    enum Occupation {
+        Worker = 0;
+        Retired = 1;
+        Kindergarden = 2;
+        ElementarySchoolStudent = 3;
+        HighSchoolStudent = 4;
+        UniversityStudent = 5;
+        Trainee = 6;
+    }
+
+    enum RelationshipKind {
+        SignificantOther = 0;
+    }
+
+    message Relationship {
+        RelationshipKind kind = 1;
+        uint32 citizienId = 2;
+    }
+
+    enum PointOfInterestKind {
+        Home = 0;
+        Work = 1;
+        School = 2;
+        GroceryStore = 3;
+    }
+
+    message PointOfInterest {
+        PointOfInterestKind kind = 1;
+        uint32 buildingId = 2;
+    }
+
+    uint32 id = 1;
+    string firstName = 2;
+    string lastName = 3;
+    uint32 age = 4;
+    uint32 birthday = 5;
+    bool female = 6;
+    Occupation occupation = 7;
+    float money = 8;
+    bool educated = 9;
+    uint32 happiness = 10;
+
+    repeated Relationship relationships = 11;
+    repeated PointOfInterest pointsOfInterest = 12;
+
+    uint32 carID = 13;
+    Vector2 currentPosition = 14;
+    ActivePath activePath = 15;
+    int32 scheduleIdx = 16;
+    uint32 scheduleID = 17;
+}

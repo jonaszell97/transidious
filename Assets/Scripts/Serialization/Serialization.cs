@@ -152,6 +152,23 @@ namespace Transidious
 
     public static class SerializationExtensions
     {
+        public static Serialization.Decimal ToProtobuf(this decimal d)
+        {
+            var bits = decimal.GetBits(d);
+            return new Serialization.Decimal
+            {
+                V1 = bits[0],
+                V2 = bits[1],
+                V3 = bits[2],
+                V4 = bits[3],
+            };
+        }
+
+        public static decimal Deserialize(this Serialization.Decimal d)
+        {
+            return new decimal(new int[] { d.V1, d.V2, d.V3, d.V4 });
+        }
+
         public static Serialization.Vector2 ToProtobuf(this Vector2 vec)
         {
             return new Serialization.Vector2

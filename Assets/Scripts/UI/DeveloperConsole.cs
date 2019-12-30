@@ -254,11 +254,17 @@ namespace Transidious
             {
                 Log($"spawned {c.Name}");
             }
+
+            if (amount == 1)
+            {
+                game.input.SetZoomLevel(50f);
+                game.input.MoveTowards(citiziens.First().currentPosition);
+            }
         }
 
         public void HandleSpawnCarsCommand(int amount)
         {
-            sim.SpawnTestCars(amount);
+            StartCoroutine(sim.SpawnTestCars(amount));
             Log($"spawned {amount} cars");
         }
 
@@ -351,6 +357,21 @@ namespace Transidious
             }
 
             Log("added startup command");
+        }
+
+        public void HandleLocateCommand(string name)
+        {
+            var citiziens = game.sim.citiziens.Where(c => c.Value.Name == name);
+            if (citiziens.Count() == 0)
+            {
+                Log($"citizien '{name}' not found");
+                return;
+            }
+
+            Log($"located '{name}'");
+
+            game.input.SetZoomLevel(50f);
+            game.input.MoveTowards(citiziens.First().Value.currentPosition);
         }
 
         public static void Log(string msg)

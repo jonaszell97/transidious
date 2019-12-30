@@ -36,6 +36,16 @@ namespace Transidious
                         case ' ':
                             done = true;
                             break;
+                        case '"':
+                            ++i;
+
+                            while (i < characters.Length && characters[i] != '"')
+                            {
+                                currentStr.Append(characters[i]);
+                                ++i;
+                            }
+
+                            break;
                         case '=':
                             if (cmd == null || currentStr.Length == 0)
                             {

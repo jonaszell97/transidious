@@ -11,6 +11,7 @@ namespace Transidious
         public float maxVelocity;
         public PathFollowingObject pathFollow;
         public PathFollowingObject.CompletionCallback callback;
+        new SpriteRenderer renderer;
 
         public bool isFocused
         {
@@ -24,19 +25,25 @@ namespace Transidious
         {
             get
             {
-                var renderer = GetComponent<SpriteRenderer>();
                 return renderer.color;
             }
             set
             {
-                var renderer = GetComponent<SpriteRenderer>();
                 renderer.color = value;
+            }
+        }
+
+        public Bounds Bounds
+        {
+            get
+            {
+                return renderer.bounds;
             }
         }
 
         public void Initialize(SimulationController sim, Citizien citizien, Color c)
         {
-            var renderer = GetComponent<SpriteRenderer>();
+            this.renderer = GetComponent<SpriteRenderer>();
             renderer.color = c;
 
             if (citizien.age < 10)
@@ -83,7 +90,7 @@ namespace Transidious
             this.callback = callback;
             this.pathFollow = new PathFollowingObject(sim, this.gameObject, path,
                                                       maxVelocity, 0f, isFinalStep,
-                                                      PathDone);
+                                                      PathDone, citizien.activePath);
         }
 
         void FixedUpdate()
@@ -91,6 +98,7 @@ namespace Transidious
             if (!sim.game.Paused && pathFollow != null)
             {
                 pathFollow.FixedUpdate();
+                citizien.currentPosition = transform.position;
             }
 
             if (isFocused)
@@ -125,7 +133,7 @@ namespace Transidious
             this.Unhighlight();
         }
 
-        void OnMouseDown()
+        public void OnMouseDown()
         {
             if (GameController.instance.input.IsPointerOverUIElement())
             {

@@ -1497,8 +1497,6 @@ namespace Transidious
         public void Deserialize(Serialization.Stop stop, Map map)
         {
             base.Deserialize(stop.MapObject);
-            transform.position = stop.Position.Deserialize();
-
             outgoingRoutes = stop.OutgoingRouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
             routes = stop.RouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
         }

@@ -8,6 +8,7 @@ import "Building.proto";
 import "NaturalFeature.proto";
 import "Street.proto";
 import "Transit.proto";
+import "Simulation.proto";
 
 message MapTile {
     uint32 x = 1;
@@ -34,6 +35,28 @@ message Map {
     repeated StreetIntersection streetIntersections = 12;
 }
 
+message Expense {
+    string description = 1;
+    Decimal amount = 2;
+}
+
+message Earning {
+    string description = 1;
+    Decimal amount = 2;
+}
+
+message Finances {
+    Decimal money = 1;
+
+    Decimal expenses = 2;
+    repeated Expense expenseItems = 3;
+
+    Decimal earnings = 4;
+    repeated Earning earningItems = 5;
+
+    Earning taxes = 6;
+}
+
 message SaveFile {
     message MapTiles {
         repeated MapTile tiles = 1;
@@ -44,4 +67,10 @@ message SaveFile {
     repeated Line lines = 3;
     repeated Stop stops = 4;
     repeated Route routes = 5;
+
+    repeated Citizien citiziens = 6;
+    repeated Car cars = 7;
+
+    uint64 gameTime = 8;
+    Finances finances = 9;
 }

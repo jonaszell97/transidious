@@ -19,7 +19,11 @@ namespace Transidious
         public int simulationSpeed;
 
         /// The citiziens.
-        public List<Citizien> citiziens;
+        public Dictionary<uint, Citizien> citiziens;
+        public List<Citizien> citizienList;
+
+        /// List of cars.
+        public Dictionary<uint, Car> cars;
 
         /// The number of citiziens.
         public int totalCitizienCount;
@@ -56,6 +60,18 @@ namespace Transidious
 
         /// Scratch buffer used for time string building.
         char[] timeStringBuffer;
+
+        public class SimulationSettings
+        {
+            /// Max number of citizien updates per frame.
+            public int maxCitizienUpdates = 150;
+        }
+
+        /// The simulation settings.
+        public SimulationSettings settings;
+        int citizienUpdateCnt = 0;
+        int ticksSinceLastCompleteUpdate = 0;
+        bool newDay = false;
 
         public delegate void TimedEvent();
 
@@ -98,10 +114,16 @@ namespace Transidious
         {
             this.gameTime = new DateTime(2000, 1, 1, 7, 0, 0);
             this.simulationSpeed = 0;
-            this.citiziens = new List<Citizien>();
+            this.citiziens = new Dictionary<uint, Citizien>();
+            this.citizienList = new List<Citizien>();
+            this.cars = new Dictionary<uint, Car>();
             this.timeStringBuffer = new char[Translator.MaxTimeStringLength];
             this.scheduledEvents = new Dictionary<int, TimedEventInfo>();
             this.timedEvents = new List<Tuple<DateTime, TimedEvent>>();
+
+            this.settings = new SimulationSettings();
+
+            UpdateGameTimeString();
         }
 
         void Start()
@@ -122,19 +144,44 @@ namespace Transidious
 
             if (isNewDay)
             {
+                newDay = true;
                 game.mainUI.UpdateDate(gameTime);
             }
 
-            foreach (var citizien in citiziens)
+            var threshold = System.Math.Min(citizienUpdateCnt + settings.maxCitizienUpdates,
+                                            citizienList.Count);
+
+            ++ticksSinceLastCompleteUpdate;
+
+            for (; citizienUpdateCnt < threshold; ++citizienUpdateCnt)
             {
-                if (isNewDay)
+                var citizien = citizienList[citizienUpdateCnt];
+                if (newDay)
                 {
                     citizien.UpdateAge();
                     citizien.UpdateDailySchedule(minuteOfDay);
                 }
 
-                citizien.Update(minuteOfDay);
+                citizien.Update(minuteOfDay, ticksSinceLastCompleteUpdate);
             }
+
+            if (citizienUpdateCnt == citizienList.Count)
+            {
+                citizienUpdateCnt = 0;
+                ticksSinceLastCompleteUpdate = 0;
+                newDay = false;
+            }
+
+            //foreach (var citizien in citiziens)
+            //{
+            //    if (isNewDay)
+            //    {
+            //        citizien.Value.UpdateAge();
+            //        citizien.Value.UpdateDailySchedule(minuteOfDay);
+            //    }
+
+            //    citizien.Value.Update(minuteOfDay);
+            //}
 
 #if DEBUG
             if (measuring)
@@ -403,7 +450,7 @@ namespace Transidious
             }
         }
 
-        public Car CreateCar(Citizien driver, Vector3 pos, Color c, int carModel = -1)
+        public Car CreateCar(Citizien driver, Vector3 pos, Color? c = null, int carModel = -1)
         {
             var obj = Instantiate(carPrefab);
             obj.transform.position = new Vector3(pos.x, pos.y);
@@ -412,12 +459,30 @@ namespace Transidious
             var car = obj.GetComponent<Car>();
             car.Initialize(this, driver, c, carModel);
 
+            cars.Add(car.id, car);
+            return car;
+        }
+
+        public Car CreateCar(Serialization.Car c)
+        {
+            var obj = Instantiate(carPrefab);
+            obj.transform.position = c.Position?.Deserialize() ?? obj.transform.position;
+            obj.transform.SetParent(this.transform);
+
+            var car = obj.GetComponent<Car>();
+            var driver = citiziens[c.DriverId];
+
+            car.Initialize(this, driver, c.Color?.Deserialize() ?? Utility.RandomColor,
+                          (int)c.CarModel, c.Id);
+
+            cars.Add(car.id, car);
             return car;
         }
 
         public void DestroyCar(Car c)
         {
             Destroy(c.gameObject);
+            cars.Remove(c.id);
         }
 
         public TransitVehicle CreateVehicle(Line line)
@@ -530,7 +595,7 @@ namespace Transidious
                                        Citizien.Occupation? occupation = null,
                                        decimal? money = null,
                                        bool? educated = null,
-                                       byte? happiness = null,
+                                       float? happiness = null,
                                        Car car = null)
         {
             var c = new Citizien(this, car);
@@ -541,6 +606,14 @@ namespace Transidious
             c.Initialize();
 
             return c;
+        }
+
+        public Citizien CreateCitizien(Serialization.Citizien c)
+        {
+            var result = new Citizien(this, c);
+            result.Initialize(c.ScheduleID);
+
+            return result;
         }
 
         public void SpawnRandomCitiziens(int amount, List<Citizien> citiziens = null)
@@ -588,7 +661,6 @@ namespace Transidious
             {
                 var citizien = CreateCitizien();
                 citizien.car = CreateCar(citizien, Vector3.zero, Utility.RandomColor);
-                citiziens.Add(citizien);
 
                 if (FrameTimer.instance.FrameDuration >= 8)
                 {

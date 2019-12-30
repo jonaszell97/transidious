@@ -22,11 +22,16 @@ namespace Transidious
         public delegate void CompletionCallback(PathFollowingObject obj);
 
         public CompletionCallback completionCallback;
+        public TrafficSimulator.ActivePath activePath = null;
+
+        public float totalProgress;
+        public float totalThreshold;
 
         public PathFollowingObject(SimulationController sim, GameObject obj,
                                    List<Vector3> pathNodes, float velocity, float length,
                                    bool isFinalStep = false,
-                                   PathFollowingObject.CompletionCallback callback = null)
+                                   PathFollowingObject.CompletionCallback callback = null,
+                                   TrafficSimulator.ActivePath activePath = null)
         {
             this.sim = sim;
             this.obj = obj;
@@ -36,12 +41,43 @@ namespace Transidious
             this.length = length;
             this.isFinalStep = isFinalStep;
             this.currentNode = 1;
+            this.activePath = activePath;
+
+            this.totalProgress = 0f;
+            this.totalThreshold = 0f;
+
+            for (var i = 0; i < pathNodes.Count - 1; ++i)
+            {
+                this.totalThreshold += (pathNodes[i + 1] - pathNodes[i]).magnitude;
+            }
 
             MoveNext();
 
             obj.transform.rotation = Quaternion.FromToRotation(Vector3.up,
                                                                nextPosition - startPosition);
             prevRotation = obj.transform.rotation;
+        }
+
+        public void SimulateProgress(float progress)
+        {
+            // Progress is percentual
+            progress *= totalThreshold;
+
+            while (this.totalProgress < progress)
+            {
+                if (this.totalProgress + threshold >= progress)
+                {
+                    this.progress = (progress - totalProgress);
+                    break;
+                }
+                else
+                {
+                    totalProgress += threshold;
+                    MoveNext();
+                }
+            }
+
+            UpdatePositionAndRotation();
         }
 
         void MoveNext()
@@ -54,8 +90,6 @@ namespace Transidious
             threshold = dir.magnitude;
             direction = dir.normalized;
             prevRotation = obj.transform.rotation;
-
-            _expectedProgress += threshold;
         }
 
         void UpdateRotation(float progress)
@@ -67,18 +101,13 @@ namespace Transidious
             obj.transform.rotation = Quaternion.Lerp(prevRotation, rot, progress);
         }
 
-        public float _expectedProgress = 0f;
-        public float _totalProgress = 0f;
-
-        public void FixedUpdate()
+        void UpdatePositionAndRotation()
         {
-            progress += Time.fixedDeltaTime * velocity * sim.SpeedMultiplier;
-
             var diff = threshold - progress;
             // Kind of a hack, but who am I to judge
             if (diff > 0f && !(isFinalStep && diff < 1f && velocity.Equals(0f)))
             {
-                var progressPercentage = this.progress / threshold;
+                var progressPercentage = progress / threshold;
                 var lerpedPos = Vector2.Lerp(startPosition, nextPosition, progressPercentage);
 
                 obj.transform.position = new Vector3(lerpedPos.x, lerpedPos.y,
@@ -88,7 +117,6 @@ namespace Transidious
             }
             else if (currentNode < pathNodes.Count)
             {
-                _totalProgress += progress;
                 obj.transform.position = new Vector3(nextPosition.x, nextPosition.y,
                                                      obj.transform.position.z);
 
@@ -97,11 +125,24 @@ namespace Transidious
             }
             else if (completionCallback != null)
             {
-                _totalProgress += progress;
-
                 completionCallback(this);
                 completionCallback = null;
             }
+        }
+
+        public void FixedUpdate()
+        {
+            var newProgress = Time.fixedDeltaTime * velocity * sim.SpeedMultiplier;
+            progress += newProgress;
+            totalProgress += newProgress;
+
+            if (activePath != null)
+            {
+                activePath.progress = Mathf.Min(1f, totalProgress / totalThreshold);
+                activePath.currentVelocity = velocity;
+            }
+
+            UpdatePositionAndRotation();
         }
     }
 }

@@ -68,7 +68,7 @@ namespace Transidious
 
     public class SaveManager
     {
-        public static readonly VersionTriple SaveFormatVersion = new VersionTriple(0, 0, 2);
+        public static readonly VersionTriple SaveFormatVersion = new VersionTriple(0, 0, 3);
         public static Map loadedMap;
 
 #if UNITY_EDITOR
@@ -104,6 +104,7 @@ namespace Transidious
 
         static Serialization.SaveFile GetProtobufSaveFile(Map map)
         {
+            var sim = GameController.instance.sim;
             var saveFile = new Serialization.SaveFile
             {
                 Triple = new Serialization.VersionTriple
@@ -112,6 +113,8 @@ namespace Transidious
                     Minor = (uint)SaveFormatVersion.minor,
                     Patch = (uint)SaveFormatVersion.patch,
                 },
+                GameTime = (ulong)sim.GameTime.Ticks,
+                Finances = GameController.instance.financeController?.ToProtobuf(),
             };
 
             for (var x = 0; x < map.tiles.Length; ++x)
@@ -131,6 +134,15 @@ namespace Transidious
             saveFile.Stops.AddRange(map.transitStops.Select(b => b.ToProtobuf()));
             saveFile.Routes.AddRange(map.transitRoutes.Select(b => b.ToProtobuf()));
             saveFile.Lines.AddRange(map.transitLines.Select(b => b.ToProtobuf()));
+
+            if (sim.citiziens != null)
+            {
+                saveFile.Citiziens.AddRange(
+                    sim.citiziens.Select(c => c.Value.ToProtobuf()));
+
+                saveFile.Cars.AddRange(
+                    sim.cars.Select(c => c.Value.ToProtobuf()));
+            }
 
             return saveFile;
         }
@@ -379,6 +391,7 @@ namespace Transidious
             UIMiniMap.mapSprite = sprite;
         }
 
+#if false
         static void LoadBackgroundSprite(Map map, ref GameObject gameObject)
         {
             var sprite = SpriteManager.GetSprite($"Maps/{map.name}/LOD");
@@ -465,9 +478,16 @@ namespace Transidious
 
             gameObject.SetActive(false);
         }
+#endif
 
         public static IEnumerator LoadSave(Map map, string mapName)
         {
+            bool wasPaused = GameController.instance.status == GameController.GameStatus.Paused;
+            if (!wasPaused)
+            {
+                GameController.instance.EnterPause();
+            }
+
             var resourceName = "Saves/" + mapName;
             var asyncResource = Resources.LoadAsync(resourceName);
             yield return asyncResource;
@@ -479,6 +499,11 @@ namespace Transidious
 
             // Finalize the map.
             yield return map.DoFinalize(thresholdTime);
+
+            if (!wasPaused)
+            {
+                GameController.instance.ExitPause();
+            }
         }
 
         static IEnumerator LoadSave(Map map, ResourceRequest asyncResource)
@@ -498,6 +523,28 @@ namespace Transidious
 
             yield return DeserializeGameObjects(map, saveFile);
             yield return InitializeGameObjects(map, saveFile);
+
+            var sim = GameController.instance.sim;
+            if (saveFile.GameTime != 0)
+            {
+                sim.GameTime = new DateTime((long)saveFile.GameTime);
+            }
+
+            if (saveFile.Finances != null)
+            {
+                var finances = GameController.instance.financeController;
+                finances.Money = saveFile.Finances.Money.Deserialize();
+
+                foreach (var expense in saveFile.Finances.ExpenseItems)
+                {
+                    finances.AddExpense(expense.Description, expense.Amount.Deserialize());
+                }
+
+                foreach (var earning in saveFile.Finances.EarningItems)
+                {
+                    finances.AddEarning(earning.Description, earning.Amount.Deserialize());
+                }
+            }
         }
 
         static IEnumerator DeserializeGameObjects(Map map, Serialization.SaveFile saveFile)
@@ -520,6 +567,18 @@ namespace Transidious
             {
                 map.CreateLine((TransitType)line.Type, line.MapObject.Name, line.Color.Deserialize(),
                                (int)line.MapObject.Id).Finish();
+            }
+
+            // Deserialize raw citiziens.
+            foreach (var citizien in saveFile.Citiziens)
+            {
+                GameController.instance.sim.CreateCitizien(citizien);
+            }
+
+            // Deserialize raw cars.
+            foreach (var car in saveFile.Cars)
+            {
+                GameController.instance.sim.CreateCar(car);
             }
 
             yield break;
@@ -559,6 +618,12 @@ namespace Transidious
                     var tile = saveFile.Tiles[x].Tiles[y];
                     map.tiles[tile.X][tile.Y].Deserialize(tile);
                 }
+            }
+
+            // Initialize citiziens.
+            foreach (var citizien in saveFile.Citiziens)
+            {
+                GameController.instance.sim.citiziens[citizien.Id].Finalize(citizien);
             }
 
             yield break;

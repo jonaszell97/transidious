@@ -24,28 +24,30 @@ namespace Transidious.Serialization {
     static CommonReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgxDb21tb24ucHJvdG8SGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24iPAoN",
-            "VmVyc2lvblRyaXBsZRINCgVtYWpvchgBIAEoDRINCgVtaW5vchgCIAEoDRIN",
-            "CgVwYXRjaBgDIAEoDSIfCgdWZWN0b3IyEgkKAXgYASABKAISCQoBeRgCIAEo",
-            "AiIqCgdWZWN0b3IzEgkKAXgYASABKAISCQoBeRgCIAEoAhIJCgF6GAMgASgC",
-            "IjMKBUNvbG9yEgkKAXIYASABKAISCQoBZxgCIAEoAhIJCgFiGAMgASgCEgkK",
-            "AWEYBCABKAIigQEKBk1lc2gyRBI0Cgh2ZXJ0aWNlcxgBIAMoCzIiLlRyYW5z",
-            "aWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhIRCgl0cmlhbmdsZXMYAiAD",
-            "KA0SLgoCdXYYAyADKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZl",
-            "Y3RvcjIifwoETWVzaBI0Cgh2ZXJ0aWNlcxgBIAMoCzIiLlRyYW5zaWRpb3Vz",
-            "LlNlcmlhbGl6YXRpb24uVmVjdG9yMxIRCgl0cmlhbmdsZXMYAiADKA0SLgoC",
-            "dXYYAyADKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjIi",
-            "pAIKCU1hcE9iamVjdBIKCgJpZBgBIAEoDRIMCgRuYW1lGAIgASgJEhMKC3Vu",
-            "aXF1ZVRpbGVYGAMgASgFEhMKC3VuaXF1ZVRpbGVZGAQgASgFEkYKEG91dGxp",
-            "bmVQb3NpdGlvbnMYBSADKAsyLC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
-            "Lk1hcE9iamVjdC5PdXRsaW5lEgwKBGFyZWEYBiABKAISNAoIY2VudHJvaWQY",
-            "ByABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjIaRwoH",
-            "T3V0bGluZRI8ChBvdXRsaW5lUG9zaXRpb25zGAEgAygLMiIuVHJhbnNpZGlv",
-            "dXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyQhyqAhlUcmFuc2lkaW91cy5TZXJp",
-            "YWxpemF0aW9uYgZwcm90bzM="));
+            "CgxDb21tb24ucHJvdG8SGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24iOQoH",
+            "RGVjaW1hbBIKCgJ2MRgBIAEoERIKCgJ2MhgCIAEoERIKCgJ2MxgDIAEoERIK",
+            "CgJ2NBgEIAEoESI8Cg1WZXJzaW9uVHJpcGxlEg0KBW1ham9yGAEgASgNEg0K",
+            "BW1pbm9yGAIgASgNEg0KBXBhdGNoGAMgASgNIh8KB1ZlY3RvcjISCQoBeBgB",
+            "IAEoAhIJCgF5GAIgASgCIioKB1ZlY3RvcjMSCQoBeBgBIAEoAhIJCgF5GAIg",
+            "ASgCEgkKAXoYAyABKAIiMwoFQ29sb3ISCQoBchgBIAEoAhIJCgFnGAIgASgC",
+            "EgkKAWIYAyABKAISCQoBYRgEIAEoAiKBAQoGTWVzaDJEEjQKCHZlcnRpY2Vz",
+            "GAEgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyEhEK",
+            "CXRyaWFuZ2xlcxgCIAMoDRIuCgJ1dhgDIAMoCzIiLlRyYW5zaWRpb3VzLlNl",
+            "cmlhbGl6YXRpb24uVmVjdG9yMiJ/CgRNZXNoEjQKCHZlcnRpY2VzGAEgAygL",
+            "MiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IzEhEKCXRyaWFu",
+            "Z2xlcxgCIAMoDRIuCgJ1dhgDIAMoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
+            "YXRpb24uVmVjdG9yMiKkAgoJTWFwT2JqZWN0EgoKAmlkGAEgASgNEgwKBG5h",
+            "bWUYAiABKAkSEwoLdW5pcXVlVGlsZVgYAyABKAUSEwoLdW5pcXVlVGlsZVkY",
+            "BCABKAUSRgoQb3V0bGluZVBvc2l0aW9ucxgFIAMoCzIsLlRyYW5zaWRpb3Vz",
+            "LlNlcmlhbGl6YXRpb24uTWFwT2JqZWN0Lk91dGxpbmUSDAoEYXJlYRgGIAEo",
+            "AhI0CghjZW50cm9pZBgHIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
+            "b24uVmVjdG9yMhpHCgdPdXRsaW5lEjwKEG91dGxpbmVQb3NpdGlvbnMYASAD",
+            "KAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjJCHKoCGVRy",
+            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Decimal), global::Transidious.Serialization.Decimal.Parser, new[]{ "V1", "V2", "V3", "V4" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.VersionTriple), global::Transidious.Serialization.VersionTriple.Parser, new[]{ "Major", "Minor", "Patch" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Vector2), global::Transidious.Serialization.Vector2.Parser, new[]{ "X", "Y" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Vector3), global::Transidious.Serialization.Vector3.Parser, new[]{ "X", "Y", "Z" }, null, null, null),
@@ -59,6 +61,219 @@ namespace Transidious.Serialization {
 
   }
   #region Messages
+  public sealed partial class Decimal : pb::IMessage<Decimal> {
+    private static readonly pb::MessageParser<Decimal> _parser = new pb::MessageParser<Decimal>(() => new Decimal());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Decimal> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[0]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Decimal() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Decimal(Decimal other) : this() {
+      v1_ = other.v1_;
+      v2_ = other.v2_;
+      v3_ = other.v3_;
+      v4_ = other.v4_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Decimal Clone() {
+      return new Decimal(this);
+    }
+
+    /// <summary>Field number for the "v1" field.</summary>
+    public const int V1FieldNumber = 1;
+    private int v1_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int V1 {
+      get { return v1_; }
+      set {
+        v1_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "v2" field.</summary>
+    public const int V2FieldNumber = 2;
+    private int v2_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int V2 {
+      get { return v2_; }
+      set {
+        v2_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "v3" field.</summary>
+    public const int V3FieldNumber = 3;
+    private int v3_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int V3 {
+      get { return v3_; }
+      set {
+        v3_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "v4" field.</summary>
+    public const int V4FieldNumber = 4;
+    private int v4_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int V4 {
+      get { return v4_; }
+      set {
+        v4_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Decimal);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Decimal other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (V1 != other.V1) return false;
+      if (V2 != other.V2) return false;
+      if (V3 != other.V3) return false;
+      if (V4 != other.V4) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (V1 != 0) hash ^= V1.GetHashCode();
+      if (V2 != 0) hash ^= V2.GetHashCode();
+      if (V3 != 0) hash ^= V3.GetHashCode();
+      if (V4 != 0) hash ^= V4.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (V1 != 0) {
+        output.WriteRawTag(8);
+        output.WriteSInt32(V1);
+      }
+      if (V2 != 0) {
+        output.WriteRawTag(16);
+        output.WriteSInt32(V2);
+      }
+      if (V3 != 0) {
+        output.WriteRawTag(24);
+        output.WriteSInt32(V3);
+      }
+      if (V4 != 0) {
+        output.WriteRawTag(32);
+        output.WriteSInt32(V4);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (V1 != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeSInt32Size(V1);
+      }
+      if (V2 != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeSInt32Size(V2);
+      }
+      if (V3 != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeSInt32Size(V3);
+      }
+      if (V4 != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeSInt32Size(V4);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Decimal other) {
+      if (other == null) {
+        return;
+      }
+      if (other.V1 != 0) {
+        V1 = other.V1;
+      }
+      if (other.V2 != 0) {
+        V2 = other.V2;
+      }
+      if (other.V3 != 0) {
+        V3 = other.V3;
+      }
+      if (other.V4 != 0) {
+        V4 = other.V4;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            V1 = input.ReadSInt32();
+            break;
+          }
+          case 16: {
+            V2 = input.ReadSInt32();
+            break;
+          }
+          case 24: {
+            V3 = input.ReadSInt32();
+            break;
+          }
+          case 32: {
+            V4 = input.ReadSInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class VersionTriple : pb::IMessage<VersionTriple> {
     private static readonly pb::MessageParser<VersionTriple> _parser = new pb::MessageParser<VersionTriple>(() => new VersionTriple());
     private pb::UnknownFieldSet _unknownFields;
@@ -67,7 +282,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -252,7 +467,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -409,7 +624,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -594,7 +809,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[3]; }
+      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -807,7 +1022,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[4]; }
+      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -969,7 +1184,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[5]; }
+      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1131,7 +1346,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[6]; }
+      get { return global::Transidious.Serialization.CommonReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

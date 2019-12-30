@@ -11,6 +11,24 @@ namespace Transidious
     {
         public string descriptionKey;
         public decimal amount;
+
+        public Serialization.Expense ToProtobuf()
+        {
+            return new Serialization.Expense
+            {
+                Description = descriptionKey,
+                Amount = amount.ToProtobuf(),
+            };
+        }
+
+        public static Expense Deserialize(Serialization.Expense v)
+        {
+            return new Expense
+            {
+                descriptionKey = v.Description,
+                amount = v.Amount.Deserialize(),
+            };
+        }
     }
 
     [System.Serializable]
@@ -18,6 +36,24 @@ namespace Transidious
     {
         public string descriptionKey;
         public decimal amount;
+
+        public Serialization.Earning ToProtobuf()
+        {
+            return new Serialization.Earning
+            {
+                Description = descriptionKey,
+                Amount = amount.ToProtobuf(),
+            };
+        }
+
+        public static Earning Deserialize(Serialization.Earning v)
+        {
+            return new Earning
+            {
+                descriptionKey = v.Description,
+                amount = v.Amount.Deserialize(),
+            };
+        }
     }
 
     public class FinanceController : MonoBehaviour
@@ -91,17 +127,8 @@ namespace Transidious
             }
         }
 
-        void Start()
+        void Awake()
         {
-#if UNITY_EDITOR
-            if (money == default)
-            {
-                money = (decimal)startingMoney;
-                expenses = (decimal)startingExpenses;
-                earnings = (decimal)startingEarnings;
-            }
-#endif
-
             earningItems = new List<Earning>();
             expenseItems = new List<Expense>();
 
@@ -112,6 +139,18 @@ namespace Transidious
             };
 
             earningItems.Add(taxes);
+        }
+
+        void Start()
+        {
+#if UNITY_EDITOR
+            if (money == default)
+            {
+                money = (decimal)startingMoney;
+                expenses = (decimal)startingExpenses;
+                earnings = (decimal)startingEarnings;
+            }
+#endif
 
             game.mainUI.UpdateFinances();
             GameController.instance.sim.ScheduleEvent(() => this.UpdateFinances());
@@ -176,6 +215,22 @@ namespace Transidious
             {
                 expenses += item.amount;
             }
+        }
+
+        public Serialization.Finances ToProtobuf()
+        {
+            var result = new Serialization.Finances
+            {
+                Money = money.ToProtobuf(),
+                Earnings = earnings.ToProtobuf(),
+                Expenses = expenses.ToProtobuf(),
+                Taxes = taxes.ToProtobuf(),
+            };
+
+            result.ExpenseItems.AddRange(expenseItems.Select(e => e.ToProtobuf()));
+            result.EarningItems.AddRange(earningItems.Select(e => e.ToProtobuf()));
+
+            return result;
         }
     }
 }

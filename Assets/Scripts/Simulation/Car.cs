@@ -1,12 +1,28 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 namespace Transidious
 {
     public class Car : MonoBehaviour
     {
+        static Tuple<float, Color>[] colorDistribution =
+        {
+            new Tuple<float, Color>(0.24f, Color.white),
+            new Tuple<float, Color>(0.16f, new Color(.7f, .7f, .7f)),    // silver
+            new Tuple<float, Color>(0.19f, Color.black),
+            new Tuple<float, Color>(0.15f, Color.gray),
+            new Tuple<float, Color>(0.10f, new Color(.57f, 0f, 0f)),     // red
+            new Tuple<float, Color>(0.05f, new Color(.82f, .71f, .55f)), // tan
+            new Tuple<float, Color>(0.03f, new Color(.082f, .305f, 0f)), // green
+        };
+
+        static uint lastAssignedID = 0;
+
         SimulationController sim;
         int carModel;
+
+        public uint id;
         public Citizien driver;
         public float maxVelocity;
         public float acceleration;
@@ -14,6 +30,8 @@ namespace Transidious
         public PathFollowingObject pathFollow;
         public PathFollowingObject.CompletionCallback callback;
         public TrafficSimulator.DrivingCar drivingCar;
+
+        new SpriteRenderer renderer;
 
         public bool isFocused
         {
@@ -35,20 +53,57 @@ namespace Transidious
         {
             get
             {
-                var renderer = GetComponent<SpriteRenderer>();
                 return renderer.color;
             }
             set
             {
-                var renderer = GetComponent<SpriteRenderer>();
                 renderer.color = value;
             }
         }
 
-        public void Initialize(SimulationController sim, Citizien driver, Color c, int carModel = -1)
+        public Color RandomCarColor
         {
-            var renderer = GetComponent<SpriteRenderer>();
-            renderer.color = c;
+            get
+            {
+                var rnd = UnityEngine.Random.Range(0f, 1f);
+
+                var i = 0;
+                var sum = colorDistribution[i].Item1;
+
+                while (rnd > sum)
+                {
+                    if (++i == colorDistribution.Length)
+                    {
+                        return Utility.RandomColor;
+                    }
+
+                    sum += colorDistribution[i].Item1;
+                }
+
+                return colorDistribution[i].Item2;
+            }
+        }
+
+        public Bounds Bounds
+        {
+            get
+            {
+                return renderer.bounds;
+            }
+        }
+
+        public void Initialize(SimulationController sim, Citizien driver,
+                               Color? c = null, int carModel = -1, uint id = 0)
+        {
+            this.renderer = GetComponent<SpriteRenderer>();
+            if (c != null)
+            {
+                renderer.color = c.Value;
+            }
+            else
+            {
+                renderer.color = RandomCarColor;
+            }
 
             if (carModel == -1)
             {
@@ -56,7 +111,7 @@ namespace Transidious
             }
 
             this.carModel = carModel;
-            renderer.sprite = SpriteManager.instance.carSprites[carModel];
+            renderer.sprite = SpriteManager.instance.carSpritesOutlined[carModel];
 
             switch (carModel)
             {
@@ -83,14 +138,21 @@ namespace Transidious
                 break;
             }
 
+            if (id == 0)
+            {
+                this.id = ++lastAssignedID;
+            }
+            else
+            {
+                this.id = id;
+                lastAssignedID = System.Math.Max(id, lastAssignedID);
+            }
+
             this.sim = sim;
             this.driver = driver;
             driver.car = this;
             this.length = renderer.bounds.size.y;
             this.transform.SetLayer(MapLayer.Cars, 1);
-
-            var collider = GetComponent<BoxCollider2D>();
-            collider.size = renderer.bounds.size;
         }
 
         void PathDone(PathFollowingObject obj)
@@ -116,11 +178,11 @@ namespace Transidious
             this.callback = callback;
             this.pathFollow = new PathFollowingObject(sim, this.gameObject, path,
                                                       startingVelocity, length, isFinalStep,
-                                                      PathDone);
+                                                      PathDone, driver?.activePath);
 
             // Make sure to update the velocity right away.
             timeSinceLastUpdate = TrafficSimulator.VelocityUpdateInterval;
-            timeElapsed = 0f;
+            // timeElapsed = 0f;
         }
 
         public void SetVelocity(float velocity)
@@ -132,7 +194,7 @@ namespace Transidious
         }
 
         /// Total time elapsed while driving.
-        public float timeElapsed;
+        // public float timeElapsed;
 
         /// Elapsed time since the last update of the car's velocity.
         public float timeSinceLastUpdate;
@@ -142,7 +204,7 @@ namespace Transidious
             SetVelocity(sim.trafficSim.GetCarVelocity(drivingCar));
 
             // Must be updated after the velocity calculation.
-            timeElapsed += Time.fixedDeltaTime * sim.SpeedMultiplier;
+            // timeElapsed += Time.fixedDeltaTime * sim.SpeedMultiplier;
             timeSinceLastUpdate = 0f;
         }
 
@@ -153,14 +215,14 @@ namespace Transidious
                 var elapsedTime = Time.fixedDeltaTime * sim.SpeedMultiplier;
                 timeSinceLastUpdate += elapsedTime;
 
-                if (timeSinceLastUpdate < TrafficSimulator.VelocityUpdateInterval)
-                {
-                    timeElapsed += elapsedTime;
-                }
-                else
+                if (timeSinceLastUpdate >= TrafficSimulator.VelocityUpdateInterval)
                 {
                     UpdateVelocity();
                 }
+                //else
+                //{
+                //    timeElapsed += elapsedTime;
+                //}
 
                 if (drivingCar.waitingForTrafficLight != null)
                 {
@@ -179,11 +241,13 @@ namespace Transidious
                     drivingCar.segment,
                     drivingCar.exactPosition,
                     drivingCar.lane);
-            }
 
-            if (isFocused)
-            {
-                UpdateUIPosition();
+                driver.currentPosition = drivingCar.exactPosition;
+
+                if (isFocused)
+                {
+                    UpdateUIPosition();
+                }
             }
         }
 
@@ -213,7 +277,7 @@ namespace Transidious
             this.Unhighlight();
         }
 
-        void OnMouseDown()
+        public void OnMouseDown()
         {
             if (GameController.instance.input.IsPointerOverUIElement())
             {
@@ -225,6 +289,18 @@ namespace Transidious
 
             modal.modal.PositionAt(transform.position);
             modal.modal.Enable();
+        }
+
+        public Serialization.Car ToProtobuf()
+        {
+            return new Serialization.Car
+            {
+                Id = id,
+                CarModel = (uint)carModel,
+                DriverId = driver.id,
+                Color = color.ToProtobuf(),
+                Position = ((Vector2)transform.position).ToProtobuf(),
+            };
         }
     }
 }

@@ -428,7 +428,7 @@ namespace Transidious
             map.name = this.area.ToString();
             map.input = GameController.instance.input;
 
-            this.exporter = new MapExporter(map, 8192);
+            this.exporter = new MapExporter(map, 4096);
 
             await this.ImportArea();
 

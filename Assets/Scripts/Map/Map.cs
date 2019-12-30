@@ -128,6 +128,9 @@ namespace Transidious
         /// The canvas covering the entire map.
         public Canvas canvas;
 
+        /// The heatmap covering the entire map.
+        public Heatmap heatmap;
+
         /// Prefab for creating map tiles.
         public GameObject mapTilePrefab;
 
@@ -506,6 +509,11 @@ namespace Transidious
             var canvasTransform = canvas.GetComponent<RectTransform>();
             canvasTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxX - minX);
             canvasTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, maxY - minY);
+
+            heatmap.transform.localScale = new Vector3(maxX - minX, maxY - minY, 1f);
+            heatmap.transform.position = new Vector3(minX + (maxX - minX) * .5f,
+                                                     minY + (maxY - minY) * .5f,
+                                                     Layer(MapLayer.Foreground));
 
             // Create the background mesh.
             {
@@ -1179,14 +1187,14 @@ namespace Transidious
                         street, backward ? street.LeftmostLane : street.RightmostLane);
 
                     var newPtPos = StreetSegment.GetClosestPointAndPosition(randomPt, positionsFwd);
-                    fwd = GetOrCreateStop(street.name, newPtPos.Item1);
+                    fwd = CreateStop(street.name, newPtPos.Item1);
                 }
                 {
                     var positionsBwd = GameController.instance.sim.trafficSim.GetPath(
                         street, backward ? street.RightmostLane : street.LeftmostLane);
 
                     var newPtPos = StreetSegment.GetClosestPointAndPosition(randomPt, positionsBwd);
-                    bwd = GetOrCreateStop(street.name, newPtPos.Item1);
+                    bwd = CreateStop(street.name, newPtPos.Item1);
                 }
             }
 
@@ -1353,7 +1361,7 @@ namespace Transidious
 
             GameObject stopObject = Instantiate(stopPrefab);
             var stop = stopObject.GetComponent<Stop>();
-            stop.transform.SetParent(this.transform);
+            stop.transform.SetParent(this.transform, false);
             stop.Initialize(this, name, location, id);
 
             RegisterStop(stop, id);

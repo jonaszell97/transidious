@@ -147,6 +147,14 @@ def ClearPref : Command<"clear_pref"> {
     help = "clear a persistent player preference"
 }
 
+def Locate : Command<"locate"> {
+    params = [
+        Parameter<"name", "string", "the name of the citizien to locate">
+    ]
+
+    help = "locate a citizien on the map"
+}
+
 def AddStartupCommand : Command<"add_startup_cmd"> {
     help = "add the most recent to be executed at program startup"
 }

@@ -132,6 +132,12 @@ namespace Transidious
         public Button consoleButton;
         public GameObject developerConsole;
 
+
+        /**
+         * Data buttons
+         */
+        public Button populationHeatmapButton;
+
         /**
          * Scale Bar
          */
@@ -209,6 +215,20 @@ namespace Transidious
             this.consoleButton.onClick.AddListener(() =>
             {
                 game.developerConsole.Toggle();
+            });
+
+            // Population heatmap
+            this.populationHeatmapButton.onClick.AddListener(() =>
+            {
+                var map = game.loadedMap;
+                if (map.heatmap.gameObject.activeSelf)
+                {
+                    map.heatmap.Hide();
+                }
+                else
+                {
+                    ShowPopulationHeatmap();
+                }
             });
         }
 
@@ -543,6 +563,52 @@ namespace Transidious
         public void HideConstructionCost()
         {
             constructionCostPanel.SetActive(false);
+        }
+
+        public void ShowPopulationHeatmap()
+        {
+            var radiusMultiplier = 25;
+            var populationMultiplier = 100;
+
+            var maxOccupants = 0;
+            var buildings = new List<Tuple<Vector2, int, float>>();
+
+            foreach (var b in game.loadedMap.buildings)
+            {
+                if (b.type != Building.Type.Residential || b.occupants == 0)
+                {
+                    continue;
+                }
+
+                maxOccupants = System.Math.Max(maxOccupants, b.occupants * populationMultiplier);
+
+                var radius = Mathf.Min((b.centroid - b.collisionRect.center).magnitude * radiusMultiplier, 250f);
+                buildings.Add(Tuple.Create(b.centroid, b.occupants * populationMultiplier, radius));
+            }
+
+            if (buildings.Count == 0)
+            {
+                return;
+            }
+
+            if (buildings.Count > Heatmap.MaxSize)
+            {
+                buildings.Sort((b1, b2) => b2.Item2.CompareTo(b1.Item2));
+                buildings.RemoveRange(Heatmap.MaxSize, buildings.Count - Heatmap.MaxSize);
+            }
+
+            var properties = new Vector4[buildings.Count];
+
+            var i = 0;
+            foreach (var b in buildings)
+            {
+                properties[i++] = new Vector4(
+                    b.Item1.x, b.Item1.y,
+                    b.Item3, ((float)b.Item2 / maxOccupants));
+            }
+
+            game.loadedMap.heatmap.SetPositions(properties);
+            game.loadedMap.heatmap.Show();
         }
 
         public void FadeScaleBar()

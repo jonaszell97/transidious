@@ -3,6 +3,13 @@ syntax = "proto3";
 package Transidious.Serialization;
 option csharp_namespace = "Transidious.Serialization";
 
+message Decimal {
+    sint32 v1 = 1;
+    sint32 v2 = 2;
+    sint32 v3 = 3;
+    sint32 v4 = 4;
+}
+
 message VersionTriple {
     uint32 major = 1;
     uint32 minor = 2;

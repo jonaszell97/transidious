@@ -21,13 +21,35 @@ namespace Transidious
         /// The car sprite.
         [SerializeField] Image carSprite;
 
+        bool isFollowing;
+
         void Start()
         {
             modal.titleInput.interactable = false;
             modal.onClose.AddListener(() =>
             {
                 this.citizien = null;
+                
+                if (isFollowing)
+                {
+                    GameController.instance.input.StopFollowing();
+                }
             });
+
+#if DEBUG
+            panel.AddClickableItem("Preferences", "Preferences", Color.gray, () =>
+            {
+                Utility.Dump(citizien.transitPreferences);
+            });
+
+            panel.AddClickableItem("HappinessInfluences", "Happiness Influences", Color.gray, () =>
+            {
+                foreach (var item in citizien.happinessInfluences)
+                {
+                    Utility.Dump(item);
+                }
+            });
+#endif
         }
 
         public void SetCitizien(Citizien citizien)
@@ -35,7 +57,8 @@ namespace Transidious
             this.citizien = citizien;
             this.modal.SetTitle(citizien.Name);
 
-            this.panel.SetValue("Occupation", Translator.Get("ui:citizien:occupation:" + citizien.occupation.ToString()));
+            this.panel.SetValue("Age", citizien.age.ToString());
+            this.panel.SetValue("Occupation", Translator.Get($"ui:citizien:occupation:{citizien.occupation.ToString()}"));
             this.panel.SetValue("Happiness", this.citizien.happiness + " %");
             this.panel.SetValue("Money", Translator.GetCurrency(this.citizien.money));
 
@@ -75,6 +98,13 @@ namespace Transidious
             else
             {
                 happinessSprite.sprite = SpriteManager.instance.happinessSprites[2];
+            }
+
+            if (citizien.car?.IsDriving ?? false)
+            {
+                isFollowing = true;
+                GameController.instance.input.FollowObject(
+                    citizien.car.gameObject, InputController.FollowingMode.Visible);
             }
         }
     }

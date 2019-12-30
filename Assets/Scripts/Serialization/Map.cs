@@ -26,36 +26,54 @@ namespace Transidious.Serialization {
           string.Concat(
             "CglNYXAucHJvdG8SGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24aDENvbW1v",
             "bi5wcm90bxoOQnVpbGRpbmcucHJvdG8aFE5hdHVyYWxGZWF0dXJlLnByb3Rv",
-            "GgxTdHJlZXQucHJvdG8aDVRyYW5zaXQucHJvdG8iUAoHTWFwVGlsZRIJCgF4",
-            "GAEgASgNEgkKAXkYAiABKA0SFAoMbWFwT2JqZWN0SURzGAMgAygNEhkKEW9y",
-            "cGhhbmVkT2JqZWN0SURzGAQgAygNIqwECgNNYXASOAoGdHJpcGxlGAEgASgL",
-            "MiguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZXJzaW9uVHJpcGxlEj0K",
-            "EWJvdW5kYXJ5UG9zaXRpb25zGAIgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFs",
-            "aXphdGlvbi5WZWN0b3IyEgwKBG1pblgYAyABKAISDAoEbWF4WBgEIAEoAhIM",
-            "CgRtaW5ZGAUgASgCEgwKBG1heFkYBiABKAISPQoRc3RhcnRpbmdDYW1lcmFQ",
-            "b3MYByABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjMS",
-            "OQoOYm91bmRhcnlNZXNoZXMYCCADKAsyIS5UcmFuc2lkaW91cy5TZXJpYWxp",
-            "emF0aW9uLk1lc2gyRBI2CglidWlsZGluZ3MYCSADKAsyIy5UcmFuc2lkaW91",
-            "cy5TZXJpYWxpemF0aW9uLkJ1aWxkaW5nEkIKD25hdHVyYWxGZWF0dXJlcxgK",
-            "IAMoCzIpLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTmF0dXJhbEZlYXR1",
-            "cmUSMgoHc3RyZWV0cxgLIAMoCzIhLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
-            "b24uU3RyZWV0EkoKE3N0cmVldEludGVyc2VjdGlvbnMYDCADKAsyLS5UcmFu",
-            "c2lkaW91cy5TZXJpYWxpemF0aW9uLlN0cmVldEludGVyc2VjdGlvbiLSAgoI",
-            "U2F2ZUZpbGUSOAoGdHJpcGxlGAEgASgLMiguVHJhbnNpZGlvdXMuU2VyaWFs",
-            "aXphdGlvbi5WZXJzaW9uVHJpcGxlEjsKBXRpbGVzGAIgAygLMiwuVHJhbnNp",
-            "ZGlvdXMuU2VyaWFsaXphdGlvbi5TYXZlRmlsZS5NYXBUaWxlcxIuCgVsaW5l",
-            "cxgDIAMoCzIfLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTGluZRIuCgVz",
-            "dG9wcxgEIAMoCzIfLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RvcBIw",
-            "CgZyb3V0ZXMYBSADKAsyIC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlJv",
-            "dXRlGj0KCE1hcFRpbGVzEjEKBXRpbGVzGAEgAygLMiIuVHJhbnNpZGlvdXMu",
-            "U2VyaWFsaXphdGlvbi5NYXBUaWxlQhyqAhlUcmFuc2lkaW91cy5TZXJpYWxp",
-            "emF0aW9uYgZwcm90bzM="));
+            "GgxTdHJlZXQucHJvdG8aDVRyYW5zaXQucHJvdG8aEFNpbXVsYXRpb24ucHJv",
+            "dG8iUAoHTWFwVGlsZRIJCgF4GAEgASgNEgkKAXkYAiABKA0SFAoMbWFwT2Jq",
+            "ZWN0SURzGAMgAygNEhkKEW9ycGhhbmVkT2JqZWN0SURzGAQgAygNIqwECgNN",
+            "YXASOAoGdHJpcGxlGAEgASgLMiguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
+            "bi5WZXJzaW9uVHJpcGxlEj0KEWJvdW5kYXJ5UG9zaXRpb25zGAIgAygLMiIu",
+            "VHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyEgwKBG1pblgYAyAB",
+            "KAISDAoEbWF4WBgEIAEoAhIMCgRtaW5ZGAUgASgCEgwKBG1heFkYBiABKAIS",
+            "PQoRc3RhcnRpbmdDYW1lcmFQb3MYByABKAsyIi5UcmFuc2lkaW91cy5TZXJp",
+            "YWxpemF0aW9uLlZlY3RvcjMSOQoOYm91bmRhcnlNZXNoZXMYCCADKAsyIS5U",
+            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1lc2gyRBI2CglidWlsZGluZ3MY",
+            "CSADKAsyIy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkJ1aWxkaW5nEkIK",
+            "D25hdHVyYWxGZWF0dXJlcxgKIAMoCzIpLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
+            "YXRpb24uTmF0dXJhbEZlYXR1cmUSMgoHc3RyZWV0cxgLIAMoCzIhLlRyYW5z",
+            "aWRpb3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0EkoKE3N0cmVldEludGVyc2Vj",
+            "dGlvbnMYDCADKAsyLS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlN0cmVl",
+            "dEludGVyc2VjdGlvbiJSCgdFeHBlbnNlEhMKC2Rlc2NyaXB0aW9uGAEgASgJ",
+            "EjIKBmFtb3VudBgCIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24u",
+            "RGVjaW1hbCJSCgdFYXJuaW5nEhMKC2Rlc2NyaXB0aW9uGAEgASgJEjIKBmFt",
+            "b3VudBgCIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uRGVjaW1h",
+            "bCLQAgoIRmluYW5jZXMSMQoFbW9uZXkYASABKAsyIi5UcmFuc2lkaW91cy5T",
+            "ZXJpYWxpemF0aW9uLkRlY2ltYWwSNAoIZXhwZW5zZXMYAiABKAsyIi5UcmFu",
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uLkRlY2ltYWwSOAoMZXhwZW5zZUl0ZW1z",
+            "GAMgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5FeHBlbnNlEjQK",
+            "CGVhcm5pbmdzGAQgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5E",
+            "ZWNpbWFsEjgKDGVhcm5pbmdJdGVtcxgFIAMoCzIiLlRyYW5zaWRpb3VzLlNl",
+            "cmlhbGl6YXRpb24uRWFybmluZxIxCgV0YXhlcxgGIAEoCzIiLlRyYW5zaWRp",
+            "b3VzLlNlcmlhbGl6YXRpb24uRWFybmluZyKBBAoIU2F2ZUZpbGUSOAoGdHJp",
+            "cGxlGAEgASgLMiguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZXJzaW9u",
+            "VHJpcGxlEjsKBXRpbGVzGAIgAygLMiwuVHJhbnNpZGlvdXMuU2VyaWFsaXph",
+            "dGlvbi5TYXZlRmlsZS5NYXBUaWxlcxIuCgVsaW5lcxgDIAMoCzIfLlRyYW5z",
+            "aWRpb3VzLlNlcmlhbGl6YXRpb24uTGluZRIuCgVzdG9wcxgEIAMoCzIfLlRy",
+            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RvcBIwCgZyb3V0ZXMYBSADKAsy",
+            "IC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlJvdXRlEjYKCWNpdGl6aWVu",
+            "cxgGIAMoCzIjLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXppZW4S",
+            "LAoEY2FycxgHIAMoCzIeLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2Fy",
+            "EhAKCGdhbWVUaW1lGAggASgEEjUKCGZpbmFuY2VzGAkgASgLMiMuVHJhbnNp",
+            "ZGlvdXMuU2VyaWFsaXphdGlvbi5GaW5hbmNlcxo9CghNYXBUaWxlcxIxCgV0",
+            "aWxlcxgBIAMoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTWFwVGls",
+            "ZUIcqgIZVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.TransitReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.TransitReflection.Descriptor, global::Transidious.Serialization.SimulationReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapTile), global::Transidious.Serialization.MapTile.Parser, new[]{ "X", "Y", "MapObjectIDs", "OrphanedObjectIDs" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Map), global::Transidious.Serialization.Map.Parser, new[]{ "Triple", "BoundaryPositions", "MinX", "MaxX", "MinY", "MaxY", "StartingCameraPos", "BoundaryMeshes", "Buildings", "NaturalFeatures", "Streets", "StreetIntersections" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile), global::Transidious.Serialization.SaveFile.Parser, new[]{ "Triple", "Tiles", "Lines", "Stops", "Routes" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile.Types.MapTiles), global::Transidious.Serialization.SaveFile.Types.MapTiles.Parser, new[]{ "Tiles" }, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Expense), global::Transidious.Serialization.Expense.Parser, new[]{ "Description", "Amount" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Earning), global::Transidious.Serialization.Earning.Parser, new[]{ "Description", "Amount" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Finances), global::Transidious.Serialization.Finances.Parser, new[]{ "Money", "Expenses", "ExpenseItems", "Earnings", "EarningItems", "Taxes" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile), global::Transidious.Serialization.SaveFile.Parser, new[]{ "Triple", "Tiles", "Lines", "Stops", "Routes", "Citiziens", "Cars", "GameTime", "Finances" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile.Types.MapTiles), global::Transidious.Serialization.SaveFile.Types.MapTiles.Parser, new[]{ "Tiles" }, null, null, null)})
           }));
     }
     #endregion
@@ -662,6 +680,609 @@ namespace Transidious.Serialization {
 
   }
 
+  public sealed partial class Expense : pb::IMessage<Expense> {
+    private static readonly pb::MessageParser<Expense> _parser = new pb::MessageParser<Expense>(() => new Expense());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Expense> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Transidious.Serialization.MapReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Expense() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Expense(Expense other) : this() {
+      description_ = other.description_;
+      amount_ = other.amount_ != null ? other.amount_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Expense Clone() {
+      return new Expense(this);
+    }
+
+    /// <summary>Field number for the "description" field.</summary>
+    public const int DescriptionFieldNumber = 1;
+    private string description_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Description {
+      get { return description_; }
+      set {
+        description_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "amount" field.</summary>
+    public const int AmountFieldNumber = 2;
+    private global::Transidious.Serialization.Decimal amount_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Decimal Amount {
+      get { return amount_; }
+      set {
+        amount_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Expense);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Expense other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Description != other.Description) return false;
+      if (!object.Equals(Amount, other.Amount)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Description.Length != 0) hash ^= Description.GetHashCode();
+      if (amount_ != null) hash ^= Amount.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Description.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Description);
+      }
+      if (amount_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Amount);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Description.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Description);
+      }
+      if (amount_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Amount);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Expense other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Description.Length != 0) {
+        Description = other.Description;
+      }
+      if (other.amount_ != null) {
+        if (amount_ == null) {
+          Amount = new global::Transidious.Serialization.Decimal();
+        }
+        Amount.MergeFrom(other.Amount);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Description = input.ReadString();
+            break;
+          }
+          case 18: {
+            if (amount_ == null) {
+              Amount = new global::Transidious.Serialization.Decimal();
+            }
+            input.ReadMessage(Amount);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class Earning : pb::IMessage<Earning> {
+    private static readonly pb::MessageParser<Earning> _parser = new pb::MessageParser<Earning>(() => new Earning());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Earning> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Transidious.Serialization.MapReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Earning() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Earning(Earning other) : this() {
+      description_ = other.description_;
+      amount_ = other.amount_ != null ? other.amount_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Earning Clone() {
+      return new Earning(this);
+    }
+
+    /// <summary>Field number for the "description" field.</summary>
+    public const int DescriptionFieldNumber = 1;
+    private string description_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Description {
+      get { return description_; }
+      set {
+        description_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "amount" field.</summary>
+    public const int AmountFieldNumber = 2;
+    private global::Transidious.Serialization.Decimal amount_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Decimal Amount {
+      get { return amount_; }
+      set {
+        amount_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Earning);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Earning other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Description != other.Description) return false;
+      if (!object.Equals(Amount, other.Amount)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Description.Length != 0) hash ^= Description.GetHashCode();
+      if (amount_ != null) hash ^= Amount.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Description.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Description);
+      }
+      if (amount_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Amount);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Description.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Description);
+      }
+      if (amount_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Amount);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Earning other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Description.Length != 0) {
+        Description = other.Description;
+      }
+      if (other.amount_ != null) {
+        if (amount_ == null) {
+          Amount = new global::Transidious.Serialization.Decimal();
+        }
+        Amount.MergeFrom(other.Amount);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Description = input.ReadString();
+            break;
+          }
+          case 18: {
+            if (amount_ == null) {
+              Amount = new global::Transidious.Serialization.Decimal();
+            }
+            input.ReadMessage(Amount);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class Finances : pb::IMessage<Finances> {
+    private static readonly pb::MessageParser<Finances> _parser = new pb::MessageParser<Finances>(() => new Finances());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Finances> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Transidious.Serialization.MapReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Finances() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Finances(Finances other) : this() {
+      money_ = other.money_ != null ? other.money_.Clone() : null;
+      expenses_ = other.expenses_ != null ? other.expenses_.Clone() : null;
+      expenseItems_ = other.expenseItems_.Clone();
+      earnings_ = other.earnings_ != null ? other.earnings_.Clone() : null;
+      earningItems_ = other.earningItems_.Clone();
+      taxes_ = other.taxes_ != null ? other.taxes_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Finances Clone() {
+      return new Finances(this);
+    }
+
+    /// <summary>Field number for the "money" field.</summary>
+    public const int MoneyFieldNumber = 1;
+    private global::Transidious.Serialization.Decimal money_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Decimal Money {
+      get { return money_; }
+      set {
+        money_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "expenses" field.</summary>
+    public const int ExpensesFieldNumber = 2;
+    private global::Transidious.Serialization.Decimal expenses_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Decimal Expenses {
+      get { return expenses_; }
+      set {
+        expenses_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "expenseItems" field.</summary>
+    public const int ExpenseItemsFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Expense> _repeated_expenseItems_codec
+        = pb::FieldCodec.ForMessage(26, global::Transidious.Serialization.Expense.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Expense> expenseItems_ = new pbc::RepeatedField<global::Transidious.Serialization.Expense>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.Expense> ExpenseItems {
+      get { return expenseItems_; }
+    }
+
+    /// <summary>Field number for the "earnings" field.</summary>
+    public const int EarningsFieldNumber = 4;
+    private global::Transidious.Serialization.Decimal earnings_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Decimal Earnings {
+      get { return earnings_; }
+      set {
+        earnings_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "earningItems" field.</summary>
+    public const int EarningItemsFieldNumber = 5;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Earning> _repeated_earningItems_codec
+        = pb::FieldCodec.ForMessage(42, global::Transidious.Serialization.Earning.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Earning> earningItems_ = new pbc::RepeatedField<global::Transidious.Serialization.Earning>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.Earning> EarningItems {
+      get { return earningItems_; }
+    }
+
+    /// <summary>Field number for the "taxes" field.</summary>
+    public const int TaxesFieldNumber = 6;
+    private global::Transidious.Serialization.Earning taxes_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Earning Taxes {
+      get { return taxes_; }
+      set {
+        taxes_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Finances);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Finances other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Money, other.Money)) return false;
+      if (!object.Equals(Expenses, other.Expenses)) return false;
+      if(!expenseItems_.Equals(other.expenseItems_)) return false;
+      if (!object.Equals(Earnings, other.Earnings)) return false;
+      if(!earningItems_.Equals(other.earningItems_)) return false;
+      if (!object.Equals(Taxes, other.Taxes)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (money_ != null) hash ^= Money.GetHashCode();
+      if (expenses_ != null) hash ^= Expenses.GetHashCode();
+      hash ^= expenseItems_.GetHashCode();
+      if (earnings_ != null) hash ^= Earnings.GetHashCode();
+      hash ^= earningItems_.GetHashCode();
+      if (taxes_ != null) hash ^= Taxes.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (money_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Money);
+      }
+      if (expenses_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Expenses);
+      }
+      expenseItems_.WriteTo(output, _repeated_expenseItems_codec);
+      if (earnings_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Earnings);
+      }
+      earningItems_.WriteTo(output, _repeated_earningItems_codec);
+      if (taxes_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(Taxes);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (money_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Money);
+      }
+      if (expenses_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Expenses);
+      }
+      size += expenseItems_.CalculateSize(_repeated_expenseItems_codec);
+      if (earnings_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Earnings);
+      }
+      size += earningItems_.CalculateSize(_repeated_earningItems_codec);
+      if (taxes_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Taxes);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Finances other) {
+      if (other == null) {
+        return;
+      }
+      if (other.money_ != null) {
+        if (money_ == null) {
+          Money = new global::Transidious.Serialization.Decimal();
+        }
+        Money.MergeFrom(other.Money);
+      }
+      if (other.expenses_ != null) {
+        if (expenses_ == null) {
+          Expenses = new global::Transidious.Serialization.Decimal();
+        }
+        Expenses.MergeFrom(other.Expenses);
+      }
+      expenseItems_.Add(other.expenseItems_);
+      if (other.earnings_ != null) {
+        if (earnings_ == null) {
+          Earnings = new global::Transidious.Serialization.Decimal();
+        }
+        Earnings.MergeFrom(other.Earnings);
+      }
+      earningItems_.Add(other.earningItems_);
+      if (other.taxes_ != null) {
+        if (taxes_ == null) {
+          Taxes = new global::Transidious.Serialization.Earning();
+        }
+        Taxes.MergeFrom(other.Taxes);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (money_ == null) {
+              Money = new global::Transidious.Serialization.Decimal();
+            }
+            input.ReadMessage(Money);
+            break;
+          }
+          case 18: {
+            if (expenses_ == null) {
+              Expenses = new global::Transidious.Serialization.Decimal();
+            }
+            input.ReadMessage(Expenses);
+            break;
+          }
+          case 26: {
+            expenseItems_.AddEntriesFrom(input, _repeated_expenseItems_codec);
+            break;
+          }
+          case 34: {
+            if (earnings_ == null) {
+              Earnings = new global::Transidious.Serialization.Decimal();
+            }
+            input.ReadMessage(Earnings);
+            break;
+          }
+          case 42: {
+            earningItems_.AddEntriesFrom(input, _repeated_earningItems_codec);
+            break;
+          }
+          case 50: {
+            if (taxes_ == null) {
+              Taxes = new global::Transidious.Serialization.Earning();
+            }
+            input.ReadMessage(Taxes);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class SaveFile : pb::IMessage<SaveFile> {
     private static readonly pb::MessageParser<SaveFile> _parser = new pb::MessageParser<SaveFile>(() => new SaveFile());
     private pb::UnknownFieldSet _unknownFields;
@@ -670,7 +1291,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.MapReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Transidious.Serialization.MapReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -692,6 +1313,10 @@ namespace Transidious.Serialization {
       lines_ = other.lines_.Clone();
       stops_ = other.stops_.Clone();
       routes_ = other.routes_.Clone();
+      citiziens_ = other.citiziens_.Clone();
+      cars_ = other.cars_.Clone();
+      gameTime_ = other.gameTime_;
+      finances_ = other.finances_ != null ? other.finances_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -751,6 +1376,48 @@ namespace Transidious.Serialization {
       get { return routes_; }
     }
 
+    /// <summary>Field number for the "citiziens" field.</summary>
+    public const int CitiziensFieldNumber = 6;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Citizien> _repeated_citiziens_codec
+        = pb::FieldCodec.ForMessage(50, global::Transidious.Serialization.Citizien.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Citizien> citiziens_ = new pbc::RepeatedField<global::Transidious.Serialization.Citizien>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.Citizien> Citiziens {
+      get { return citiziens_; }
+    }
+
+    /// <summary>Field number for the "cars" field.</summary>
+    public const int CarsFieldNumber = 7;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Car> _repeated_cars_codec
+        = pb::FieldCodec.ForMessage(58, global::Transidious.Serialization.Car.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Car> cars_ = new pbc::RepeatedField<global::Transidious.Serialization.Car>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.Car> Cars {
+      get { return cars_; }
+    }
+
+    /// <summary>Field number for the "gameTime" field.</summary>
+    public const int GameTimeFieldNumber = 8;
+    private ulong gameTime_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong GameTime {
+      get { return gameTime_; }
+      set {
+        gameTime_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "finances" field.</summary>
+    public const int FinancesFieldNumber = 9;
+    private global::Transidious.Serialization.Finances finances_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Finances Finances {
+      get { return finances_; }
+      set {
+        finances_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SaveFile);
@@ -769,6 +1436,10 @@ namespace Transidious.Serialization {
       if(!lines_.Equals(other.lines_)) return false;
       if(!stops_.Equals(other.stops_)) return false;
       if(!routes_.Equals(other.routes_)) return false;
+      if(!citiziens_.Equals(other.citiziens_)) return false;
+      if(!cars_.Equals(other.cars_)) return false;
+      if (GameTime != other.GameTime) return false;
+      if (!object.Equals(Finances, other.Finances)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -780,6 +1451,10 @@ namespace Transidious.Serialization {
       hash ^= lines_.GetHashCode();
       hash ^= stops_.GetHashCode();
       hash ^= routes_.GetHashCode();
+      hash ^= citiziens_.GetHashCode();
+      hash ^= cars_.GetHashCode();
+      if (GameTime != 0UL) hash ^= GameTime.GetHashCode();
+      if (finances_ != null) hash ^= Finances.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -801,6 +1476,16 @@ namespace Transidious.Serialization {
       lines_.WriteTo(output, _repeated_lines_codec);
       stops_.WriteTo(output, _repeated_stops_codec);
       routes_.WriteTo(output, _repeated_routes_codec);
+      citiziens_.WriteTo(output, _repeated_citiziens_codec);
+      cars_.WriteTo(output, _repeated_cars_codec);
+      if (GameTime != 0UL) {
+        output.WriteRawTag(64);
+        output.WriteUInt64(GameTime);
+      }
+      if (finances_ != null) {
+        output.WriteRawTag(74);
+        output.WriteMessage(Finances);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -816,6 +1501,14 @@ namespace Transidious.Serialization {
       size += lines_.CalculateSize(_repeated_lines_codec);
       size += stops_.CalculateSize(_repeated_stops_codec);
       size += routes_.CalculateSize(_repeated_routes_codec);
+      size += citiziens_.CalculateSize(_repeated_citiziens_codec);
+      size += cars_.CalculateSize(_repeated_cars_codec);
+      if (GameTime != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(GameTime);
+      }
+      if (finances_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Finances);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -837,6 +1530,17 @@ namespace Transidious.Serialization {
       lines_.Add(other.lines_);
       stops_.Add(other.stops_);
       routes_.Add(other.routes_);
+      citiziens_.Add(other.citiziens_);
+      cars_.Add(other.cars_);
+      if (other.GameTime != 0UL) {
+        GameTime = other.GameTime;
+      }
+      if (other.finances_ != null) {
+        if (finances_ == null) {
+          Finances = new global::Transidious.Serialization.Finances();
+        }
+        Finances.MergeFrom(other.Finances);
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -869,6 +1573,25 @@ namespace Transidious.Serialization {
           }
           case 42: {
             routes_.AddEntriesFrom(input, _repeated_routes_codec);
+            break;
+          }
+          case 50: {
+            citiziens_.AddEntriesFrom(input, _repeated_citiziens_codec);
+            break;
+          }
+          case 58: {
+            cars_.AddEntriesFrom(input, _repeated_cars_codec);
+            break;
+          }
+          case 64: {
+            GameTime = input.ReadUInt64();
+            break;
+          }
+          case 74: {
+            if (finances_ == null) {
+              Finances = new global::Transidious.Serialization.Finances();
+            }
+            input.ReadMessage(Finances);
             break;
           }
         }
