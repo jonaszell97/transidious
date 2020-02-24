@@ -12,6 +12,7 @@ message PathStep {
         Drive = 1;
         PartialDrive = 2;
         PublicTransit = 3;
+        Wait = 4;
     }
 
     message WalkStep {
@@ -38,9 +39,30 @@ message PathStep {
         repeated uint32 routeIDs = 2;
     }
 
+    message WaitStep {
+        float waitingTime = 1;
+    }
+
     PathStepKind kind = 1;
     uint64 timestamp = 2;
     google.protobuf.Any details = 3;
+}
+
+message PathPlanningOptions {
+    bool allowCar = 1;
+    bool allowWalk = 2;
+
+    uint64 startID = 3;
+    uint64 endID = 4;
+
+    uint64 time = 5;
+
+    float maxWalkingDistance = 6;
+    float walkingTimeFactor = 7;
+    float travelTimeFactor = 8;
+    float waitingTimeFactor = 9;
+    float carTimeFactor = 10;
+    float changingPenalty = 11;
 }
 
 message PathPlanningResult {
@@ -49,6 +71,7 @@ message PathPlanningResult {
     uint64 leaveBy = 3;
     uint64 arriveAt = 4;
     repeated PathStep steps = 5;
+    PathPlanningOptions options = 6;
 }
 
 message ActivePath {

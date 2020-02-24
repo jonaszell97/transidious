@@ -425,7 +425,9 @@ namespace Transidious
                 result.StreetSegmentOffsetMap.Add(info);
             }
 
-            result.Positions.AddRange(positions.Select(s => ((Vector2)s).ToProtobuf()));
+            if (positions != null)
+                result.Positions.AddRange(positions.Select(s => ((Vector2)s).ToProtobuf()));
+
             return result;
         }
 
@@ -513,12 +515,12 @@ namespace Transidious
 
         public override void OnMouseDown()
         {
+            base.OnMouseDown();
+
             if (!Game.MouseDownActive(MapObjectKind.Line))
             {
                 return;
             }
-
-            base.OnMouseDown();
 
             if (GameController.instance.input.IsPointerOverUIElement())
             {

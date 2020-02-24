@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -503,29 +504,26 @@ namespace Transidious
                 dayInterval = 20,
                 nightInterval = 20,
             });
-            //var crossedStreets = new HashSet<System.Tuple<StreetSegment, int>>();
-            //var j = 0;
 
-            //foreach (var route in newLine.routes)
-            //{
-            //    route.DisableCollision();
+            var crossedStreets = new HashSet<Tuple<StreetSegment, int>>();
+            var j = 0;
 
-            //    // Note which streets this route passes over.
-            //    foreach (var segAndLane in currentLine.streetSegments[j])
-            //    {
-            //        var routesOnSegment = segAndLane.segment.GetTransitRoutes(segAndLane.lane);
-            //        routesOnSegment.Add(route);
+            foreach (var route in newLine.routes)
+            {
+                route.DisableCollision();
 
-            //        if (routesOnSegment.Count > 1)
-            //        {
-            //            crossedStreets.Add(System.Tuple.Create(segAndLane.segment, segAndLane.lane));
-            //        }
+                // Note which streets this route passes over.
+                foreach (var segAndLane in currentLine.streetSegments[j])
+                {
+                    var routesOnSegment = segAndLane.segment.GetTransitRoutes(segAndLane.lane);
+                    routesOnSegment.Add(route);
 
-            //        route.AddStreetSegmentOffset(segAndLane);
-            //    }
+                    route.AddStreetSegmentOffset(segAndLane);
+                    crossedStreets.Add(Tuple.Create(segAndLane.segment, segAndLane.lane));
+                }
 
-            //    ++j;
-            //}
+                ++j;
+            }
 
             currentLine = null;
             previousStop = null;
@@ -535,8 +533,8 @@ namespace Transidious
 
             this.EndLineCreation();
 
-            game.transitEditor.InitOverlappingRoutes();
-            //game.transitEditor.CheckOverlappingRoutes(crossedStreets);
+            // game.transitEditor.InitOverlappingRoutes();
+            game.transitEditor.CheckOverlappingRoutes(crossedStreets);
 
             var modal = GameController.instance.transitEditor.lineInfoModal;
             modal.SetLine(newLine, newLine.routes.First());
@@ -558,7 +556,7 @@ namespace Transidious
             var filter = existingPathMesh.GetComponent<MeshFilter>();
 
             filter.mesh = mesh;
-            renderer.material = GameController.GetUnlitMaterial(color);
+            renderer.material = GameController.instance.GetUnlitMaterial(color);
 
             existingPathMesh.SetActive(true);
         }
@@ -589,7 +587,7 @@ namespace Transidious
             var filter = plannedPathMesh.GetComponent<MeshFilter>();
 
             filter.mesh = mesh;
-            renderer.material = GameController.GetUnlitMaterial(color);
+            renderer.material = GameController.instance.GetUnlitMaterial(color);
 
             plannedPathMesh.SetActive(true);
         }
@@ -807,7 +805,7 @@ namespace Transidious
             return base.CreateFirstStop(transitType, street.street.name, game.input.GameCursorPosition);
         }
 
-        protected TemporaryStop AddStop(StreetSegment street)
+        protected virtual TemporaryStop AddStop(StreetSegment street)
         {
             var nextStop = base.AddStop(street.street.name, game.input.GameCursorPosition);
 
@@ -817,7 +815,7 @@ namespace Transidious
             return nextStop;
         }
 
-        protected new IMapObject AddStop(IMapObject nextStop)
+        protected virtual new IMapObject AddStop(IMapObject nextStop)
         {
             nextStop = base.AddStop(nextStop);
 
@@ -913,20 +911,23 @@ namespace Transidious
 
     public class TramLineBuilder : StreetboundLineBuilder
     {
+        HashSet<StreetSegment> addedTramTracks;
+
         /// <summary>
         /// Public c'tor.
         /// </summary>
         /// <param name="game"></param>
         public TramLineBuilder(GameController game) : base(game, TransitType.Tram)
         {
-
+            this.addedTramTracks = new HashSet<StreetSegment>();
         }
 
         protected override decimal costPerKm
         {
             get
             {
-                return 500m;
+                // Only if tram tracks need to be built.
+                return 0m;
             }
         }
 
@@ -954,6 +955,8 @@ namespace Transidious
             }
         }
 
+        protected static readonly decimal costPerKmTrack = 10000m;
+
         /// <summary>
         /// Initialize the event listeners.
         /// </summary>
@@ -975,17 +978,40 @@ namespace Transidious
             }, false);
         }
 
+        void AddTramTracksToTemporaryPath()
+        {
+            foreach (var seg in temporarySegments)
+            {
+                if (!seg.segment.hasTramTracks && !addedTramTracks.Contains(seg.segment))
+                {
+                    totalConstructionCost += ((decimal)seg.segment.length / 1000m) * costPerKmTrack;
+                    addedTramTracks.Add(seg.segment);
+                }
+            }
+        }
+
         protected override void FinishLine()
         {
-            foreach (var seg in currentLine.streetSegments)
+            AddTramTracksToTemporaryPath();
+
+            foreach (var seg in addedTramTracks)
             {
-                foreach (var street in seg)
-                {
-                    street.segment.AddTramTracks();
-                }
+                seg.AddTramTracks();
             }
 
             base.FinishLine();
+        }
+
+        protected override TemporaryStop AddStop(StreetSegment street)
+        {
+            AddTramTracksToTemporaryPath();
+            return base.AddStop(street);
+        }
+
+        protected override IMapObject AddStop(IMapObject nextStop)
+        {
+            AddTramTracksToTemporaryPath();
+            return base.AddStop(nextStop);
         }
 
         protected override void DrawTemporaryPath(PathPlanning.PathPlanningResult path)

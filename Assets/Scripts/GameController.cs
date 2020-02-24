@@ -46,6 +46,9 @@ namespace Transidious
         /// The current game status.
         public GameStatus status;
 
+        /// The game settings.
+        public Settings settings;
+
         /// The current map display mode.
         public MapDisplayMode displayMode;
 
@@ -103,6 +106,7 @@ namespace Transidious
         public string missionToLoad;
         // Only for debugging.
         public OSMImportHelper.Area areaToLoad;
+        public QualitySettings.QualityLevel qualityLevel = QualitySettings.QualityLevel.High;
 #endif
 
         // *** Shaders ***
@@ -114,8 +118,8 @@ namespace Transidious
         public Material highlightedMaterial;
         public Dictionary<Tuple<Color, Color>, Material> highlightedMaterials;
 
-        public static Material unlitMaterial;
-        public static Dictionary<Color, Material> unlitMaterials;
+        public Material unlitMaterial;
+        public Dictionary<Color, Material> unlitMaterials;
 
         public Color highlightColor;
         public Color bulldozeHighlightColor;
@@ -154,23 +158,31 @@ namespace Transidious
             }
         }
 
-        public static Material GetUnlitMaterial(Color c)
+        public Material GetUnlitMaterial(Color c)
         {
             if (unlitMaterials == null)
             {
                 unlitMaterials = new Dictionary<Color, Material>();
             }
-            if (unlitMaterial == null)
-            {
-                unlitMaterial = new Material(Shader.Find("Unlit/Color"));
-            }
 
             if (!unlitMaterials.TryGetValue(c, out Material m))
             {
-                m = new Material(unlitMaterial)
+                var html = ColorUtility.ToHtmlStringRGBA(c);
+                m = Resources.Load($"Materials/SolidColors/{html}") as Material;
+
+#if UNITY_EDITOR
+                if (m == null)
                 {
-                    color = c
-                };
+                    m = new Material(unlitMaterial)
+                    {
+                        color = c,
+                    };
+
+                    string materialPath = $"Assets/Resources/Materials/SolidColors";
+                    UnityEditor.AssetDatabase.CreateAsset(m, $"{materialPath}/{html}.mat");
+                    UnityEditor.AssetDatabase.SaveAssets();
+                }
+#endif
 
                 unlitMaterials.Add(c, m);
             }
@@ -263,14 +275,20 @@ namespace Transidious
         public int numRandomLines = 50;
 #endif
 
-        public System.Collections.IEnumerator LoadMap(OSMImportHelper.Area area)
+        public void LoadMap(OSMImportHelper.Area area)
+        {
+            var map = SaveManager.CreateMap(this, area.ToString());
+            StartCoroutine(LoadMapAsync(map));
+        }
+
+        System.Collections.IEnumerator LoadMapAsync(Map map)
         {
             GameController._instance = this;
 
             this.status = GameStatus.Loading;
             loadingScreen.gameObject.SetActive(true);
 
-            yield return SaveManager.LoadSave(this, area.ToString());
+            yield return SaveManager.LoadSave(this, map);
             this.onLoad.Invoke();
 
             this.status = GameStatus.Playing;
@@ -333,6 +351,11 @@ namespace Transidious
         void Awake()
         {
             GameController._instance = this;
+
+#if DEBUG
+            this.settings = new Settings(this.qualityLevel);
+#endif
+
             developerConsole.Initialize();
 
             if (status == GameStatus.Disabled || status == GameStatus.ImportingMap)
@@ -358,7 +381,6 @@ namespace Transidious
             this.snapController = new SnapController(this);
         }
 
-        // Use this for initialization
         void Start()
         {
             input.DisableControls();
@@ -369,11 +391,10 @@ namespace Transidious
             }
             else if (areaToLoad != OSMImportHelper.Area.Default)
             {
-                StartCoroutine(LoadMap(areaToLoad));
+                LoadMap(areaToLoad);
             }
         }
 
-        // Update is called once per frame
         void Update()
         {
             if (Input.GetKeyDown(KeyCode.F12))

@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -22,13 +23,12 @@ namespace Transidious
         RenderingDistance? currentRenderingDist;
         public HashSet<IMapObject> orphanedObjects;
 
-
         public Canvas canvas;
         [SerializeField] SpriteRenderer backgroundImage;
+        [SerializeField] BoxCollider2D boxCollider;
 
-        [SerializeField] GameObject[] mapObjectContainers;
-
-        Dictionary<string, MultiMesh> meshes;
+        public Dictionary<Tuple<string, RenderingDistance>, MultiMesh> meshes;
+        public GameObject[] meshGroups;
 
         BoxCollider2D[] boxColliders;
         List<ColliderInfo> colliderInfo;
@@ -51,26 +51,59 @@ namespace Transidious
             }
         }
 
+        public bool IsSharedTile
+        {
+            get
+            {
+                return x == -1;
+            }
+        }
+
         public void Initialize(Map map, int x, int y)
         {
+            if (x == -1)
+            {
+                Debug.Assert(y == -1);
+                this.name = "Shared Tile";
+                this.rect = new Rect(map.minX, map.minY, map.width, map.height);
+                this.boxCollider.enabled = false;
+            }
+            else
+            {
+                this.name = "Tile " + x + " " + y;
+                this.rect = new Rect(x * Map.tileSize, y * Map.tileSize,
+                                 Map.tileSize, Map.tileSize);
+            }
+
             this.map = map;
-            this.meshes = new Dictionary<string, MultiMesh>();
-            this.name = "Tile " + x + " " + y;
-            this.transform.SetParent(map.transform);
             this.x = x;
             this.y = y;
             this.mapObjects = new HashSet<IMapObject>();
             this.colliderInfo = new List<ColliderInfo>();
-            this.rect = new Rect(x * Map.tileSize, y * Map.tileSize,
-                                 Map.tileSize, Map.tileSize);
+            this.meshes = new Dictionary<Tuple<string, RenderingDistance>, MultiMesh>();
 
-            var sprite = SpriteManager.GetSprite($"Maps/{map.name}/{x}_{y}");
+            if (backgroundImage.sprite == null && x != -1)
+            {
+                UpdateSprite();
+            }
+
+            this.gameObject.SetActive(false);
+        }
+
+        public void UpdateSprite()
+        {
+            var sprite = Resources.Load<Sprite>($"Maps/{map.name}/{x}_{y}");
             if (sprite == null)
             {
                 backgroundImage.color = map.GetDefaultBackgroundColor(MapDisplayMode.Day);
-                sprite = SpriteManager.GetSprite("Sprites/ui_square");
+                sprite = Resources.Load<Sprite>("Sprites/ui_square");
+            }
+            else
+            {
+                backgroundImage.color = Color.white;
             }
 
+            backgroundImage.transform.localScale = Vector3.one;
             backgroundImage.sprite = sprite;
             backgroundImage.transform.position = new Vector3(
                 x * Map.tileSize + Map.tileSize * .5f,
@@ -80,8 +113,6 @@ namespace Transidious
             float spriteSize = backgroundImage.bounds.size.x;
             backgroundImage.transform.localScale = new Vector3(
                 Map.tileSize / spriteSize, Map.tileSize / spriteSize, 1f);
-
-            this.gameObject.SetActive(false);
         }
 
         public void Reset()
@@ -160,23 +191,27 @@ namespace Transidious
             return rect.Contains(pt);
         }
 
-        public MultiMesh GetMesh(string category)
+        public MultiMesh GetMesh(string category,
+                                 RenderingDistance dist = RenderingDistance.Near)
         {
-            if (meshes.TryGetValue(category, out MultiMesh mesh))
+            var key = Tuple.Create(category, dist);
+            if (meshes.TryGetValue(key, out MultiMesh mesh))
             {
                 return mesh;
             }
 
-            mesh = MultiMesh.Create(map, category, this.transform);
-            meshes.Add(category, mesh);
+            mesh = MultiMesh.Create(map, category, meshGroups[(int)dist].transform);
+            meshes.Add(key, mesh);
 
             return mesh;
         }
 
-        public void AddMesh(string category, Mesh mesh, Color c, float z = 0f, RenderingDistance dist = RenderingDistance.Near)
+        public void AddMesh(string category, Mesh mesh, Color c,
+                            float z = 0f,
+                            RenderingDistance dist = RenderingDistance.Near)
         {
-            var multiMesh = GetMesh(category);
-            multiMesh.AddMesh(c, mesh, dist, z);
+            var multiMesh = GetMesh(category, dist);
+            multiMesh.AddMesh(c, mesh, z);
         }
 
         public void FinalizeTile()
@@ -192,9 +227,13 @@ namespace Transidious
 
         public void CreateColliders()
         {
-            var collider = this.gameObject.AddComponent<BoxCollider2D>();
-            collider.offset = rect.center;
-            collider.size = rect.size;
+            if (IsSharedTile)
+            {
+                return;
+            }
+
+            boxCollider.offset = rect.center;
+            boxCollider.size = rect.size;
         }
 
         public void CreateClusteredColliders()
@@ -270,16 +309,55 @@ namespace Transidious
                 return;
             }
 
-            foreach (var mesh in meshes)
-            {
-                mesh.Value.UpdateScale(dist);
-            }
-
             currentRenderingDist = dist;
 
             if (!gameObject.activeSelf)
             {
                 gameObject.SetActive(true);
+            }
+
+            switch (dist)
+            {
+                case RenderingDistance.Near:
+                    meshGroups[0].gameObject.SetActive(true);
+                    meshGroups[1].gameObject.SetActive(true);
+                    meshGroups[2].gameObject.SetActive(true);
+                    meshGroups[3].gameObject.SetActive(true);
+                    backgroundImage.gameObject.SetActive(false);
+                    canvas.gameObject.SetActive(true);
+                    boxCollider.enabled = !IsSharedTile;
+
+                    break;
+                case RenderingDistance.Far:
+                    meshGroups[0].gameObject.SetActive(false);
+                    meshGroups[1].gameObject.SetActive(true);
+                    meshGroups[2].gameObject.SetActive(true);
+                    meshGroups[3].gameObject.SetActive(true);
+                    backgroundImage.gameObject.SetActive(true);
+                    canvas.gameObject.SetActive(false);
+                    boxCollider.enabled = false;
+
+                    break;
+                case RenderingDistance.VeryFar:
+                    meshGroups[0].gameObject.SetActive(false);
+                    meshGroups[1].gameObject.SetActive(false);
+                    meshGroups[2].gameObject.SetActive(true);
+                    meshGroups[3].gameObject.SetActive(true);
+                    backgroundImage.gameObject.SetActive(true);
+                    canvas.gameObject.SetActive(false);
+                    boxCollider.enabled = false;
+
+                    break;
+                case RenderingDistance.Farthest:
+                    meshGroups[0].gameObject.SetActive(false);
+                    meshGroups[1].gameObject.SetActive(false);
+                    meshGroups[2].gameObject.SetActive(false);
+                    meshGroups[3].gameObject.SetActive(true);
+                    backgroundImage.gameObject.SetActive(true);
+                    canvas.gameObject.SetActive(false);
+                    boxCollider.enabled = false;
+
+                    break;
             }
         }
 
@@ -320,6 +398,11 @@ namespace Transidious
 
         void OnMouseDown()
         {
+            if (!IsSharedTile)
+            {
+                map.sharedTile.OnMouseDown();
+            }
+
             if (enteredMapObject == null)
             {
                 return;
@@ -424,7 +507,7 @@ namespace Transidious
             foreach (var points in pointArr)
             {
                 var line = GetLineRenderer(i++);
-                line.material = GameController.GetUnlitMaterial(color);
+                line.material = GameController.instance.GetUnlitMaterial(color);
                 line.positionCount = points.Length;
                 line.SetPositions(points.Select(v => new Vector3(v.x, v.y, layer)).ToArray());
                 line.gameObject.SetActive(true);
@@ -446,6 +529,16 @@ namespace Transidious
 
         void OnMouseOver()
         {
+            if (!IsSharedTile)
+            {
+                map.sharedTile.OnMouseOver();
+
+                if (map.sharedTile.enteredMapObject != null)
+                {
+                    return;
+                }
+            }
+
             var mousePosWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if (mousePosition.HasValue && mousePosWorld == mousePosition.Value && !checkMouseOver)
             {
@@ -503,6 +596,11 @@ namespace Transidious
 
         void OnMouseExit()
         {
+            if (!IsSharedTile)
+            {
+                map.sharedTile.OnMouseExit();
+            }
+
             if (enteredMapObject == null)
             {
                 return;
@@ -584,7 +682,7 @@ namespace Transidious
         {
             get
             {
-                return map.tiles[x][y];
+                return map.GetTile(x, y);
             }
         }
 

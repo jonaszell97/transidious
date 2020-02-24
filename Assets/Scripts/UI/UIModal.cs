@@ -75,14 +75,14 @@ namespace Transidious
             onClose = new UnityEvent();
             closeButton.onClick.AddListener(this.Disable);
 
-            if (baseOrthoSize.Equals(-1f))
+            /*if (baseOrthoSize.Equals(-1f))
             {
                 baseOrthoSize = Camera.main.orthographicSize;
             }
             if (baseScale.Equals(Vector3.zero))
             {
                 baseScale = transform.localScale;
-            }
+            }*/
 
             if (draggable)
             {
@@ -233,11 +233,8 @@ namespace Transidious
 
         public void EnableAt(Vector3 pos)
         {
+            PositionAt(pos);
             Enable();
-            this.RunNextFrame(() =>
-            {
-                PositionAt(pos);
-            });
         }
 
         public void Enable()
@@ -323,7 +320,7 @@ namespace Transidious
 
         void AdjustSize()
         {
-            if (!ResizeWithZoom || orthoSize == Camera.main.orthographicSize)
+            /*if (!ResizeWithZoom || orthoSize == Camera.main.orthographicSize)
             {
                 return;
             }
@@ -331,7 +328,7 @@ namespace Transidious
             orthoSize = Camera.main.orthographicSize;
 
             var scale = orthoSize / baseOrthoSize;
-            transform.localScale = new Vector3(baseScale.x * scale, baseScale.y * scale, baseScale.z);
+            transform.localScale = new Vector3(baseScale.x * scale, baseScale.y * scale, baseScale.z);*/
         }
 
         void AdjustPosition()

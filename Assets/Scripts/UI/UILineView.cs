@@ -47,6 +47,12 @@ namespace Transidious
         /// The prefab for creating new crossing line sprites.
         [SerializeField] GameObject crossingLinePrefab;
 
+        /// The height of a stop sprite.
+        static readonly float stopHeight = 75f;
+
+        /// The padding of the stop grid.
+        static readonly float stopGridPadding = 25f;
+
         public void UpdateLayout(Line line, int maxStops = -1)
         {
             Debug.Assert(line.stops.Count != 0);
@@ -91,62 +97,39 @@ namespace Transidious
             this.crossingLineGrid.RemoveAllChildren();
 
             lineSprite = Instantiate(stopSpritePrefabs[2]).GetComponent<Image>();
-            lineSprite.transform.SetParent(stopSpriteGrid.transform);
-            lineSprite.transform.localScale = new Vector3(1f, 1f, 1f);
-            lineSprite.transform.localPosition = new Vector3(0, 0, 0);
+
+            var rectTransform = lineSprite.GetComponent<RectTransform>();
+            rectTransform.SetParent(stopSpriteGrid.transform, false);
 
             for (var i = 0; i < stops.Count; ++i)
             {
-                AddStop(stops[i], stops, (i == 0 && !partialStart), (i == stops.Count - 1 && !partialEnd));
+                AddStop(stops[i], (i == 0 && !partialStart), (i == stops.Count - 1 && !partialEnd));
             }
 
-            if (!partialStart || !partialEnd)
+            var currentHeight = stopSpriteGrid.GetComponent<RectTransform>().rect.height;
+            var cellHeight = currentHeight / stops.Count;
+
+            var offset = 0f;
+            if (!partialEnd)
             {
-                this.RunNextFrame(() =>
-                {
-                    var firstStop = stopSpriteGrid.transform.GetChild(1).gameObject;
-                    var lastStop = stopSpriteGrid.transform.GetChild(
-                            stopSpriteGrid.transform.childCount - 1).gameObject;
-
-                    float beginY;
-                    if (!partialEnd)
-                    {
-                        beginY = lastStop.transform.position.y;
-                    }
-                    else
-                    {
-                        beginY = lastStop.transform.position.y - 5f;
-                    }
-
-                    lineSprite.transform.position = new Vector3(lineSprite.transform.position.x,
-                                                                beginY,
-                                                                lineSprite.transform.position.z);
-
-                    var newHeight = Mathf.Abs(firstStop.transform.position.y - beginY);
-                    var rectTransform = lineSprite.GetComponent<RectTransform>();
-                    var rect = Math.GetWorldBoundingRect(rectTransform);
-                    var currentHeight = rect.height;
-
-                    rectTransform.pivot = new Vector2(0.5f, 0f);
-                    rectTransform.localScale = new Vector3(
-                        1f, (newHeight / currentHeight) * rectTransform.localScale.y, 1f);
-                });
+                offset = (cellHeight * .5f) + (stopHeight * .5f);
             }
-            else
+
+            var requiredHeight = currentHeight;
+            if (!partialStart)
             {
-                lineSprite.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
-                // this.RunNextFrame(() => {
-                //     var lastStop = stopSpriteGrid.transform.GetChild(
-                //         stopSpriteGrid.transform.childCount - 1).gameObject;
-                //     Debug.Log("setting to location of " + lastStop.name);
-                //     Debug.Log(lineSprite.transform.position.y);
-                //     Debug.Log(lastStop.transform.position.y);
-                //     lineSprite.transform.position = new Vector3(lineSprite.transform.position.x,
-                //                                                 lastStop.transform.position.y,
-                //                                                 lineSprite.transform.position.z);
-                // });
+                requiredHeight -= (cellHeight * .5f) + stopGridPadding;
+            }
+            if (!partialEnd)
+            {
+                requiredHeight -= (cellHeight * .5f) + stopGridPadding;
             }
 
+            rectTransform.localScale = new Vector3(1f,
+                requiredHeight / currentHeight,
+                1f);
+
+            rectTransform.anchoredPosition = new Vector2(0f, offset);
             lineSprite.color = line.color;
 
             if (partialStart && partialEnd)
@@ -167,10 +150,10 @@ namespace Transidious
             }
         }
 
-        void AddStop(Stop stop, List<Stop> stops, bool firstOnLine = false, bool lastOnLine = false)
+        void AddStop(Stop stop, bool firstOnLine = false, bool lastOnLine = false)
         {
             var name = Instantiate(stopNamePrefab);
-            name.transform.SetParent(stopNameGrid.transform);
+            name.transform.SetParent(stopNameGrid.transform, false);
             name.GetComponent<TMP_Text>().text = stop.name;
 
             var link = name.GetComponent<UILocationLink>();
@@ -180,12 +163,12 @@ namespace Transidious
                 stop.ActivateModal();
             };
 
-            name.transform.localScale = new Vector3(1f, 1f, 1f);
-            name.transform.localPosition = new Vector3(0, 0, 0);
+            //name.transform.localScale = new Vector3(1f, 1f, 1f);
+            //name.transform.localPosition = new Vector3(0, 0, 0);
 
             var firstOrLast = firstOnLine || lastOnLine;
             var sprite = Instantiate(stopSpritePrefabs[(stop.lineData.Count > 1 || firstOrLast) ? 1 : 0]);
-            sprite.transform.SetParent(stopSpriteGrid.transform);
+            sprite.transform.SetParent(stopSpriteGrid.transform, false);
             sprite.transform.localScale = new Vector3(1f, 1f, 1f);
             sprite.transform.localPosition = new Vector3(0, 0, 0);
 
@@ -195,9 +178,9 @@ namespace Transidious
             }
 
             var crossingLines = Instantiate(crossingLineGridPrefab);
-            crossingLines.transform.SetParent(crossingLineGrid.transform);
-            crossingLines.transform.localScale = new Vector3(1f, 1f, 1f);
-            crossingLines.transform.localPosition = new Vector3(0, 0, 0);
+            crossingLines.transform.SetParent(crossingLineGrid.transform, false);
+            //crossingLines.transform.localScale = new Vector3(1f, 1f, 1f);
+            //crossingLines.transform.localPosition = new Vector3(0, 0, 0);
 
             var lineCount = 0;
             foreach (var entry in stop.lineData)
@@ -208,9 +191,9 @@ namespace Transidious
                 }
 
                 var crossingLine = Instantiate(crossingLinePrefab);
-                crossingLine.transform.SetParent(crossingLines.transform);
-                crossingLine.transform.localScale = new Vector3(1f, 1f, 1f);
-                crossingLine.transform.localPosition = new Vector3(0, 0, 0);
+                crossingLine.transform.SetParent(crossingLines.transform, false);
+                //crossingLine.transform.localScale = new Vector3(1f, 1f, 1f);
+                //crossingLine.transform.localPosition = new Vector3(0, 0, 0);
 
                 var lineLogo = crossingLine.GetComponentInChildren<UILineLogo>();
                 lineLogo.SetLine(entry.Key, true);

@@ -35,7 +35,7 @@ namespace Transidious
             titles = new Dictionary<string, UIText>();
             values = new Dictionary<string, TMP_Text>();
 
-            foreach (var txt in GetComponentsInChildren<UIText>())
+            foreach (var txt in GetComponentsInChildren<UIText>(true))
             {
                 if (fontSize != -1)
                 {
@@ -47,7 +47,7 @@ namespace Transidious
                 titles.Add(txt.name, txt);
             }
 
-            foreach (var txt in GetComponentsInChildren<TMP_Text>())
+            foreach (var txt in GetComponentsInChildren<TMP_Text>(true))
             {
                 if (txt.name.Contains("Value"))
                 {

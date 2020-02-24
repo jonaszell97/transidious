@@ -107,13 +107,10 @@ namespace Transidious
                                                 int segments,
                                                 float z,
                                                 bool useZ,
-                                                int connectionOffset)
+                                                int connectionOffset,
+                                                Vector3 p0, Vector3 p1, Vector3 p2)
         {
             var baseIndex = vertices.Count;
-            var p0 = positions[i - 2];
-            var p1 = positions[i - 1];
-            var p2 = positions[i];
-
             var angleDeg = Vector2.SignedAngle(p1 - p0, p2 - p1);
 
             var cmp = angleDeg.CompareTo(0f);
@@ -153,7 +150,7 @@ namespace Transidious
             vertices.Add(new Vector3(center.x, center.y, useZ ? z : 0f));
             
             // Just add a straight line, the connection is too short to notice.
-            if (neededSegments <= 1)
+            if (true || neededSegments <= 1)
             {
                 // Clockwise
                 triangles.Add(centerIdx);
@@ -242,6 +239,39 @@ namespace Transidious
         {
             var centerIdx = vertices.Count;
             vertices.Add(center);
+            uvs.Add(new Vector2(0, 0));
+
+            var lastIdx = 0;
+
+            float twicePI = Mathf.PI * 2f;
+            for (int i = 0; i <= segments; ++i)
+            {
+                var x = center.x + (radius * Mathf.Cos(i * twicePI / segments));
+                var y = center.y + (radius * Mathf.Sin(i * twicePI / segments));
+                var p1 = new Vector3(x, y, z);
+
+                if (i == 0)
+                {
+                    lastIdx = vertices.Count;
+                    vertices.Add(p1);
+                    uvs.Add(new Vector2(0, 0));
+
+                    continue;
+                }
+
+                var nextIdx = vertices.Count;
+                vertices.Add(p1);
+                uvs.Add(new Vector2(0, 0));
+
+                triangles.Add(centerIdx);
+                triangles.Add(nextIdx);
+                triangles.Add(lastIdx);
+
+                lastIdx = nextIdx;
+            }
+
+            /*var centerIdx = vertices.Count;
+            vertices.Add(center);
 
             var left = Vector2.Perpendicular(direction).normalized * radius;
             var right = -left;
@@ -265,6 +295,8 @@ namespace Transidious
                 var y = center.y + radius * Mathf.Sin(nextAngle);
 
                 vertices.Add(new Vector3(x, y, z));
+
+                Utility.DrawCircle(vertices.Last(), .1f, .1f, Color.black);
             }
 
             for (var i = 0; i < segments; ++i)
@@ -293,7 +325,7 @@ namespace Transidious
 #if DEBUG
                 circleVerts += 3;
 #endif
-            }
+            }*/
         }
 
         static void CreateSmoothLine_AddQuad(IReadOnlyList<Vector3> positions,
@@ -315,10 +347,11 @@ namespace Transidious
                                             ref int connectionOffset,
                                             ref int quads)
         {
-            var p0 = positions[i - 1];
-            var p1 = positions[i];
+            var p0 = Vector3.zero;
+            var p1 = positions[i - 1];
+            var p2 = positions[i];
 
-            if (p0.Equals(Vector3.positiveInfinity) || p1.Equals(Vector3.positiveInfinity))
+            if (p1.Equals(Vector3.positiveInfinity) || p2.Equals(Vector3.positiveInfinity))
             {
                 connectionOffset = 0;
                 return;
@@ -326,32 +359,53 @@ namespace Transidious
 
             if (useZ)
             {
-                p0 = new Vector3(p0.x, p0.y, z);
                 p1 = new Vector3(p1.x, p1.y, z);
+                p2 = new Vector3(p2.x, p2.y, z);
             }
 
-            Vector3 line = p0 - p1;
-            Vector3 normal = new Vector3(-line.y, line.x, 0f).normalized;
+            Vector3 line12 = p1 - p2;
+            Vector3 normal12 = new Vector3(-line12.y, line12.x, 0f).normalized;
+            Vector3 normal02 = normal12;
 
-            Vector3 tr = p1 + endWidth * normal;
-            Vector3 tl = p1 - endWidth * normal;
-            Vector3 br = p0 + startWidth * normal;
-            Vector3 bl = p0 - startWidth * normal;
-
-            if (!offset.Equals(0f))
+            if (i > 1)
             {
-                p0 += offset * normal;
-                p1 += offset * normal;
+                p0 = positions[i - 2];
 
-                bl += offset * normal;
-                tl += offset * normal;
-                tr += offset * normal;
-                br += offset * normal;
+                var line01 = p0 - p1;
+                var normal01 = new Vector3(-line01.y, line01.x, 0f).normalized;
+
+                var line02 = p0 - p2;
+                normal02 = new Vector3(-line02.y, line02.x, 0f).normalized;
+
+                if (!offset.Equals(0f))
+                {
+                    p0 += offset * normal01;
+                    p1 += offset * normal02;
+                    p2 += offset * normal12;
+                }
             }
+            else if (!offset.Equals(0f))
+            {
+                p1 += offset * normal12;
+                p2 += offset * normal12;
+            }
+
+            Vector3 tr = p2 + endWidth * normal12;
+            Vector3 tl = p2 - endWidth * normal12;
+            Vector3 br = p1 + startWidth * normal02;
+            Vector3 bl = p1 - startWidth * normal02;
+
+            //if (!offset.Equals(0f))
+            //{
+            //    tr += offset * normal12;
+            //    tl += offset * normal12;
+            //    br += offset * normal02;
+            //    bl += offset * normal02;
+            //}
 
             if (colliderPath != null)
             {
-                var angle = Math.Angle(Vector2.down, normal);
+                var angle = Math.Angle(Vector2.down, normal12);
                 if (!angle.Equals(0f))
                 {
                     // Add right side to forward path.
@@ -373,22 +427,23 @@ namespace Transidious
 
             if (i == 1 && startCap)
             {
-                AddCirclePart(vertices, triangles, uv, p0, startWidth, -line, 10, z);
+                AddCirclePart(vertices, triangles, uv, p1, startWidth, -line12, 10, z);
             }
 
             AddQuad(vertices, triangles, normals, uv, bl, tr, br, tl);
             ++quads;
 
-            if (i > 1 && i < positions.Count - 1 && quads > 1)
+            if (i > 1 && quads > 1)
             {
-                AddCirclePart(vertices, triangles, uv, p1, endWidth, line, 10, z);
-                //connectionOffset = AddSmoothIntersection(positions, i, vertices, triangles, uv,
-                //                                         endWidth, cornerVertices,
-                //                                         z, useZ, connectionOffset);
+                //AddCirclePart(vertices, triangles, uv, p1, endWidth, line, 10, z);
+                connectionOffset = AddSmoothIntersection(positions, i, vertices, triangles, uv,
+                                                         endWidth, cornerVertices,
+                                                         z, useZ, connectionOffset,
+                                                         p0, p1, p2);
             }
             else if (i == positions.Count - 1 && endCap)
             {
-                AddCirclePart(vertices, triangles, uv, p1, endWidth, line, 10, z);
+                AddCirclePart(vertices, triangles, uv, p2, endWidth, line12, 10, z);
             }
         }
 
@@ -1198,9 +1253,36 @@ namespace Transidious
             }
 
             int[] indices = new Triangulator(points2d).Triangulate();
-            Mesh msh = new Mesh();
-            msh.vertices = points;
-            msh.triangles = indices;
+            Mesh msh = new Mesh
+            {
+                vertices = points,
+                triangles = indices,
+            };
+
+            msh.RecalculateNormals();
+            msh.RecalculateBounds();
+
+            return msh;
+        }
+
+        public static Mesh PointsToMeshFast(Vector2[] points)
+        {
+            if (points.Length == 0)
+            {
+                return new Mesh();
+            }
+
+            int pointCount = points.Length;
+            if (points.Last() == points.First())
+                --pointCount;
+
+            int[] indices = new Triangulator(points).Triangulate();
+            Mesh msh = new Mesh
+            {
+                vertices = points.Select(p => (Vector3)p).ToArray(),
+                triangles = indices,
+            };
+
             msh.RecalculateNormals();
             msh.RecalculateBounds();
 
@@ -1308,7 +1390,7 @@ namespace Transidious
             return new Rect(bounds.min.x, bounds.min.y, bounds.size.x, bounds.size.y);
         }
 
-        public static Rect GetCollisionRect(IReadOnlyList<Vector2> points)
+        public static Rect GetCollisionRect(IEnumerable<Vector2> points)
         {
             var minX = float.PositiveInfinity;
             var maxX = 0f;
@@ -1321,6 +1403,27 @@ namespace Transidious
                 maxX = Mathf.Max(maxX, pt.x);
                 minY = Mathf.Min(minY, pt.y);
                 maxY = Mathf.Max(maxY, pt.y);
+            }
+
+            return new Rect(minX, minY, maxX - minX, maxY - minY);
+        }
+
+        public static Rect GetCollisionRect(IEnumerable<Vector2[]> points)
+        {
+            var minX = float.PositiveInfinity;
+            var maxX = 0f;
+            var minY = float.PositiveInfinity;
+            var maxY = 0f;
+
+            foreach (var arr in points)
+            {
+                foreach (var pt in arr)
+                {
+                    minX = Mathf.Min(minX, pt.x);
+                    maxX = Mathf.Max(maxX, pt.x);
+                    minY = Mathf.Min(minY, pt.y);
+                    maxY = Mathf.Max(maxY, pt.y);
+                }
             }
 
             return new Rect(minX, minY, maxX - minX, maxY - minY);

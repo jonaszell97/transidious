@@ -42,27 +42,6 @@ namespace Transidious
             internal ISchedule schedule;
         }
 
-        [System.Serializable]
-        public struct SerializableLineData
-        {
-            public int lineID;
-            public int incomingRouteFromDepotID;
-            public int incomingRouteToDepotID;
-            public int outgoingRouteFromDepotID;
-            public int outgoingRouteToDepotID;
-            public LineIntersectionInfo intersectionInfo;
-        }
-
-        [System.Serializable]
-        public struct SerializedStop
-        {
-            public SerializableMapObject mapObject;
-            public SerializableVector2 position;
-            public List<int> outgoingRouteIDs;
-            public List<int> routeIDs;
-            public List<SerializableLineData> lineDataSerial;
-        }
-
         /// Describes the appearance of a stop depending on how many lines intersect
         /// at this stop.
         public enum Appearance
@@ -337,6 +316,12 @@ namespace Transidious
             {
                 return false;
             }
+        }
+
+        public ISchedule GetSchedule(Line line)
+        {
+            Debug.Assert(lineData.ContainsKey(line), "line does not stop here!");
+            return lineData[line].schedule;
         }
 
         public DateTime NextDeparture(Line line, DateTime after)
@@ -1490,6 +1475,11 @@ namespace Transidious
 
             result.OutgoingRouteIDs.AddRange(outgoingRoutes.Select(r => (uint)r.Id));
             result.RouteIDs.AddRange(routes.Select(r => (uint)r.Id));
+            result.Schedules.AddRange(lineData.Select(l => new Serialization.Stop.Types.StopSchedule
+                {
+                    LineID = (uint)l.Key.Id,
+                    Schedule = l.Value.schedule.Serialize(),
+                }));
 
             return result;
         }
@@ -1499,49 +1489,14 @@ namespace Transidious
             base.Deserialize(stop.MapObject);
             outgoingRoutes = stop.OutgoingRouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
             routes = stop.RouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
-        }
 
-        public new SerializedStop Serialize()
-        {
-            return new SerializedStop
+            foreach (var sched in stop.Schedules)
             {
-                mapObject = base.Serialize(),
-                position = new SerializableVector2(transform.position),
+                var line = map.GetMapObject<Line>((int)sched.LineID);
+                AddLine(line);
 
-                routeIDs = routes.Select(r => r.id).ToList(),
-                outgoingRouteIDs = outgoingRoutes.Select(r => r.id).ToList(),
-                lineDataSerial = lineData.Select(d => new SerializableLineData
-                {
-                    lineID = d.Key.id,
-                    outgoingRouteFromDepotID = d.Value.outgoingRouteFromDepot?.id ?? 0,
-                    outgoingRouteToDepotID = d.Value.outgoingRouteToDepot?.id ?? 0,
-                    incomingRouteToDepotID = d.Value.incomingRouteToDepot?.id ?? 0,
-                    incomingRouteFromDepotID = d.Value.incomingRouteFromDepot?.id ?? 0,
-                    intersectionInfo = d.Value.intersectionInfo
-                }).ToList()
-            };
-        }
-
-        public void Deserialize(SerializedStop stop, Map map)
-        {
-            base.Deserialize(stop.mapObject);
-
-            foreach (var data in stop.lineDataSerial)
-            {
-                lineData.Add(map.GetMapObject<Line>(data.lineID), new LineData
-                {
-                    incomingRouteFromDepot = map.GetMapObject<Route>(data.incomingRouteFromDepotID),
-                    incomingRouteToDepot = map.GetMapObject<Route>(data.incomingRouteToDepotID),
-                    outgoingRouteFromDepot = map.GetMapObject<Route>(data.outgoingRouteFromDepotID),
-                    outgoingRouteToDepot = map.GetMapObject<Route>(data.outgoingRouteToDepotID),
-                    intersectionInfo = data.intersectionInfo
-                });
+                SetSchedule(line, ContinuousSchedule.Deserialize(sched.Schedule));
             }
-
-            routes = stop.routeIDs.Select(id => map.GetMapObject<Route>(id)).ToList();
-            outgoingRoutes = stop.outgoingRouteIDs.Select(id => map.GetMapObject<Route>(id)).ToList();
-
-            wasModified = true;
         }
 
         void Awake()
@@ -1560,12 +1515,12 @@ namespace Transidious
 
         public override void OnMouseDown()
         {
+            base.OnMouseDown();
+
             if (!Game.MouseDownActive(MapObjectKind.Stop))
             {
                 return;
             }
-
-            base.OnMouseDown();
 
             if (GameController.instance.input.IsPointerOverUIElement())
             {

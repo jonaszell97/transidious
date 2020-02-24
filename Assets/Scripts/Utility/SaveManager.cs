@@ -117,14 +117,12 @@ namespace Transidious
                 Finances = GameController.instance.financeController?.ToProtobuf(),
             };
 
-            for (var x = 0; x < map.tiles.Length; ++x)
+            for (var x = 0; x < map.tilesWidth; ++x)
             {
-                var tilesRow = map.tiles[x];
                 var tileProtoBuf = new Serialization.SaveFile.Types.MapTiles();
-
-                for (var y = 0; y < tilesRow.Length; ++y)
+                for (var y = 0; y < map.tilesHeight; ++y)
                 {
-                    var tile = map.tiles[x][y];
+                    var tile = map.GetTile(x, y);
                     tileProtoBuf.Tiles.Add(tile.ToProtobuf());
                 }
 
@@ -253,84 +251,77 @@ namespace Transidious
         static IEnumerator LoadMap(Map map, string mapName)
         {
             var resourceName = "Maps/" + mapName;
-
             var asyncResource = Resources.LoadAsync(resourceName);
+
             yield return asyncResource;
-
-            if (asyncResource.asset != null)
-            {
-                yield return LoadMap(map, mapName, asyncResource, -1, -1);
-            }
-            else
-            {
-                for (int x = 0; ; ++x)
-                {
-                    for (int y = 0; ; ++y)
-                    {
-                        var file = resourceName + "/" + x + "_" + y;
-                        asyncResource = Resources.LoadAsync(file);
-                        yield return asyncResource;
-
-                        if (asyncResource.asset != null)
-                        {
-                            yield return LoadMap(map, mapName, asyncResource, x, y);
-                        }
-                        else if (y == 0)
-                        {
-                            if (x == 0)
-                            {
-                                Debug.LogError("no save file");
-                            }
-
-                            yield break;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
+            yield return LoadMap(map, mapName, asyncResource);
         }
 
-        static IEnumerator LoadMap(Map map, string mapName, ResourceRequest asyncResource, int tileX, int tileY)
+        static IEnumerator LoadMap(Map map, string mapName, ResourceRequest asyncResource)
         {
-            map.name = mapName;
+            if (asyncResource.asset == null)
+            {
+                yield break;
+            }
 
             var fileResource = (TextAsset)asyncResource.asset;
             var serializedMap = Decompress(fileResource, Serialization.Map.Parser);
-
             if (serializedMap.Triple.Deserialize() != SaveFormatVersion)
             {
                 Debug.LogError("Incompatible save format version!");
                 yield break;
             }
 
-            var isBaseTile = tileX == -1 || (tileX == 0 && tileY == 0);
-            if (isBaseTile)
+            //map.minX = serializedMap.MinX;
+            //map.maxX = serializedMap.MaxX;
+            //map.minY = serializedMap.MinY;
+            //map.maxY = serializedMap.MaxY;
+            //map.width = map.maxX - map.minX;
+            //map.height = map.maxY - map.minY;
+
+            //map.UpdateBoundary(
+            //    serializedMap.BoundaryMeshes[0].Deserialize(Map.Layer(MapLayer.Boundary)),
+            //    serializedMap.BoundaryMeshes[1].Deserialize(Map.Layer(MapLayer.Foreground)),
+            //    serializedMap.BoundaryMeshes[2].Deserialize(Map.Layer(MapLayer.Boundary)),
+            //    serializedMap.MinX, serializedMap.MaxX,
+            //    serializedMap.MinY, serializedMap.MaxY);
+
+            //map.boundaryPositions = serializedMap.BoundaryPositions.Select(
+            //    p => p.Deserialize()).ToArray();
+
+            //for (var x = 0; x < map.tilesWidth; ++x)
+            //{
+            //    for (var y = 0; y < map.tilesHeight; ++y)
+            //    {
+
+            //    }
+            //}
+
+            // Initialize the map tiles.
+            for (int x = 0; x < map.tilesWidth; ++x)
             {
-                map.minX = serializedMap.MinX;
-                map.maxX = serializedMap.MaxX;
-                map.minY = serializedMap.MinY;
-                map.maxY = serializedMap.MaxY;
-
-                map.UpdateBoundary(
-                    serializedMap.BoundaryMeshes[0].Deserialize(Map.Layer(MapLayer.Boundary)),
-                    serializedMap.BoundaryMeshes[1].Deserialize(Map.Layer(MapLayer.Foreground)),
-                    serializedMap.BoundaryMeshes[2].Deserialize(Map.Layer(MapLayer.Boundary)),
-                    serializedMap.MinX, serializedMap.MaxX,
-                    serializedMap.MinY, serializedMap.MaxY);
-
-                map.boundaryPositions = serializedMap.BoundaryPositions.Select(
-                    p => p.Deserialize()).ToArray();
-
-                Camera.main.transform.position = new Vector3(
-                    serializedMap.MinX + (serializedMap.MaxX - serializedMap.MinX) / 2f,
-                    serializedMap.MinY + (serializedMap.MaxY - serializedMap.MinY) / 2f,
-                    Camera.main.transform.position.z);
-
-                map.startingCameraPos = Camera.main.transform.position;
+                for (int y = 0; y < map.tilesHeight; ++y)
+                {
+                    map.GetTile(x, y).Initialize(map, x, y);
+                }
             }
+
+            map.sharedTile.Initialize(map, -1, -1);
+
+            Camera.main.transform.position = map.startingCameraPos;
+            map.input.minX = map.minX - 1000f;
+            map.input.maxX = map.maxX + 1000f;
+            map.input.minY = map.minY - 1000f;
+            map.input.maxY = map.maxY + 1000f;
+            map.input.UpdateZoomLevels();
+
+            //Camera.main.transform.position = new Vector3(
+            //    serializedMap.MinX + (serializedMap.MaxX - serializedMap.MinX) / 2f,
+            //    serializedMap.MinY + (serializedMap.MaxY - serializedMap.MinY) / 2f,
+            //    Camera.main.transform.position.z);
+
+            // map.input.UpdateZoomLevels();
+            //map.startingCameraPos = Camera.main.transform.position;
 
             yield return DeserializeGameObjects(map, serializedMap);
             yield return InitializeGameObjects(map, serializedMap);
@@ -480,9 +471,9 @@ namespace Transidious
         }
 #endif
 
-        public static IEnumerator LoadSave(Map map, string mapName)
+        public static IEnumerator LoadSave(Map map, string mapName, bool pauseAfterLoad = false)
         {
-            bool wasPaused = GameController.instance.status == GameController.GameStatus.Paused;
+            bool wasPaused = GameController.instance.Paused;
             if (!wasPaused)
             {
                 GameController.instance.EnterPause();
@@ -490,17 +481,12 @@ namespace Transidious
 
             var resourceName = "Saves/" + mapName;
             var asyncResource = Resources.LoadAsync(resourceName);
+
             yield return asyncResource;
-
-            if (asyncResource.asset != null)
-            {
-                yield return LoadSave(map, asyncResource);
-            }
-
-            // Finalize the map.
+            yield return LoadSave(map, asyncResource);
             yield return map.DoFinalize(thresholdTime);
 
-            if (!wasPaused)
+            if (!wasPaused && !pauseAfterLoad)
             {
                 GameController.instance.ExitPause();
             }
@@ -616,7 +602,7 @@ namespace Transidious
                 for (int y = 0; y < saveFile.Tiles[x].Tiles.Count; ++y)
                 {
                     var tile = saveFile.Tiles[x].Tiles[y];
-                    map.tiles[tile.X][tile.Y].Deserialize(tile);
+                    map.GetTile((int)tile.X, (int)tile.Y).Deserialize(tile);
                 }
             }
 
@@ -629,22 +615,24 @@ namespace Transidious
             yield break;
         }
 
-        public static IEnumerator LoadSave(GameController game, string saveName)
+        public static Map CreateMap(GameController game, string saveName)
         {
-#if UNITY_EDITOR
-            AssetDatabase.Refresh();
-#endif
-
-            var mapPrefab = Resources.Load("Prefabs/Map") as GameObject;
+            var mapPrefab = Resources.Load($"Prefabs/Maps/{saveName}") as GameObject;
             var mapObj = GameObject.Instantiate(mapPrefab);
 
             var map = mapObj.GetComponent<Map>();
+            map.name = saveName;
             map.input = game.input;
             map.isLoadedFromSaveFile = true;
             loadedMap = map;
 
-            yield return LoadMap(map, saveName);
-            yield return LoadSave(map, saveName);
+            return map;
+        }
+
+        public static IEnumerator LoadSave(GameController game, Map map)
+        {
+            yield return LoadMap(map, map.name);
+            yield return LoadSave(map, map.name);
         }
     }
 }

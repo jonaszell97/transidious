@@ -127,7 +127,7 @@ namespace Transidious
                         new Vector3(0f, 0f, Map.Layer(MapLayer.Streets));
 
                     var meshRenderer = inProgressStreetObj.GetComponent<MeshRenderer>();
-                    meshRenderer.material = GameController.GetUnlitMaterial(
+                    meshRenderer.material = GameController.instance.GetUnlitMaterial(
                         StreetSegment.GetStreetColor(streetType, game.input.renderingDistance));
 
                     inProgressStreetObjBorder = Instantiate(game.loadedMap.meshPrefab);
@@ -136,7 +136,7 @@ namespace Transidious
                         new Vector3(0f, 0f, Map.Layer(MapLayer.StreetOutlines));
 
                     var borderMeshRenderer = inProgressStreetObjBorder.GetComponent<MeshRenderer>();
-                    borderMeshRenderer.material = GameController.GetUnlitMaterial(
+                    borderMeshRenderer.material = GameController.instance.GetUnlitMaterial(
                         StreetSegment.GetBorderColor(streetType, game.input.renderingDistance));
                 }
 

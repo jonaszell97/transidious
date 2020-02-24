@@ -30,6 +30,14 @@ namespace Transidious
         /// </summary>
         PathFollowingObject pathFollow;
 
+        /// The vehicle capacity.
+        public int capacity;
+
+        /// <summary>
+        /// The current passengers.
+        /// </summary>
+        public int passengers;
+
         float velocity;
 
         public Stop NextStop
@@ -45,11 +53,12 @@ namespace Transidious
             }
         }
 
-        public void Initialize(Line line, float? velocity = null)
+        public void Initialize(Line line, float? velocity = null, int? capacity = null)
         {
             this.line = line;
             this.spriteRenderer.color = line.color;
             this.sim = GameController.instance.sim;
+            this.passengers = 0;
 
             if (velocity != null)
             {
@@ -59,6 +68,40 @@ namespace Transidious
             {
                 this.velocity = line.AverageSpeed / 3.6f;
             }
+
+            if (capacity != null)
+            {
+                this.capacity = capacity.Value;
+            }
+            else
+            {
+                this.capacity = GetDefaultCapacity(line.type);
+            }
+        }
+
+        public static int GetDefaultCapacity(TransitType type)
+        {
+            switch (type)
+            {
+                case TransitType.Bus:
+                default:
+                    return 30;
+                case TransitType.Tram:
+                    return 100;
+                case TransitType.Subway:
+                    return 250;
+                case TransitType.LightRail:
+                    return 250;
+                case TransitType.IntercityRail:
+                    return 400;
+                case TransitType.Ferry:
+                    return 20;
+            }
+        }
+
+        public void UpdateColor()
+        {
+            this.spriteRenderer.color = line.color;
         }
 
         static System.Collections.Generic.Dictionary<Stop, DateTime> lastStopAtStation
@@ -83,7 +126,7 @@ namespace Transidious
             this.currentRoute = routeIndex;
 
             var route = line.routes[currentRoute];
-            if (route.positions == null)
+            if ((route.positions?.Count ?? 0) == 0)
             {
                 return;
             }

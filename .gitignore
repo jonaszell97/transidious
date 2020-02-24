@@ -14,6 +14,7 @@ Assets/NuGet
 /TblGen/cmake_install.cmake
 /TblGen/Makefile
 /TblGen/.cache
+/TblGen/env
 
 Assets/Resources/Saves
 Assets/Plugins/UnityTriangle.bundle

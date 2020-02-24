@@ -168,8 +168,8 @@ namespace Transidious
             {
                 Id = (uint)id,
                 Name = name,
-                UniqueTileX = uniqueTile != null ? uniqueTile.x : -1,
-                UniqueTileY = uniqueTile != null ? uniqueTile.y : -1,
+                UniqueTileX = uniqueTile.x,
+                UniqueTileY = uniqueTile.y,
                 Area = area,
                 Centroid = centroid.ToProtobuf(),
             };
@@ -198,52 +198,12 @@ namespace Transidious
             this.area = obj.Area;
             this.centroid = obj.Centroid.Deserialize();
 
-            if (obj.UniqueTileX != -1)
-            {
-                var tile = GameController.instance.loadedMap.tiles[obj.UniqueTileX][obj.UniqueTileY];
-                this.uniqueTile = tile;
-            }
+            var tile = GameController.instance.loadedMap.GetTile(obj.UniqueTileX, obj.UniqueTileY);
+            this.uniqueTile = tile;
 
             if (obj.OutlinePositions != null)
             {
                 this.outlinePositions = obj.OutlinePositions.Select(arr => arr.OutlinePositions.Select(v => v.Deserialize()).ToArray()).ToArray();
-            }
-        }
-
-        public SerializableMapObject Serialize()
-        {
-            return new SerializableMapObject
-            {
-                id = this.id,
-                name = this.name,
-                uniqueTileX = uniqueTile != null ? uniqueTile.x : -1,
-                uniqueTileY = uniqueTile != null ? uniqueTile.y : -1,
-                outlinePositions = outlinePositions?.Select(
-                    arr => arr.Select(v => new SerializableVector2(v)).ToArray()).ToArray(),
-                area = area,
-                centroid = new SerializableVector2(centroid),
-            };
-        }
-
-        public void Deserialize(SerializableMapObject obj)
-        {
-            this.id = obj.id;
-            this.name = obj.name;
-            this.area = obj.area;
-            this.centroid = obj.centroid;
-
-            if (obj.uniqueTileX != -1)
-            {
-                var tile = GameController.instance.loadedMap.tiles
-                    [obj.uniqueTileX][obj.uniqueTileY];
-
-                this.uniqueTile = tile;
-            }
-
-            if (obj.outlinePositions != null)
-            {
-                outlinePositions = obj.outlinePositions.Select(
-                    arr => arr.Select(v => (Vector2)v).ToArray()).ToArray();
             }
         }
 
@@ -470,8 +430,8 @@ namespace Transidious
             {
                 Id = (uint)id,
                 Name = name,
-                UniqueTileX = uniqueTile != null ? uniqueTile.x : -1,
-                UniqueTileY = uniqueTile != null ? uniqueTile.y : -1,
+                UniqueTileX = uniqueTile.x,
+                UniqueTileY = uniqueTile.y,
             };
 
             if (outlinePositions != null)
@@ -491,42 +451,13 @@ namespace Transidious
             return result;
         }
 
-        public SerializableMapObject Serialize()
-        {
-            return new SerializableMapObject
-            {
-                id = this.id,
-                name = this.name,
-                uniqueTileX = uniqueTile != null ? uniqueTile.x : -1,
-                uniqueTileY = uniqueTile != null ? uniqueTile.y : -1,
-            };
-        }
-
         public void Deserialize(Serialization.MapObject obj)
         {
             this.id = (int)obj.Id;
             this.name = obj.Name;
 
-            if (obj.UniqueTileX != -1)
-            {
-                var tile = GameController.instance.loadedMap.tiles[obj.UniqueTileX][obj.UniqueTileY];
-                this.uniqueTile = tile;
-            }
-        }
-
-        public void Deserialize(SerializableMapObject obj)
-        {
-            this.id = obj.id;
-            this.name = obj.name;
-
-            if (obj.uniqueTileX != -1)
-            {
-                var tile = GameController.instance.loadedMap.tiles
-                    [obj.uniqueTileX][obj.uniqueTileY];
-
-                this.uniqueTile = tile;
-                this.transform.SetParent(tile.transform);
-            }
+            var tile = GameController.instance.loadedMap.GetTile(obj.UniqueTileX, obj.UniqueTileY);
+            this.uniqueTile = tile;
         }
 
         public virtual void Destroy()

@@ -55,8 +55,10 @@ namespace Transidious
         public InputController input;
 
         /// The map tiles.
-        public MapTile[][] tiles;
+        public MapTile[] tiles;
         public int tilesHeight, tilesWidth;
+
+        public MapTile sharedTile;
 
         public bool isLoadedFromSaveFile;
 
@@ -231,6 +233,48 @@ namespace Transidious
         }
 
         public void RegisterMapObject(IMapObject obj,
+                                      IEnumerable<Vector2[]> positions,
+                                      int id = -1)
+        {
+            if (!isLoadedFromSaveFile && positions != null)
+            {
+                var tiles = new HashSet<MapTile>();
+                foreach (var arr in positions)
+                {
+                    foreach (var pos in arr)
+                    {
+                        var tile = GetTile(pos);
+                        if (tile != null)
+                        {
+                            tile.mapObjects.Add(obj);
+                            tiles.Add(tile);
+                        }
+                    }
+                }
+
+                // If the object belongs to a single map tile, parent it.
+                if (tiles.Count == 1)
+                {
+                    // If the object belongs to a single map tile, parent it.
+                    obj.transform?.SetParent(tiles.First().transform);
+                    obj.UniqueTile = tiles.First();
+                }
+                else
+                {
+                    foreach (var tile in tiles)
+                    {
+                        tile.AddOrphanedObject(obj);
+                    }
+
+                    obj.transform?.SetParent(sharedTile.transform);
+                    obj.UniqueTile = sharedTile;
+                }
+            }
+
+            RegisterMapObject(obj, id);
+        }
+
+        public void RegisterMapObject(IMapObject obj,
                                       IEnumerable<Vector2> positions,
                                       int id = -1)
         {
@@ -260,6 +304,9 @@ namespace Transidious
                     {
                         tile.AddOrphanedObject(obj);
                     }
+
+                    obj.transform?.SetParent(sharedTile.transform);
+                    obj.UniqueTile = sharedTile;
                 }
             }
 
@@ -296,6 +343,9 @@ namespace Transidious
                     {
                         tile.AddOrphanedObject(obj);
                     }
+
+                    obj.transform?.SetParent(sharedTile.transform);
+                    obj.UniqueTile = sharedTile;
                 }
             }
 
@@ -304,6 +354,12 @@ namespace Transidious
 
         public void RegisterMapObject(IMapObject obj, int id = -1)
         {
+            if (obj.UniqueTile == null)
+            {
+                obj.transform?.SetParent(sharedTile.transform);
+                obj.UniqueTile = sharedTile;
+            }
+
             if (id == -1)
             {
                 id = lastAssignedMapObjectID++;
@@ -343,12 +399,9 @@ namespace Transidious
             mapObjectIDMap.Remove(obj.Id);
             mapObjectMap.Remove(obj.Name);
 
-            foreach (var tileArr in tiles)
+            foreach (var tile in tiles)
             {
-                foreach (var tile in tileArr)
-                {
-                    tile.mapObjects.Remove(obj);
-                }
+                tile.mapObjects.Remove(obj);
             }
 
             obj.Destroy();
@@ -534,7 +587,8 @@ namespace Transidious
                 var meshRenderer = boundaryOutlineObj.GetComponent<MeshRenderer>();
 
                 filter.mesh = outlineMesh;
-                meshRenderer.material.color = Color.black;
+
+                ResetBorderColor();
                 boundaryOutlineObj.transform.position = new Vector3(
                     boundaryOutlineObj.transform.position.x,
                     boundaryOutlineObj.transform.position.y,
@@ -547,33 +601,33 @@ namespace Transidious
                 var meshRenderer = boundaryMaskObj.GetComponent<MeshRenderer>();
 
                 filter.mesh = maskMesh;
-                meshRenderer.material.color = Color.white;
+
+                ResetMaskColor();
                 boundaryMaskObj.transform.position = new Vector3(
                     boundaryMaskObj.transform.position.x,
                     boundaryMaskObj.transform.position.y,
                     Layer(MapLayer.Foreground, 0));
             }
 
-            var width = maxX - minX;
-            var height = maxY - minY;
-            var neededTilesX = (int)Mathf.Ceil(width / tileSize);
-            var neededTilesY = (int)Mathf.Ceil(height / tileSize);
+            width = maxX - minX;
+            height = maxY - minY;
 
-            tiles = new MapTile[neededTilesX][];
+            tilesWidth = (int)Mathf.Ceil(width / tileSize);
+            tilesHeight = (int)Mathf.Ceil(height / tileSize);
+            tiles = new MapTile[tilesWidth * tilesHeight];
 
-            for (int x = 0; x < neededTilesX; ++x)
+            for (int x = 0; x < tilesWidth; ++x)
             {
-                tiles[x] = new MapTile[neededTilesY];
-
-                for (int y = 0; y < neededTilesY; ++y)
+                for (int y = 0; y < tilesHeight; ++y)
                 {
-                    tiles[x][y] = Instantiate(mapTilePrefab).GetComponent<MapTile>();
-                    tiles[x][y].Initialize(this, x, y);
+                    tiles[(x * tilesHeight) + y] = Instantiate(mapTilePrefab).GetComponent<MapTile>();
+                    tiles[(x * tilesHeight) + y].transform.SetParent(this.transform, false);
+                    tiles[(x * tilesHeight) + y].Initialize(this, x, y);
                 }
             }
 
-            tilesWidth = neededTilesX;
-            tilesHeight = neededTilesY;
+            sharedTile.Initialize(this, -1, -1);
+            sharedTile.Show(input.renderingDistance);
         }
 
         public bool IsPointOnMap(Vector2 pt)
@@ -585,19 +639,19 @@ namespace Transidious
         public void SetBackgroundColor(Color c)
         {
             var meshRenderer = boundaryBackgroundObj.GetComponent<MeshRenderer>();
-            meshRenderer.material = GameController.GetUnlitMaterial(c);
+            meshRenderer.sharedMaterial = GameController.instance.GetUnlitMaterial(c);
         }
 
         public void SetBorderColor(Color c)
         {
             var meshRenderer = boundaryOutlineObj.GetComponent<MeshRenderer>();
-            meshRenderer.material = GameController.GetUnlitMaterial(c);
+            meshRenderer.sharedMaterial = GameController.instance.GetUnlitMaterial(c);
         }
 
         public void SetMaskColor(Color c)
         {
             var meshRenderer = boundaryMaskObj.GetComponent<MeshRenderer>();
-            meshRenderer.material = GameController.GetUnlitMaterial(c);
+            meshRenderer.sharedMaterial = GameController.instance.GetUnlitMaterial(c);
 
             Camera.main.backgroundColor = c;
         }
@@ -605,7 +659,7 @@ namespace Transidious
         public void MakeBackgroundTransparent()
         {
             var meshRenderer = boundaryBackgroundObj.GetComponent<MeshRenderer>();
-            meshRenderer.material = new Material(Shader.Find("Unlit/Transparent"));
+            meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Transparent"));
         }
 
         public Color GetDefaultBackgroundColor(MapDisplayMode mode)
@@ -660,6 +714,17 @@ namespace Transidious
             SetMaskColor(GetDefaultMaskColor(Game.displayMode));
         }
 
+        public MapTile GetTile(int x, int y)
+        {
+            if (x == -1)
+            {
+                Debug.Assert(y == -1);
+                return sharedTile;
+            }
+
+            return tiles[x * tilesHeight + y];
+        }
+
         public MapTile GetTile(Vector3 pos)
         {
             float x = pos.x - minX;
@@ -677,7 +742,7 @@ namespace Transidious
             if (tileY >= tilesHeight)
                 return null;
 
-            return tiles[tileX][tileY];
+            return GetTile(tileX, tileY);
         }
 
         public class PointOnStreet
@@ -707,7 +772,7 @@ namespace Transidious
                         var newTileY = tileY + y;
                         if (newTileY >= 0 && newTileY < tilesHeight)
                         {
-                            var tile = tiles[newTileX][newTileY];
+                            var tile = GetTile(newTileX, newTileY);
                             foundNew = true;
 
                             foreach (var seg in tile.streetSegments)
@@ -835,7 +900,7 @@ namespace Transidious
             {
                 for (var y = minTile.y; y <= maxTile.y; ++y)
                 {
-                    var tile = tiles[x][y];
+                    var tile = GetTile(x, y);
                     foreach (var obj in tile.mapObjects.OfType<T>())
                     {
                         var dst = (obj.Centroid - position).sqrMagnitude;
@@ -1447,7 +1512,8 @@ namespace Transidious
         }
 
         public NaturalFeature CreateFeature(string name, NaturalFeature.Type type,
-                                            IEnumerable<Vector2> outline, float area,
+                                            IEnumerable<Vector2[]> outlines,
+                                            float area,
                                             Vector2 centroid, int id = -1)
         {
             id = id == -1 ? lastAssignedMapObjectID++ : id;
@@ -1462,14 +1528,14 @@ namespace Transidious
 
             var nf = new NaturalFeature();
             nf.Initialize(this, currentName, type, null, area, centroid, id);
-            RegisterMapObject(nf, outline, id);
+            RegisterMapObject(nf, outlines, id);
 
             naturalFeatures.Add(nf);
             return nf;
         }
 
         public Building CreateBuilding(Building.Type type,
-                                       IEnumerable<Vector2> outline,
+                                       IEnumerable<Vector2[]> outlines,
                                        string name, string numberStr,
                                        float area, Vector2 centroid,
                                        int id = -1)
@@ -1488,7 +1554,7 @@ namespace Transidious
             building.Initialize(this, type, null, numberStr, null,
                                 area, currentName, centroid, id);
 
-            RegisterMapObject(building, outline, id);
+            RegisterMapObject(building, outlines, id);
 
             buildings.Add(building);
             if (!buildingsByType.TryGetValue(type, out List<Building> buildingList))
@@ -1629,31 +1695,32 @@ namespace Transidious
                 }
             }
 
-            var x = 0;
-            var y = 0;
+            //var x = 0;
+            //var y = 0;
             tilesToShow.Clear();
 
             var renderingDistance = input?.renderingDistance ?? RenderingDistance.Near;
-            foreach (var tileArr in tiles)
+            for (var x = 0; x < tilesWidth; ++x)
             {
                 var endX = (x + 1) * tileSize;
                 if (cameraRect.x > endX)
                 {
-                    foreach (var tile in tileArr)
+                    for (var y = 0; y < tilesHeight; ++y)
                     {
-                        tile.Hide();
+                        GetTile(x, y).Hide();
                     }
 
                     ++x;
                     continue;
                 }
 
-                foreach (var tile in tileArr)
+                for (var y = 0; y < tilesHeight; ++y)
                 {
                     var endY = (y + 1) * tileSize;
+                    var tile = GetTile(x, y);
+
                     if (cameraRect.y > endY)
                     {
-                        ++y;
                         tile.Hide();
                         continue;
                     }
@@ -1668,12 +1735,49 @@ namespace Transidious
                     {
                         tile.Hide();
                     }
-
-                    ++y;
                 }
-
-                ++x;
             }
+
+            //foreach (var tileArr in tiles)
+            //{
+            //    var endX = (x + 1) * tileSize;
+            //    if (cameraRect.x > endX)
+            //    {
+            //        foreach (var tile in tileArr)
+            //        {
+            //            tile.Hide();
+            //        }
+
+            //        ++x;
+            //        continue;
+            //    }
+
+            //    foreach (var tile in tileArr)
+            //    {
+            //        var endY = (y + 1) * tileSize;
+            //        if (cameraRect.y > endY)
+            //        {
+            //            ++y;
+            //            tile.Hide();
+            //            continue;
+            //        }
+
+            //        var tileRect = tile.rect;
+            //        if (cameraRect.Overlaps(tileRect))
+            //        {
+            //            tile.Show(renderingDistance);
+            //            tilesToShow.Add(tile);
+            //        }
+            //        else
+            //        {
+            //            tile.Hide();
+            //        }
+
+            //        ++y;
+            //    }
+
+            //    ++x;
+            //}
 
             foreach (var tile in tilesToShow)
             {
@@ -1760,24 +1864,12 @@ namespace Transidious
 
         public void UpdateScale()
         {
-            switch (input.renderingDistance)
+            foreach (var tile in ActiveTiles)
             {
-                case RenderingDistance.Near:
-                case RenderingDistance.Far:
-                    foreach (var tile in ActiveTiles)
-                    {
-                        tile.canvas.gameObject.SetActive(true);
-                    }
-
-                    break;
-                default:
-                    foreach (var tile in ActiveTiles)
-                    {
-                        tile.canvas.gameObject.SetActive(false);
-                    }
-
-                    break;
+                tile.Show(input.renderingDistance);
             }
+
+            sharedTile.Show(input.renderingDistance);
         }
 
         public void Reset()
@@ -1830,23 +1922,6 @@ namespace Transidious
         // Use this for initialization
         void Start()
         {
-            boundaryBackgroundObj = Instantiate(meshPrefab);
-            boundaryBackgroundObj.transform.SetParent(this.transform);
-            boundaryBackgroundObj.name = "Boundary Background";
-
-            boundaryOutlineObj = Instantiate(meshPrefab);
-            boundaryOutlineObj.transform.SetParent(this.transform);
-            boundaryOutlineObj.name = "Boundary Outline";
-
-            boundaryMaskObj = Instantiate(meshPrefab);
-            boundaryMaskObj.transform.SetParent(this.transform);
-            boundaryMaskObj.name = "Boundary Mask";
-
-            this.backgroundSpriteDay = Instantiate(SpriteManager.instance.spritePrefab);
-            this.backgroundSpriteDay.transform.SetParent(this.transform);
-            this.backgroundSpriteNight = Instantiate(SpriteManager.instance.spritePrefab);
-            this.backgroundSpriteNight.transform.SetParent(this.transform);
-
             input.RegisterEventListener(InputEvent.Zoom, _ =>
             {
                 this.UpdateVisibleTiles();
@@ -1906,27 +1981,19 @@ namespace Transidious
             });
         }
 
-        // Update is called once per frame
-        void Update()
+        public IEnumerator FinalizeStreetMeshes(float thresholdTime = 50)
         {
-            foreach (var stop in transitStops)
+            foreach (var street in streets)
             {
-                if (stop.wasModified)
+                street.CreateTextMeshes();
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
-                    stop.UpdateMesh();
-                }
-            }
-
-            foreach (var line in transitLines)
-            {
-                if (line.wasModified)
-                {
-                    line.UpdateMesh();
+                    yield return null;
                 }
             }
         }
 
-        public IEnumerator DoFinalize(float thresholdTime = 50, int tileX = -1, int tileY = -1)
+        public IEnumerator DoFinalize(float thresholdTime = 50)
         {
             var i = 0;
             foreach (var building in buildings)
@@ -1973,42 +2040,17 @@ namespace Transidious
             Debug.Log("circle verts: " + MeshBuilder.circleVerts);
 #endif
 
-            int minX, maxX;
-            if (tileX == -1)
+            foreach (var tile in tiles)
             {
-                minX = 0;
-                maxX = tiles.Length;
-            }
-            else
-            {
-                minX = (int)Mathf.Floor(tileX * (OSMImporter.maxTileSize / Map.tileSize));
-                maxX = Mathf.Min(minX + (int)(OSMImporter.maxTileSize / Map.tileSize), tiles.Length);
-            }
+                tile.FinalizeTile();
 
-            for (int x = minX; x < maxX; ++x)
-            {
-                int minY, maxY;
-                if (tileX == -1)
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
-                    minY = 0;
-                    maxY = tiles[x].Length;
-                }
-                else
-                {
-                    minY = (int)Mathf.Floor(tileY * (OSMImporter.maxTileSize / Map.tileSize));
-                    maxY = Mathf.Min(minY + (int)(OSMImporter.maxTileSize / Map.tileSize), tiles[x].Length);
-                }
-
-                for (int y = minY; y < maxY; ++y)
-                {
-                    tiles[x][y].FinalizeTile();
-
-                    if (FrameTimer.instance.FrameDuration >= thresholdTime)
-                    {
-                        yield return null;
-                    }
+                    yield return null;
                 }
             }
+
+            sharedTile.FinalizeTile();
 
             UpdateScale();
             UpdateTextScale();

@@ -25,43 +25,49 @@ namespace Transidious.Serialization {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg1UcmFuc2l0LnByb3RvEhlUcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uGgxD",
-            "b21tb24ucHJvdG8i2gEKBExpbmUSNwoJbWFwT2JqZWN0GAEgASgLMiQuVHJh",
-            "bnNpZGlvdXMuU2VyaWFsaXphdGlvbi5NYXBPYmplY3QSNAoEdHlwZRgCIAEo",
-            "DjImLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVHJhbnNpdFR5cGUSDwoH",
-            "ZGVwb3RJRBgDIAEoDRIPCgdzdG9wSURzGAQgAygNEhAKCHJvdXRlSURzGAUg",
-            "AygNEi8KBWNvbG9yGAYgASgLMiAuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
-            "bi5Db2xvciKhAQoEU3RvcBI3CgltYXBPYmplY3QYASABKAsyJC5UcmFuc2lk",
-            "aW91cy5TZXJpYWxpemF0aW9uLk1hcE9iamVjdBI0Cghwb3NpdGlvbhgCIAEo",
-            "CzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhIYChBvdXRn",
-            "b2luZ1JvdXRlSURzGAMgAygNEhAKCHJvdXRlSURzGAQgAygNIoEHCgVSb3V0",
-            "ZRI3CgltYXBPYmplY3QYASABKAsyJC5UcmFuc2lkaW91cy5TZXJpYWxpemF0",
-            "aW9uLk1hcE9iamVjdBIOCgZsaW5lSUQYAiABKA0SNQoJcG9zaXRpb25zGAMg",
-            "AygLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyEhMKC2Jl",
-            "Z2luU3RvcElEGAQgASgNEhEKCWVuZFN0b3BJRBgFIAEoDRIXCg90b3RhbFRy",
-            "YXZlbFRpbWUYBiABKAISXAoWc3RyZWV0U2VnbWVudE9mZnNldE1hcBgHIAMo",
-            "CzI8LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUm91dGUuU3RyZWV0U2Vn",
-            "bWVudE9mZnNldE1hcEVudHJ5ElQKEnBhdGhTZWdtZW50SW5mb01hcBgIIAMo",
-            "CzI4LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUm91dGUuUGF0aFNlZ21l",
-            "bnRJbmZvTWFwRW50cnkaxQEKD1BhdGhTZWdtZW50SW5mbxIRCglzZWdtZW50",
-            "SUQYASABKA0SDAoEbGFuZRgCIAEoBRIOCgZvZmZzZXQYAyABKAUSDgoGbGVu",
-            "Z3RoGAQgASgFEhQKDHBhcnRpYWxTdGFydBgFIAEoCBISCgpwYXJ0aWFsRW5k",
-            "GAYgASgIEhAKCGJhY2t3YXJkGAcgASgIEjUKCWRpcmVjdGlvbhgIIAEoCzIi",
-            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhoxChBTdHJlZXRT",
-            "ZWdtZW50S2V5Eg8KB3NlZ21lbnQYASABKAUSDAoEbGFuZRgCIAEoBRqeAQob",
-            "U3RyZWV0U2VnbWVudE9mZnNldE1hcEVudHJ5Ej4KA2tleRgBIAEoCzIxLlRy",
-            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUm91dGUuU3RyZWV0U2VnbWVudEtl",
-            "eRI/CgV2YWx1ZRgCIAMoCzIwLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24u",
-            "Um91dGUuUGF0aFNlZ21lbnRJbmZvGmcKF1BhdGhTZWdtZW50SW5mb01hcEVu",
-            "dHJ5EgsKA2tleRgBIAEoDRI/CgV2YWx1ZRgCIAEoCzIwLlRyYW5zaWRpb3Vz",
-            "LlNlcmlhbGl6YXRpb24uUm91dGUuUGF0aFNlZ21lbnRJbmZvKlkKC1RyYW5z",
-            "aXRUeXBlEgcKA0J1cxAAEggKBFRyYW0QARIKCgZTdWJ3YXkQAhIRCg1JbnRl",
-            "cmNpdHlSYWlsEAMSCQoFRmVycnkQBBINCglMaWdodFJhaWwQBUIcqgIZVHJh",
-            "bnNpZGlvdXMuU2VyaWFsaXphdGlvbmIGcHJvdG8z"));
+            "b21tb24ucHJvdG8iNAoIU2NoZWR1bGUSFgoOZmlyc3REZXBhcnR1cmUYASAB",
+            "KAQSEAoIaW50ZXJ2YWwYAiABKAIi2gEKBExpbmUSNwoJbWFwT2JqZWN0GAEg",
+            "ASgLMiQuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5NYXBPYmplY3QSNAoE",
+            "dHlwZRgCIAEoDjImLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVHJhbnNp",
+            "dFR5cGUSDwoHZGVwb3RJRBgDIAEoDRIPCgdzdG9wSURzGAQgAygNEhAKCHJv",
+            "dXRlSURzGAUgAygNEi8KBWNvbG9yGAYgASgLMiAuVHJhbnNpZGlvdXMuU2Vy",
+            "aWFsaXphdGlvbi5Db2xvciK5AgoEU3RvcBI3CgltYXBPYmplY3QYASABKAsy",
+            "JC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1hcE9iamVjdBI0Cghwb3Np",
+            "dGlvbhgCIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9y",
+            "MhIYChBvdXRnb2luZ1JvdXRlSURzGAMgAygNEhAKCHJvdXRlSURzGAQgAygN",
+            "Ej8KCXNjaGVkdWxlcxgFIAMoCzIsLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
+            "b24uU3RvcC5TdG9wU2NoZWR1bGUaVQoMU3RvcFNjaGVkdWxlEg4KBmxpbmVJ",
+            "RBgBIAEoDRI1CghzY2hlZHVsZRgCIAEoCzIjLlRyYW5zaWRpb3VzLlNlcmlh",
+            "bGl6YXRpb24uU2NoZWR1bGUigQcKBVJvdXRlEjcKCW1hcE9iamVjdBgBIAEo",
+            "CzIkLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTWFwT2JqZWN0Eg4KBmxp",
+            "bmVJRBgCIAEoDRI1Cglwb3NpdGlvbnMYAyADKAsyIi5UcmFuc2lkaW91cy5T",
+            "ZXJpYWxpemF0aW9uLlZlY3RvcjISEwoLYmVnaW5TdG9wSUQYBCABKA0SEQoJ",
+            "ZW5kU3RvcElEGAUgASgNEhcKD3RvdGFsVHJhdmVsVGltZRgGIAEoAhJcChZz",
+            "dHJlZXRTZWdtZW50T2Zmc2V0TWFwGAcgAygLMjwuVHJhbnNpZGlvdXMuU2Vy",
+            "aWFsaXphdGlvbi5Sb3V0ZS5TdHJlZXRTZWdtZW50T2Zmc2V0TWFwRW50cnkS",
+            "VAoScGF0aFNlZ21lbnRJbmZvTWFwGAggAygLMjguVHJhbnNpZGlvdXMuU2Vy",
+            "aWFsaXphdGlvbi5Sb3V0ZS5QYXRoU2VnbWVudEluZm9NYXBFbnRyeRrFAQoP",
+            "UGF0aFNlZ21lbnRJbmZvEhEKCXNlZ21lbnRJRBgBIAEoDRIMCgRsYW5lGAIg",
+            "ASgFEg4KBm9mZnNldBgDIAEoBRIOCgZsZW5ndGgYBCABKAUSFAoMcGFydGlh",
+            "bFN0YXJ0GAUgASgIEhIKCnBhcnRpYWxFbmQYBiABKAgSEAoIYmFja3dhcmQY",
+            "ByABKAgSNQoJZGlyZWN0aW9uGAggASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbi5WZWN0b3IyGjEKEFN0cmVldFNlZ21lbnRLZXkSDwoHc2VnbWVu",
+            "dBgBIAEoBRIMCgRsYW5lGAIgASgFGp4BChtTdHJlZXRTZWdtZW50T2Zmc2V0",
+            "TWFwRW50cnkSPgoDa2V5GAEgASgLMjEuVHJhbnNpZGlvdXMuU2VyaWFsaXph",
+            "dGlvbi5Sb3V0ZS5TdHJlZXRTZWdtZW50S2V5Ej8KBXZhbHVlGAIgAygLMjAu",
+            "VHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5Sb3V0ZS5QYXRoU2VnbWVudElu",
+            "Zm8aZwoXUGF0aFNlZ21lbnRJbmZvTWFwRW50cnkSCwoDa2V5GAEgASgNEj8K",
+            "BXZhbHVlGAIgASgLMjAuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5Sb3V0",
+            "ZS5QYXRoU2VnbWVudEluZm8qWQoLVHJhbnNpdFR5cGUSBwoDQnVzEAASCAoE",
+            "VHJhbRABEgoKBlN1YndheRACEhEKDUludGVyY2l0eVJhaWwQAxIJCgVGZXJy",
+            "eRAEEg0KCUxpZ2h0UmFpbBAFQhyqAhlUcmFuc2lkaW91cy5TZXJpYWxpemF0",
+            "aW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Transidious.Serialization.TransitType), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Schedule), global::Transidious.Serialization.Schedule.Parser, new[]{ "FirstDeparture", "Interval" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Line), global::Transidious.Serialization.Line.Parser, new[]{ "MapObject", "Type", "DepotID", "StopIDs", "RouteIDs", "Color" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Stop), global::Transidious.Serialization.Stop.Parser, new[]{ "MapObject", "Position", "OutgoingRouteIDs", "RouteIDs" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Stop), global::Transidious.Serialization.Stop.Parser, new[]{ "MapObject", "Position", "OutgoingRouteIDs", "RouteIDs", "Schedules" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Stop.Types.StopSchedule), global::Transidious.Serialization.Stop.Types.StopSchedule.Parser, new[]{ "LineID", "Schedule" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route), global::Transidious.Serialization.Route.Parser, new[]{ "MapObject", "LineID", "Positions", "BeginStopID", "EndStopID", "TotalTravelTime", "StreetSegmentOffsetMap", "PathSegmentInfoMap" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route.Types.PathSegmentInfo), global::Transidious.Serialization.Route.Types.PathSegmentInfo.Parser, new[]{ "SegmentID", "Lane", "Offset", "Length", "PartialStart", "PartialEnd", "Backward", "Direction" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route.Types.StreetSegmentKey), global::Transidious.Serialization.Route.Types.StreetSegmentKey.Parser, new[]{ "Segment", "Lane" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry), global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry.Parser, new[]{ "Key", "Value" }, null, null, null),
@@ -102,6 +108,163 @@ namespace Transidious.Serialization {
   #endregion
 
   #region Messages
+  public sealed partial class Schedule : pb::IMessage<Schedule> {
+    private static readonly pb::MessageParser<Schedule> _parser = new pb::MessageParser<Schedule>(() => new Schedule());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Schedule> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Transidious.Serialization.TransitReflection.Descriptor.MessageTypes[0]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Schedule() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Schedule(Schedule other) : this() {
+      firstDeparture_ = other.firstDeparture_;
+      interval_ = other.interval_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Schedule Clone() {
+      return new Schedule(this);
+    }
+
+    /// <summary>Field number for the "firstDeparture" field.</summary>
+    public const int FirstDepartureFieldNumber = 1;
+    private ulong firstDeparture_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong FirstDeparture {
+      get { return firstDeparture_; }
+      set {
+        firstDeparture_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "interval" field.</summary>
+    public const int IntervalFieldNumber = 2;
+    private float interval_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float Interval {
+      get { return interval_; }
+      set {
+        interval_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Schedule);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Schedule other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (FirstDeparture != other.FirstDeparture) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Interval, other.Interval)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (FirstDeparture != 0UL) hash ^= FirstDeparture.GetHashCode();
+      if (Interval != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Interval);
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (FirstDeparture != 0UL) {
+        output.WriteRawTag(8);
+        output.WriteUInt64(FirstDeparture);
+      }
+      if (Interval != 0F) {
+        output.WriteRawTag(21);
+        output.WriteFloat(Interval);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (FirstDeparture != 0UL) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(FirstDeparture);
+      }
+      if (Interval != 0F) {
+        size += 1 + 4;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Schedule other) {
+      if (other == null) {
+        return;
+      }
+      if (other.FirstDeparture != 0UL) {
+        FirstDeparture = other.FirstDeparture;
+      }
+      if (other.Interval != 0F) {
+        Interval = other.Interval;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            FirstDeparture = input.ReadUInt64();
+            break;
+          }
+          case 21: {
+            Interval = input.ReadFloat();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class Line : pb::IMessage<Line> {
     private static readonly pb::MessageParser<Line> _parser = new pb::MessageParser<Line>(() => new Line());
     private pb::UnknownFieldSet _unknownFields;
@@ -110,7 +273,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.TransitReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Transidious.Serialization.TransitReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -377,7 +540,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.TransitReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Transidious.Serialization.TransitReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -398,6 +561,7 @@ namespace Transidious.Serialization {
       position_ = other.position_ != null ? other.position_.Clone() : null;
       outgoingRouteIDs_ = other.outgoingRouteIDs_.Clone();
       routeIDs_ = other.routeIDs_.Clone();
+      schedules_ = other.schedules_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -448,6 +612,16 @@ namespace Transidious.Serialization {
       get { return routeIDs_; }
     }
 
+    /// <summary>Field number for the "schedules" field.</summary>
+    public const int SchedulesFieldNumber = 5;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Stop.Types.StopSchedule> _repeated_schedules_codec
+        = pb::FieldCodec.ForMessage(42, global::Transidious.Serialization.Stop.Types.StopSchedule.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Stop.Types.StopSchedule> schedules_ = new pbc::RepeatedField<global::Transidious.Serialization.Stop.Types.StopSchedule>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.Stop.Types.StopSchedule> Schedules {
+      get { return schedules_; }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Stop);
@@ -465,6 +639,7 @@ namespace Transidious.Serialization {
       if (!object.Equals(Position, other.Position)) return false;
       if(!outgoingRouteIDs_.Equals(other.outgoingRouteIDs_)) return false;
       if(!routeIDs_.Equals(other.routeIDs_)) return false;
+      if(!schedules_.Equals(other.schedules_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -475,6 +650,7 @@ namespace Transidious.Serialization {
       if (position_ != null) hash ^= Position.GetHashCode();
       hash ^= outgoingRouteIDs_.GetHashCode();
       hash ^= routeIDs_.GetHashCode();
+      hash ^= schedules_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -498,6 +674,7 @@ namespace Transidious.Serialization {
       }
       outgoingRouteIDs_.WriteTo(output, _repeated_outgoingRouteIDs_codec);
       routeIDs_.WriteTo(output, _repeated_routeIDs_codec);
+      schedules_.WriteTo(output, _repeated_schedules_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -514,6 +691,7 @@ namespace Transidious.Serialization {
       }
       size += outgoingRouteIDs_.CalculateSize(_repeated_outgoingRouteIDs_codec);
       size += routeIDs_.CalculateSize(_repeated_routeIDs_codec);
+      size += schedules_.CalculateSize(_repeated_schedules_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -539,6 +717,7 @@ namespace Transidious.Serialization {
       }
       outgoingRouteIDs_.Add(other.outgoingRouteIDs_);
       routeIDs_.Add(other.routeIDs_);
+      schedules_.Add(other.schedules_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -574,9 +753,183 @@ namespace Transidious.Serialization {
             routeIDs_.AddEntriesFrom(input, _repeated_routeIDs_codec);
             break;
           }
+          case 42: {
+            schedules_.AddEntriesFrom(input, _repeated_schedules_codec);
+            break;
+          }
         }
       }
     }
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the Stop message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      public sealed partial class StopSchedule : pb::IMessage<StopSchedule> {
+        private static readonly pb::MessageParser<StopSchedule> _parser = new pb::MessageParser<StopSchedule>(() => new StopSchedule());
+        private pb::UnknownFieldSet _unknownFields;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<StopSchedule> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::Transidious.Serialization.Stop.Descriptor.NestedTypes[0]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public StopSchedule() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public StopSchedule(StopSchedule other) : this() {
+          lineID_ = other.lineID_;
+          schedule_ = other.schedule_ != null ? other.schedule_.Clone() : null;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public StopSchedule Clone() {
+          return new StopSchedule(this);
+        }
+
+        /// <summary>Field number for the "lineID" field.</summary>
+        public const int LineIDFieldNumber = 1;
+        private uint lineID_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public uint LineID {
+          get { return lineID_; }
+          set {
+            lineID_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "schedule" field.</summary>
+        public const int ScheduleFieldNumber = 2;
+        private global::Transidious.Serialization.Schedule schedule_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public global::Transidious.Serialization.Schedule Schedule {
+          get { return schedule_; }
+          set {
+            schedule_ = value;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as StopSchedule);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(StopSchedule other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (LineID != other.LineID) return false;
+          if (!object.Equals(Schedule, other.Schedule)) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (LineID != 0) hash ^= LineID.GetHashCode();
+          if (schedule_ != null) hash ^= Schedule.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (LineID != 0) {
+            output.WriteRawTag(8);
+            output.WriteUInt32(LineID);
+          }
+          if (schedule_ != null) {
+            output.WriteRawTag(18);
+            output.WriteMessage(Schedule);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (LineID != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt32Size(LineID);
+          }
+          if (schedule_ != null) {
+            size += 1 + pb::CodedOutputStream.ComputeMessageSize(Schedule);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(StopSchedule other) {
+          if (other == null) {
+            return;
+          }
+          if (other.LineID != 0) {
+            LineID = other.LineID;
+          }
+          if (other.schedule_ != null) {
+            if (schedule_ == null) {
+              Schedule = new global::Transidious.Serialization.Schedule();
+            }
+            Schedule.MergeFrom(other.Schedule);
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 8: {
+                LineID = input.ReadUInt32();
+                break;
+              }
+              case 18: {
+                if (schedule_ == null) {
+                  Schedule = new global::Transidious.Serialization.Schedule();
+                }
+                input.ReadMessage(Schedule);
+                break;
+              }
+            }
+          }
+        }
+
+      }
+
+    }
+    #endregion
 
   }
 
@@ -588,7 +941,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.TransitReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Transidious.Serialization.TransitReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

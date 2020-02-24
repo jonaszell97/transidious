@@ -529,3 +529,25 @@ def Werder : DefaultArea {
         Tag<"admin_level", "8">
     ], "Werder (Havel)">
 }
+
+def Manhattan : DefaultArea {
+    country = "NewYorkState"
+    boundary = BoundaryInfo<"Manhattan", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "7">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "7">
+    ]>
+}
+
+def Vancouver : DefaultArea {
+    country = "Canada"
+    boundary = BoundaryInfo<"Vancouver", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">
+    ]>
+}

@@ -59,6 +59,22 @@ namespace Transidious
             }
         }
 
+        public bool HasHoles
+        {
+            get
+            {
+                return holes.Count != 0;
+            }
+        }
+
+        public bool Simple
+        {
+            get
+            {
+                return holes.Count == 0 && boundaryMarkersForPolygons.Count <= 1;
+            }
+        }
+
         public Vector2[][] Outlines
         {
             get
@@ -159,7 +175,7 @@ namespace Transidious
                 var end = boundaryMarkersForPolygons[i + 1];
                 var verts = vertices.GetRange(start, end - start).ToArray();
 
-                obj.DrawLine(verts, 1f, outlineColor, true);
+                Utility.DrawLine(verts, 1f, outlineColor, true);
             }
 
             foreach (var hole in holes)

@@ -117,6 +117,16 @@ namespace Transidious
             {
                 importer.buildings.Add(Tuple.Create(building.GeoId, (Building.Type)building.Type));
             }
+
+            foreach (var line in area.Lines)
+            {
+                importer.lines.Add(line.Name, new OSMImporter.TransitLine
+                {
+                    type = (TransitType)line.Type,
+                    inbound = line.InboundId != 0 ? importer.relations[line.InboundId] : null,
+                    outbound = line.OutboundId != 0 ? importer.relations[line.OutboundId] : null,
+                });
+            }
         }
 
         Vector2 Project(OsmSharp.Node node)
@@ -325,6 +335,26 @@ namespace Transidious
                 });
             }
 
+            foreach (var line in lines)
+            {
+                if (line.Value.inbound != null)
+                {
+                    AddRelation(line.Value.inbound);
+                }
+                if (line.Value.outbound != null)
+                {
+                    AddRelation(line.Value.outbound);
+                }
+
+                area.Lines.Add(new Area.Types.TransitLine
+                {
+                    Name = line.Key,
+                    Type = (Serialization.TransitType)line.Value.type,
+                    InboundId = (ulong)(line.Value.inbound?.Id.Value ?? 0),
+                    OutboundId = (ulong)(line.Value.outbound?.Id.Value ?? 0),
+                });
+            }
+
             foreach (var rel in referencedRelations)
             {
                 area.Relations.Add(Serialize(rel));
@@ -348,6 +378,12 @@ namespace Transidious
         {
             Fast,
             Complete,
+        }
+
+        public enum MapExportType
+        {
+            Mesh,
+            Picture,
         }
 
         public class TransitLine
@@ -379,6 +415,7 @@ namespace Transidious
 
         public Map map;
         public ImportType importType = ImportType.Complete;
+        public MapExportType exportType = MapExportType.Picture;
 
         public MapExporter exporter;
 
@@ -415,6 +452,7 @@ namespace Transidious
 
         public OSMImportHelper.Area area;
         public string country;
+        public bool loadTransitLines;
         public bool done;
 
         public static readonly float maxTileSize = 999999f; // 6000f;
@@ -428,7 +466,9 @@ namespace Transidious
             map.name = this.area.ToString();
             map.input = GameController.instance.input;
 
-            this.exporter = new MapExporter(map, 4096);
+            this.exporter = new MapExporter(
+                map,
+                exportType == MapExportType.Mesh ? 1024 : 4096);
 
             await this.ImportArea();
 
@@ -485,19 +525,38 @@ namespace Transidious
             yield return LoadBuildings();
             Debug.Log("loaded buildings");
 
+            yield return map.FinalizeStreetMeshes(thresholdTime);
+
+            if (exportType == MapExportType.Mesh)
+            {
+                exporter.CreatePrefabMeshes(importType == ImportType.Fast);
+            }
+
             yield return map.DoFinalize(thresholdTime);
 
-            //yield return LoadTransitLines();
-            Debug.Log("loaded transit lines");
+            if (loadTransitLines)
+            {
+                yield return LoadTransitLines();
+                Debug.Log("loaded transit lines");
+            }
 
             SaveManager.SaveMapLayout(map);
             SaveManager.SaveMapData(map, map.name);
 
             exporter.ExportMap(map.name);
+
+            if (exportType == MapExportType.Mesh)
+            {
+                exporter.ExportMapPrefab();
+            }
+
             exporter.ExportMinimap(map.name);
+            UnityEditor.AssetDatabase.SaveAssets();
             // exporter.ExportLOD(map.name);
 
+            exporter.PrintStats();
             Debug.Log("Done!");
+
             done = true;
 
             if (loadGame)
@@ -803,7 +862,7 @@ namespace Transidious
                 var street = map.GetClosestStreet(loc)?.seg;
                 if (street == null)
                 {
-                    Debug.LogWarning("'" + stopNode.Geo.Tags["name"] + "' is not on map");
+                    Debug.LogWarning("'" + stopNode.Geo.Tags.GetValue("name") + "' is not on map");
                     return null;
                 }
 
@@ -817,7 +876,7 @@ namespace Transidious
                 loc = closestPtAndPos.Item1;
             }
 
-            var stopName = stopNode.Geo.Tags["name"];
+            var stopName = stopNode.Geo.Tags.GetValue("name");
             Debug.Log("loading stop '" + stopName + "'...");
 
             stopName = stopName.Replace("S+U ", "");
@@ -847,7 +906,7 @@ namespace Transidious
                 var l2 = linePair.Value.outbound;
 
                 Color color;
-                if (ColorUtility.TryParseHtmlString(l1.Geo.Tags["colour"], out Color c))
+                if (ColorUtility.TryParseHtmlString(l1.Geo.Tags.GetValue("colour"), out Color c))
                 {
                     color = c;
                 }
@@ -856,7 +915,7 @@ namespace Transidious
                     color = Map.defaultLineColors[linePair.Value.type];
                 }
 
-                var l = map.CreateLine(linePair.Value.type, l1.Geo.Tags["ref"], color).Finish();
+                var l = map.CreateLine(linePair.Value.type, l1.Geo.Tags.GetValue("ref"), color).Finish();
                 Debug.Log("loading line '" + l.name + "'...");
 
                 var members = l1.Members.ToList();
@@ -891,9 +950,9 @@ namespace Transidious
                             currentPositions.Add(Project(node));
 
                             if (i != 0 && node.Geo.Tags != null
-                            && (node.Geo.Tags["railway"].StartsWith("stop")
-                            || node.Geo.Tags["public_transport"].StartsWith("stop")
-                            || node.Geo.Tags["highway"].Contains("stop")))
+                            && (node.Geo.Tags.GetValue("railway").StartsWith("stop", StringComparison.InvariantCulture)
+                            || node.Geo.Tags.GetValue("public_transport").StartsWith("stop", StringComparison.InvariantCulture)
+                            || node.Geo.Tags.GetValue("highway").Contains("stop")))
                             {
                                 wayPositions.Add(currentPositions);
                                 currentPositions = new List<Vector3>();
@@ -1205,6 +1264,13 @@ namespace Transidious
                                                 map.streetIntersectionMap[Project(
                                                     startSeg.end.position)]);
 
+                    if (exportType == MapExportType.Mesh)
+                    {
+                        exporter.RegisterMesh(seg, (PSLG)null,
+                            (int)Map.Layer(MapLayer.Buildings),
+                            Color.black);
+                    }
+
                     UpdateSegmentPositions(seg);
                     streetSet.Remove(startSeg);
 
@@ -1250,6 +1316,13 @@ namespace Transidious
                             seg = street.AddSegment(nextSegPositions,
                                                     map.streetIntersectionMap[Project(nextSeg.start.position)],
                                                     map.streetIntersectionMap[Project(nextSeg.end.position)]);
+
+                            if (exportType == MapExportType.Mesh)
+                            {
+                                exporter.RegisterMesh(seg, (PSLG)null,
+                                    (int)Map.Layer(MapLayer.Buildings),
+                                    Color.black);
+                            }
 
                             UpdateSegmentPositions(seg);
                             done = false;
@@ -1363,7 +1436,7 @@ namespace Transidious
 
                     Debug.Log("loading natural feature '" + featureName + "'...");
 
-                    Mesh mesh;
+                    Mesh mesh = null;
                     PSLG pslg = null;
                     Vector3[] wayPositionsArr = null;
 
@@ -1372,7 +1445,6 @@ namespace Transidious
                         pslg = new PSLG();
                         LoadPolygon(pslg, rel);
 
-                        mesh = null; // TriangleAPI.CreateMesh(pslg, importType == ImportType.Fast);
                         outlinePositions = pslg?.Outlines;
                         area = pslg?.Area ?? 0f;
                         centroid = pslg?.Centroid ?? Vector2.zero;
@@ -1386,8 +1458,6 @@ namespace Transidious
                         }
 
                         wayPositionsArr = wayPositions.ToArray();
-                        mesh = null; // MeshBuilder.PointsToMeshFast(wayPositionsArr);
-                        // MeshBuilder.FixWindingOrder(mesh);
 
                         outlinePositions = new Vector2[][]
                         {
@@ -1406,7 +1476,7 @@ namespace Transidious
 
                     totalVerts += mesh?.triangles.Length ?? 0;
 
-                    var f = map.CreateFeature(featureName, feature.Item2, outlinePositions[0], area, centroid);
+                    var f = map.CreateFeature(featureName, feature.Item2, outlinePositions, area, centroid);
                     if (outlinePositions != null)
                     {
                         outlinePositions = outlinePositions.Select(
@@ -1417,14 +1487,11 @@ namespace Transidious
 
                     if (pslg != null)
                     {
-                        exporter.RegisterMesh(f, pslg,
-                            (int)Map.Layer(MapLayer.NatureBackground),
-                            f.GetColor());
+                        exporter.RegisterMesh(f, pslg, f.GetLayer(),  f.GetColor());
                     }
                     else if (wayPositionsArr != null)
                     {
-                        exporter.RegisterMesh(f, wayPositionsArr,
-                            (int)Map.Layer(MapLayer.Buildings),
+                        exporter.RegisterMesh(f, wayPositionsArr, f.GetLayer(),
                             f.GetColor());
                     }
                 }
@@ -1919,10 +1986,7 @@ namespace Transidious
                     continue;
                 }
 
-                //Mesh mesh = TriangleAPI.CreateMesh(building.pslg, importType == ImportType.Fast);
-                //totalVerts += mesh?.triangles.Length ?? 0;
-
-                var b = map.CreateBuilding(type, outlinePositions[0],
+                var b = map.CreateBuilding(type, outlinePositions,
                                            GetBuildingName(building, area),
                                            "", area, centroid);
 
@@ -1937,7 +2001,7 @@ namespace Transidious
                 if (building.pslg != null)
                 {
                     exporter.RegisterMesh(b, building.pslg,
-                            (int)Map.Layer(MapLayer.Buildings),
+                            Map.Layer(MapLayer.Buildings),
                             b.GetColor());
                 }
 

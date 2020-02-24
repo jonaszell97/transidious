@@ -309,7 +309,7 @@ namespace Transidious
 
         public float GetDistanceFromStart(Vector2 pos)
         {
-            var closestIdx = GetClosestPoint(pos);
+            var closestIdx = GetClosestPoint(pos, positions);
             Vector2 closestPt = positions[closestIdx];
 
             return cumulativeDistances[closestIdx] + (closestPt - pos).magnitude;
@@ -322,7 +322,7 @@ namespace Transidious
 
         public float GetDistanceFromStartStopLine(Vector2 pos)
         {
-            var closestIdx = GetClosestPoint(pos);
+            var closestIdx = GetClosestPoint(pos, positions);
             Vector2 closestPt = positions[closestIdx];
 
             var cumulativeDist = cumulativeDistances[closestIdx] - BeginStopLineDistance;
@@ -874,15 +874,8 @@ namespace Transidious
         public static int totalVerts = 0;
         public static LineRenderer tmpRenderer;
 
-        public void UpdateMesh()
+        public Tuple<Mesh, Mesh> CreateMeshes()
         {
-#if DEBUG
-            if (GameController.instance.ImportingMap)
-            {
-                return;
-            }
-#endif
-
             float lineLayer;
             float lineOutlineLayer;
 
@@ -908,12 +901,16 @@ namespace Transidious
             tmpRenderer.SetPositions(
                 positions.Select(v => new Vector3(v.x, v.y, lineLayer)).ToArray());
 
-            tmpRenderer.numCornerVertices = 5;
+            tmpRenderer.numCornerVertices = Settings.Current.qualitySettings.StreetCornerVerts;
 
             if (startIntersection.RelativePosition(this) == 0
             || endIntersection.RelativePosition(this) == 0)
             {
-                tmpRenderer.numCapVertices = 10;
+                tmpRenderer.numCapVertices = Settings.Current.qualitySettings.StreetCapVerts;
+            }
+            else
+            {
+                tmpRenderer.numCapVertices = 0;
             }
 
             var streetWidth = 2f * GetStreetWidth(RenderingDistance.Near);
@@ -926,26 +923,45 @@ namespace Transidious
             tmpRenderer.SetPositions(
                 positions.Select(v => new Vector3(v.x, v.y, lineOutlineLayer)).ToArray());
 
-            var borderWidth = streetWidth + 2f * GetBorderWidth(RenderingDistance.Near);
+            var borderWidth = streetWidth + GetBorderWidth(RenderingDistance.Near);
             tmpRenderer.startWidth = borderWidth;
             tmpRenderer.endWidth = tmpRenderer.startWidth;
 
             var outlineMesh = new Mesh();
             tmpRenderer.BakeMesh(outlineMesh);
 
+            return Tuple.Create(streetMesh, outlineMesh);
+        }
+
+        public void UpdateMesh()
+        {
+#if DEBUG
+            if (GameController.instance.ImportingMap)
+            {
+                return;
+            }
+#endif
+
+            var meshes = CreateMeshes();
+            var streetMesh = meshes.Item1;
+            var outlineMesh = meshes.Item2;
+
+            var streetWidth = 2f * GetStreetWidth(RenderingDistance.Near);
+            var borderWidth = streetWidth + 2f * GetBorderWidth(RenderingDistance.Near);
+
             var colliderPath = MeshBuilder.CreateLineCollider(positions, borderWidth * .5f);
             var collisionRect = MeshBuilder.GetCollisionRect(outlineMesh);
-            var renderingDist = GetMaxVisibleRenderingDistance();
+            // var renderingDist = GetMaxVisibleRenderingDistance();
 
             foreach (var tile in street.map.GetTilesForObject(this))
             {
-                tile.AddMesh("Streets", streetMesh,
-                             GetStreetColor(RenderingDistance.Near),
-                             lineLayer, renderingDist);
+                //tile.AddMesh("Streets", streetMesh,
+                //             GetStreetColor(RenderingDistance.Near),
+                //             lineLayer, renderingDist);
 
-                tile.AddMesh("Streets", outlineMesh,
-                             GetBorderColor(RenderingDistance.Near),
-                             lineOutlineLayer, renderingDist);
+                //tile.AddMesh("Streets", outlineMesh,
+                //             GetBorderColor(RenderingDistance.Near),
+                //             lineOutlineLayer, renderingDist);
 
                 tile.AddCollider(this, colliderPath, collisionRect, false);
             }
@@ -1015,9 +1031,9 @@ namespace Transidious
 #if DEBUG
             if (GameController.instance.ImportingMap)
             {
-                streetLine.sharedMaterial = GameController.GetUnlitMaterial(
+                streetLine.sharedMaterial = GameController.instance.GetUnlitMaterial(
                     Color.blue);
-                outlineLine.sharedMaterial = GameController.GetUnlitMaterial(
+                outlineLine.sharedMaterial = GameController.instance.GetUnlitMaterial(
                     Color.red);
 
                 return;
@@ -1208,7 +1224,7 @@ namespace Transidious
             filter.sharedMesh = tramTrackMesh;
 
             var renderer = tramTrackMeshObj.GetComponent<MeshRenderer>();
-            renderer.material = GameController.GetUnlitMaterial(GetBorderColor(RenderingDistance.Near));
+            renderer.material = GameController.instance.GetUnlitMaterial(GetBorderColor(RenderingDistance.Near));
         }
 
         void UpdateTramTracks(Mesh trackRight, Mesh trackLeft)
@@ -1437,7 +1453,7 @@ namespace Transidious
         public void UpdateColor(Color c)
         {
             //var streetRenderer = streetMeshObj.GetComponent<MeshRenderer>();
-            //streetRenderer.material = GameController.GetUnlitMaterial(c);
+            //streetRenderer.material = GameController.instance.GetUnlitMaterial(c);
         }
 
         public void ResetColor(RenderingDistance dist)
@@ -1448,7 +1464,7 @@ namespace Transidious
         public void UpdateBorderColor(Color c)
         {
             //var outlineRenderer = outlineMeshObj.GetComponent<MeshRenderer>();
-            //outlineRenderer.material = GameController.GetUnlitMaterial(c);
+            //outlineRenderer.material = GameController.instance.GetUnlitMaterial(c);
         }
 
         public void ResetBorderColor(RenderingDistance dist)
@@ -1476,12 +1492,9 @@ namespace Transidious
             startIntersection?.DeleteSegment(this);
             endIntersection?.DeleteSegment(this);
 
-            foreach (var tiles in street.map.tiles)
+            foreach (var tile in street.map.tiles)
             {
-                foreach (var tile in tiles)
-                {
-                    tile.mapObjects.Remove(this);
-                }
+                tile.mapObjects.Remove(this);
             }
 
             GameObject.Destroy(this.streetName?.gameObject);

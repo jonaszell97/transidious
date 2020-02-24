@@ -90,7 +90,7 @@ namespace Transidious
                 game.sim.GameTime = DateTime.Parse(gameTime);
             }
 
-            game.StartCoroutine(game.LoadMap(area));
+            game.LoadMap(area);
             game.financeController.Money = (decimal)startingMoney;
 
             game.onLoad.AddListener(() =>

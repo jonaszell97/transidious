@@ -569,6 +569,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 556322108948291748, guid: 7a79ae037ba8b4614b4b251088b1b0ed,
         type: 3}
+    - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
+        type: 3}
+      propertyPath: qualityLevel
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 8936710921022106518, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
       propertyPath: m_Name
@@ -1321,11 +1326,21 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: forceReload
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: done
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
+        type: 3}
+      propertyPath: exportType
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
+        type: 3}
+      propertyPath: loadTransitLines
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

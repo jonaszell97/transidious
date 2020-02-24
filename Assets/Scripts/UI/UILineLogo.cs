@@ -31,8 +31,12 @@ namespace Transidious
             backgroundImage.color = c;
 
             var textColor = Math.ContrastColor(c);
-            inputField.textComponent.color = textColor;
             placeholderText.color = textColor;
+
+            if (inputField != null)
+            {
+                inputField.textComponent.color = textColor;
+            }
         }
 
         string GetTruncatedLineName(Line line)

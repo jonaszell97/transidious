@@ -143,32 +143,8 @@ namespace Transidious
                 return;
             }
 
-            //float layer = 0f;
-            //switch (type)
-            //{
-            //default:
-            //    layer = Map.Layer(MapLayer.Buildings);
-            //    break;
-            //}
-
-            var minAngle = 0f;
-            var surroundingRect = MeshBuilder.GetSmallestSurroundingRect(outlinePositions[0], ref minAngle);
-
-            collisionRect = MeshBuilder.GetCollisionRect(outlinePositions[0]);
-            foreach (var tile in map.GetTilesForObject(this))
-            {
-                // tile.AddMesh("Buildings", mesh, GetColor(), layer);
-
-                if (outlinePositions != null)
-                {
-                    tile.AddCollider(this, outlinePositions, collisionRect, true);
-                }
-                else
-                {
-                    Debug.Log("using simple bounding box for '" + name + "'");
-                    tile.AddCollider(this, surroundingRect, collisionRect, true);
-                }
-            }
+            collisionRect = MeshBuilder.GetCollisionRect(outlinePositions);
+            uniqueTile.AddCollider(this, outlinePositions, collisionRect, true);
         }
 
         public void UpdateColor(MapDisplayMode mode)
@@ -207,7 +183,7 @@ namespace Transidious
         {
             var building = map.CreateBuilding(
                 (Type)b.Type,
-                b.MapObject.OutlinePositions.First().OutlinePositions.Select(v => v.Deserialize()),
+                b.MapObject.OutlinePositions.Select(arr => arr.OutlinePositions.Select(v => v.Deserialize()).ToArray()),
                 b.MapObject.Name, "",
                 b.MapObject.Area, b.MapObject.Centroid.Deserialize(),
                 (int)b.MapObject.Id);
@@ -239,12 +215,12 @@ namespace Transidious
 
         public override void OnMouseDown()
         {
+            base.OnMouseDown();
+
             if (!Game.MouseDownActive(MapObjectKind.Building))
             {
                 return;
             }
-
-            base.OnMouseDown();
 
             if (GameController.instance.input.IsPointerOverUIElement())
             {

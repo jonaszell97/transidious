@@ -174,7 +174,7 @@ namespace Transidious
 
             var prevMaterial = map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial;
             map.boundaryBackgroundObj.GetComponent<MeshRenderer>().sharedMaterial =
-                GameController.GetUnlitMaterial(Color.white);
+                GameController.instance.GetUnlitMaterial(Color.white);
 
             map.ShowAllTiles();
 

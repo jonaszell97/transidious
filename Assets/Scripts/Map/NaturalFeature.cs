@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Transidious
@@ -27,8 +25,6 @@ namespace Transidious
         public int visitors;
         public int capacity;
 
-        static int maxVertexCount;
-
         public void UpdateMesh(Map map)
         {
             if (outlinePositions == null || outlinePositions.Length == 0 || outlinePositions[0].Length == 0)
@@ -36,52 +32,8 @@ namespace Transidious
                 return;
             }
 
-            //float layer = 0f;
-            //switch (type)
-            //{
-            //case NaturalFeature.Type.Park:
-            //    layer = Map.Layer(MapLayer.Parks, 0);
-            //    break;
-            //case NaturalFeature.Type.Green:
-            //    layer = Map.Layer(MapLayer.Parks, 1);
-            //    break;
-            //    case NaturalFeature.Type.Allotment:
-            //case NaturalFeature.Type.Cemetery:
-            //case NaturalFeature.Type.SportsPitch:
-            //case NaturalFeature.Type.FootpathArea:
-            //case NaturalFeature.Type.Parking:
-            //    layer = Map.Layer(MapLayer.Parks, 2);
-            //    break;
-            //case NaturalFeature.Type.Forest:
-            //    layer = Map.Layer(MapLayer.NatureBackground, 0);
-            //    break;
-            //case NaturalFeature.Type.Beach:
-            //    layer = Map.Layer(MapLayer.NatureBackground, 1);
-            //    break;
-            //case NaturalFeature.Type.Lake:
-            //    layer = Map.Layer(MapLayer.Lakes);
-            //    break;
-            //case NaturalFeature.Type.Footpath:
-            //    layer = Map.Layer(MapLayer.Rivers, 1);
-            //    break;
-            //}
-
-            var collisionRect = MeshBuilder.GetCollisionRect(outlinePositions[0]);
-            var surroundingRect = MeshBuilder.GetSmallestSurroundingRect(outlinePositions[0]);
-            foreach (var tile in map.GetTilesForObject(this))
-            {
-                // tile.AddMesh("Features", mesh, GetColor(), layer);
-
-                if (outlinePositions != null)
-                {
-                    tile.AddCollider(this, outlinePositions, collisionRect, true);
-                }
-                else
-                {
-                    Debug.Log("using simple bounding box for '" + name + "'");
-                    tile.AddCollider(this, surroundingRect, collisionRect, true);
-                }
-            }
+            var collisionRect = MeshBuilder.GetCollisionRect(outlinePositions);
+            uniqueTile.AddCollider(this, outlinePositions, collisionRect, true);
         }
 
         public void Initialize(Map map, string name, Type type,
@@ -137,6 +89,41 @@ namespace Transidious
             }
         }
 
+        public float GetLayer()
+        {
+            float layer = 0f;
+            switch (type)
+            {
+                case NaturalFeature.Type.Park:
+                    layer = Map.Layer(MapLayer.Parks, 0);
+                    break;
+                case NaturalFeature.Type.Green:
+                    layer = Map.Layer(MapLayer.Parks, 1);
+                    break;
+                case NaturalFeature.Type.Allotment:
+                case NaturalFeature.Type.Cemetery:
+                case NaturalFeature.Type.SportsPitch:
+                case NaturalFeature.Type.FootpathArea:
+                case NaturalFeature.Type.Parking:
+                    layer = Map.Layer(MapLayer.Parks, 2);
+                    break;
+                case NaturalFeature.Type.Forest:
+                    layer = Map.Layer(MapLayer.NatureBackground, 0);
+                    break;
+                case NaturalFeature.Type.Beach:
+                    layer = Map.Layer(MapLayer.NatureBackground, 1);
+                    break;
+                case NaturalFeature.Type.Lake:
+                    layer = Map.Layer(MapLayer.Lakes);
+                    break;
+                case NaturalFeature.Type.Footpath:
+                    layer = Map.Layer(MapLayer.Rivers, 1);
+                    break;
+            }
+
+            return layer;
+        }
+
         public int GetDefaultCapacity()
         {
             return GetDefaultCapacity(type, area);
@@ -188,7 +175,7 @@ namespace Transidious
         {
             var newFeature = map.CreateFeature(
                 feature.MapObject.Name, (Type)feature.Type,
-                feature.MapObject.OutlinePositions.First().OutlinePositions.Select(v => v.Deserialize()),
+                feature.MapObject.OutlinePositions.Select(arr => arr.OutlinePositions.Select(v => v.Deserialize()).ToArray()),
                 feature.MapObject.Area, feature.MapObject.Centroid.Deserialize(),
                 (int)feature.MapObject.Id);
 
@@ -198,12 +185,12 @@ namespace Transidious
 
         public override void OnMouseDown()
         {
+            base.OnMouseDown();
+
             if (!Game.MouseDownActive(MapObjectKind.NaturalFeature))
             {
                 return;
             }
-
-            base.OnMouseDown();
 
             if (GameController.instance.input.IsPointerOverUIElement())
             {

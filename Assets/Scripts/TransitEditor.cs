@@ -365,7 +365,7 @@ namespace Transidious
             var filter = existingPathMesh.GetComponent<MeshFilter>();
 
             filter.mesh = mesh;
-            renderer.material = GameController.GetUnlitMaterial(color);
+            renderer.material = GameController.instance.GetUnlitMaterial(color);
 
             existingPathMesh.SetActive(true);
         }
@@ -400,7 +400,7 @@ namespace Transidious
             var filter = plannedPathMesh.GetComponent<MeshFilter>();
 
             filter.mesh = mesh;
-            renderer.material = GameController.GetUnlitMaterial(color);
+            renderer.material = GameController.instance.GetUnlitMaterial(color);
 
             plannedPathMesh.SetActive(true);
         }
@@ -906,16 +906,33 @@ namespace Transidious
                                     HashSet<Route> affectedRoutes,
                                     StreetSegment seg, int lane)
         {
+            var key = Tuple.Create(seg, lane);
+            if (linesPerPositionMap.ContainsKey(key))
+                return;
+
             var routes = seg.GetTransitRoutes(lane);
             var lines = new HashSet<Line>();
 
             foreach (var route in routes)
             {
-                affectedRoutes.Add(route);
                 lines.Add(route.line);
+
+                if (!affectedRoutes.Add(route))
+                {
+                    continue;
+                }
+
+                foreach (var otherSeg in route.GetStreetSegmentOffsetInfo())
+                {
+                    UpdateLinesPerPosition(linesPerPositionMap, affectedRoutes,
+                                           otherSeg.Key.Item1, otherSeg.Key.Item2);
+                }
             }
 
-            linesPerPositionMap.Add(Tuple.Create(seg, lane), lines.Count);
+            if (linesPerPositionMap.ContainsKey(key))
+                return;
+
+            linesPerPositionMap.Add(key, lines.Count);
         }
 
         void CheckOverlappingRoutes_Alt(HashSet<Tuple<StreetSegment, int>> segments)
@@ -2115,6 +2132,8 @@ namespace Transidious
             collider.pathCount = 0;
 
             var mesh = MeshBuilder.CreateSmoothLine(newPositions, newWidths, 20, 0, collider);
+            //var mesh = MeshBuilder.CreateBakedLineMesh(newPositions, newWidths, collider);
+
             route.UpdateMesh(mesh, newPositions, newWidths);
             route.line.wasModified = false;
             route.EnableCollision();

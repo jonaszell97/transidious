@@ -214,6 +214,18 @@
             "text": "Weekly Passengers"
         },
         {
+            "key": "ui:transit:waiting_citiziens",
+            "text": "Waiting Citiziens"
+        },
+        {
+            "key": "ui:transit:next_departures",
+            "text": "Next Departures"
+        },
+        {
+            "key": "ui:transit:passengers",
+            "text": "Passengers"
+        },
+        {
             "key": "ui:transit:trips_saved",
             "text": "Trips Saved"
         },

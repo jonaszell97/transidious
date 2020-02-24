@@ -1014,11 +1014,11 @@ namespace Transidious
             }
         }
 
-        void GetStepPath(PathStep step, out StreetSegment segment,
-                         out bool backward, out bool finalStep,
-                         out int lane, out List<Vector3> positions,
-                         out bool partialStart, out bool partialEnd,
-                         out Vector2 direction)
+        public void GetStepPath(PathStep step, out StreetSegment segment,
+                                out bool backward, out bool finalStep,
+                                out int lane, out List<Vector3> positions,
+                                out bool partialStart, out bool partialEnd,
+                                out Vector2 direction)
         {
             finalStep = false;
             partialStart = false;

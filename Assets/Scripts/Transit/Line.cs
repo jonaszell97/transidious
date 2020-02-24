@@ -117,10 +117,12 @@ namespace Transidious
             this.name = name;
             this.color = color;
             this.type = type;
-            this.schedule = Schedule.GetDefaultSchedule(type);
 
-            this.material = new Material(Shader.Find("Unlit/Color"));
-            this.material.color = color;
+            this.schedule = Schedule.GetDefaultSchedule(type);
+            this.material = new Material(GameController.instance.unlitMaterial)
+            {
+                color = color,
+            };
 
             this.stopDuration = AverageStopDuration;
             this.velocity = AverageSpeed;
@@ -133,8 +135,18 @@ namespace Transidious
 
         public void SetColor(Color color)
         {
+            if (color == this.color)
+            {
+                return;
+            }
+
             this.color = color;
             this.material.color = color;
+
+            foreach (var vehicle in vehicles)
+            {
+                vehicle.UpdateColor();
+            }
         }
 
         public void SetTransparency(float a)
@@ -236,23 +248,25 @@ namespace Transidious
             }
 
             var totalTravelTimeSeconds = 0f;
-            var first = true;
             var firstDeparture = earliestDeparture.AddSeconds(stopDuration);
             firstDeparture = sim.RoundToNextFixedUpdate(firstDeparture);
 
-            foreach (var route in routes)
+            for (var i = 0; i < routes.Count; ++i)
             {
-                if (first)
+                var route = routes[i];
+                if (i == 0)
                 {
-                    first = false;
                     route.beginStop.SetSchedule(this, new ContinuousSchedule(firstDeparture, interval));
                 }
 
                 totalTravelTimeSeconds += (route.length / speedMetersPerSecond) * sim.BaseSpeedMultiplier;
                 totalTravelTimeSeconds += stopDuration;
 
-                route.endStop.SetSchedule(this, new ContinuousSchedule(
-                    firstDeparture.AddSeconds(totalTravelTimeSeconds), interval));
+                if (i != routes.Count - 1)
+                {
+                    route.endStop.SetSchedule(this, new ContinuousSchedule(
+                        firstDeparture.AddSeconds(totalTravelTimeSeconds), interval));
+                }
             }
         }
 

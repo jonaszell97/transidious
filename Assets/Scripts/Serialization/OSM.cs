@@ -26,48 +26,53 @@ namespace Transidious.Serialization.OSM {
           string.Concat(
             "CglPU00ucHJvdG8SHVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uT1NNGgxD",
             "b21tb24ucHJvdG8aDkJ1aWxkaW5nLnByb3RvGgxTdHJlZXQucHJvdG8aFE5h",
-            "dHVyYWxGZWF0dXJlLnByb3RvIuMBCgZPc21HZW8SCgoCaWQYASABKAQSOAoE",
-            "dHlwZRgCIAEoDjIqLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uT1NNLk9z",
-            "bUdlby5UeXBlEj0KBHRhZ3MYAyADKAsyLy5UcmFuc2lkaW91cy5TZXJpYWxp",
-            "emF0aW9uLk9TTS5Pc21HZW8uVGFnc0VudHJ5GisKCVRhZ3NFbnRyeRILCgNr",
-            "ZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIicKBFR5cGUSCAoETm9kZRAA",
-            "EgcKA1dheRABEgwKCFJlbGF0aW9uEAIicAoETm9kZRIyCgNnZW8YASABKAsy",
-            "JS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk9TTS5Pc21HZW8SNAoIcG9z",
-            "aXRpb24YAiABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3Rv",
-            "cjIiSAoDV2F5EjIKA2dlbxgBIAEoCzIlLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uT1NNLk9zbUdlbxINCgVub2RlcxgCIAMoBCLdAQoIUmVsYXRpb24S",
-            "MgoDZ2VvGAEgASgLMiUuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5PU00u",
-            "T3NtR2VvEj8KB21lbWJlcnMYAiADKAsyLi5UcmFuc2lkaW91cy5TZXJpYWxp",
-            "emF0aW9uLk9TTS5SZWxhdGlvbi5NZW1iZXIaXAoGTWVtYmVyEjgKBHR5cGUY",
-            "ASABKA4yKi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk9TTS5Pc21HZW8u",
-            "VHlwZRIKCgJpZBgCIAEoBBIMCgRyb2xlGAMgASgJIrcFCgRBcmVhEjIKBW5v",
-            "ZGVzGAEgAygLMiMuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5PU00uTm9k",
-            "ZRIwCgR3YXlzGAIgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5P",
-            "U00uV2F5EjoKCXJlbGF0aW9ucxgDIAMoCzInLlRyYW5zaWRpb3VzLlNlcmlh",
-            "bGl6YXRpb24uT1NNLlJlbGF0aW9uEhAKCGJvdW5kYXJ5GAQgASgEEjsKB3N0",
-            "cmVldHMYBSADKAsyKi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk9TTS5B",
-            "cmVhLlN0cmVldBJECghmZWF0dXJlcxgGIAMoCzIyLlRyYW5zaWRpb3VzLlNl",
-            "cmlhbGl6YXRpb24uT1NNLkFyZWEuTmF0dXJhbEZlYXR1cmUSPwoJYnVpbGRp",
-            "bmdzGAcgAygLMiwuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5PU00uQXJl",
-            "YS5CdWlsZGluZxIMCgRtaW5YGAggASgCEgwKBG1heFgYCSABKAISDAoEbWlu",
-            "WRgKIAEoAhIMCgRtYXhZGAsgASgCGk0KBlN0cmVldBINCgV3YXlJZBgBIAEo",
-            "BBI0CgR0eXBlGAIgASgOMiYuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5T",
-            "dHJlZXQuVHlwZRpdCg5OYXR1cmFsRmVhdHVyZRINCgVnZW9JZBgBIAEoBBI8",
-            "CgR0eXBlGAIgASgOMi4uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5OYXR1",
-            "cmFsRmVhdHVyZS5UeXBlGlEKCEJ1aWxkaW5nEg0KBWdlb0lkGAEgASgEEjYK",
-            "BHR5cGUYAiABKA4yKC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkJ1aWxk",
-            "aW5nLlR5cGVCIKoCHVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uT1NNYgZw",
-            "cm90bzM="));
+            "dHVyYWxGZWF0dXJlLnByb3RvGg1UcmFuc2l0LnByb3RvIuMBCgZPc21HZW8S",
+            "CgoCaWQYASABKAQSOAoEdHlwZRgCIAEoDjIqLlRyYW5zaWRpb3VzLlNlcmlh",
+            "bGl6YXRpb24uT1NNLk9zbUdlby5UeXBlEj0KBHRhZ3MYAyADKAsyLy5UcmFu",
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uLk9TTS5Pc21HZW8uVGFnc0VudHJ5GisK",
+            "CVRhZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIicK",
+            "BFR5cGUSCAoETm9kZRAAEgcKA1dheRABEgwKCFJlbGF0aW9uEAIicAoETm9k",
+            "ZRIyCgNnZW8YASABKAsyJS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk9T",
+            "TS5Pc21HZW8SNAoIcG9zaXRpb24YAiABKAsyIi5UcmFuc2lkaW91cy5TZXJp",
+            "YWxpemF0aW9uLlZlY3RvcjIiSAoDV2F5EjIKA2dlbxgBIAEoCzIlLlRyYW5z",
+            "aWRpb3VzLlNlcmlhbGl6YXRpb24uT1NNLk9zbUdlbxINCgVub2RlcxgCIAMo",
+            "BCLdAQoIUmVsYXRpb24SMgoDZ2VvGAEgASgLMiUuVHJhbnNpZGlvdXMuU2Vy",
+            "aWFsaXphdGlvbi5PU00uT3NtR2VvEj8KB21lbWJlcnMYAiADKAsyLi5UcmFu",
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uLk9TTS5SZWxhdGlvbi5NZW1iZXIaXAoG",
+            "TWVtYmVyEjgKBHR5cGUYASABKA4yKi5UcmFuc2lkaW91cy5TZXJpYWxpemF0",
+            "aW9uLk9TTS5Pc21HZW8uVHlwZRIKCgJpZBgCIAEoBBIMCgRyb2xlGAMgASgJ",
+            "IvEGCgRBcmVhEjIKBW5vZGVzGAEgAygLMiMuVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbi5PU00uTm9kZRIwCgR3YXlzGAIgAygLMiIuVHJhbnNpZGlvdXMu",
+            "U2VyaWFsaXphdGlvbi5PU00uV2F5EjoKCXJlbGF0aW9ucxgDIAMoCzInLlRy",
+            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uT1NNLlJlbGF0aW9uEhAKCGJvdW5k",
+            "YXJ5GAQgASgEEjsKB3N0cmVldHMYBSADKAsyKi5UcmFuc2lkaW91cy5TZXJp",
+            "YWxpemF0aW9uLk9TTS5BcmVhLlN0cmVldBJECghmZWF0dXJlcxgGIAMoCzIy",
+            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uT1NNLkFyZWEuTmF0dXJhbEZl",
+            "YXR1cmUSPwoJYnVpbGRpbmdzGAcgAygLMiwuVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbi5PU00uQXJlYS5CdWlsZGluZxI+CgVsaW5lcxgIIAMoCzIvLlRy",
+            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uT1NNLkFyZWEuVHJhbnNpdExpbmUS",
+            "DAoEbWluWBgJIAEoAhIMCgRtYXhYGAogASgCEgwKBG1pblkYCyABKAISDAoE",
+            "bWF4WRgMIAEoAhpNCgZTdHJlZXQSDQoFd2F5SWQYASABKAQSNAoEdHlwZRgC",
+            "IAEoDjImLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0LlR5cGUa",
+            "XQoOTmF0dXJhbEZlYXR1cmUSDQoFZ2VvSWQYASABKAQSPAoEdHlwZRgCIAEo",
+            "DjIuLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTmF0dXJhbEZlYXR1cmUu",
+            "VHlwZRpRCghCdWlsZGluZxINCgVnZW9JZBgBIAEoBBI2CgR0eXBlGAIgASgO",
+            "MiguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5CdWlsZGluZy5UeXBlGngK",
+            "C1RyYW5zaXRMaW5lEgwKBG5hbWUYASABKAkSNAoEdHlwZRgCIAEoDjImLlRy",
+            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVHJhbnNpdFR5cGUSEQoJaW5ib3Vu",
+            "ZElkGAMgASgEEhIKCm91dGJvdW5kSWQYBCABKARCIKoCHVRyYW5zaWRpb3Vz",
+            "LlNlcmlhbGl6YXRpb24uT1NNYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, global::Transidious.Serialization.TransitReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.OsmGeo), global::Transidious.Serialization.OSM.OsmGeo.Parser, new[]{ "Id", "Type", "Tags" }, null, new[]{ typeof(global::Transidious.Serialization.OSM.OsmGeo.Types.Type) }, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Node), global::Transidious.Serialization.OSM.Node.Parser, new[]{ "Geo", "Position" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Way), global::Transidious.Serialization.OSM.Way.Parser, new[]{ "Geo", "Nodes" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Relation), global::Transidious.Serialization.OSM.Relation.Parser, new[]{ "Geo", "Members" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Relation.Types.Member), global::Transidious.Serialization.OSM.Relation.Types.Member.Parser, new[]{ "Type", "Id", "Role" }, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area), global::Transidious.Serialization.OSM.Area.Parser, new[]{ "Nodes", "Ways", "Relations", "Boundary", "Streets", "Features", "Buildings", "MinX", "MaxX", "MinY", "MaxY" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Street), global::Transidious.Serialization.OSM.Area.Types.Street.Parser, new[]{ "WayId", "Type" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area), global::Transidious.Serialization.OSM.Area.Parser, new[]{ "Nodes", "Ways", "Relations", "Boundary", "Streets", "Features", "Buildings", "Lines", "MinX", "MaxX", "MinY", "MaxY" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Street), global::Transidious.Serialization.OSM.Area.Types.Street.Parser, new[]{ "WayId", "Type" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.NaturalFeature), global::Transidious.Serialization.OSM.Area.Types.NaturalFeature.Parser, new[]{ "GeoId", "Type" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Building), global::Transidious.Serialization.OSM.Area.Types.Building.Parser, new[]{ "GeoId", "Type" }, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Building), global::Transidious.Serialization.OSM.Area.Types.Building.Parser, new[]{ "GeoId", "Type" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.TransitLine), global::Transidious.Serialization.OSM.Area.Types.TransitLine.Parser, new[]{ "Name", "Type", "InboundId", "OutboundId" }, null, null, null)})
           }));
     }
     #endregion
@@ -968,6 +973,7 @@ namespace Transidious.Serialization.OSM {
       streets_ = other.streets_.Clone();
       features_ = other.features_.Clone();
       buildings_ = other.buildings_.Clone();
+      lines_ = other.lines_.Clone();
       minX_ = other.minX_;
       maxX_ = other.maxX_;
       minY_ = other.minY_;
@@ -1051,8 +1057,18 @@ namespace Transidious.Serialization.OSM {
       get { return buildings_; }
     }
 
+    /// <summary>Field number for the "lines" field.</summary>
+    public const int LinesFieldNumber = 8;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.OSM.Area.Types.TransitLine> _repeated_lines_codec
+        = pb::FieldCodec.ForMessage(66, global::Transidious.Serialization.OSM.Area.Types.TransitLine.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.OSM.Area.Types.TransitLine> lines_ = new pbc::RepeatedField<global::Transidious.Serialization.OSM.Area.Types.TransitLine>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.OSM.Area.Types.TransitLine> Lines {
+      get { return lines_; }
+    }
+
     /// <summary>Field number for the "minX" field.</summary>
-    public const int MinXFieldNumber = 8;
+    public const int MinXFieldNumber = 9;
     private float minX_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float MinX {
@@ -1063,7 +1079,7 @@ namespace Transidious.Serialization.OSM {
     }
 
     /// <summary>Field number for the "maxX" field.</summary>
-    public const int MaxXFieldNumber = 9;
+    public const int MaxXFieldNumber = 10;
     private float maxX_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float MaxX {
@@ -1074,7 +1090,7 @@ namespace Transidious.Serialization.OSM {
     }
 
     /// <summary>Field number for the "minY" field.</summary>
-    public const int MinYFieldNumber = 10;
+    public const int MinYFieldNumber = 11;
     private float minY_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float MinY {
@@ -1085,7 +1101,7 @@ namespace Transidious.Serialization.OSM {
     }
 
     /// <summary>Field number for the "maxY" field.</summary>
-    public const int MaxYFieldNumber = 11;
+    public const int MaxYFieldNumber = 12;
     private float maxY_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float MaxY {
@@ -1115,6 +1131,7 @@ namespace Transidious.Serialization.OSM {
       if(!streets_.Equals(other.streets_)) return false;
       if(!features_.Equals(other.features_)) return false;
       if(!buildings_.Equals(other.buildings_)) return false;
+      if(!lines_.Equals(other.lines_)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(MinX, other.MinX)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(MaxX, other.MaxX)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(MinY, other.MinY)) return false;
@@ -1132,6 +1149,7 @@ namespace Transidious.Serialization.OSM {
       hash ^= streets_.GetHashCode();
       hash ^= features_.GetHashCode();
       hash ^= buildings_.GetHashCode();
+      hash ^= lines_.GetHashCode();
       if (MinX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(MinX);
       if (MaxX != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(MaxX);
       if (MinY != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(MinY);
@@ -1159,20 +1177,21 @@ namespace Transidious.Serialization.OSM {
       streets_.WriteTo(output, _repeated_streets_codec);
       features_.WriteTo(output, _repeated_features_codec);
       buildings_.WriteTo(output, _repeated_buildings_codec);
+      lines_.WriteTo(output, _repeated_lines_codec);
       if (MinX != 0F) {
-        output.WriteRawTag(69);
+        output.WriteRawTag(77);
         output.WriteFloat(MinX);
       }
       if (MaxX != 0F) {
-        output.WriteRawTag(77);
+        output.WriteRawTag(85);
         output.WriteFloat(MaxX);
       }
       if (MinY != 0F) {
-        output.WriteRawTag(85);
+        output.WriteRawTag(93);
         output.WriteFloat(MinY);
       }
       if (MaxY != 0F) {
-        output.WriteRawTag(93);
+        output.WriteRawTag(101);
         output.WriteFloat(MaxY);
       }
       if (_unknownFields != null) {
@@ -1192,6 +1211,7 @@ namespace Transidious.Serialization.OSM {
       size += streets_.CalculateSize(_repeated_streets_codec);
       size += features_.CalculateSize(_repeated_features_codec);
       size += buildings_.CalculateSize(_repeated_buildings_codec);
+      size += lines_.CalculateSize(_repeated_lines_codec);
       if (MinX != 0F) {
         size += 1 + 4;
       }
@@ -1224,6 +1244,7 @@ namespace Transidious.Serialization.OSM {
       streets_.Add(other.streets_);
       features_.Add(other.features_);
       buildings_.Add(other.buildings_);
+      lines_.Add(other.lines_);
       if (other.MinX != 0F) {
         MinX = other.MinX;
       }
@@ -1275,19 +1296,23 @@ namespace Transidious.Serialization.OSM {
             buildings_.AddEntriesFrom(input, _repeated_buildings_codec);
             break;
           }
-          case 69: {
-            MinX = input.ReadFloat();
+          case 66: {
+            lines_.AddEntriesFrom(input, _repeated_lines_codec);
             break;
           }
           case 77: {
-            MaxX = input.ReadFloat();
+            MinX = input.ReadFloat();
             break;
           }
           case 85: {
-            MinY = input.ReadFloat();
+            MaxX = input.ReadFloat();
             break;
           }
           case 93: {
+            MinY = input.ReadFloat();
+            break;
+          }
+          case 101: {
             MaxY = input.ReadFloat();
             break;
           }
@@ -1762,6 +1787,219 @@ namespace Transidious.Serialization.OSM {
               }
               case 16: {
                 Type = (global::Transidious.Serialization.Building.Types.Type) input.ReadEnum();
+                break;
+              }
+            }
+          }
+        }
+
+      }
+
+      public sealed partial class TransitLine : pb::IMessage<TransitLine> {
+        private static readonly pb::MessageParser<TransitLine> _parser = new pb::MessageParser<TransitLine>(() => new TransitLine());
+        private pb::UnknownFieldSet _unknownFields;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<TransitLine> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::Transidious.Serialization.OSM.Area.Descriptor.NestedTypes[3]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public TransitLine() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public TransitLine(TransitLine other) : this() {
+          name_ = other.name_;
+          type_ = other.type_;
+          inboundId_ = other.inboundId_;
+          outboundId_ = other.outboundId_;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public TransitLine Clone() {
+          return new TransitLine(this);
+        }
+
+        /// <summary>Field number for the "name" field.</summary>
+        public const int NameFieldNumber = 1;
+        private string name_ = "";
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public string Name {
+          get { return name_; }
+          set {
+            name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+          }
+        }
+
+        /// <summary>Field number for the "type" field.</summary>
+        public const int TypeFieldNumber = 2;
+        private global::Transidious.Serialization.TransitType type_ = 0;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public global::Transidious.Serialization.TransitType Type {
+          get { return type_; }
+          set {
+            type_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "inboundId" field.</summary>
+        public const int InboundIdFieldNumber = 3;
+        private ulong inboundId_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public ulong InboundId {
+          get { return inboundId_; }
+          set {
+            inboundId_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "outboundId" field.</summary>
+        public const int OutboundIdFieldNumber = 4;
+        private ulong outboundId_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public ulong OutboundId {
+          get { return outboundId_; }
+          set {
+            outboundId_ = value;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as TransitLine);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(TransitLine other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (Name != other.Name) return false;
+          if (Type != other.Type) return false;
+          if (InboundId != other.InboundId) return false;
+          if (OutboundId != other.OutboundId) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (Name.Length != 0) hash ^= Name.GetHashCode();
+          if (Type != 0) hash ^= Type.GetHashCode();
+          if (InboundId != 0UL) hash ^= InboundId.GetHashCode();
+          if (OutboundId != 0UL) hash ^= OutboundId.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (Name.Length != 0) {
+            output.WriteRawTag(10);
+            output.WriteString(Name);
+          }
+          if (Type != 0) {
+            output.WriteRawTag(16);
+            output.WriteEnum((int) Type);
+          }
+          if (InboundId != 0UL) {
+            output.WriteRawTag(24);
+            output.WriteUInt64(InboundId);
+          }
+          if (OutboundId != 0UL) {
+            output.WriteRawTag(32);
+            output.WriteUInt64(OutboundId);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (Name.Length != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+          }
+          if (Type != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+          }
+          if (InboundId != 0UL) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt64Size(InboundId);
+          }
+          if (OutboundId != 0UL) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt64Size(OutboundId);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(TransitLine other) {
+          if (other == null) {
+            return;
+          }
+          if (other.Name.Length != 0) {
+            Name = other.Name;
+          }
+          if (other.Type != 0) {
+            Type = other.Type;
+          }
+          if (other.InboundId != 0UL) {
+            InboundId = other.InboundId;
+          }
+          if (other.OutboundId != 0UL) {
+            OutboundId = other.OutboundId;
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 10: {
+                Name = input.ReadString();
+                break;
+              }
+              case 16: {
+                Type = (global::Transidious.Serialization.TransitType) input.ReadEnum();
+                break;
+              }
+              case 24: {
+                InboundId = input.ReadUInt64();
+                break;
+              }
+              case 32: {
+                OutboundId = input.ReadUInt64();
                 break;
               }
             }

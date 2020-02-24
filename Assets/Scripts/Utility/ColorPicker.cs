@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 
@@ -18,19 +17,20 @@ namespace Transidious
         public Color borderColor = Color.gray;
         public int borderWidth = 2;
         public GameObject hueCursor;
-        public GameObject rgbCursor;
-        public GameObject hue;
-        public GameObject rgb;
+        public GameObject satValCursor;
+        public GameObject hueMask;
+        public GameObject satValMask;
         public Image hueBackground;
         public Image selectedColor;
         public TMP_InputField selectedColorText;
         bool newlySelected;
 
         Canvas canvas;
-        float[] rgbBounds;
         float[] hueBounds;
-        float orthoSize;
-        Vector2 cameraPos;
+        float[] satValBounds;
+        float hueSize;
+        Vector2 satValSize;
+        Vector2 pos;
         float r, g, b;
         float h, s, v;
 
@@ -103,7 +103,7 @@ namespace Transidious
 
         Texture2D CreateHueTexture()
         {
-            var rectTransform = rgb.GetComponent<RectTransform>();
+            var rectTransform = satValMask.GetComponent<RectTransform>();
             var width = (int)rectTransform.rect.width;
             var height = (int)rectTransform.rect.height;
             var tex = new Texture2D(width, height);
@@ -132,7 +132,7 @@ namespace Transidious
 
         Texture2D CreateSatBrightTexture()
         {
-            var rectTransform = hue.GetComponent<RectTransform>();
+            var rectTransform = hueMask.GetComponent<RectTransform>();
             var width = (int)rectTransform.rect.width;
             var height = (int)rectTransform.rect.height;
             var tex = new Texture2D(width, height);
@@ -175,12 +175,10 @@ namespace Transidious
 
         public void SetColor(Color rgb, bool fireEvent = false)
         {
-            UpdateBoundingBoxes();
-
             Color.RGBToHSV(rgb, out float h, out float s, out float v);
-            OnDrag_RGBCursor_World(new Vector2(0, rgbBounds[0] + h * (rgbBounds[1] - rgbBounds[0])));
-            OnDrag_HueCursor_World(new Vector2(hueBounds[0] + s * (hueBounds[1] - hueBounds[0]),
-                                               hueBounds[2] + v * (hueBounds[3] - hueBounds[2])));
+            OnHueCursorDrag(new Vector2(0, hueBounds[0] + h * (hueBounds[1] - hueBounds[0])));
+            OnSatValCursorDrag(new Vector2(satValBounds[0] + s * (satValBounds[1] - satValBounds[0]),
+                                           satValBounds[2] + v * (satValBounds[3] - satValBounds[2])));
 
             if (fireEvent)
             {
@@ -197,73 +195,48 @@ namespace Transidious
             }
         }
 
-        Rect GetWorldBoundingRect(RectTransform rectTransform)
-        {
-            if (canvas.renderMode == RenderMode.WorldSpace)
-            {
-                var corners = new Vector3[4];
-                rectTransform.GetWorldCorners(corners);
-
-                return new Rect(corners[0].x, corners[0].y, corners[3].x - corners[0].x, corners[2].y - corners[0].y);
-            }
-            else
-            {
-                var transformedPos = Camera.main.ScreenToWorldPoint(new Vector2(
-                    rectTransform.position.x, rectTransform.position.y - rectTransform.rect.height));
-                var baseSize = Camera.main.ScreenToWorldPoint(new Vector2(0, 0));
-                var transformedSize = Camera.main.ScreenToWorldPoint(
-                    new Vector2(rectTransform.rect.width, rectTransform.rect.height));
-
-                return new Rect(transformedPos.x, transformedPos.y,
-                                transformedSize.x - baseSize.x,
-                                transformedSize.y - baseSize.y);
-            }
-        }
-
         public void UpdateBoundingBoxes(bool force = false)
         {
+            Vector2 screenPos = Camera.main.WorldToScreenPoint(transform.position);
             if (!force)
             {
                 if (!gameObject.activeInHierarchy)
                 {
                     return;
                 }
-                if ((orthoSize == Camera.main.orthographicSize) && cameraPos.Equals(Camera.main.transform.position))
+                if (screenPos.Equals(this.pos))
                 {
                     return;
                 }
             }
 
             {
-                var rgbTransform = rgb.GetComponent<RectTransform>();
-                var rect = GetWorldBoundingRect(rgbTransform);
+                var hueTransform = hueMask.GetComponent<RectTransform>();
+                var rect = Utility.RectTransformToScreenSpace(Camera.main, hueTransform);
 
-                rgbBounds = new float[] {
+                hueBounds = new float[] {
                     rect.y,
                     rect.y + rect.height,
                 };
 
-                var rgbCursorTransform = rgbCursor.GetComponent<RectTransform>();
-                rect = GetWorldBoundingRect(rgbCursorTransform);
-
-                var halfCursorHeight = rect.height * .5f;
-                rgbBounds[1] -= halfCursorHeight;
-                rgbBounds[0] += halfCursorHeight;
+                hueSize = Mathf.Abs(hueTransform.rect.height);
             }
             {
-                var hueTransform = hue.GetComponent<RectTransform>();
-                var rect = GetWorldBoundingRect(hueTransform);
+                var satValTransform = satValMask.GetComponent<RectTransform>();
+                var rect = Utility.RectTransformToScreenSpace(Camera.main, satValTransform);
 
-                hueBounds = new float[] {
+                satValBounds = new float[] {
                     rect.x,
                     rect.x + rect.width,
                     rect.y,
                     rect.y + rect.height,
                 };
+
+                satValSize = new Vector2(Mathf.Abs(satValTransform.rect.width),
+                                         Mathf.Abs(satValTransform.rect.height));
             }
 
-            orthoSize = Camera.main.orthographicSize;
-            cameraPos = Camera.main.transform.position;
+            this.pos = screenPos;
         }
 
         void Awake()
@@ -272,16 +245,10 @@ namespace Transidious
             this.onChange = new ChangeEvent();
 
             var hueSprite = CreateHueTexture();
-            rgb.GetComponent<Image>().sprite = Sprite.Create(
+            hueMask.GetComponent<Image>().sprite = Sprite.Create(
                 hueSprite,
                 new Rect(0, 0, hueSprite.width, hueSprite.height),
                 new Vector2(hueSprite.width / 2, hueSprite.height / 2));
-
-            // var satBrightSprite = CreateSatBrightTexture();
-            // hue.GetComponent<Image>().sprite = Sprite.Create(
-            //     satBrightSprite,
-            //     new Rect(0, 0, satBrightSprite.width, satBrightSprite.height),
-            //     new Vector2(satBrightSprite.width / 2, satBrightSprite.height / 2));
 
             selectedColorText.onValidateInput = this.ValidateHexInput;
             selectedColorText.onSubmit.AddListener(this.SelectHexInput);
@@ -293,26 +260,19 @@ namespace Transidious
 
         void Start()
         {
-            rgb.GetComponent<Draggable>().dragHandler = this.OnDrag_RGBCursor;
-            hue.GetComponent<Draggable>().dragHandler = this.OnDrag_HueCursor;
+            satValMask.GetComponent<Draggable>().dragHandler = this.OnSatValCursorDrag;
+            hueMask.GetComponent<Draggable>().dragHandler = this.OnHueCursorDrag;
 
-            rgb.GetComponent<Clickable>().mouseDown = this.OnDrag_RGBCursor;
-            hue.GetComponent<Clickable>().mouseDown = this.OnDrag_HueCursor;
+            satValMask.GetComponent<Clickable>().mouseDown = this.OnSatValCursorDrag;
+            hueMask.GetComponent<Clickable>().mouseDown = this.OnHueCursorDrag;
 
-            orthoSize = -1f;
-            cameraPos = Vector3.positiveInfinity;
             UpdateBoundingBoxes();
-
-            OnDrag_RGBCursor_World(rgbCursor.transform.position);
-            OnDrag_HueCursor_World(hueCursor.transform.position);
+            UpdateHue(0f);
+            UpdateSaturationAndBrightness(0f, 0f);
         }
 
-        void UpdateHue(Vector2 cursorScreenPos)
+        void UpdateHue(float percentage)
         {
-            var height = rgbBounds[1] - rgbBounds[0];
-            var relativePos = cursorScreenPos.y - rgbBounds[0];
-            var percentage = Mathf.Clamp(relativePos / height, 0f, 1f);
-
             h = percentage;
             s = 1;
             v = 1;
@@ -320,15 +280,8 @@ namespace Transidious
             hueBackground.color = Color.HSVToRGB(h, s, v);
         }
 
-        void UpdateSaturationAndBrightness(Vector2 cursorScreenPos)
+        void UpdateSaturationAndBrightness(float percentageX, float percentageY)
         {
-            var width = hueBounds[1] - hueBounds[0];
-            var height = hueBounds[3] - hueBounds[2];
-            var relativePosX = cursorScreenPos.x - hueBounds[0];
-            var relativePosY = cursorScreenPos.y - hueBounds[2];
-            var percentageX = Mathf.Clamp(relativePosX / width, 0f, 1f);
-            var percentageY = Mathf.Clamp(relativePosY / height, 0f, 1f);
-
             s = percentageX;
             v = percentageY;
 
@@ -343,98 +296,47 @@ namespace Transidious
             r = result.r;
             g = result.g;
             b = result.b;
+
+            onChange.Invoke(result);
         }
 
-        Vector3 RGBCursorPos
-        {
-            get
-            {
-                if (canvas.renderMode == RenderMode.WorldSpace)
-                {
-                    return rgbCursor.transform.position;
-                }
-                else
-                {
-                    return Camera.main.ScreenToWorldPoint(rgbCursor.transform.position);
-                }
-            }
-        }
-
-        Vector3 SatBrightCursorPos
-        {
-            get
-            {
-                if (canvas.renderMode == RenderMode.WorldSpace)
-                {
-                    return hueCursor.transform.position;
-                }
-                else
-                {
-                    return Camera.main.ScreenToWorldPoint(hueCursor.transform.position);
-                }
-            }
-        }
-
-        void OnDrag_HueCursor(Vector2 screenPos)
+        void OnHueCursorDrag(Vector2 screenPos)
         {
             UpdateBoundingBoxes();
 
-            OnDrag_HueCursor_World(Camera.main.ScreenToWorldPoint(screenPos));
-            OnDrag_RGBCursor_World(RGBCursorPos);
+            var min = hueBounds[0];
+            var max = hueBounds[1];
+            var y = Mathf.Clamp(screenPos.y, min, max);
 
-            this.onChange.Invoke(SelectedColor);
+            var percentage = (y - min) / (max - min);
+
+            var rect = hueCursor.GetComponent<RectTransform>();
+            rect.anchoredPosition = new Vector2(0, percentage * hueSize);
+
+            UpdateHue(percentage);
+            UpdateSaturationAndBrightness(s, v);
         }
 
-        void OnDrag_HueCursor_World(Vector2 worldPos)
-        {
-            var x = Mathf.Clamp(worldPos.x, hueBounds[0], hueBounds[1]);
-            var y = Mathf.Clamp(worldPos.y, hueBounds[2], hueBounds[3]);
-
-            Vector2 newScreenPos;
-            if (canvas.renderMode == RenderMode.WorldSpace)
-            {
-                newScreenPos = new Vector2(x, y);
-            }
-            else
-            {
-                newScreenPos = Camera.main.WorldToScreenPoint(new Vector2(x, y));
-            }
-
-            hueCursor.transform.position = new Vector3(newScreenPos.x, newScreenPos.y,
-                                                       hueCursor.transform.position.z);
-
-            UpdateSaturationAndBrightness(worldPos);
-        }
-
-        void OnDrag_RGBCursor(Vector2 screenPos)
+        void OnSatValCursorDrag(Vector2 screenPos)
         {
             UpdateBoundingBoxes();
 
-            OnDrag_RGBCursor_World(Camera.main.ScreenToWorldPoint(screenPos));
-            OnDrag_HueCursor_World(SatBrightCursorPos);
+            var minX = satValBounds[0];
+            var maxX = satValBounds[1];
+            var x = Mathf.Clamp(screenPos.x, minX, maxX);
 
-            this.onChange.Invoke(SelectedColor);
-        }
+            var minY = satValBounds[2];
+            var maxY = satValBounds[3];
+            var y = Mathf.Clamp(screenPos.y, minY, maxY);
 
-        void OnDrag_RGBCursor_World(Vector2 worldPos)
-        {
-            var y = Mathf.Clamp(worldPos.y, rgbBounds[0], rgbBounds[1]);
+            var percentageX = (x - minX) / (maxX - minX);
+            var percentageY = (y - minY) / (maxY - minY);
 
-            float screenY;
-            if (canvas.renderMode == RenderMode.WorldSpace)
-            {
-                screenY = y;
-            }
-            else
-            {
-                screenY = Camera.main.WorldToScreenPoint(new Vector2(0, y)).y;
-            }
+            var rect = satValCursor.GetComponent<RectTransform>();
+            rect.anchoredPosition = new Vector2(percentageX * satValSize.x,
+                                                percentageY * satValSize.y);
 
-            rgbCursor.transform.position = new Vector3(rgbCursor.transform.position.x,
-                                                       screenY,
-                                                       rgbCursor.transform.position.z);
-
-            UpdateHue(worldPos);
+            UpdateSaturationAndBrightness(percentageX, percentageY);
         }
     }
 }

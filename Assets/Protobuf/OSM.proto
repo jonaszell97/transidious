@@ -7,6 +7,7 @@ import "Common.proto";
 import "Building.proto";
 import "Street.proto";
 import "NaturalFeature.proto";
+import "Transit.proto";
 
 message OsmGeo {
     enum Type {
@@ -57,6 +58,13 @@ message Area {
         Transidious.Serialization.Building.Type type = 2;
     }
 
+    message TransitLine {
+        string name = 1;
+        TransitType type = 2;
+        uint64 inboundId = 3;
+        uint64 outboundId = 4;
+    }
+
     repeated Node nodes = 1;
     repeated Way ways = 2;
     repeated Relation relations = 3;
@@ -66,8 +74,10 @@ message Area {
     repeated NaturalFeature features = 6;
     repeated Building buildings = 7;
 
-    float minX = 8;
-    float maxX = 9;
-    float minY = 10;
-    float maxY = 11;
+    repeated TransitLine lines = 8;
+
+    float minX = 9;
+    float maxX = 10;
+    float minY = 11;
+    float maxY = 12;
 }

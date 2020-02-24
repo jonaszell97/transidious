@@ -614,9 +614,7 @@ namespace Transidious
         public void UpdateZoomLevels()
         {
             maxZoom = (maxY - minY) / 2f;
-
             camera.orthographicSize = maxZoom;
-            FireEvent(InputEvent.Zoom);
         }
 
         public Vector3 WorldToUISpace(Canvas parentCanvas, Vector3 worldPos)
@@ -812,6 +810,7 @@ namespace Transidious
                     else
                     {
                         Debug.Log(ppResult.ToString());
+                        ppResult.DebugDraw();
                     }
                 }
             }
@@ -843,6 +842,7 @@ namespace Transidious
                     {
                         Debug.Log($"transit route found with cost {transitResult.cost}");
                         Debug.Log(transitResult.ToString());
+                        transitResult.DebugDraw();
                     }
 
                     var carResult = planner.FindClosestDrive(map, from, to);
@@ -904,7 +904,6 @@ namespace Transidious
                         controller.sim.trafficSim.SpawnCar(ppResult, new Citizien(controller.sim));
 
                         routeMesh.CreateMeshes();
-                        routeMesh.UpdateScale(renderingDistance);
                     }
 
                     debugRouteTest = false;

@@ -21,6 +21,8 @@ namespace Transidious
     public interface ISchedule
     {
         DateTime GetNextDeparture(DateTime currentTime);
+        string ToString();
+        Serialization.Schedule Serialize();
     }
 
     public class ContinuousSchedule : ISchedule
@@ -45,6 +47,25 @@ namespace Transidious
             var nextDeparture = Mathf.Ceil((float)secondDiff / interval) * interval;
 
             return firstDeparture.AddSeconds(nextDeparture);
+        }
+
+        public override string ToString()
+        {
+            return $"Continuous (starting at {Translator.GetDate(firstDeparture, Translator.DateFormat.DateTimeLong)} , every {interval}s)";
+        }
+
+        public Serialization.Schedule Serialize()
+        {
+            return new Serialization.Schedule
+            {
+                FirstDeparture = (ulong)firstDeparture.Ticks,
+                Interval = interval,
+            };
+        }
+
+        public static ContinuousSchedule Deserialize(Serialization.Schedule sched)
+        {
+            return new ContinuousSchedule(new DateTime((long)sched.FirstDeparture), sched.Interval);
         }
     }
 
@@ -282,6 +303,11 @@ namespace Transidious
 
             return result;
         }
+
+        public Serialization.Schedule Serialize()
+        {
+            return null;
+        }
     }
 
     public class OffsetSchedule : ISchedule
@@ -298,6 +324,11 @@ namespace Transidious
         public DateTime GetNextDeparture(DateTime currentTime)
         {
             return baseSchedule.GetNextDeparture(currentTime).AddMinutes(offsetMinutes);
+        }
+
+        public Serialization.Schedule Serialize()
+        {
+            return null;
         }
     }
 
@@ -322,6 +353,11 @@ namespace Transidious
             }
 
             return baseSchedule.GetNextDeparture(currentTime.AddMinutes(-delay)).AddMinutes(delay);
+        }
+
+        public Serialization.Schedule Serialize()
+        {
+            return null;
         }
     }
 }

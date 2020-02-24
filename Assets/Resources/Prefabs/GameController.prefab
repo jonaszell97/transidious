@@ -67,6 +67,7 @@ MonoBehaviour:
   defaultShader: {fileID: 0}
   silhouetteDiffuseShader: {fileID: 0}
   highlightedMaterial: {fileID: 2100000, guid: 4388dc391fb3b4922a3d5b911fe04cf8, type: 2}
+  unlitMaterial: {fileID: 2100000, guid: 1316c88fef6dd49f09791ab20ceb24b4, type: 2}
   highlightColor: {r: 0, g: 0, b: 0, a: 0}
   bulldozeHighlightColor: {r: 0, g: 0, b: 0, a: 0}
   mainUI: {fileID: 0}

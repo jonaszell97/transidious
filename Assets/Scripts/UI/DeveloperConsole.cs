@@ -295,7 +295,7 @@ namespace Transidious
 
         public void HandleLoadCommand(string fileName)
         {
-            StartCoroutine(SaveManager.LoadSave(game.loadedMap, fileName));
+            StartCoroutine(SaveManager.LoadSave(game.loadedMap, fileName, true));
             Log($"loaded save file '{fileName}'");
         }
 

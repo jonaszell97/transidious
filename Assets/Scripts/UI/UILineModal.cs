@@ -36,6 +36,11 @@ namespace Transidious
 
         void Start()
         {
+            // FIXME remove once root order bug is fixed
+            infoPanel.transform.SetSiblingIndex(0);
+            lineView.transform.SetSiblingIndex(1);
+            colorPicker.transform.SetSiblingIndex(2);
+
             var maxCharacters = 32;
             modal.titleInput.interactable = true;
             modal.titleInput.onValidateInput = (string text, int charIndex, char addedChar) =>
@@ -47,6 +52,7 @@ namespace Transidious
 
                 return addedChar;
             };
+
             modal.titleInput.onSubmit.AddListener((string newName) =>
             {
                 if (newName.Length == 0 || newName.Length > maxCharacters)
@@ -86,7 +92,7 @@ namespace Transidious
                     colorPicker.gameObject.SetActive(true);
 
                     // We need to this next frame, otherwise the position of the color picker won't be up-to-date. 
-                    StartCoroutine(UpdateColorPickerNextFrame(colorPicker));
+                    UpdateColorPickerNextFrame(colorPicker);
                 }
                 else
                 {
@@ -137,23 +143,10 @@ namespace Transidious
 #endif
         }
 
-        IEnumerator UpdateColorPickerNextFrame(ColorPicker colorPicker)
+        void UpdateColorPickerNextFrame(ColorPicker colorPicker)
         {
-            yield return null;
-
             colorPicker.UpdateBoundingBoxes(true);
             colorPicker.SetColor(selectedLine.color);
-
-            yield break;
-        }
-
-        IEnumerator UpdateModalPositionNextFrame(UIModal modal, Vector3 pos)
-        {
-            yield return null;
-
-            modal.PositionAt(pos);
-
-            yield break;
         }
     }
 }

@@ -691,5 +691,10 @@ namespace Transidious
 #endif
             }
         }
+
+        public void RenderTrafficLights()
+        {
+            //foreach (var trafficLight in trafficL)
+        }
     }
 }
