@@ -68,13 +68,7 @@ namespace Transidious
         public Vector3 p0, p1, p2, p3;
         public float length;
 
-        public float Angle
-        {
-            get
-            {
-                return Math.toDegrees((float)System.Math.Atan2(p3.y - p0.y, p3.x - p0.x));
-            }
-        }
+        public float Angle => Math.PointAngleDeg(p0, p3);
 
         public Vector3 Direction
         {

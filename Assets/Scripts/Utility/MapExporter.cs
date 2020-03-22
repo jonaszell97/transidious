@@ -1,4 +1,6 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+
+using UnityEditor;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
@@ -666,3 +668,5 @@ namespace Transidious
         }
     }
 }
+
+#endif

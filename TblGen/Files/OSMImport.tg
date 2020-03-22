@@ -48,9 +48,13 @@ enum NatureType {
     Beach,
     Forest,
     Parking,
+    Residential,
 }
 
-class NaturalFeatureInfo<let type: NatureType, let tags: list<Tag>, let geoTypes: list<GeoType> >
+class NaturalFeatureInfo<let type: NatureType,
+                         let tags: list<Tag>,
+                         let geoTypes: list<GeoType>,
+                         let visualOnly: i1 = false>
 
 enum BuildingType {
     Residential,
@@ -61,11 +65,15 @@ enum BuildingType {
     University,
     Hospital,
     Stadium,
+    Airport,
 
     GroceryStore,
 }
 
-class BuildingInfo<let type: BuildingType, let tags: list<Tag>, let geoTypes: list<GeoType> >
+class BuildingInfo<let type: BuildingType,
+                   let tags: list<Tag>,
+                   let geoTypes: list<GeoType>,
+                   let visualOnly: i1 = false>
 
 class Area {
     let country: string
@@ -117,6 +125,9 @@ class DefaultArea : Area
         StreetInfo<.Tertiary, [
             Tag<"highway", "tertiary">
         ]>,
+        StreetInfo<.Tertiary, [
+            Tag<"highway", "unclassified">
+        ]>,
         StreetInfo<.Link, [
             Tag<"highway", "tertiary_link">
         ]>,
@@ -126,9 +137,9 @@ class DefaultArea : Area
         // StreetInfo<.Path, [
         //     Tag<"highway", "service">
         // ]>,
-        // StreetInfo<.Path, [
-        //     Tag<"highway", "track">
-        // ]>,
+        StreetInfo<.Tertiary, [
+            Tag<"highway", "track">
+        ]>,
         // StreetInfo<.Path, [
         //     Tag<"highway", "footway">
         // ]>,
@@ -213,10 +224,13 @@ class DefaultArea : Area
         NaturalFeatureInfo<.Green, [
             Tag<"landuse", "recreation_ground">
         ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Green, [
+            Tag<"natural", "heath">
+        ], [.Way, .Relation]>,
 
         NaturalFeatureInfo<.Allotment, [
             Tag<"landuse", "allotments">
-        ], [.Way, .Relation]>,
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.Cemetery, [
             Tag<"landuse", "cemetery">
@@ -232,11 +246,14 @@ class DefaultArea : Area
         NaturalFeatureInfo<.Lake, [
             Tag<"natural", "water">
         ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Lake, [
+            Tag<"leisure", "swimming_pool">
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.FootpathArea, [
             Tag<"highway", "footpath">,
             Tag<"area", "yes">,
-        ], [.Way, .Relation]>,
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.Forest, [
             Tag<"landuse", "forest">,
@@ -245,9 +262,16 @@ class DefaultArea : Area
         NaturalFeatureInfo<.Beach, [
             Tag<"natural", "beach">,
         ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Beach, [
+            Tag<"natural", "sand">,
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.Parking, [
             Tag<"amenity", "parking">,
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Residential, [
+            Tag<"landuse", "residential">,
         ], [.Way, .Relation]>,
     ]
 
@@ -290,6 +314,10 @@ class DefaultArea : Area
 
         BuildingInfo<.Stadium, [
             Tag<"building", "stadium">
+        ], [.Way, .Relation]>,
+
+        BuildingInfo<.Airport, [
+            Tag<"building", "airport">
         ], [.Way, .Relation]>
     ]
 }
@@ -549,5 +577,16 @@ def Vancouver : DefaultArea {
     ], [
         Tag<"boundary", "administrative">,
         Tag<"admin_level", "8">
+    ]>
+}
+
+def Fuerteventura : DefaultArea {
+    country = "CanaryIslands"
+    boundary = BoundaryInfo<"Fuerteventura", [
+        Tag<"type", "boundary">,
+        
+    ], [
+        Tag<"boundary", "political">,
+        
     ]>
 }

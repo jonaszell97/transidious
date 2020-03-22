@@ -39,6 +39,14 @@ message PathStep {
         repeated uint32 routeIDs = 2;
     }
 
+    message TurnStep {
+        uint32 fromSegmentID = 1;
+        bool fromBackward = 2;
+        uint32 toSegmentID = 3;
+        bool toBackward = 4;
+        uint32 intersectionID = 5;
+    }
+
     message WaitStep {
         float waitingTime = 1;
     }
@@ -75,24 +83,15 @@ message PathPlanningResult {
 }
 
 message ActivePath {
-    uint32 stepNo = 1;
-    float currentVelocity = 2;
-    float stepProgress = 3;
-    PathPlanningResult path = 4;
-    bool IsTurn = 5;
+    uint32 citizenId = 1;
+    PathPlanningResult path = 2;
+    int64 _waitUntil = 3;
+    int32 _currentStep = 4;
+    float _currentStepProgress = 5;
+    float _currentVelocity = 6;
 }
 
 message Car {
-    // int carModel;
-    // public uint id;
-    // public Citizien driver;
-    // public float maxVelocity;
-    // public float acceleration;
-    // public float length;
-    // public PathFollowingObject pathFollow;
-    // public PathFollowingObject.CompletionCallback callback;
-    // public TrafficSimulator.DrivingCar drivingCar;
-
     uint32 id = 1;
     uint32 driverId = 2;
     uint32 carModel = 3;
@@ -100,7 +99,7 @@ message Car {
     Color color = 5;
 }
 
-message Citizien {
+message Citizen {
     // public string firstName;
     // public string lastName;
     // public short age;
@@ -112,7 +111,7 @@ message Citizien {
     // public bool educated;
     // public byte happiness;
     // public AbstractSchedule[] schedules;
-    // public Dictionary<Relationship, Citizien> relationships;
+    // public Dictionary<Relationship, Citizen> relationships;
     // public Dictionary<PointOfInterest, Building> pointsOfInterest;
 
     // public Vector3 currentPosition;
@@ -134,7 +133,7 @@ message Citizien {
 
     message Relationship {
         RelationshipKind kind = 1;
-        uint32 citizienId = 2;
+        uint32 citizenId = 2;
     }
 
     enum PointOfInterestKind {

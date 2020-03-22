@@ -68,7 +68,7 @@ message SaveFile {
     repeated Stop stops = 4;
     repeated Route routes = 5;
 
-    repeated Citizien citiziens = 6;
+    repeated Citizen citizens = 6;
     repeated Car cars = 7;
 
     uint64 gameTime = 8;

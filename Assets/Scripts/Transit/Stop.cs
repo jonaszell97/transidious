@@ -234,12 +234,30 @@ namespace Transidious
             internal bool downward = false;
         }
 
+        // A citizen waiting at this stop.
+        public struct WaitingCitizen
+        {
+            /// The path that citizen is following.
+            public ActivePath path;
+
+            /// The line the citizen is waiting for.
+            public Line waitingForLine;
+
+            ///  The transit step that leads to this waiting citizen.
+            public PublicTransitStep transitStep;
+
+            /// The final stop on the route.
+            public Stop finalStop;
+        }
+
         public Map map;
         public Appearance appearance;
 
         public List<Route> outgoingRoutes;
         public List<Route> routes;
         public Dictionary<Line, LineData> lineData;
+
+        public Dictionary<Line, List<WaitingCitizen>> waitingCitizens;
 
         int width = 1;
         int height = 1;
@@ -278,8 +296,10 @@ namespace Transidious
             this.lineData = new Dictionary<Line, LineData>();
             this.slotsToAssign = new List<PendingSlotAssignment>();
             this.parallelRoutes = new Dictionary<Stop, ParallelRouteInfo>();
+            this.waitingCitizens = new Dictionary<Line, List<WaitingCitizen>>();
 
             this.spriteRenderer = this.GetComponent<SpriteRenderer>();
+            Debug.Log($"assigning line data to stop {name}");
 
             this.circleSprite = Resources.Load("Sprites/stop_ring", typeof(Sprite)) as Sprite;
             this.smallRectSprite = Resources.Load("Sprites/stop_small_rect", typeof(Sprite)) as Sprite;
@@ -315,6 +335,41 @@ namespace Transidious
             get
             {
                 return false;
+            }
+        }
+
+        public void AddWaitingCitizen(ActivePath path, PublicTransitStep step)
+        {
+            var line = step.line;
+            if (!waitingCitizens.ContainsKey(line))
+            {
+                waitingCitizens.Add(line, new List<WaitingCitizen>());
+            }
+
+            waitingCitizens[line].Add(new WaitingCitizen
+            {
+                path = path,
+                waitingForLine = line,
+                transitStep = step,
+                finalStop = step.routes.Last().endStop,
+            });
+        }
+
+        public List<WaitingCitizen> GetWaitingCitizens(Line line)
+        {
+            if (!waitingCitizens.ContainsKey(line))
+            {
+                waitingCitizens.Add(line, new List<WaitingCitizen>());
+            }
+
+            return waitingCitizens[line];
+        }
+
+        public int TotalWaitingCitizens
+        {
+            get
+            {
+                return waitingCitizens.Sum(list => list.Value.Count);
             }
         }
 
@@ -1476,11 +1531,11 @@ namespace Transidious
             result.OutgoingRouteIDs.AddRange(outgoingRoutes.Select(r => (uint)r.Id));
             result.RouteIDs.AddRange(routes.Select(r => (uint)r.Id));
             result.Schedules.AddRange(lineData.Select(l => new Serialization.Stop.Types.StopSchedule
-                {
-                    LineID = (uint)l.Key.Id,
-                    Schedule = l.Value.schedule.Serialize(),
-                }));
-
+            {
+                LineID = (uint) l.Key.Id,
+                Schedule = l.Value.schedule.Serialize(),
+            }));
+            
             return result;
         }
 

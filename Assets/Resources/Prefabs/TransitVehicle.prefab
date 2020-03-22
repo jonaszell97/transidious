@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5294801842841313854}
   - component: {fileID: 5294801842841313849}
   - component: {fileID: 5294801842841313848}
+  - component: {fileID: -4880865833368862102}
   m_Layer: 0
   m_Name: TransitVehicle
   m_TagString: Untagged
@@ -46,6 +47,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   line: {fileID: 0}
   spriteRenderer: {fileID: 5294801842841313848}
+  capacity: 0
+  passengers: 0
   timeElapsed: 0
   timeSinceLastUpdate: 0
 --- !u!212 &5294801842841313848
@@ -62,6 +65,7 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -97,3 +101,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!58 &-4880865833368862102
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5294801842841313851}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5

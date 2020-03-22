@@ -16,37 +16,10 @@ namespace Transidious
             YellowRed = 3,
         }
 
-        public static float DefaultGreenTime
-        {
-            get
-            {
-                return 5f;
-            }
-        }
-
-        public static float DefaultRedTime
-        {
-            get
-            {
-                return 5f;
-            }
-        }
-
-        public static float DefaultYellowTime
-        {
-            get
-            {
-                return 1f;
-            }
-        }
-
-        public static float DefaultYellowRedTime
-        {
-            get
-            {
-                return 2f;
-            }
-        }
+        public static readonly float DefaultGreenTime = 10f;
+        public static readonly float DefaultRedTime = 10f;
+        public static readonly float DefaultYellowTime = 2f;
+        public static readonly float DefaultYellowRedTime = 4f;
 
         public TrafficLight(float initialRedTime, float redTime, bool green = false)
         {
@@ -56,12 +29,49 @@ namespace Transidious
         }
 
         public Status status;
-        public float timeToNextSwitch;
-        public float redTime;
+        float timeToNextSwitch;
+        float redTime;
+
+        public TimeSpan TimeUntilNextRedPhase
+        {
+            get
+            {
+                switch (status)
+                {
+                    case Status.Red:
+                    case Status.YellowRed:
+                    default:
+                        return TimeSpan.Zero;
+                    case Status.Yellow:
+                        return TimeSpan.FromSeconds(timeToNextSwitch);
+                    case Status.Green:
+                        return TimeSpan.FromSeconds(timeToNextSwitch + DefaultYellowTime);
+                }
+            }
+        }
 
 #if DEBUG
         public GameObject spriteObj1;
         public GameObject spriteObj2;
+
+        public string SpriteName
+        {
+            get
+            {
+                switch (status)
+                {
+                    case Status.Green:
+                        default:
+                        return "Sprites/tl_green";
+                    case Status.Red:
+                        return "Sprites/tl_red";
+                    case Status.Yellow:
+                        return "Sprites/tl_yellow";
+                    case Status.YellowRed:
+                        return "Sprites/tl_yellow_red";
+                }
+            }
+        }
 #endif
 
         void SetTimeToNextSwitch()
@@ -91,33 +101,25 @@ namespace Transidious
 #if DEBUG
             if (spriteObj1 != null)
             {
-                var map = spriteObj1.GetComponentInParent<Map>();
-                spriteObj1.GetComponent<SpriteRenderer>().sprite = SpriteManager.instance.trafficLightSprites[(int)status];
+                spriteObj1.GetComponent<SpriteRenderer>().sprite = SpriteManager.GetSprite(SpriteName);
             }
             if (spriteObj2 != null)
             {
-                var map = spriteObj2.GetComponentInParent<Map>();
-                spriteObj2.GetComponent<SpriteRenderer>().sprite = SpriteManager.instance.trafficLightSprites[(int)status];
+                spriteObj2.GetComponent<SpriteRenderer>().sprite = SpriteManager.GetSprite(SpriteName);
             }
 #endif
         }
 
-        public void Update(int speedMultiplier)
+        public void Update(float delta)
         {
-            timeToNextSwitch -= Time.deltaTime * speedMultiplier;
+            timeToNextSwitch -= delta;
             if (timeToNextSwitch <= 0f)
             {
                 Switch();
             }
         }
 
-        public bool MustStop
-        {
-            get
-            {
-                return status == Status.Red || status == Status.YellowRed;
-            }
-        }
+        public bool MustStop => status == Status.Red || status == Status.YellowRed;
     }
 
     public class StreetIntersection : StaticMapObject, IStop
@@ -317,159 +319,8 @@ namespace Transidious
 
         public void AddIntersectingStreet(StreetSegment seg)
         {
-            // Get the angle that this street connects to the intersection with.
-            var p0 = GetTrafficLightPosition(seg);
-            var angle = Math.PointAngleDeg(p0, position);
-
-            streetAngles.Add(seg, angle);
-
-            int i = 0;
-            for (; i < intersectingStreets.Count; ++i)
-            {
-                var otherAngle = streetAngles[intersectingStreets[i]];
-                if (angle < otherAngle)
-                {
-                    break;
-                }
-            }
-
-            if (i == intersectingStreets.Count)
-            {
-                intersectingStreets.Add(seg);
-            }
-            else
-            {
-                intersectingStreets.Insert(i, seg);
-            }
+            intersectingStreets.Add(seg);
         }
-
-        // bool TrySlotAssignment(int startFrom, int numSlots)
-        // {
-        //     var step = numSlots / 2;
-        //     for (int i = startFrom; i < startFrom + step; ++i)
-        //     {
-        //         var slot = i % numSlots;
-        //         var seg = intersectingStreets[slot];
-
-        //         var oppositeSlot = (i + step) % numSlots;
-        //         if (oppositeSlot == intersectingStreets.Count)
-        //         {
-        //             continue;
-        //         }
-
-        //         var otherSeg = intersectingStreets[oppositeSlot];
-        //         var angle = streetAngles[seg];
-        //         var oppositeAngle = streetAngles[otherSeg];
-
-        //         if (angle < 0f)
-        //         {
-        //             angle += 180f;
-        //         }
-        //         if (oppositeAngle < 0f)
-        //         {
-        //             oppositeAngle += 180f;
-        //         }
-
-        //         var angleDiff = Mathf.Abs(angle - oppositeAngle);
-        //         if (angleDiff >= 30f)
-        //         {
-        //             return false;
-        //         }
-        //     }
-
-        //     return true;
-        // }
-
-        // void ApplySlotAssignment(int startFrom, int numSlots)
-        // {
-        //     var step = numSlots / 2;
-        //     for (int i = startFrom; i < startFrom + step; ++i)
-        //     {
-        //         var slot = i % numSlots;
-        //         var seg = intersectingStreets[slot];
-        //         relativePositions.Add(seg, slot);
-
-        //         var oppositeSlot = (i + step) % numSlots;
-        //         if (oppositeSlot == intersectingStreets.Count)
-        //         {
-        //             continue;
-        //         }
-
-        //         var otherSeg = intersectingStreets[oppositeSlot];
-        //         relativePositions.Add(otherSeg, oppositeSlot + 1);
-        //     }
-        // }
-
-        // class SlotAssigner
-        // {
-        //     public List<StreetSegment> segments;
-        //     StreetSegment firstAssignment;
-        //     StreetSegment secondAssignment;
-        //     float minScore = float.PositiveInfinity;
-        //     Tuple<StreetSegment, StreetSegment> bestAssignment;
-
-        //     float CurrentScore
-        //     {
-        //         get
-        //         {
-
-        //         }
-        //     }
-
-        //     void SaveCurrentAssignment()
-        //     {
-        //         bestAssignment = new Tuple<StreetSegment, StreetSegment>(firstAssignment, secondAssignment);
-        //     }
-
-        //     void Assign(StreetSegment seg)
-        //     {
-        //         if (firstAssignment == null)
-        //         {
-        //             firstAssignment = seg;
-        //         }
-        //         else
-        //         {
-        //             secondAssignment = seg;
-        //         }
-        //     }
-
-        //     void Unassign()
-        //     {
-        //         if (secondAssignment != null)
-        //         {
-        //             secondAssignment = null;
-        //         }
-        //         else
-        //         {
-        //             firstAssignment = null;
-        //         }
-        //     }
-
-        //     void FindSlotAssignments(int offset, int k)
-        //     {
-        //         if (k == 0)
-        //         {
-        //             var score = CurrentScore;
-        //             if (score < minScore)
-        //             {
-        //                 SaveCurrentAssignment();
-        //                 return;
-        //             }
-        //         }
-
-        //         for (int i = offset; i <= segments.Count - k; ++i)
-        //         {
-        //             Assign(segments[offset]);
-        //             FindSlotAssignments(offset + 1, k - 1);
-        //             Unassign();
-        //         }
-        //     }
-
-        //     public Tuple<StreetSegment, StreetSegment> FindBestSlotAssignments()
-        //     {
-        //         FindSlotAssignments(0, 2);
-        //     }
-        // }
 
         void CalculateRelativePositions()
         {
@@ -480,10 +331,40 @@ namespace Transidious
             else
             {
                 relativePositions.Clear();
+                streetAngles.Clear();
             }
 
-            var numSlots = intersectingStreets.Count;
+            var baseSegment = intersectingStreets[0];
+            relativePositions.Add(baseSegment, 0);
+
+            var angles = new Tuple<StreetSegment, float>[intersectingStreets.Count - 1];
+            var baseDirection = baseSegment.RelativeDirection(this);
+
+            streetAngles.Add(baseSegment, Math.DirectionalAngleRad(baseDirection, baseDirection) * Mathf.Rad2Deg);
+
+            for (var i = 1; i < intersectingStreets.Count; ++i)
+            {
+                var otherSegment = intersectingStreets[i];
+                var otherDirection = otherSegment.RelativeDirection(this);
+
+                var angle = Math.DirectionalAngleRad(baseDirection, otherDirection);
+                streetAngles.Add(otherSegment, angle * Mathf.Rad2Deg);
+
+                angles[i - 1] = Tuple.Create(otherSegment, angle);
+            }
+
+            Array.Sort(angles, (v1, v2) => v1.Item2.CompareTo(v2.Item2));
+
+            for (var i = 1; i < intersectingStreets.Count; ++i)
+            {
+                var (seg, _) = angles[i - 1];
+                intersectingStreets[i] = seg;
+                relativePositions.Add(seg, i);
+            }
+            
+            /*var numSlots = intersectingStreets.Count;
             var uneven = numSlots % 2 != 0;
+            
             if (numSlots != 3)
             {
                 for (int i = 0; i < numSlots; ++i)
@@ -498,9 +379,9 @@ namespace Transidious
             var iMin = 0;
             var jMin = 0;
 
-            for (int i = 0; i < 3; ++i)
+            for (var i = 0; i < 3; ++i)
             {
-                for (int j = 0; j < 3; ++j)
+                for (var j = 0; j < 3; ++j)
                 {
                     if (i == j)
                         continue;
@@ -537,12 +418,7 @@ namespace Transidious
                 relativePositions[intersectingStreets[2]] = 0;
             }
 
-            emptySlot = 2;
-
-            intersectingStreets.Sort((StreetSegment s1, StreetSegment s2) =>
-            {
-                return relativePositions[s1].CompareTo(relativePositions[s2]);
-            });
+            emptySlot = 2;*/
         }
 
         public StreetSegment GetStreetAtSlot(int slot)
@@ -575,7 +451,7 @@ namespace Transidious
             CalculateRelativePositions();
 
 #if DEBUG
-            if (map.renderStreetOrder)
+            if (GameController.instance.sim.trafficSim.renderStreetOrder)
             {
                 foreach (var seg in intersectingStreets)
                 {
@@ -583,7 +459,7 @@ namespace Transidious
                     pos.z = Map.Layer(MapLayer.Foreground);
 
                     var txt = map.CreateText(pos, relativePositions[seg].ToString(), Color.black);
-                    txt.textMesh.fontSize = 10 * Map.Meters;
+                    txt.textMesh.fontSize = 5;
                     txt.transform.position = pos;
                     txt.textMesh.alignment = TMPro.TextAlignmentOptions.Center;
                     txt.textMesh.autoSizeTextContainer = true;
@@ -665,36 +541,29 @@ namespace Transidious
                     SetTrafficLight(oppositeSeg, tl);
 
 #if DEBUG
-                if (map.renderTrafficLights)
+                if (trafficSim.renderTrafficLights)
                 {
-                    var sprite1 = SpriteManager.CreateSprite(
-                        SpriteManager.instance.trafficLightSprites[(int)tl.status]);
+                    var sprite1 = SpriteManager.CreateSprite(tl.SpriteName);
 
                     sprite1.transform.SetParent(map.transform);
                     sprite1.transform.position = GetTrafficLightPosition(seg);
-                    sprite1.transform.position = new Vector3(sprite1.transform.position.x, sprite1.transform.position.y, Map.Layer(MapLayer.Foreground));
+                    sprite1.transform.SetLayer(MapLayer.Foreground);
 
                     tl.spriteObj1 = sprite1;
 
                     if (oppositeSeg != null)
                     {
-                        var sprite2 = SpriteManager.CreateSprite(
-                            SpriteManager.instance.trafficLightSprites[(int)tl.status]);
+                        var sprite2 = SpriteManager.CreateSprite(tl.SpriteName);
 
                         sprite2.transform.SetParent(map.transform);
                         sprite2.transform.position = GetTrafficLightPosition(oppositeSeg);
-                        sprite2.transform.position = new Vector3(sprite2.transform.position.x, sprite2.transform.position.y, Map.Layer(MapLayer.Foreground));
+                        sprite2.transform.SetLayer(MapLayer.Foreground);
 
                         tl.spriteObj2 = sprite2;
                     }
                 }
 #endif
             }
-        }
-
-        public void RenderTrafficLights()
-        {
-            //foreach (var trafficLight in trafficL)
         }
     }
 }

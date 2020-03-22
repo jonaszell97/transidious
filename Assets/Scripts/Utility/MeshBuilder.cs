@@ -405,7 +405,7 @@ namespace Transidious
 
             if (colliderPath != null)
             {
-                var angle = Math.Angle(Vector2.down, normal12);
+                var angle = Math.DirectionalAngleDeg(Vector2.down, normal12);
                 if (!angle.Equals(0f))
                 {
                     // Add right side to forward path.
@@ -510,7 +510,7 @@ namespace Transidious
 
             if (colliderPath != null)
             {
-                var angle = Math.Angle(Vector2.down, normal);
+                var angle = Math.DirectionalAngleDeg(Vector2.down, normal);
                 if (!angle.Equals(0f))
                 {
                     // Add right side to forward path.
@@ -713,7 +713,7 @@ namespace Transidious
                 br += offset * normal;
             }
 
-            var angle = Math.Angle(Vector2.down, normal);
+            var angle = Math.DirectionalAngleDeg(Vector2.down, normal);
             if (!angle.Equals(0f))
             {
                 // Add right side to forward path.

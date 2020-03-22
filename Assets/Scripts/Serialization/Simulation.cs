@@ -25,7 +25,7 @@ namespace Transidious.Serialization {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChBTaW11bGF0aW9uLnByb3RvEhlUcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
-            "GgxDb21tb24ucHJvdG8aGWdvb2dsZS9wcm90b2J1Zi9hbnkucHJvdG8ingUK",
+            "GgxDb21tb24ucHJvdG8aGWdvb2dsZS9wcm90b2J1Zi9hbnkucHJvdG8imAYK",
             "CFBhdGhTdGVwEj4KBGtpbmQYASABKA4yMC5UcmFuc2lkaW91cy5TZXJpYWxp",
             "emF0aW9uLlBhdGhTdGVwLlBhdGhTdGVwS2luZBIRCgl0aW1lc3RhbXAYAiAB",
             "KAQSJQoHZGV0YWlscxgDIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkabAoI",
@@ -38,51 +38,54 @@ namespace Transidious.Serialization {
             "YXRpb24uVmVjdG9yMhIRCglzZWdtZW50SUQYAyABKA0SEAoIYmFja3dhcmQY",
             "BCABKAgSFAoMcGFydGlhbFN0YXJ0GAUgASgIEhIKCnBhcnRpYWxFbmQYBiAB",
             "KAgaNQoRUHVibGljVHJhbnNpdFN0ZXASDgoGbGluZUlEGAEgASgNEhAKCHJv",
-            "dXRlSURzGAIgAygNGh8KCFdhaXRTdGVwEhMKC3dhaXRpbmdUaW1lGAEgASgC",
-            "IlIKDFBhdGhTdGVwS2luZBIICgRXYWxrEAASCQoFRHJpdmUQARIQCgxQYXJ0",
-            "aWFsRHJpdmUQAhIRCg1QdWJsaWNUcmFuc2l0EAMSCAoEV2FpdBAEIoQCChNQ",
-            "YXRoUGxhbm5pbmdPcHRpb25zEhAKCGFsbG93Q2FyGAEgASgIEhEKCWFsbG93",
-            "V2FsaxgCIAEoCBIPCgdzdGFydElEGAMgASgEEg0KBWVuZElEGAQgASgEEgwK",
-            "BHRpbWUYBSABKAQSGgoSbWF4V2Fsa2luZ0Rpc3RhbmNlGAYgASgCEhkKEXdh",
-            "bGtpbmdUaW1lRmFjdG9yGAcgASgCEhgKEHRyYXZlbFRpbWVGYWN0b3IYCCAB",
-            "KAISGQoRd2FpdGluZ1RpbWVGYWN0b3IYCSABKAISFQoNY2FyVGltZUZhY3Rv",
-            "chgKIAEoAhIXCg9jaGFuZ2luZ1BlbmFsdHkYCyABKAIizAEKElBhdGhQbGFu",
-            "bmluZ1Jlc3VsdBIMCgRjb3N0GAEgASgCEhAKCGR1cmF0aW9uGAIgASgCEg8K",
-            "B2xlYXZlQnkYAyABKAQSEAoIYXJyaXZlQXQYBCABKAQSMgoFc3RlcHMYBSAD",
-            "KAsyIy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlBhdGhTdGVwEj8KB29w",
-            "dGlvbnMYBiABKAsyLi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlBhdGhQ",
-            "bGFubmluZ09wdGlvbnMimAEKCkFjdGl2ZVBhdGgSDgoGc3RlcE5vGAEgASgN",
-            "EhcKD2N1cnJlbnRWZWxvY2l0eRgCIAEoAhIUCgxzdGVwUHJvZ3Jlc3MYAyAB",
-            "KAISOwoEcGF0aBgEIAEoCzItLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24u",
-            "UGF0aFBsYW5uaW5nUmVzdWx0Eg4KBklzVHVybhgFIAEoCCKcAQoDQ2FyEgoK",
-            "AmlkGAEgASgNEhAKCGRyaXZlcklkGAIgASgNEhAKCGNhck1vZGVsGAMgASgN",
-            "EjQKCHBvc2l0aW9uGAQgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
-            "bi5WZWN0b3IyEi8KBWNvbG9yGAUgASgLMiAuVHJhbnNpZGlvdXMuU2VyaWFs",
-            "aXphdGlvbi5Db2xvciKFCAoIQ2l0aXppZW4SCgoCaWQYASABKA0SEQoJZmly",
-            "c3ROYW1lGAIgASgJEhAKCGxhc3ROYW1lGAMgASgJEgsKA2FnZRgEIAEoDRIQ",
-            "CghiaXJ0aGRheRgFIAEoDRIOCgZmZW1hbGUYBiABKAgSQgoKb2NjdXBhdGlv",
-            "bhgHIAEoDjIuLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXppZW4u",
-            "T2NjdXBhdGlvbhINCgVtb25leRgIIAEoAhIQCghlZHVjYXRlZBgJIAEoCBIR",
-            "CgloYXBwaW5lc3MYCiABKA0SRwoNcmVsYXRpb25zaGlwcxgLIAMoCzIwLlRy",
-            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXppZW4uUmVsYXRpb25zaGlw",
-            "Ek0KEHBvaW50c09mSW50ZXJlc3QYDCADKAsyMy5UcmFuc2lkaW91cy5TZXJp",
-            "YWxpemF0aW9uLkNpdGl6aWVuLlBvaW50T2ZJbnRlcmVzdBINCgVjYXJJRBgN",
-            "IAEoDRI7Cg9jdXJyZW50UG9zaXRpb24YDiABKAsyIi5UcmFuc2lkaW91cy5T",
-            "ZXJpYWxpemF0aW9uLlZlY3RvcjISOQoKYWN0aXZlUGF0aBgPIAEoCzIlLlRy",
-            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQWN0aXZlUGF0aBITCgtzY2hlZHVs",
-            "ZUlkeBgQIAEoBRISCgpzY2hlZHVsZUlEGBEgASgNGmYKDFJlbGF0aW9uc2hp",
-            "cBJCCgRraW5kGAEgASgOMjQuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5D",
-            "aXRpemllbi5SZWxhdGlvbnNoaXBLaW5kEhIKCmNpdGl6aWVuSWQYAiABKA0a",
-            "bAoPUG9pbnRPZkludGVyZXN0EkUKBGtpbmQYASABKA4yNy5UcmFuc2lkaW91",
-            "cy5TZXJpYWxpemF0aW9uLkNpdGl6aWVuLlBvaW50T2ZJbnRlcmVzdEtpbmQS",
-            "EgoKYnVpbGRpbmdJZBgCIAEoDSKPAQoKT2NjdXBhdGlvbhIKCgZXb3JrZXIQ",
-            "ABILCgdSZXRpcmVkEAESEAoMS2luZGVyZ2FyZGVuEAISGwoXRWxlbWVudGFy",
-            "eVNjaG9vbFN0dWRlbnQQAxIVChFIaWdoU2Nob29sU3R1ZGVudBAEEhUKEVVu",
-            "aXZlcnNpdHlTdHVkZW50EAUSCwoHVHJhaW5lZRAGIigKEFJlbGF0aW9uc2hp",
-            "cEtpbmQSFAoQU2lnbmlmaWNhbnRPdGhlchAAIkcKE1BvaW50T2ZJbnRlcmVz",
-            "dEtpbmQSCAoESG9tZRAAEggKBFdvcmsQARIKCgZTY2hvb2wQAhIQCgxHcm9j",
-            "ZXJ5U3RvcmUQA0IcqgIZVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbmIGcHJv",
-            "dG8z"));
+            "dXRlSURzGAIgAygNGngKCFR1cm5TdGVwEhUKDWZyb21TZWdtZW50SUQYASAB",
+            "KA0SFAoMZnJvbUJhY2t3YXJkGAIgASgIEhMKC3RvU2VnbWVudElEGAMgASgN",
+            "EhIKCnRvQmFja3dhcmQYBCABKAgSFgoOaW50ZXJzZWN0aW9uSUQYBSABKA0a",
+            "HwoIV2FpdFN0ZXASEwoLd2FpdGluZ1RpbWUYASABKAIiUgoMUGF0aFN0ZXBL",
+            "aW5kEggKBFdhbGsQABIJCgVEcml2ZRABEhAKDFBhcnRpYWxEcml2ZRACEhEK",
+            "DVB1YmxpY1RyYW5zaXQQAxIICgRXYWl0EAQihAIKE1BhdGhQbGFubmluZ09w",
+            "dGlvbnMSEAoIYWxsb3dDYXIYASABKAgSEQoJYWxsb3dXYWxrGAIgASgIEg8K",
+            "B3N0YXJ0SUQYAyABKAQSDQoFZW5kSUQYBCABKAQSDAoEdGltZRgFIAEoBBIa",
+            "ChJtYXhXYWxraW5nRGlzdGFuY2UYBiABKAISGQoRd2Fsa2luZ1RpbWVGYWN0",
+            "b3IYByABKAISGAoQdHJhdmVsVGltZUZhY3RvchgIIAEoAhIZChF3YWl0aW5n",
+            "VGltZUZhY3RvchgJIAEoAhIVCg1jYXJUaW1lRmFjdG9yGAogASgCEhcKD2No",
+            "YW5naW5nUGVuYWx0eRgLIAEoAiLMAQoSUGF0aFBsYW5uaW5nUmVzdWx0EgwK",
+            "BGNvc3QYASABKAISEAoIZHVyYXRpb24YAiABKAISDwoHbGVhdmVCeRgDIAEo",
+            "BBIQCghhcnJpdmVBdBgEIAEoBBIyCgVzdGVwcxgFIAMoCzIjLlRyYW5zaWRp",
+            "b3VzLlNlcmlhbGl6YXRpb24uUGF0aFN0ZXASPwoHb3B0aW9ucxgGIAEoCzIu",
+            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFBsYW5uaW5nT3B0aW9u",
+            "cyK+AQoKQWN0aXZlUGF0aBIRCgljaXRpemVuSWQYASABKA0SOwoEcGF0aBgC",
+            "IAEoCzItLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFBsYW5uaW5n",
+            "UmVzdWx0EhIKCl93YWl0VW50aWwYAyABKAMSFAoMX2N1cnJlbnRTdGVwGAQg",
+            "ASgFEhwKFF9jdXJyZW50U3RlcFByb2dyZXNzGAUgASgCEhgKEF9jdXJyZW50",
+            "VmVsb2NpdHkYBiABKAIinAEKA0NhchIKCgJpZBgBIAEoDRIQCghkcml2ZXJJ",
+            "ZBgCIAEoDRIQCghjYXJNb2RlbBgDIAEoDRI0Cghwb3NpdGlvbhgEIAEoCzIi",
+            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhIvCgVjb2xvchgF",
+            "IAEoCzIgLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ29sb3Ii/gcKB0Np",
+            "dGl6ZW4SCgoCaWQYASABKA0SEQoJZmlyc3ROYW1lGAIgASgJEhAKCGxhc3RO",
+            "YW1lGAMgASgJEgsKA2FnZRgEIAEoDRIQCghiaXJ0aGRheRgFIAEoDRIOCgZm",
+            "ZW1hbGUYBiABKAgSQQoKb2NjdXBhdGlvbhgHIAEoDjItLlRyYW5zaWRpb3Vz",
+            "LlNlcmlhbGl6YXRpb24uQ2l0aXplbi5PY2N1cGF0aW9uEg0KBW1vbmV5GAgg",
+            "ASgCEhAKCGVkdWNhdGVkGAkgASgIEhEKCWhhcHBpbmVzcxgKIAEoDRJGCg1y",
+            "ZWxhdGlvbnNoaXBzGAsgAygLMi8uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
+            "bi5DaXRpemVuLlJlbGF0aW9uc2hpcBJMChBwb2ludHNPZkludGVyZXN0GAwg",
+            "AygLMjIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlBvaW50",
+            "T2ZJbnRlcmVzdBINCgVjYXJJRBgNIAEoDRI7Cg9jdXJyZW50UG9zaXRpb24Y",
+            "DiABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjISOQoK",
+            "YWN0aXZlUGF0aBgPIAEoCzIlLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24u",
+            "QWN0aXZlUGF0aBITCgtzY2hlZHVsZUlkeBgQIAEoBRISCgpzY2hlZHVsZUlE",
+            "GBEgASgNGmQKDFJlbGF0aW9uc2hpcBJBCgRraW5kGAEgASgOMjMuVHJhbnNp",
+            "ZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlJlbGF0aW9uc2hpcEtpbmQS",
+            "EQoJY2l0aXplbklkGAIgASgNGmsKD1BvaW50T2ZJbnRlcmVzdBJECgRraW5k",
+            "GAEgASgOMjYuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlBv",
+            "aW50T2ZJbnRlcmVzdEtpbmQSEgoKYnVpbGRpbmdJZBgCIAEoDSKPAQoKT2Nj",
+            "dXBhdGlvbhIKCgZXb3JrZXIQABILCgdSZXRpcmVkEAESEAoMS2luZGVyZ2Fy",
+            "ZGVuEAISGwoXRWxlbWVudGFyeVNjaG9vbFN0dWRlbnQQAxIVChFIaWdoU2No",
+            "b29sU3R1ZGVudBAEEhUKEVVuaXZlcnNpdHlTdHVkZW50EAUSCwoHVHJhaW5l",
+            "ZRAGIigKEFJlbGF0aW9uc2hpcEtpbmQSFAoQU2lnbmlmaWNhbnRPdGhlchAA",
+            "IkcKE1BvaW50T2ZJbnRlcmVzdEtpbmQSCAoESG9tZRAAEggKBFdvcmsQARIK",
+            "CgZTY2hvb2wQAhIQCgxHcm9jZXJ5U3RvcmUQA0IcqgIZVHJhbnNpZGlvdXMu",
+            "U2VyaWFsaXphdGlvbmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -90,13 +93,14 @@ namespace Transidious.Serialization {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.DriveStep), global::Transidious.Serialization.PathStep.Types.DriveStep.Parser, new[]{ "SegmentID", "Backward" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.PartialDriveStep), global::Transidious.Serialization.PathStep.Types.PartialDriveStep.Parser, new[]{ "StartPos", "EndPos", "SegmentID", "Backward", "PartialStart", "PartialEnd" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.PublicTransitStep), global::Transidious.Serialization.PathStep.Types.PublicTransitStep.Parser, new[]{ "LineID", "RouteIDs" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.TurnStep), global::Transidious.Serialization.PathStep.Types.TurnStep.Parser, new[]{ "FromSegmentID", "FromBackward", "ToSegmentID", "ToBackward", "IntersectionID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.WaitStep), global::Transidious.Serialization.PathStep.Types.WaitStep.Parser, new[]{ "WaitingTime" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathPlanningOptions), global::Transidious.Serialization.PathPlanningOptions.Parser, new[]{ "AllowCar", "AllowWalk", "StartID", "EndID", "Time", "MaxWalkingDistance", "WalkingTimeFactor", "TravelTimeFactor", "WaitingTimeFactor", "CarTimeFactor", "ChangingPenalty" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathPlanningResult), global::Transidious.Serialization.PathPlanningResult.Parser, new[]{ "Cost", "Duration", "LeaveBy", "ArriveAt", "Steps", "Options" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.ActivePath), global::Transidious.Serialization.ActivePath.Parser, new[]{ "StepNo", "CurrentVelocity", "StepProgress", "Path", "IsTurn" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.ActivePath), global::Transidious.Serialization.ActivePath.Parser, new[]{ "CitizenId", "Path", "WaitUntil", "CurrentStep", "CurrentStepProgress", "CurrentVelocity" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Car), global::Transidious.Serialization.Car.Parser, new[]{ "Id", "DriverId", "CarModel", "Position", "Color" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizien), global::Transidious.Serialization.Citizien.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "Birthday", "Female", "Occupation", "Money", "Educated", "Happiness", "Relationships", "PointsOfInterest", "CarID", "CurrentPosition", "ActivePath", "ScheduleIdx", "ScheduleID" }, null, new[]{ typeof(global::Transidious.Serialization.Citizien.Types.Occupation), typeof(global::Transidious.Serialization.Citizien.Types.RelationshipKind), typeof(global::Transidious.Serialization.Citizien.Types.PointOfInterestKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizien.Types.Relationship), global::Transidious.Serialization.Citizien.Types.Relationship.Parser, new[]{ "Kind", "CitizienId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizien.Types.PointOfInterest), global::Transidious.Serialization.Citizien.Types.PointOfInterest.Parser, new[]{ "Kind", "BuildingId" }, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen), global::Transidious.Serialization.Citizen.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "Birthday", "Female", "Occupation", "Money", "Educated", "Happiness", "Relationships", "PointsOfInterest", "CarID", "CurrentPosition", "ActivePath", "ScheduleIdx", "ScheduleID" }, null, new[]{ typeof(global::Transidious.Serialization.Citizen.Types.Occupation), typeof(global::Transidious.Serialization.Citizen.Types.RelationshipKind), typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterestKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.Relationship), global::Transidious.Serialization.Citizen.Types.Relationship.Parser, new[]{ "Kind", "CitizenId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterest), global::Transidious.Serialization.Citizen.Types.PointOfInterest.Parser, new[]{ "Kind", "BuildingId" }, null, null, null)})
           }));
     }
     #endregion
@@ -1061,6 +1065,247 @@ namespace Transidious.Serialization {
 
       }
 
+      public sealed partial class TurnStep : pb::IMessage<TurnStep> {
+        private static readonly pb::MessageParser<TurnStep> _parser = new pb::MessageParser<TurnStep>(() => new TurnStep());
+        private pb::UnknownFieldSet _unknownFields;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<TurnStep> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::Transidious.Serialization.PathStep.Descriptor.NestedTypes[4]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public TurnStep() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public TurnStep(TurnStep other) : this() {
+          fromSegmentID_ = other.fromSegmentID_;
+          fromBackward_ = other.fromBackward_;
+          toSegmentID_ = other.toSegmentID_;
+          toBackward_ = other.toBackward_;
+          intersectionID_ = other.intersectionID_;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public TurnStep Clone() {
+          return new TurnStep(this);
+        }
+
+        /// <summary>Field number for the "fromSegmentID" field.</summary>
+        public const int FromSegmentIDFieldNumber = 1;
+        private uint fromSegmentID_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public uint FromSegmentID {
+          get { return fromSegmentID_; }
+          set {
+            fromSegmentID_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "fromBackward" field.</summary>
+        public const int FromBackwardFieldNumber = 2;
+        private bool fromBackward_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool FromBackward {
+          get { return fromBackward_; }
+          set {
+            fromBackward_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "toSegmentID" field.</summary>
+        public const int ToSegmentIDFieldNumber = 3;
+        private uint toSegmentID_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public uint ToSegmentID {
+          get { return toSegmentID_; }
+          set {
+            toSegmentID_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "toBackward" field.</summary>
+        public const int ToBackwardFieldNumber = 4;
+        private bool toBackward_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool ToBackward {
+          get { return toBackward_; }
+          set {
+            toBackward_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "intersectionID" field.</summary>
+        public const int IntersectionIDFieldNumber = 5;
+        private uint intersectionID_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public uint IntersectionID {
+          get { return intersectionID_; }
+          set {
+            intersectionID_ = value;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as TurnStep);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(TurnStep other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (FromSegmentID != other.FromSegmentID) return false;
+          if (FromBackward != other.FromBackward) return false;
+          if (ToSegmentID != other.ToSegmentID) return false;
+          if (ToBackward != other.ToBackward) return false;
+          if (IntersectionID != other.IntersectionID) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (FromSegmentID != 0) hash ^= FromSegmentID.GetHashCode();
+          if (FromBackward != false) hash ^= FromBackward.GetHashCode();
+          if (ToSegmentID != 0) hash ^= ToSegmentID.GetHashCode();
+          if (ToBackward != false) hash ^= ToBackward.GetHashCode();
+          if (IntersectionID != 0) hash ^= IntersectionID.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (FromSegmentID != 0) {
+            output.WriteRawTag(8);
+            output.WriteUInt32(FromSegmentID);
+          }
+          if (FromBackward != false) {
+            output.WriteRawTag(16);
+            output.WriteBool(FromBackward);
+          }
+          if (ToSegmentID != 0) {
+            output.WriteRawTag(24);
+            output.WriteUInt32(ToSegmentID);
+          }
+          if (ToBackward != false) {
+            output.WriteRawTag(32);
+            output.WriteBool(ToBackward);
+          }
+          if (IntersectionID != 0) {
+            output.WriteRawTag(40);
+            output.WriteUInt32(IntersectionID);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (FromSegmentID != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt32Size(FromSegmentID);
+          }
+          if (FromBackward != false) {
+            size += 1 + 1;
+          }
+          if (ToSegmentID != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ToSegmentID);
+          }
+          if (ToBackward != false) {
+            size += 1 + 1;
+          }
+          if (IntersectionID != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt32Size(IntersectionID);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(TurnStep other) {
+          if (other == null) {
+            return;
+          }
+          if (other.FromSegmentID != 0) {
+            FromSegmentID = other.FromSegmentID;
+          }
+          if (other.FromBackward != false) {
+            FromBackward = other.FromBackward;
+          }
+          if (other.ToSegmentID != 0) {
+            ToSegmentID = other.ToSegmentID;
+          }
+          if (other.ToBackward != false) {
+            ToBackward = other.ToBackward;
+          }
+          if (other.IntersectionID != 0) {
+            IntersectionID = other.IntersectionID;
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 8: {
+                FromSegmentID = input.ReadUInt32();
+                break;
+              }
+              case 16: {
+                FromBackward = input.ReadBool();
+                break;
+              }
+              case 24: {
+                ToSegmentID = input.ReadUInt32();
+                break;
+              }
+              case 32: {
+                ToBackward = input.ReadBool();
+                break;
+              }
+              case 40: {
+                IntersectionID = input.ReadUInt32();
+                break;
+              }
+            }
+          }
+        }
+
+      }
+
       public sealed partial class WaitStep : pb::IMessage<WaitStep> {
         private static readonly pb::MessageParser<WaitStep> _parser = new pb::MessageParser<WaitStep>(() => new WaitStep());
         private pb::UnknownFieldSet _unknownFields;
@@ -1069,7 +1314,7 @@ namespace Transidious.Serialization {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::Transidious.Serialization.PathStep.Descriptor.NestedTypes[4]; }
+          get { return global::Transidious.Serialization.PathStep.Descriptor.NestedTypes[5]; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1896,11 +2141,12 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ActivePath(ActivePath other) : this() {
-      stepNo_ = other.stepNo_;
-      currentVelocity_ = other.currentVelocity_;
-      stepProgress_ = other.stepProgress_;
+      citizenId_ = other.citizenId_;
       path_ = other.path_ != null ? other.path_.Clone() : null;
-      isTurn_ = other.isTurn_;
+      WaitUntil_ = other.WaitUntil_;
+      CurrentStep_ = other.CurrentStep_;
+      CurrentStepProgress_ = other.CurrentStepProgress_;
+      CurrentVelocity_ = other.CurrentVelocity_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1909,41 +2155,19 @@ namespace Transidious.Serialization {
       return new ActivePath(this);
     }
 
-    /// <summary>Field number for the "stepNo" field.</summary>
-    public const int StepNoFieldNumber = 1;
-    private uint stepNo_;
+    /// <summary>Field number for the "citizenId" field.</summary>
+    public const int CitizenIdFieldNumber = 1;
+    private uint citizenId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public uint StepNo {
-      get { return stepNo_; }
+    public uint CitizenId {
+      get { return citizenId_; }
       set {
-        stepNo_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "currentVelocity" field.</summary>
-    public const int CurrentVelocityFieldNumber = 2;
-    private float currentVelocity_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float CurrentVelocity {
-      get { return currentVelocity_; }
-      set {
-        currentVelocity_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "stepProgress" field.</summary>
-    public const int StepProgressFieldNumber = 3;
-    private float stepProgress_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public float StepProgress {
-      get { return stepProgress_; }
-      set {
-        stepProgress_ = value;
+        citizenId_ = value;
       }
     }
 
     /// <summary>Field number for the "path" field.</summary>
-    public const int PathFieldNumber = 4;
+    public const int PathFieldNumber = 2;
     private global::Transidious.Serialization.PathPlanningResult path_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Transidious.Serialization.PathPlanningResult Path {
@@ -1953,14 +2177,47 @@ namespace Transidious.Serialization {
       }
     }
 
-    /// <summary>Field number for the "IsTurn" field.</summary>
-    public const int IsTurnFieldNumber = 5;
-    private bool isTurn_;
+    /// <summary>Field number for the "_waitUntil" field.</summary>
+    public const int WaitUntilFieldNumber = 3;
+    private long WaitUntil_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsTurn {
-      get { return isTurn_; }
+    public long WaitUntil {
+      get { return WaitUntil_; }
       set {
-        isTurn_ = value;
+        WaitUntil_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "_currentStep" field.</summary>
+    public const int CurrentStepFieldNumber = 4;
+    private int CurrentStep_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CurrentStep {
+      get { return CurrentStep_; }
+      set {
+        CurrentStep_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "_currentStepProgress" field.</summary>
+    public const int CurrentStepProgressFieldNumber = 5;
+    private float CurrentStepProgress_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float CurrentStepProgress {
+      get { return CurrentStepProgress_; }
+      set {
+        CurrentStepProgress_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "_currentVelocity" field.</summary>
+    public const int CurrentVelocityFieldNumber = 6;
+    private float CurrentVelocity_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float CurrentVelocity {
+      get { return CurrentVelocity_; }
+      set {
+        CurrentVelocity_ = value;
       }
     }
 
@@ -1977,22 +2234,24 @@ namespace Transidious.Serialization {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (StepNo != other.StepNo) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(CurrentVelocity, other.CurrentVelocity)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(StepProgress, other.StepProgress)) return false;
+      if (CitizenId != other.CitizenId) return false;
       if (!object.Equals(Path, other.Path)) return false;
-      if (IsTurn != other.IsTurn) return false;
+      if (WaitUntil != other.WaitUntil) return false;
+      if (CurrentStep != other.CurrentStep) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(CurrentStepProgress, other.CurrentStepProgress)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(CurrentVelocity, other.CurrentVelocity)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (StepNo != 0) hash ^= StepNo.GetHashCode();
-      if (CurrentVelocity != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(CurrentVelocity);
-      if (StepProgress != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(StepProgress);
+      if (CitizenId != 0) hash ^= CitizenId.GetHashCode();
       if (path_ != null) hash ^= Path.GetHashCode();
-      if (IsTurn != false) hash ^= IsTurn.GetHashCode();
+      if (WaitUntil != 0L) hash ^= WaitUntil.GetHashCode();
+      if (CurrentStep != 0) hash ^= CurrentStep.GetHashCode();
+      if (CurrentStepProgress != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(CurrentStepProgress);
+      if (CurrentVelocity != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(CurrentVelocity);
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2006,25 +2265,29 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (StepNo != 0) {
+      if (CitizenId != 0) {
         output.WriteRawTag(8);
-        output.WriteUInt32(StepNo);
-      }
-      if (CurrentVelocity != 0F) {
-        output.WriteRawTag(21);
-        output.WriteFloat(CurrentVelocity);
-      }
-      if (StepProgress != 0F) {
-        output.WriteRawTag(29);
-        output.WriteFloat(StepProgress);
+        output.WriteUInt32(CitizenId);
       }
       if (path_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(18);
         output.WriteMessage(Path);
       }
-      if (IsTurn != false) {
-        output.WriteRawTag(40);
-        output.WriteBool(IsTurn);
+      if (WaitUntil != 0L) {
+        output.WriteRawTag(24);
+        output.WriteInt64(WaitUntil);
+      }
+      if (CurrentStep != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(CurrentStep);
+      }
+      if (CurrentStepProgress != 0F) {
+        output.WriteRawTag(45);
+        output.WriteFloat(CurrentStepProgress);
+      }
+      if (CurrentVelocity != 0F) {
+        output.WriteRawTag(53);
+        output.WriteFloat(CurrentVelocity);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -2034,20 +2297,23 @@ namespace Transidious.Serialization {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (StepNo != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(StepNo);
-      }
-      if (CurrentVelocity != 0F) {
-        size += 1 + 4;
-      }
-      if (StepProgress != 0F) {
-        size += 1 + 4;
+      if (CitizenId != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(CitizenId);
       }
       if (path_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Path);
       }
-      if (IsTurn != false) {
-        size += 1 + 1;
+      if (WaitUntil != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(WaitUntil);
+      }
+      if (CurrentStep != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(CurrentStep);
+      }
+      if (CurrentStepProgress != 0F) {
+        size += 1 + 4;
+      }
+      if (CurrentVelocity != 0F) {
+        size += 1 + 4;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2060,14 +2326,8 @@ namespace Transidious.Serialization {
       if (other == null) {
         return;
       }
-      if (other.StepNo != 0) {
-        StepNo = other.StepNo;
-      }
-      if (other.CurrentVelocity != 0F) {
-        CurrentVelocity = other.CurrentVelocity;
-      }
-      if (other.StepProgress != 0F) {
-        StepProgress = other.StepProgress;
+      if (other.CitizenId != 0) {
+        CitizenId = other.CitizenId;
       }
       if (other.path_ != null) {
         if (path_ == null) {
@@ -2075,8 +2335,17 @@ namespace Transidious.Serialization {
         }
         Path.MergeFrom(other.Path);
       }
-      if (other.IsTurn != false) {
-        IsTurn = other.IsTurn;
+      if (other.WaitUntil != 0L) {
+        WaitUntil = other.WaitUntil;
+      }
+      if (other.CurrentStep != 0) {
+        CurrentStep = other.CurrentStep;
+      }
+      if (other.CurrentStepProgress != 0F) {
+        CurrentStepProgress = other.CurrentStepProgress;
+      }
+      if (other.CurrentVelocity != 0F) {
+        CurrentVelocity = other.CurrentVelocity;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2090,26 +2359,30 @@ namespace Transidious.Serialization {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            StepNo = input.ReadUInt32();
+            CitizenId = input.ReadUInt32();
             break;
           }
-          case 21: {
-            CurrentVelocity = input.ReadFloat();
-            break;
-          }
-          case 29: {
-            StepProgress = input.ReadFloat();
-            break;
-          }
-          case 34: {
+          case 18: {
             if (path_ == null) {
               Path = new global::Transidious.Serialization.PathPlanningResult();
             }
             input.ReadMessage(Path);
             break;
           }
-          case 40: {
-            IsTurn = input.ReadBool();
+          case 24: {
+            WaitUntil = input.ReadInt64();
+            break;
+          }
+          case 32: {
+            CurrentStep = input.ReadInt32();
+            break;
+          }
+          case 45: {
+            CurrentStepProgress = input.ReadFloat();
+            break;
+          }
+          case 53: {
+            CurrentVelocity = input.ReadFloat();
             break;
           }
         }
@@ -2118,17 +2391,6 @@ namespace Transidious.Serialization {
 
   }
 
-  /// <summary>
-  /// int carModel;
-  /// public uint id;
-  /// public Citizien driver;
-  /// public float maxVelocity;
-  /// public float acceleration;
-  /// public float length;
-  /// public PathFollowingObject pathFollow;
-  /// public PathFollowingObject.CompletionCallback callback;
-  /// public TrafficSimulator.DrivingCar drivingCar;
-  /// </summary>
   public sealed partial class Car : pb::IMessage<Car> {
     private static readonly pb::MessageParser<Car> _parser = new pb::MessageParser<Car>(() => new Car());
     private pb::UnknownFieldSet _unknownFields;
@@ -2394,14 +2656,14 @@ namespace Transidious.Serialization {
   /// public bool educated;
   /// public byte happiness;
   /// public AbstractSchedule[] schedules;
-  /// public Dictionary&lt;Relationship, Citizien> relationships;
+  /// public Dictionary&lt;Relationship, Citizen> relationships;
   /// public Dictionary&lt;PointOfInterest, Building> pointsOfInterest;
   /// </summary>
-  public sealed partial class Citizien : pb::IMessage<Citizien> {
-    private static readonly pb::MessageParser<Citizien> _parser = new pb::MessageParser<Citizien>(() => new Citizien());
+  public sealed partial class Citizen : pb::IMessage<Citizen> {
+    private static readonly pb::MessageParser<Citizen> _parser = new pb::MessageParser<Citizen>(() => new Citizen());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<Citizien> Parser { get { return _parser; } }
+    public static pb::MessageParser<Citizen> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -2414,14 +2676,14 @@ namespace Transidious.Serialization {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Citizien() {
+    public Citizen() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Citizien(Citizien other) : this() {
+    public Citizen(Citizen other) : this() {
       id_ = other.id_;
       firstName_ = other.firstName_;
       lastName_ = other.lastName_;
@@ -2443,8 +2705,8 @@ namespace Transidious.Serialization {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Citizien Clone() {
-      return new Citizien(this);
+    public Citizen Clone() {
+      return new Citizen(this);
     }
 
     /// <summary>Field number for the "id" field.</summary>
@@ -2515,9 +2777,9 @@ namespace Transidious.Serialization {
 
     /// <summary>Field number for the "occupation" field.</summary>
     public const int OccupationFieldNumber = 7;
-    private global::Transidious.Serialization.Citizien.Types.Occupation occupation_ = 0;
+    private global::Transidious.Serialization.Citizen.Types.Occupation occupation_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Transidious.Serialization.Citizien.Types.Occupation Occupation {
+    public global::Transidious.Serialization.Citizen.Types.Occupation Occupation {
       get { return occupation_; }
       set {
         occupation_ = value;
@@ -2559,21 +2821,21 @@ namespace Transidious.Serialization {
 
     /// <summary>Field number for the "relationships" field.</summary>
     public const int RelationshipsFieldNumber = 11;
-    private static readonly pb::FieldCodec<global::Transidious.Serialization.Citizien.Types.Relationship> _repeated_relationships_codec
-        = pb::FieldCodec.ForMessage(90, global::Transidious.Serialization.Citizien.Types.Relationship.Parser);
-    private readonly pbc::RepeatedField<global::Transidious.Serialization.Citizien.Types.Relationship> relationships_ = new pbc::RepeatedField<global::Transidious.Serialization.Citizien.Types.Relationship>();
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Citizen.Types.Relationship> _repeated_relationships_codec
+        = pb::FieldCodec.ForMessage(90, global::Transidious.Serialization.Citizen.Types.Relationship.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Citizen.Types.Relationship> relationships_ = new pbc::RepeatedField<global::Transidious.Serialization.Citizen.Types.Relationship>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::Transidious.Serialization.Citizien.Types.Relationship> Relationships {
+    public pbc::RepeatedField<global::Transidious.Serialization.Citizen.Types.Relationship> Relationships {
       get { return relationships_; }
     }
 
     /// <summary>Field number for the "pointsOfInterest" field.</summary>
     public const int PointsOfInterestFieldNumber = 12;
-    private static readonly pb::FieldCodec<global::Transidious.Serialization.Citizien.Types.PointOfInterest> _repeated_pointsOfInterest_codec
-        = pb::FieldCodec.ForMessage(98, global::Transidious.Serialization.Citizien.Types.PointOfInterest.Parser);
-    private readonly pbc::RepeatedField<global::Transidious.Serialization.Citizien.Types.PointOfInterest> pointsOfInterest_ = new pbc::RepeatedField<global::Transidious.Serialization.Citizien.Types.PointOfInterest>();
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Citizen.Types.PointOfInterest> _repeated_pointsOfInterest_codec
+        = pb::FieldCodec.ForMessage(98, global::Transidious.Serialization.Citizen.Types.PointOfInterest.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Citizen.Types.PointOfInterest> pointsOfInterest_ = new pbc::RepeatedField<global::Transidious.Serialization.Citizen.Types.PointOfInterest>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::Transidious.Serialization.Citizien.Types.PointOfInterest> PointsOfInterest {
+    public pbc::RepeatedField<global::Transidious.Serialization.Citizen.Types.PointOfInterest> PointsOfInterest {
       get { return pointsOfInterest_; }
     }
 
@@ -2634,11 +2896,11 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as Citizien);
+      return Equals(other as Citizen);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(Citizien other) {
+    public bool Equals(Citizen other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -2822,7 +3084,7 @@ namespace Transidious.Serialization {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(Citizien other) {
+    public void MergeFrom(Citizen other) {
       if (other == null) {
         return;
       }
@@ -2915,7 +3177,7 @@ namespace Transidious.Serialization {
             break;
           }
           case 56: {
-            Occupation = (global::Transidious.Serialization.Citizien.Types.Occupation) input.ReadEnum();
+            Occupation = (global::Transidious.Serialization.Citizen.Types.Occupation) input.ReadEnum();
             break;
           }
           case 69: {
@@ -2969,7 +3231,7 @@ namespace Transidious.Serialization {
     }
 
     #region Nested types
-    /// <summary>Container for nested types declared in the Citizien message type.</summary>
+    /// <summary>Container for nested types declared in the Citizen message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       public enum Occupation {
@@ -3001,7 +3263,7 @@ namespace Transidious.Serialization {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::Transidious.Serialization.Citizien.Descriptor.NestedTypes[0]; }
+          get { return global::Transidious.Serialization.Citizen.Descriptor.NestedTypes[0]; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3019,7 +3281,7 @@ namespace Transidious.Serialization {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public Relationship(Relationship other) : this() {
           kind_ = other.kind_;
-          citizienId_ = other.citizienId_;
+          citizenId_ = other.citizenId_;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -3030,23 +3292,23 @@ namespace Transidious.Serialization {
 
         /// <summary>Field number for the "kind" field.</summary>
         public const int KindFieldNumber = 1;
-        private global::Transidious.Serialization.Citizien.Types.RelationshipKind kind_ = 0;
+        private global::Transidious.Serialization.Citizen.Types.RelationshipKind kind_ = 0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public global::Transidious.Serialization.Citizien.Types.RelationshipKind Kind {
+        public global::Transidious.Serialization.Citizen.Types.RelationshipKind Kind {
           get { return kind_; }
           set {
             kind_ = value;
           }
         }
 
-        /// <summary>Field number for the "citizienId" field.</summary>
-        public const int CitizienIdFieldNumber = 2;
-        private uint citizienId_;
+        /// <summary>Field number for the "citizenId" field.</summary>
+        public const int CitizenIdFieldNumber = 2;
+        private uint citizenId_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public uint CitizienId {
-          get { return citizienId_; }
+        public uint CitizenId {
+          get { return citizenId_; }
           set {
-            citizienId_ = value;
+            citizenId_ = value;
           }
         }
 
@@ -3064,7 +3326,7 @@ namespace Transidious.Serialization {
             return true;
           }
           if (Kind != other.Kind) return false;
-          if (CitizienId != other.CitizienId) return false;
+          if (CitizenId != other.CitizenId) return false;
           return Equals(_unknownFields, other._unknownFields);
         }
 
@@ -3072,7 +3334,7 @@ namespace Transidious.Serialization {
         public override int GetHashCode() {
           int hash = 1;
           if (Kind != 0) hash ^= Kind.GetHashCode();
-          if (CitizienId != 0) hash ^= CitizienId.GetHashCode();
+          if (CitizenId != 0) hash ^= CitizenId.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -3090,9 +3352,9 @@ namespace Transidious.Serialization {
             output.WriteRawTag(8);
             output.WriteEnum((int) Kind);
           }
-          if (CitizienId != 0) {
+          if (CitizenId != 0) {
             output.WriteRawTag(16);
-            output.WriteUInt32(CitizienId);
+            output.WriteUInt32(CitizenId);
           }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
@@ -3105,8 +3367,8 @@ namespace Transidious.Serialization {
           if (Kind != 0) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Kind);
           }
-          if (CitizienId != 0) {
-            size += 1 + pb::CodedOutputStream.ComputeUInt32Size(CitizienId);
+          if (CitizenId != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt32Size(CitizenId);
           }
           if (_unknownFields != null) {
             size += _unknownFields.CalculateSize();
@@ -3122,8 +3384,8 @@ namespace Transidious.Serialization {
           if (other.Kind != 0) {
             Kind = other.Kind;
           }
-          if (other.CitizienId != 0) {
-            CitizienId = other.CitizienId;
+          if (other.CitizenId != 0) {
+            CitizenId = other.CitizenId;
           }
           _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
         }
@@ -3137,11 +3399,11 @@ namespace Transidious.Serialization {
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 8: {
-                Kind = (global::Transidious.Serialization.Citizien.Types.RelationshipKind) input.ReadEnum();
+                Kind = (global::Transidious.Serialization.Citizen.Types.RelationshipKind) input.ReadEnum();
                 break;
               }
               case 16: {
-                CitizienId = input.ReadUInt32();
+                CitizenId = input.ReadUInt32();
                 break;
               }
             }
@@ -3158,7 +3420,7 @@ namespace Transidious.Serialization {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::Transidious.Serialization.Citizien.Descriptor.NestedTypes[1]; }
+          get { return global::Transidious.Serialization.Citizen.Descriptor.NestedTypes[1]; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3187,9 +3449,9 @@ namespace Transidious.Serialization {
 
         /// <summary>Field number for the "kind" field.</summary>
         public const int KindFieldNumber = 1;
-        private global::Transidious.Serialization.Citizien.Types.PointOfInterestKind kind_ = 0;
+        private global::Transidious.Serialization.Citizen.Types.PointOfInterestKind kind_ = 0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public global::Transidious.Serialization.Citizien.Types.PointOfInterestKind Kind {
+        public global::Transidious.Serialization.Citizen.Types.PointOfInterestKind Kind {
           get { return kind_; }
           set {
             kind_ = value;
@@ -3294,7 +3556,7 @@ namespace Transidious.Serialization {
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 8: {
-                Kind = (global::Transidious.Serialization.Citizien.Types.PointOfInterestKind) input.ReadEnum();
+                Kind = (global::Transidious.Serialization.Citizen.Types.PointOfInterestKind) input.ReadEnum();
                 break;
               }
               case 16: {

@@ -104,6 +104,8 @@ void OSMImportBackend::Emit()
    RK.getAllDefinitionsOf("Area", areas);
 
    OS << R"__(
+#if UNITY_EDITOR
+
 using OsmSharp;
 using OsmSharp.Streams;
 using UnityEngine;
@@ -348,6 +350,8 @@ public class OSMImportHelper {
    }
 }
 }
+
+#endif
 )__";
 }
 

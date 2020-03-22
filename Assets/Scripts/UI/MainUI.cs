@@ -59,11 +59,11 @@ namespace Transidious
          * Population Tab
          */
 
-        /// The citizien count ui text.
-        public TMPro.TMP_Text citizienCountText;
+        /// The citizen count ui text.
+        public TMPro.TMP_Text citizenCountText;
 
-        /// The citizien trend arrow.
-        public Image citizienCountTrendImg;
+        /// The citizen trend arrow.
+        public Image citizenCountTrendImg;
 
         /**
          * Finances Tab
@@ -277,8 +277,8 @@ namespace Transidious
                 game.ExitPause();
             }
 
-            var newSimSpeed = (game.sim.simulationSpeed + 1) % 3;
-            game.sim.simulationSpeed = newSimSpeed;
+            var newSimSpeed = ((int)game.sim.simulationSpeed + 1) % 3;
+            game.sim.SetSimulationSpeed((SimulationController.SimulationSpeed)newSimSpeed);
 
             this.simSpeedButton.GetComponent<Image>().sprite = SpriteManager.instance.simSpeedSprites[newSimSpeed];
         }

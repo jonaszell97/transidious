@@ -17,14 +17,6 @@ namespace Transidious
         /// The simulation speed sprites.
         public Sprite[] simSpeedSprites;
 
-        /// The traffic light sprites.
-        public Sprite[] trafficLightSprites;
-
-        /// The car sprites.
-        public Sprite[] carSpritesOutlined;
-
-        public Sprite[] carSprites;
-
         /// The street direction arrow sprite.
         public Sprite streetArrowSprite;
 
@@ -71,6 +63,11 @@ namespace Transidious
         public static GameObject CreateSprite(Sprite s)
         {
             return instance.CreateSpriteImpl(s);
+        }
+        
+        public static GameObject CreateSprite(string s)
+        {
+            return instance.CreateSpriteImpl(GetSprite(s));
         }
 
         GameObject CreateSpriteImpl(Sprite s)

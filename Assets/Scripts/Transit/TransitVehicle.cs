@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Transidious
 {
@@ -23,7 +25,7 @@ namespace Transidious
         /// <summary>
         /// The current route this vehicle is driving on.
         /// </summary>
-        int currentRoute = -1;
+        int currentRoute = 0;
 
         /// <summary>
         /// The path following component.
@@ -36,7 +38,9 @@ namespace Transidious
         /// <summary>
         /// The current passengers.
         /// </summary>
-        public int passengers;
+        public Dictionary<Stop, List<Stop.WaitingCitizen>> passengers;
+
+        public int passengerCount;
 
         float velocity;
 
@@ -58,8 +62,9 @@ namespace Transidious
             this.line = line;
             this.spriteRenderer.color = line.color;
             this.sim = GameController.instance.sim;
-            this.passengers = 0;
-
+            this.passengers = new Dictionary<Stop, List<Stop.WaitingCitizen>>();
+            this.passengerCount = 0;
+            
             if (velocity != null)
             {
                 this.velocity = velocity.Value;
@@ -131,41 +136,76 @@ namespace Transidious
                 return;
             }
 
+            var trafficSim = sim.trafficSim;
+            var waitingCitizens = route.beginStop.GetWaitingCitizens(line);
+            var taken = 0;
+
+            while (passengerCount + taken < capacity && taken < waitingCitizens.Count)
+            {
+                var c = waitingCitizens[taken];
+                if (!passengers.ContainsKey(c.finalStop))
+                {
+                    passengers.Add(c.finalStop, new List<Stop.WaitingCitizen>());
+                }
+
+                ++passengerCount;
+                ++taken;
+                ++line.weeklyPassengers;
+
+                passengers[c.finalStop].Add(c);
+                c.path.transitVehicle = this;
+            }
+
+            waitingCitizens.RemoveRange(0, taken);
+
             this.gameObject.SetActive(true);
             this.transform.position = new Vector3(route.positions[0].x, route.positions[0].y, transform.position.z);
-            this.pathFollow = new PathFollowingObject(sim, this.gameObject, route.positions,
-                                                      velocity, 0f, false,
-                                                      (PathFollowingObject _) =>
-                                                      {
-                                                          if (currentRoute < line.routes.Count - 1)
-                                                          {
-                                                              nextStopTime = sim.GameTime.AddSeconds(line.stopDuration);
-                                                          }
-                                                          else
-                                                          {
-                                                              nextStopTime = sim.GameTime.AddSeconds(line.stopDuration + line.endOfLineWaitTime);
+            this.pathFollow = new PathFollowingObject(
+                sim, this.gameObject, route.positions,
+                velocity,
+                () =>
+                {
+                  if (currentRoute < line.routes.Count - 1)
+                  {
+                      nextStopTime = sim.GameTime.AddSeconds(line.stopDuration);
+                  }
+                  else
+                  {
+                      nextStopTime = sim.GameTime.AddSeconds(line.stopDuration + line.endOfLineWaitTime);
 
-                                                              var estimateSeconds = (line.length / (line.AverageSpeed / 3.6f)) * sim.BaseSpeedMultiplier;
-                                                              estimateSeconds += line.stops.Count * line.stopDuration;
-                                                              var realSeconds = (sim.GameTime - _startTime).TotalSeconds;
+                      var estimateSeconds = (line.length / (line.AverageSpeed / 3.6f)) * sim.BaseSpeedMultiplier;
+                      estimateSeconds += line.stops.Count * line.stopDuration;
+                      var realSeconds = (sim.GameTime - _startTime).TotalSeconds;
 
-                                                              Debug.Log($"estimate {estimateSeconds}s <-> real {realSeconds}s, diff {realSeconds - estimateSeconds}s");
-                                                          }
+                      Debug.Log($"estimate {estimateSeconds}s <-> real {realSeconds}s, diff {realSeconds - estimateSeconds}s");
+                  }
 
-                                                          pathFollow = null;
+                  pathFollow = null;
 
-                                                          var stop = route.endStop;
-                                                          if (lastStopAtStation.ContainsKey(stop))
-                                                          {
-                                                              Debug.Log($"time between stops: {(sim.GameTime - lastStopAtStation[stop]).TotalMinutes}m");
-                                                              lastStopAtStation[stop] = sim.GameTime;
-                                                          }
-                                                          else
-                                                          {
-                                                              lastStopAtStation.Add(stop, sim.GameTime);
-                                                          }
+                  var stop = route.endStop;
 
-                                                      });
+                  // Check citizens leaving here.
+                  if (passengers.TryGetValue(stop, out List<Stop.WaitingCitizen> leaving))
+                  {
+                      foreach (var c in leaving)
+                      {
+                          c.path.CompleteStep();
+                      }
+
+                      passengerCount -= leaving.Count;
+                      leaving.Clear();
+                  }
+                  
+                  if (lastStopAtStation.ContainsKey(stop))
+                  {
+                      Debug.Log($"time between stops: {(sim.GameTime - lastStopAtStation[stop]).TotalMinutes}m");
+                      lastStopAtStation[stop] = sim.GameTime;
+                  }
+                  else
+                  {
+                      lastStopAtStation.Add(stop, sim.GameTime);
+                  }
+                });
 
             // Make sure to update the velocity right away.
             timeSinceLastUpdate = TrafficSimulator.VelocityUpdateInterval;
@@ -199,7 +239,7 @@ namespace Transidious
 
             if (pathFollow != null)
             {
-                pathFollow.FixedUpdate();
+                pathFollow.Update(Time.fixedDeltaTime * sim.SpeedMultiplier);
                 return;
             }
 
@@ -216,7 +256,7 @@ namespace Transidious
                     StartDrive(currentRoute + 1);
                 }
 
-                pathFollow?.FixedUpdate();
+                pathFollow?.Update(Time.fixedDeltaTime * sim.SpeedMultiplier);
             }
 
             //if (!sim.game.Paused && pathFollow != null)
@@ -245,6 +285,20 @@ namespace Transidious
 
             //    pathFollow.Update();
             //}
+        }
+
+        public void OnMouseDown()
+        {
+            if (GameController.instance.input.IsPointerOverUIElement())
+            {
+                return;
+            }
+
+            var modal = GameController.instance.sim.transitVehicleModal;
+            modal.SetVehicle(this);
+
+            modal.modal.PositionAt(transform.position);
+            modal.modal.Enable();
         }
     }
 }

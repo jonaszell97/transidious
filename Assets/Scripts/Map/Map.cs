@@ -27,7 +27,7 @@ namespace Transidious
         StreetMarkings,
         StreetNames,
 
-        Citiziens,
+        Citizens,
 
         TransitLines,
         TemporaryLines,
@@ -165,12 +165,6 @@ namespace Transidious
 
         /// Dimensions of a tile on the map.
         public static readonly float tileSize = 2000f * Meters;
-
-#if DEBUG
-        /// Whether or not to render traffic lights.
-        public bool renderTrafficLights = true;
-        public bool renderStreetOrder = true;
-#endif
 
         public GameController Game
         {
@@ -959,7 +953,7 @@ namespace Transidious
 
         public class LineBuilder
         {
-            Line line;
+            public Line line;
             Stop lastAddedStop;
 
             internal LineBuilder(Line line)

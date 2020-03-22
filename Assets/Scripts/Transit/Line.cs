@@ -46,6 +46,8 @@ namespace Transidious
         public float endOfLineWaitTime = 0f;
         public float velocity;
 
+        public int weeklyPassengers;
+
         public Dictionary<Stop, float> scheduleOffsets;
         public Schedule schedule;
 
@@ -123,6 +125,8 @@ namespace Transidious
             {
                 color = color,
             };
+            
+            Debug.Log($"assigning material to line {name}");
 
             this.stopDuration = AverageStopDuration;
             this.velocity = AverageSpeed;
@@ -235,16 +239,19 @@ namespace Transidious
             this.endOfLineWaitTime = Mathf.Ceil(
                extraTime / fixedUpdateInterval) * fixedUpdateInterval;
 
-            var departure = earliestDeparture.AddSeconds(stopDuration);
-            departure = sim.RoundToNextFixedUpdate(departure);
-
-            for (var i = 0; i < neededVehicles; ++i)
+            if (!Game.ImportingMap)
             {
-                var v = sim.CreateVehicle(this);
-                this.vehicles.Add(v);
+                var departure = earliestDeparture.AddSeconds(stopDuration);
+                departure = sim.RoundToNextFixedUpdate(departure);
 
-                v.nextStopTime = departure;
-                departure = departure.AddSeconds(interval);
+                for (var i = 0; i < neededVehicles; ++i)
+                {
+                    var v = sim.CreateVehicle(this);
+                    this.vehicles.Add(v);
+
+                    v.nextStopTime = departure;
+                    departure = departure.AddSeconds(interval);
+                }
             }
 
             var totalTravelTimeSeconds = 0f;

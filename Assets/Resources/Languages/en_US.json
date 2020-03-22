@@ -63,6 +63,14 @@
             "key": "ui:developer_console",
             "text": "Developer Console"
         },
+        {
+            "key": "ui:transit:date_now",
+            "text": "now"
+        },
+        {
+            "key": "ui:transit:in_x_mins",
+            "text": "in $0 min"
+        },
 
         {
             "key": "ui:citizien:happiness",
@@ -224,6 +232,10 @@
         {
             "key": "ui:transit:passengers",
             "text": "Passengers"
+        },
+        {
+            "key": "ui:transit:next_stop",
+            "text": "Next Stop"
         },
         {
             "key": "ui:transit:trips_saved",

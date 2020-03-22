@@ -502,7 +502,15 @@ namespace Transidious
             }
 
             line.gradient = null;
-            line.material.color = line.color;
+
+            if (line.material == null)
+            {
+                Debug.LogError($"no material on line {line.name}");
+            }
+            else
+            {
+                line.material.color = line.color;
+            }
         }
 
         private static Line selectedLine

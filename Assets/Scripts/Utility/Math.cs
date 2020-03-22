@@ -45,24 +45,19 @@ namespace Transidious
             return len;
         }
 
-        public static float toDegrees(float radians)
-        {
-            return radians * (180f / Mathf.PI);
-        }
-
         public static float toRadians(float degrees)
         {
-            return degrees / (180f / Mathf.PI);
+            return degrees * Mathf.Rad2Deg;
         }
 
         public static float PointAngleDeg(Vector3 p0, Vector3 p3)
         {
-            return Math.toDegrees((float)System.Math.Atan2(p3.y - p0.y, p3.x - p0.x));
+            return PointAngleRad(p0, p3) * Mathf.Rad2Deg;
         }
 
         public static float PointAngleRad(Vector3 p0, Vector3 p3)
         {
-            return (float)System.Math.Atan2(p3.y - p0.y, p3.x - p0.x);
+            return Mathf.Atan2(p3.y - p0.y, p3.x - p0.x);
         }
 
         public static float AngleFromHorizontalAxis(Vector2 v)
@@ -71,9 +66,19 @@ namespace Transidious
             return (signedAngle + 360) % 360;
         }
 
-        public static float Angle(Vector2 v1, Vector2 v2)
+        public static float DirectionalAngleDeg(Vector2 v1, Vector2 v2)
         {
-            return toDegrees(Mathf.Atan2(v1.x * v2.y - v1.y * v2.x, v1.x * v2.x + v1.y * v2.y));
+            return DirectionalAngleRad(v1, v2) * Mathf.Rad2Deg;
+        }
+
+        public static float DirectionalAngleRad(Vector2 v1, Vector2 v2)
+        {
+            // angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x);
+            var angle = Mathf.Atan2(v2.y, v2.x) - Mathf.Atan2(v1.y, v1.x);
+            if (angle < 0f)
+                angle += 2f * Mathf.PI;
+
+            return angle;
         }
 
         public static CardinalDirection ClassifyDirection(float angle)

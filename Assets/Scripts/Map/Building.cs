@@ -16,6 +16,7 @@ namespace Transidious
             University,
             Hospital,
             Stadium,
+            Airport,
 
             GroceryStore,
         }
@@ -107,6 +108,9 @@ namespace Transidious
             case Type.Stadium:
                 // Calculate with an average of 1 floors and 1 visitor per 2m^2.
                 return (int)Mathf.Ceil(1 * (area / 2f));
+            case Type.Airport:
+                // Calculate with an average of 1 floors and 1 visitor per m^2.
+                return (int)Mathf.Ceil(area);
             default:
                 return 0;
             }

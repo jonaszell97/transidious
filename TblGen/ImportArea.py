@@ -160,7 +160,7 @@ infoResult = requests.get(
     'https://www.openstreetmap.org/api/0.6/relation/' + id)
 tree = ElementTree.fromstring(infoResult.content)
 
-admin_level = 0
+admin_level = ''
 boundary = 'administrative'
 rel = tree.find('relation')
 
@@ -168,7 +168,7 @@ for child in rel:
     if child.tag == 'tag':
         key = child.attrib['k']
         if key == 'admin_level':
-            admin_level = child.attrib['v']
+            admin_level = 'Tag<"admin_level", "{admin_level}>,"'.format(admin_level=child.attrib['v'])
         elif key == 'boundary':
             boundary = child.attrib['v']
 
@@ -203,10 +203,10 @@ def {name} : DefaultArea {{
     country = "{country}"
     boundary = BoundaryInfo<"{name}", [
         Tag<"type", "boundary">,
-        Tag<"admin_level", "{admin_level}">
+        {admin_level}
     ], [
         Tag<"boundary", "{boundary}">,
-        Tag<"admin_level", "{admin_level}">
+        {admin_level}
     ]>
 }}\
 """.format(name=searchTerm, country=country, boundary=boundary,

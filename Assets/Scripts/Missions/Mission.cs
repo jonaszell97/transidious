@@ -8,7 +8,7 @@ namespace Transidious
     public class Mission
     {
         [Serializable]
-        public struct CitizienData
+        public struct CitizenData
         {
             public string firstName;
             public string lastName;
@@ -55,9 +55,9 @@ namespace Transidious
         public int startingPopulation;
 
         /// <summary>
-        /// Specific citiziens that should always be included in the mission.
+        /// Specific citizens that should always be included in the mission.
         /// </summary>
-        public CitizienData[] citiziens;
+        public CitizenData[] citizens;
 
         /// <summary>
         /// The objectives required to complete the mission.
@@ -81,10 +81,6 @@ namespace Transidious
         public void Load()
         {
             var game = GameController.instance;
-
-            OSMImportHelper.Area area;
-            Enum.TryParse(this.area, out area);
-
             if (!string.IsNullOrEmpty(gameTime))
             {
                 game.sim.GameTime = DateTime.Parse(gameTime);
@@ -95,20 +91,20 @@ namespace Transidious
 
             game.onLoad.AddListener(() =>
             {
-                var numCitiziens = startingPopulation - (citiziens?.Length ?? 0);
-                game.sim.SpawnRandomCitiziens(numCitiziens);
+                var numCitizens = startingPopulation - (citizens?.Length ?? 0);
+                game.sim.SpawnRandomCitizens(numCitizens);
 
-                if (citiziens != null)
+                if (citizens != null)
                 {
-                    foreach (var c in citiziens)
+                    foreach (var c in citizens)
                     {
-                        Citizien.Occupation? occupation = null;
-                        if (Enum.TryParse(c.occupation, out Citizien.Occupation o))
+                        Citizen.Occupation? occupation = null;
+                        if (Enum.TryParse(c.occupation, out Citizen.Occupation o))
                         {
                             occupation = o;
                         }
 
-                        game.sim.CreateCitizien(c.firstName, c.lastName, c.age, c.birthday, c.female,
+                        game.sim.CreateCitizen(c.firstName, c.lastName, c.age, c.birthday, c.female,
                                                 occupation, c.money, c.educated, c.happiness);
                     }
                 }

@@ -133,10 +133,10 @@ namespace Transidious
             saveFile.Routes.AddRange(map.transitRoutes.Select(b => b.ToProtobuf()));
             saveFile.Lines.AddRange(map.transitLines.Select(b => b.ToProtobuf()));
 
-            if (sim.citiziens != null)
+            if (sim.citizens != null)
             {
-                saveFile.Citiziens.AddRange(
-                    sim.citiziens.Select(c => c.Value.ToProtobuf()));
+                saveFile.Citizens.AddRange(
+                    sim.citizens.Select(c => c.Value.ToProtobuf()));
 
                 saveFile.Cars.AddRange(
                     sim.cars.Select(c => c.Value.ToProtobuf()));
@@ -548,17 +548,17 @@ namespace Transidious
                                     (int)stop.MapObject.Id);
             }
 
-            // Deserialize raw routes without stops or routes.
+            // Deserialize raw lines without stops or routes.
             foreach (var line in saveFile.Lines)
             {
                 map.CreateLine((TransitType)line.Type, line.MapObject.Name, line.Color.Deserialize(),
                                (int)line.MapObject.Id).Finish();
             }
 
-            // Deserialize raw citiziens.
-            foreach (var citizien in saveFile.Citiziens)
+            // Deserialize raw citizens.
+            foreach (var citizen in saveFile.Citizens)
             {
-                GameController.instance.sim.CreateCitizien(citizien);
+                GameController.instance.sim.CreateCitizen(citizen);
             }
 
             // Deserialize raw cars.
@@ -606,10 +606,10 @@ namespace Transidious
                 }
             }
 
-            // Initialize citiziens.
-            foreach (var citizien in saveFile.Citiziens)
+            // Initialize citizens.
+            foreach (var citizen in saveFile.Citizens)
             {
-                GameController.instance.sim.citiziens[citizien.Id].Finalize(citizien);
+                GameController.instance.sim.citizens[citizen.Id].Finalize(citizen);
             }
 
             yield break;
@@ -629,10 +629,10 @@ namespace Transidious
             return map;
         }
 
-        public static IEnumerator LoadSave(GameController game, Map map)
+        public static IEnumerator LoadSave(GameController game, Map map, string saveName = "")
         {
             yield return LoadMap(map, map.name);
-            yield return LoadSave(map, map.name);
+            yield return LoadSave(map, string.IsNullOrEmpty(saveName) ? map.name : saveName);
         }
     }
 }

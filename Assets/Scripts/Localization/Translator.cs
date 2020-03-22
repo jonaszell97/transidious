@@ -196,6 +196,8 @@ namespace Transidious
             DateLong,
             DateTimeShort,
             DateTimeLong,
+            TimeShort,
+            TimeLong,
         }
 
         public static string GetDate(DateTime date, DateFormat format)
@@ -215,6 +217,12 @@ namespace Transidious
                     break;
                 case DateFormat.DateTimeLong:
                     fm = "f";
+                    break;
+                case DateFormat.TimeShort:
+                    fm = "t";
+                    break;
+                case DateFormat.TimeLong:
+                    fm = "T";
                     break;
             }
 

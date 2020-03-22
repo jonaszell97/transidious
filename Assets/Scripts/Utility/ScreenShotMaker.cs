@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+
+using UnityEngine;
 using System;
 
 namespace Transidious
@@ -364,3 +366,5 @@ namespace Transidious
         }
     }
 }
+
+#endif

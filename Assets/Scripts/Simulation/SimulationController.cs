@@ -9,6 +9,14 @@ namespace Transidious
 {
     public class SimulationController : MonoBehaviour
     {
+        public enum SimulationSpeed
+        {
+            Speed1 = 0,
+            Speed2 = 1,
+            Speed3 = 2,
+            Speed4 = 3,
+        }
+
         /// Reference to the game controller.
         public GameController game;
 
@@ -16,32 +24,26 @@ namespace Transidious
         [SerializeField] DateTime gameTime;
 
         /// The simulation speed.
-        public int simulationSpeed;
+        public SimulationSpeed simulationSpeed;
 
-        /// The citiziens.
-        public Dictionary<uint, Citizien> citiziens;
-        public List<Citizien> citizienList;
+        /// The citizens.
+        public Dictionary<uint, Citizen> citizens;
+        public List<Citizen> citizenList;
 
         /// List of cars.
         public Dictionary<uint, Car> cars;
 
-        /// The number of citiziens.
-        public int totalCitizienCount;
+        /// The number of citizens.
+        public int totalCitizenCount;
 
-        /// The trend of the citizien count.
-        public int citizienCountTrend;
+        /// The trend of the citizen count.
+        public int citizenCountTrend;
 
-        /// The citizien count ui text.
-        public TMPro.TMP_Text citizienCountText;
+        /// The citizen count ui text.
+        public TMPro.TMP_Text citizenCountText;
 
-        /// The citizien trend arrow.
-        public Image citizienCountTrendImg;
-
-        /// The car prefab.
-        public GameObject carPrefab;
-
-        /// The walking citizien prefab.
-        public GameObject walkingCitizienPrefab;
+        /// The citizen trend arrow.
+        public Image citizenCountTrendImg;
 
         /// The transit vehicle prefab.
         public GameObject transitVehiclePrefab;
@@ -55,21 +57,24 @@ namespace Transidious
         /// The natural feature modal.
         public UIFeatureInfoModal featureModal;
 
-        /// The citizien modal.
-        public UICitizienInfoModal citizienModal;
+        /// The citizen modal.
+        public UICitizenInfoModal citizenModal;
+
+        /// The transit vehicle modal.
+        public UITransitVehicleModal transitVehicleModal;
 
         /// Scratch buffer used for time string building.
         char[] timeStringBuffer;
 
         public class SimulationSettings
         {
-            /// Max number of citizien updates per frame.
-            public int maxCitizienUpdates = 150;
+            /// Max number of citizen updates per frame.
+            public int maxCitizenUpdates = 150;
         }
 
         /// The simulation settings.
         public SimulationSettings settings;
-        int citizienUpdateCnt = 0;
+        int citizenUpdateCnt = 0;
         int ticksSinceLastCompleteUpdate = 0;
         bool newDay = false;
 
@@ -114,8 +119,8 @@ namespace Transidious
         {
             this.gameTime = new DateTime(2000, 1, 1, 7, 0, 0);
             this.simulationSpeed = 0;
-            this.citiziens = new Dictionary<uint, Citizien>();
-            this.citizienList = new List<Citizien>();
+            this.citizens = new Dictionary<uint, Citizen>();
+            this.citizenList = new List<Citizen>();
             this.cars = new Dictionary<uint, Car>();
             this.timeStringBuffer = new char[Translator.MaxTimeStringLength];
             this.scheduledEvents = new Dictionary<int, TimedEventInfo>();
@@ -129,7 +134,7 @@ namespace Transidious
         void Start()
         {
             EventManager.current.RegisterEventListener(this);
-            UpdateCitizienUI();
+            UpdateCitizenUI();
         }
 
         void FixedUpdate()
@@ -148,62 +153,29 @@ namespace Transidious
                 game.mainUI.UpdateDate(gameTime);
             }
 
-            var threshold = System.Math.Min(citizienUpdateCnt + settings.maxCitizienUpdates,
-                                            citizienList.Count);
+            var threshold = System.Math.Min(citizenUpdateCnt + settings.maxCitizenUpdates,
+                                            citizenList.Count);
 
             ++ticksSinceLastCompleteUpdate;
 
-            for (; citizienUpdateCnt < threshold; ++citizienUpdateCnt)
+            for (; citizenUpdateCnt < threshold; ++citizenUpdateCnt)
             {
-                var citizien = citizienList[citizienUpdateCnt];
+                var citizen = citizenList[citizenUpdateCnt];
                 if (newDay)
                 {
-                    citizien.UpdateAge();
-                    citizien.UpdateDailySchedule(minuteOfDay);
+                    citizen.UpdateAge();
+                    citizen.UpdateDailySchedule(minuteOfDay);
                 }
 
-                citizien.Update(minuteOfDay, ticksSinceLastCompleteUpdate);
+                citizen.Update(minuteOfDay, ticksSinceLastCompleteUpdate);
             }
 
-            if (citizienUpdateCnt == citizienList.Count)
+            if (citizenUpdateCnt == citizenList.Count)
             {
-                citizienUpdateCnt = 0;
+                citizenUpdateCnt = 0;
                 ticksSinceLastCompleteUpdate = 0;
                 newDay = false;
             }
-
-            //foreach (var citizien in citiziens)
-            //{
-            //    if (isNewDay)
-            //    {
-            //        citizien.Value.UpdateAge();
-            //        citizien.Value.UpdateDailySchedule(minuteOfDay);
-            //    }
-
-            //    citizien.Value.Update(minuteOfDay);
-            //}
-
-#if DEBUG
-            if (measuring)
-            {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    if (firstMeasurePos == null)
-                    {
-                        firstMeasurePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                        return;
-                    }
-                    else
-                    {
-                        Vector2 otherPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                        Debug.Log("distance: " + (firstMeasurePos.Value - otherPos).magnitude);
-
-                        measuring = false;
-                        firstMeasurePos = null;
-                    }
-                }
-            }
-#endif
         }
 
         /// <summary>
@@ -284,26 +256,23 @@ namespace Transidious
                 switch (simulationSpeed)
                 {
                 default:
+                case SimulationSpeed.Speed1:
                     return 1;
-                case 1:
+                case SimulationSpeed.Speed2:
                     return 4;
-                case 2:
+                case SimulationSpeed.Speed3:
                     return 10;
-
-#if DEBUG
-                case 3:
+                case SimulationSpeed.Speed4:
                     return 100;
-#endif
                 }
             }
         }
 
-        public void SetSimulationSpeed(int speed)
+        public void SetSimulationSpeed(SimulationSpeed simSpeed)
         {
-            var newSimSpeed = speed % 4;
-            this.simulationSpeed = newSimSpeed;
+            this.simulationSpeed = simSpeed;
             game.mainUI.simSpeedButton.GetComponent<Image>().sprite =
-                SpriteManager.instance.simSpeedSprites[Mathf.Min(newSimSpeed, 2)];
+                SpriteManager.instance.simSpeedSprites[Mathf.Min((int)simSpeed, 2)];
         }
 
         void OnLanguageChange()
@@ -384,7 +353,7 @@ namespace Transidious
             }
 
             UpdateGameTimeString();
-            UpdateCitizienUI();
+            UpdateCitizenUI();
 
             var hour = gameTime.Hour;
             if (hour == 7)
@@ -412,7 +381,7 @@ namespace Transidious
             FireTimedEvents();
             FireScheduledEvents(gameTime.Minute);
             UpdateGameTimeString();
-            UpdateCitizienUI();
+            UpdateCitizenUI();
 
             var hour = gameTime.Hour;
             if (hour == 7)
@@ -432,57 +401,40 @@ namespace Transidious
             }
         }
 
-        void UpdateCitizienUI()
+        void UpdateCitizenUI()
         {
-            this.citizienCountText.text = Translator.GetNumber(totalCitizienCount);
+            this.citizenCountText.text = Translator.GetNumber(totalCitizenCount);
             
-            if (citizienCountTrend == 0)
+            if (citizenCountTrend == 0)
             {
-                this.citizienCountTrendImg.transform.rotation = Quaternion.Euler(0f, 0f, -90f);
+                this.citizenCountTrendImg.transform.rotation = Quaternion.Euler(0f, 0f, -90f);
             }
-            else if (citizienCountTrend < 0)
+            else if (citizenCountTrend < 0)
             {
-                this.citizienCountTrendImg.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
+                this.citizenCountTrendImg.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
             }
             else
             {
-                this.citizienCountTrendImg.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                this.citizenCountTrendImg.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
             }
         }
 
-        public Car CreateCar(Citizien driver, Vector3 pos, Color? c = null, int carModel = -1)
+        public Car CreateCar(Citizen driver, Vector3 pos, Color? c = null, int carModel = -1)
         {
-            var obj = Instantiate(carPrefab);
-            obj.transform.position = new Vector3(pos.x, pos.y);
-            obj.transform.SetParent(this.transform);
-
-            var car = obj.GetComponent<Car>();
-            car.Initialize(this, driver, c, carModel);
-
+            var car = new Car(this, driver, c, carModel);
             cars.Add(car.id, car);
+            
             return car;
         }
 
         public Car CreateCar(Serialization.Car c)
         {
-            var obj = Instantiate(carPrefab);
-            obj.transform.position = c.Position?.Deserialize() ?? obj.transform.position;
-            obj.transform.SetParent(this.transform);
-
-            var car = obj.GetComponent<Car>();
-            var driver = citiziens[c.DriverId];
-
-            car.Initialize(this, driver, c.Color?.Deserialize() ?? Utility.RandomColor,
-                          (int)c.CarModel, c.Id);
+            var driver = citizens[c.DriverId];
+            var car = new Car(this, driver, c.Color?.Deserialize() ?? Utility.RandomColor,
+                              (int)c.CarModel, c.Id);
 
             cars.Add(car.id, car);
             return car;
-        }
-
-        public void DestroyCar(Car c)
-        {
-            Destroy(c.gameObject);
-            cars.Remove(c.id);
         }
 
         public TransitVehicle CreateVehicle(Line line)
@@ -573,9 +525,14 @@ namespace Transidious
             return closestBuilding;
         }
 
-        public Citizien CreateCitizien(bool init)
+        public Citizen CreateCitizen(bool init, bool hasCar = true)
         {
-            var c = new Citizien(this);
+            var c = new Citizen(this);
+            if (hasCar)
+            {
+                c.car = CreateCar(c, Vector3.zero);
+            }
+
             c.AssignRandomHome();
             c.AssignRandomValues();
 
@@ -587,18 +544,18 @@ namespace Transidious
             return c;
         }
 
-        public Citizien CreateCitizien(string firstName = null,
+        public Citizen CreateCitizen(string firstName = null,
                                        string lastName = null,
                                        short? age = null,
                                        short? birthday = null,
                                        bool? female = null,
-                                       Citizien.Occupation? occupation = null,
+                                       Citizen.Occupation? occupation = null,
                                        decimal? money = null,
                                        bool? educated = null,
                                        float? happiness = null,
                                        Car car = null)
         {
-            var c = new Citizien(this, car);
+            var c = new Citizen(this, car);
             c.AssignRandomHome();
             c.AssignRandomValues(firstName, lastName, age, birthday, female, occupation,
                                  money, educated, happiness, car);
@@ -608,26 +565,31 @@ namespace Transidious
             return c;
         }
 
-        public Citizien CreateCitizien(Serialization.Citizien c)
+        public Citizen CreateCitizen(Serialization.Citizen c)
         {
-            var result = new Citizien(this, c);
+            var result = new Citizen(this, c);
             result.Initialize(c.ScheduleID);
 
             return result;
         }
 
-        public void SpawnRandomCitiziens(int amount, List<Citizien> citiziens = null)
+        public Citizen GetCitizen(uint id)
+        {
+            return citizens[id];
+        }
+
+        public void SpawnRandomCitizens(int amount, List<Citizen> citizens = null)
         {
             for (int i = 0; i < amount; ++i)
             {
-                var citizien = CreateCitizien(false);
-                if (citizien.age >= 20 && UnityEngine.Random.value >= .3f)
+                var citizen = CreateCitizen(false);
+                if (citizen.age >= 20 && UnityEngine.Random.value >= .3f)
                 {
-                    citizien.car = CreateCar(citizien, Vector3.zero, Utility.RandomColor);
+                    citizen.car = CreateCar(citizen, Vector3.zero, Utility.RandomColor);
                 }
 
-                citizien.Initialize();
-                citiziens?.Add(citizien);
+                citizen.Initialize();
+                citizens?.Add(citizen);
             }
         }
 
@@ -644,8 +606,9 @@ namespace Transidious
                 var result = planner.FindClosestDrive(game.loadedMap, start.centroid,
                                                       goal.centroid);
 
-                trafficSim.SpawnCar(result, CreateCitizien());
-
+                var citizen = CreateCitizen();
+                citizen.FollowPath(result);
+                
                 if (FrameTimer.instance.FrameDuration >= 8)
                 {
                     yield return null;
@@ -655,12 +618,12 @@ namespace Transidious
             yield break;
         }
 
-        public IEnumerator SpawnTestCitiziens(int amount = 1000)
+        public IEnumerator SpawnTestCitizens(int amount = 1000)
         {
             for (int i = 0; i < amount; ++i)
             {
-                var citizien = CreateCitizien();
-                citizien.car = CreateCar(citizien, Vector3.zero, Utility.RandomColor);
+                var citizen = CreateCitizen();
+                citizen.car = CreateCar(citizen, Vector3.zero, Utility.RandomColor);
 
                 if (FrameTimer.instance.FrameDuration >= 8)
                 {
@@ -669,56 +632,6 @@ namespace Transidious
             }
 
             yield break;
-        }
-
-        bool measuring = false;
-        Vector2? firstMeasurePos;
-
-        public void OnGUIX()
-        {
-            if (GUI.Button(new Rect(25, 25, 100, 30), "Spawn Cars"))
-            {
-                StartCoroutine(SpawnTestCars());
-            }
-            if (GUI.Button(new Rect(250, 25, 100, 30), "Spawn Citiziens"))
-            {
-                StartCoroutine(SpawnTestCitiziens());
-            }
-            if (GUI.Button(new Rect(150, 25, 100, 30), "Spawn Car"))
-            {
-                game.input.debugRouteTest = true;
-            }
-            if (GUI.Button(new Rect(350, 25, 100, 30), "Save"))
-            {
-                SaveManager.SaveMapData(game.loadedMap);
-                Debug.Log("file saved successfully");
-            }
-            if (GUI.Button(new Rect(450, 25, 100, 30), "Reset"))
-            {
-                game.loadedMap.Reset();
-            }
-            if (GUI.Button(new Rect(550, 25, 100, 30), "SwitchLang"))
-            {
-                if (Translator.current.CurrentLanguageID == "en_US")
-                {
-                    GameController.instance.SetLanguage("de_DE");
-                }
-                else
-                {
-                    GameController.instance.SetLanguage("en_US");
-                }
-            }
-            if (GUI.Button(new Rect(650, 25, 100, 30), "Measure"))
-            {
-                if (!measuring)
-                {
-                    measuring = true;
-                }
-            }
-            if (GUI.Button(new Rect(25, 60, 100, 30), "MOPSGESCHWINDIGKEIT"))
-            {
-                this.simulationSpeed = 3;
-            }
         }
 #endif
     }

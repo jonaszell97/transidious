@@ -104,9 +104,13 @@ namespace Transidious
 
 #if DEBUG
         public string missionToLoad;
+        public string saveFileToLoad;
+        public QualitySettings.QualityLevel qualityLevel = QualitySettings.QualityLevel.High;
+#endif
+
+#if UNITY_EDITOR
         // Only for debugging.
         public OSMImportHelper.Area areaToLoad;
-        public QualitySettings.QualityLevel qualityLevel = QualitySettings.QualityLevel.High;
 #endif
 
         // *** Shaders ***
@@ -273,13 +277,13 @@ namespace Transidious
 
 #if DEBUG
         public int numRandomLines = 50;
-#endif
 
-        public void LoadMap(OSMImportHelper.Area area)
+        public void LoadMap(string area)
         {
-            var map = SaveManager.CreateMap(this, area.ToString());
+            var map = SaveManager.CreateMap(this, area);
             StartCoroutine(LoadMapAsync(map));
         }
+#endif
 
         System.Collections.IEnumerator LoadMapAsync(Map map)
         {
@@ -288,7 +292,7 @@ namespace Transidious
             this.status = GameStatus.Loading;
             loadingScreen.gameObject.SetActive(true);
 
-            yield return SaveManager.LoadSave(this, map);
+            yield return SaveManager.LoadSave(this, map, saveFileToLoad);
             this.onLoad.Invoke();
 
             this.status = GameStatus.Playing;
@@ -302,7 +306,7 @@ namespace Transidious
                 
                 if (type == TransitType.Bus)
                 {
-                    numStops = UnityEngine.Random.Range(3, 10);
+                    numStops = UnityEngine.Random.Range(10, 50);
                 }
 
                 loadedMap.CreateRandomizedLine(type, null, numStops);
@@ -389,10 +393,12 @@ namespace Transidious
             {
                 Mission.FromFile(missionToLoad).Load();
             }
+#if UNITY_EDITOR
             else if (areaToLoad != OSMImportHelper.Area.Default)
             {
-                LoadMap(areaToLoad);
+                LoadMap(areaToLoad.ToString());
             }
+#endif
         }
 
         void Update()

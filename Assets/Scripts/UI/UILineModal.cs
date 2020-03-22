@@ -137,6 +137,9 @@ namespace Transidious
 
             lineColorButtonImg.color = line.color;
             logo.SetLine(line);
+            
+            infoPanel.SetValue("WeeklyPassengers", line.weeklyPassengers.ToString());
+            infoPanel.SetValue("TripsSaved", "0%");
 
 #if DEBUG
             infoPanel.SetValue("NumVehicles", line.vehicles.Count.ToString());

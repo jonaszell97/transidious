@@ -416,6 +416,17 @@ namespace Transidious
             return GetOffsetPointFromEnd(EndStopLineDistance);
         }
 
+        public Vector2 RelativeDirection(StreetIntersection intersection)
+        {
+            if (intersection == startIntersection)
+            {
+                return positions[1] - positions[0];
+            }
+
+            Debug.Assert(intersection == endIntersection);
+            return positions[positions.Count - 2] - positions[positions.Count - 1];
+        }
+
         public Vector2 RandomPoint
         {
             get

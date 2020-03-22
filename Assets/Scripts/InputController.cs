@@ -679,6 +679,21 @@ namespace Transidious
                 zoomSensitivity = zoomSensitivityMouse;
                 break;
             }
+            
+#if DEBUG
+            RegisterKeyboardEventListener(
+                KeyCode.Alpha1, 
+                _ => controller.sim.SetSimulationSpeed(SimulationController.SimulationSpeed.Speed1));
+            RegisterKeyboardEventListener(
+                KeyCode.Alpha2, 
+                _ => controller.sim.SetSimulationSpeed(SimulationController.SimulationSpeed.Speed2));
+            RegisterKeyboardEventListener(
+                KeyCode.Alpha3, 
+                _ => controller.sim.SetSimulationSpeed(SimulationController.SimulationSpeed.Speed3));
+            RegisterKeyboardEventListener(
+                KeyCode.Alpha4, 
+                _ => controller.sim.SetSimulationSpeed(SimulationController.SimulationSpeed.Speed4));
+#endif
         }
 
 
@@ -815,7 +830,7 @@ namespace Transidious
                 }
             }
 
-            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F3))
+            if (controlListenersEnabled && (Input.GetKeyDown(KeyCode.F3) || Input.GetKeyDown(KeyCode.F4)))
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 if (fromPos == null)
@@ -842,7 +857,6 @@ namespace Transidious
                     {
                         Debug.Log($"transit route found with cost {transitResult.cost}");
                         Debug.Log(transitResult.ToString());
-                        transitResult.DebugDraw();
                     }
 
                     var carResult = planner.FindClosestDrive(map, from, to);
@@ -850,6 +864,17 @@ namespace Transidious
                     {
                         Debug.Log($"car route found with cost {carResult.cost}");
                         Debug.Log(carResult.ToString());
+                    }
+
+                    if (Input.GetKeyDown(KeyCode.F3) && transitResult != null)
+                    {
+                        var c = controller.sim.CreateCitizen(true);
+                        c.FollowPath(transitResult);
+                    }
+                    else if (Input.GetKeyDown(KeyCode.F4) && carResult != null)
+                    {
+                        var c = controller.sim.CreateCitizen(true);
+                        c.FollowPath(carResult);
                     }
 
                     fromPos = null;
@@ -901,8 +926,9 @@ namespace Transidious
                         Destroy(routeMesh?.gameObject ?? null);
                         routeMesh = controller.loadedMap.CreateMultiMesh();
 
-                        controller.sim.trafficSim.SpawnCar(ppResult, new Citizien(controller.sim));
-
+                        var c = controller.sim.CreateCitizen(true);
+                        c.FollowPath(ppResult);
+                        
                         routeMesh.CreateMeshes();
                     }
 

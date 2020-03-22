@@ -41,11 +41,9 @@ namespace Transidious
 
             this.buttonComponent.onClick.AddListener(() =>
             {
-                if (preMoveListener != null)
-                {
-                    preMoveListener();
-                }
+                preMoveListener?.Invoke();
 
+                GameController.instance.input.StopFollowing();
                 moving = true;
 
                 var distance = ((Vector2)linkedLocation - (Vector2)Camera.main.transform.position).magnitude;

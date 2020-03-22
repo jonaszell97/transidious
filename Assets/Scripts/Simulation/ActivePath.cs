@@ -1,0 +1,543 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
+using TMPro;
+using Transidious.PathPlanning;
+using UnityEngine;
+
+namespace Transidious
+{
+    public class ActivePath : MonoBehaviour
+    {
+        /// Helper class to store the current driving state.
+        class DrivingState
+        {
+            /// Reference to the TrafficSimulator's DrivingCar for this path.
+            internal TrafficSimulator.DrivingCar drivingCar;
+
+            /// Time since the last velocity update.
+            internal float timeSinceLastUpdate;
+        }
+
+        /// Reference to the traffic simulator.
+        public TrafficSimulator trafficSim;
+
+        /// The path planning result that this path executes.
+        public PathPlanningResult path;
+
+        /// The citizen that is following the path.
+        public Citizen citizen;
+
+        /// The current step on the path.
+        [CanBeNull]
+        public PathStep currentStep
+        {
+            get
+            {
+                if (_currentStep >= path.steps.Count)
+                    return null;
+
+                return path.steps[_currentStep];
+            }
+        }
+        
+        /// The next step on the path.
+        [CanBeNull]
+        public PathStep nextStep
+        {
+            get
+            {
+                if (_currentStep + 1 >= path.steps.Count)
+                    return null;
+
+                return path.steps[_currentStep + 1];
+            }
+        }
+        
+        /// The renderer for the car / citizen sprites.
+        private SpriteRenderer _spriteRenderer;
+
+        private BoxCollider2D _boxCollider2D;
+
+        private SpriteRenderer spriteRenderer
+        {
+            get
+            {
+                if (_spriteRenderer == null)
+                {
+                    _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
+                    _boxCollider2D = gameObject.AddComponent<BoxCollider2D>();
+                }
+
+                return _spriteRenderer;
+            }
+        }
+
+        /// The path following helper.
+        private PathFollowingObject _pathFollowingHelper;
+        public PathFollowingObject PathFollowingHelper => _pathFollowingHelper;
+
+        public Vector2 CurrentDirection => _pathFollowingHelper?.direction ?? Vector2.zero;
+
+        /// The time to wait until.
+        private DateTime? _waitUntil;
+
+        /// The current driving car ref.
+        private DrivingState _drivingState;
+
+        /// The transit vehicle this path is currently in.
+        public TransitVehicle transitVehicle;
+
+        public bool IsDriving => _drivingState != null && _pathFollowingHelper != null;
+        public bool IsWalking => currentStep.type == PathStep.Type.Walk;
+
+        public Bounds Bounds => spriteRenderer.bounds;
+
+        /// The current step number.
+        private int _currentStep = 0;
+
+        /// Progress on the current step from 0.0 - 1.0.
+        private float _currentStepProgress = 0f;
+
+        /// The current velocity (for steps where it matters).
+        private float _currentVelocity = 0f;
+
+        public float CurrentVelocity => _currentVelocity;
+
+        /// Initialize a path for a citizen.
+        public void Initialize(PathPlanningResult path, Citizen c)
+        {
+            this.path = path;
+            this.citizen = c;
+            this.trafficSim = GameController.instance.sim.trafficSim;
+            this._currentStep = path.steps.Count;
+
+            this.transform.SetLayer(MapLayer.Cars);
+            this.transform.SetParent(GameController.instance.loadedMap.sharedTile.transform);
+
+            c.activePath = this;
+        }
+
+#if DEBUG
+        private Text _metricsTxt;
+        private float __h;
+#endif
+
+        public void Start()
+        {
+            _currentStep = 0;
+            ContinuePath();
+
+#if DEBUG
+            if (trafficSim.displayPathMetrics)
+            {
+                if (_metricsTxt == null)
+                {
+                    _metricsTxt = GameController.instance.loadedMap.CreateText(Vector3.zero, "", Color.black, 2f);
+                    _metricsTxt.textMesh.alignment = TextAlignmentOptions.Center;
+                }
+
+                _metricsTxt.enabled = true;
+            }
+#endif
+        }
+
+        private void FixedUpdate()
+        {
+            if (GameController.instance.Paused)
+            {
+                return;
+            }
+
+            // Check if we're still waiting for something.
+            if (_waitUntil.HasValue)
+            {
+                if (trafficSim.sim.GameTime >= _waitUntil.Value)
+                {
+                    CompleteStep();
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // Update velocity if currently driving.
+            if (IsDriving)
+            {
+                UpdateDrivingState();
+            }
+            else
+            {
+                _pathFollowingHelper?.Update(Time.fixedDeltaTime * trafficSim.sim.SpeedMultiplier);
+            }
+
+            if (_currentStep >= path.steps.Count)
+            {
+                return;
+            }
+
+            UpdateProgress();
+
+#if DEBUG
+            if (trafficSim.displayPathMetrics)
+            {
+                _metricsTxt.SetText($"v {_currentVelocity:n2}\nd {(_drivingState?.drivingCar.DistanceToGoal ?? 0f):n2}\nvT {(1.5f*_currentVelocity*__h):n2}");
+                var tf = transform.position;
+                _metricsTxt.textMesh.transform.position = new Vector3(tf.x, tf.y + 5f, tf.z);
+            }
+#endif
+        }
+
+        void UpdateProgress()
+        {
+            switch (currentStep.type)
+            {
+                case PathStep.Type.Drive:
+                case PathStep.Type.PartialDrive:
+                case PathStep.Type.Walk:
+                case PathStep.Type.Turn:
+                    _currentStepProgress = _pathFollowingHelper.TotalProgress;
+                    break;
+                case PathStep.Type.PublicTransit:
+                    // TODO
+                    break;
+            }
+        }
+
+        public void ContinuePath()
+        {
+            var step = path.steps[_currentStep];
+            switch (step.type)
+            {
+                case PathStep.Type.Walk:
+                    InitWalk(step as WalkStep);
+                    break;
+                case PathStep.Type.Wait:
+                    InitWait(step as WaitStep);
+                    break;
+                case PathStep.Type.Drive:
+                case PathStep.Type.PartialDrive:
+                {
+                    trafficSim.GetStepPath(step, out StreetSegment segment, 
+                        out bool backward, out bool _,
+                        out int lane, out List<Vector3> positions,
+                        out bool _, out bool _,
+                        out Vector2 _);
+
+                    InitDrive(positions, segment, backward, lane);
+                    break;
+                }
+                case PathStep.Type.Turn:
+                    InitTurnStep(step as TurnStep);
+                    break;
+                case PathStep.Type.PublicTransit:
+                    InitTransitStep(step as PublicTransitStep);
+                    break;
+            }
+        }
+
+        void PathDone()
+        {
+            citizen.activePath = null;
+            ResourceManager.instance.Reclaim(this);
+
+#if DEBUG
+            if (trafficSim.displayPathMetrics)
+            {
+                _metricsTxt.enabled = false;
+            }
+#endif
+        }
+
+        bool IsDrivingStep(PathStep step)
+        {
+            if (step == null)
+                return false;
+
+            switch (step.type)
+            {
+                case PathStep.Type.Turn:
+                case PathStep.Type.Drive:
+                case PathStep.Type.PartialDrive:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public void CompleteStep()
+        {
+            _waitUntil = null;
+            _pathFollowingHelper = null;
+            _currentStepProgress = 0f;
+            transitVehicle = null;
+
+            if (!IsDrivingStep(currentStep) || !IsDrivingStep(nextStep))
+            {
+                _drivingState = null;
+                _currentVelocity = 0f;
+                transform.localScale = Vector3.one;
+
+                if (_spriteRenderer != null)
+                {
+                    _spriteRenderer.enabled = false;
+                    _boxCollider2D.enabled = false;
+                }
+            }
+
+            if (++_currentStep < path.steps.Count)
+            {
+                ContinuePath();
+            }
+            else
+            {
+                PathDone();
+            }
+        }
+
+        void UpdateSprite(string spriteName, Color c)
+        {
+            var sr = spriteRenderer;
+            sr.color = c;
+            sr.sprite = SpriteManager.GetSprite(spriteName);
+            sr.enabled = true;
+
+            _boxCollider2D.size = sr.bounds.size;
+            _boxCollider2D.enabled = true;
+        }
+
+        /**
+         * Other steps
+         */
+
+        void InitWait(WaitStep step)
+        {
+            // FIXME
+            // _waitUntil = trafficSim.sim.GameTime.Add(step.waitingTime);
+            CompleteStep();
+        }
+
+        /**
+         * Walking steps
+         */
+
+        void InitWalk(WalkStep step)
+        {
+            // FIXME use actual walking path.
+            var positions = new List<Vector3> {step.from, step.to};
+
+            // Initialize walking citizen sprite.
+            UpdateSprite("Sprites/citizen", citizen.preferredColor);
+            transform.SetPositionInLayer(positions.First());
+
+            // Initialize path following helper.
+            _currentVelocity = citizen.WalkingSpeed;
+            _pathFollowingHelper = new PathFollowingObject(
+                trafficSim.sim, this.gameObject, positions, _currentVelocity, this.CompleteStep);
+
+            if (_currentStepProgress > 0f)
+            {
+                _pathFollowingHelper.SimulateProgress(_currentStepProgress);
+            }
+        }
+
+        /**
+         * Driving steps
+         */
+
+        void InitDrive(List<Vector3> positions, StreetSegment segment, bool backward, int lane)
+        {
+            var car = citizen.car;
+            Debug.Assert(car != null, "citizen has no car!");
+
+            // Initialize car sprite.
+            UpdateSprite($"Sprites/car{car.model}", car.color);
+
+            var tf = transform;
+            tf.SetPositionInLayer(positions.First());
+            tf.localScale = new Vector3(.6f, .6f, 1f);
+
+            // Inform traffic sim that a car is entering the intersection.
+            var drivingCar = trafficSim.EnterStreetSegment(car, segment, positions.First(), lane, this);
+            drivingCar.backward = backward;
+
+            _drivingState = new DrivingState
+            {
+                drivingCar = drivingCar,
+                timeSinceLastUpdate = 0f,
+            };
+
+            // Initialize path following helper.
+            _pathFollowingHelper = new PathFollowingObject(
+                trafficSim.sim, this.gameObject, positions, _currentVelocity,
+                () =>
+                {
+                    trafficSim.ExitStreetSegment(segment, drivingCar);
+                    CompleteStep();
+                });
+
+            if (_currentStepProgress > 0f)
+            {
+                _pathFollowingHelper.SimulateProgress(_currentStepProgress);
+            }
+        }
+
+        void InitTurnStep(TurnStep step)
+        {
+            // First, generate a smooth path crossing the intersection.
+            var intersectionPath = trafficSim.GetIntersectionPath(step, _drivingState.drivingCar.lane);
+            var carOnIntersection = trafficSim.EnterIntersection(
+                _drivingState.drivingCar, step.intersection, step.to.segment);
+
+            // Initialize path following helper.
+            _pathFollowingHelper = new PathFollowingObject(
+                trafficSim.sim, this.gameObject, intersectionPath, _currentVelocity, 
+                () =>
+                {
+                    trafficSim.ExitIntersection(carOnIntersection, step.intersection);
+                    CompleteStep();
+                });
+
+            if (_currentStepProgress > 0f)
+            {
+                _pathFollowingHelper.SimulateProgress(_currentStepProgress);
+            }
+        }
+
+
+        void UpdateDrivingState()
+        {
+            var drivingCar = _drivingState.drivingCar;
+            var sim = trafficSim.sim;
+
+            var elapsedTime = Time.fixedDeltaTime * sim.SpeedMultiplier;
+            _drivingState.timeSinceLastUpdate += elapsedTime;
+
+            if (_drivingState.timeSinceLastUpdate >= TrafficSimulator.VelocityUpdateInterval)
+            {
+                _pathFollowingHelper.velocity = sim.trafficSim.GetCarVelocity(drivingCar, 1f);
+
+                // Must be updated after the velocity calculation.
+                _drivingState.timeSinceLastUpdate = 0f;
+                _currentVelocity = _pathFollowingHelper.velocity;
+            }
+
+            if (drivingCar.waitingForTrafficLight != null)
+            {
+                if (drivingCar.waitingForTrafficLight.MustStop)
+                {
+                    return;
+                }
+
+                drivingCar.waitingForTrafficLight = null;
+            }
+
+            _pathFollowingHelper.Update(elapsedTime);
+
+            drivingCar.distanceFromStart = sim.trafficSim.GetDistanceFromStart(
+                drivingCar.segment,
+                drivingCar.CurrentPosition,
+                drivingCar.lane);
+
+            citizen.currentPosition = drivingCar.CurrentPosition;
+
+            /*if (isFocused)
+            {
+                UpdateUIPosition();
+            }*/
+        }
+
+        /**
+         * Transit steps
+         */
+        
+        void InitTransitStep(PublicTransitStep step)
+        {
+            var firstStop = step.routes.First().beginStop;
+            firstStop.AddWaitingCitizen(this, step);
+        }
+
+        /**
+         * UI Callbacks
+         */
+
+        public void Highlight()
+        {
+            if (IsDriving)
+            {
+                //spriteRenderer.sprite = SpriteManager.GetSprite($"Sprites/car{citizen.car.model}");
+            }
+        }
+
+        public void Unhighlight()
+        {
+            if (IsDriving)
+            {
+                //spriteRenderer.sprite = SpriteManager.GetSprite($"Sprites/car{citizen.car.model}_no_outline");
+            }
+        }
+
+        void UpdateUIPosition()
+        {
+            var modal = GameController.instance.sim.citizenModal;
+            modal.modal.PositionAt(transform.position);
+        }
+
+        void OnMouseEnter()
+        {
+            this.Highlight();
+        }
+
+        void OnMouseExit()
+        {
+            this.Unhighlight();
+        }
+
+        public void OnMouseDown()
+        {
+            if (GameController.instance.input.IsPointerOverUIElement())
+            {
+                return;
+            }
+
+            var modal = GameController.instance.sim.citizenModal;
+            modal.SetCitizen(citizen);
+
+            modal.modal.PositionAt(transform.position);
+            modal.modal.Enable();
+        }
+
+        public Serialization.ActivePath Serialize()
+        {
+            return new Serialization.ActivePath
+            {
+                CitizenId = citizen.id,
+                CurrentStep = _currentStep,
+                WaitUntil = _waitUntil?.Ticks ?? -1,
+                CurrentStepProgress = _currentStepProgress,
+                CurrentVelocity = _currentVelocity,
+            };
+        }
+
+        public static ActivePath Deserialize(Serialization.ActivePath path)
+        {
+            var result = ResourceManager.instance.GetActivePath(true);
+            result._currentStep = path.CurrentStep;
+            result._currentStepProgress = path.CurrentStepProgress;
+            result._currentVelocity = path.CurrentVelocity;
+            
+            if (path.WaitUntil != -1)
+            {
+                result._waitUntil = new DateTime(path.WaitUntil);
+            }
+
+            result.Initialize(
+                PathPlanningResult.Deserialize(GameController.instance.loadedMap, path.Path), 
+                GameController.instance.sim.GetCitizen(path.CitizenId));
+
+            return result;
+        }
+    }
+}

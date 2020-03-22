@@ -19,7 +19,7 @@ namespace Transidious
             MonthlyIncome = 1,
 
             /// <summary>
-            /// Completed when a certain amount of average citizien happiness is reached.
+            /// Completed when a certain amount of average citizen happiness is reached.
             /// </summary>
             AvgHappiness = 2,
 

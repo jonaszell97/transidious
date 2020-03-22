@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -453,6 +455,7 @@ namespace Transidious
         public OSMImportHelper.Area area;
         public string country;
         public bool loadTransitLines;
+        public string[] linesToLoad;
         public bool done;
 
         public static readonly float maxTileSize = 999999f; // 6000f;
@@ -543,14 +546,19 @@ namespace Transidious
             SaveManager.SaveMapLayout(map);
             SaveManager.SaveMapData(map, map.name);
 
+            Debug.Log("Exporting map screenshots...");
             exporter.ExportMap(map.name);
 
             if (exportType == MapExportType.Mesh)
             {
+                Debug.Log("Exporting map prefab...");
                 exporter.ExportMapPrefab();
             }
 
+            Debug.Log("Exporting minimap...");
             exporter.ExportMinimap(map.name);
+            
+            Debug.Log("Saving assets...");
             UnityEditor.AssetDatabase.SaveAssets();
             // exporter.ExportLOD(map.name);
 
@@ -790,7 +798,7 @@ namespace Transidious
             map.UpdateBoundary(boundaryPositions);
         }
 
-        void AddStopToLine(Line l, Stop s, Stop previousStop, int i, List<List<Vector3>> wayPositions,
+        void AddStopToLine(Map.LineBuilder l, Stop s, Stop previousStop, int i, List<List<Vector3>> wayPositions,
                            bool setDepot = true)
         {
             if (s == previousStop)
@@ -798,12 +806,12 @@ namespace Transidious
                 return;
             }
 
-            if (previousStop)
+            if (previousStop != null)
             {
                 List<Vector3> positions = null;
                 List<TrafficSimulator.PathSegmentInfo> segmentInfo = null;
 
-                if (l.type == TransitType.Bus)
+                if (l.line.type == TransitType.Bus)
                 {
                     var options = new PathPlanning.PathPlanningOptions { allowWalk = false };
                     var planner = new PathPlanning.PathPlanner(options);
@@ -826,10 +834,11 @@ namespace Transidious
                     positions = wayPositions[i - 1];
                 }
 
-                var route = l.AddRoute(previousStop, s, positions, true, false);
+                l.AddStop(s, true, false, positions);
                 if (segmentInfo != null)
                 {
                     // Note which streets this route passes over.
+                    var route = l.line.routes.Last();
                     foreach (var segAndLane in segmentInfo)
                     {
                         var routesOnSegment = segAndLane.segment.GetTransitRoutes(segAndLane.lane);
@@ -840,7 +849,7 @@ namespace Transidious
             }
             else if (setDepot)
             {
-                l.depot = s;
+                l.line.depot = s;
             }
         }
 
@@ -895,9 +904,7 @@ namespace Transidious
         {
             foreach (var linePair in lines)
             {
-                if (linePair.Value.type != TransitType.Bus
-                /*|| (linePair.Value.inbound.Geo.Tags["ref"] != "M19"
-                && linePair.Value.inbound.Geo.Tags["ref"] != "M29")*/)
+                if (linesToLoad.Length > 0 && !linesToLoad.Contains(linePair.Value.inbound.Geo.Tags["ref"]))
                 {
                     continue;
                 }
@@ -915,8 +922,11 @@ namespace Transidious
                     color = Map.defaultLineColors[linePair.Value.type];
                 }
 
-                var l = map.CreateLine(linePair.Value.type, l1.Geo.Tags.GetValue("ref"), color).Finish();
-                Debug.Log("loading line '" + l.name + "'...");
+                var name = l1.Geo.Tags.GetValue("ref");
+                var type = linePair.Value.type;
+                var l = map.CreateLine(type, name, color);
+                
+                Debug.Log("loading line '" + name + "'...");
 
                 var members = l1.Members.ToList();
                 if (l2 != null)
@@ -925,11 +935,14 @@ namespace Transidious
                 }
 
                 int i = 0;
-                var wayPositions = new List<List<Vector3>>();
-                var currentPositions = new List<Vector3>();
+                List<Vector3> wayPositions = null;
+                List<Vector3> currentPositions = null;
 
-                if (l.type != TransitType.Bus)
+                if (type != TransitType.Bus)
                 {
+                    wayPositions = new List<Vector3>();
+                    currentPositions = new List<Vector3>();
+                    
                     foreach (var member in members)
                     {
                         if (!string.IsNullOrEmpty(member.Role))
@@ -954,8 +967,8 @@ namespace Transidious
                             || node.Geo.Tags.GetValue("public_transport").StartsWith("stop", StringComparison.InvariantCulture)
                             || node.Geo.Tags.GetValue("highway").Contains("stop")))
                             {
-                                wayPositions.Add(currentPositions);
-                                currentPositions = new List<Vector3>();
+                                wayPositions.AddRange(currentPositions);
+                                currentPositions.Clear();
                             }
                         }
 
@@ -983,7 +996,7 @@ namespace Transidious
                         platform = FindWay(members[n + 1].Id);
                     }
 
-                    if (l.type == TransitType.Bus && platform != null)
+                    if (type == TransitType.Bus && platform != null)
                     {
                         foreach (var nodeId in platform.Nodes)
                         {
@@ -1008,18 +1021,20 @@ namespace Transidious
 
                     if (s != null)
                     {
-                        AddStopToLine(l, s, previousStop, i, wayPositions);
+                        l.AddStop(s, true, false, wayPositions, true);
                         previousStop = s;
                     }
 
                     ++i;
                     ++n;
                 }
-
-                if (l.stops.Count != 0 && previousStop != l.stops.First())
+                
+                if (l.line.stops.Count != 0 && previousStop != l.line.stops.First())
                 {
-                    AddStopToLine(l, l.stops.First(), previousStop, i, wayPositions);
+                    l.AddStop(l.line.stops.First(), true, false, null, true);
                 }
+
+                l.Finish();
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
@@ -2019,3 +2034,5 @@ namespace Transidious
         }
     }
 }
+
+#endif

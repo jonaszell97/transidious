@@ -18,6 +18,7 @@ namespace Transidious
             Forest,
             Parking,
             Footpath,
+            Residential,
         }
 
         public Type type;
@@ -84,6 +85,8 @@ namespace Transidious
                 return new Color(.8f, .8f, .8f);
             case Type.Footpath:
                 return new Color(232f / 255f, 220f / 255f, 192f / 255f);
+            case Type.Residential:
+                return new Color(245f / 255f, 245f / 255f, 245f / 255f);
             default:
                 return new Color();
             }
@@ -108,6 +111,7 @@ namespace Transidious
                     layer = Map.Layer(MapLayer.Parks, 2);
                     break;
                 case NaturalFeature.Type.Forest:
+                case Type.Residential:
                     layer = Map.Layer(MapLayer.NatureBackground, 0);
                     break;
                 case NaturalFeature.Type.Beach:

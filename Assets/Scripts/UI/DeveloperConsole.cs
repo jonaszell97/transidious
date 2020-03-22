@@ -187,8 +187,8 @@ namespace Transidious
 
         public void HandleSetSimSpeedCommand(int simSpeed)
         {
-            sim.SetSimulationSpeed(simSpeed);
-            Log($"sim speed set to {sim.simulationSpeed} / 3");
+            sim.SetSimulationSpeed((SimulationController.SimulationSpeed)simSpeed);
+            Log($"sim speed set to {sim.simulationSpeed}");
         }
 
         public void HandleSetTimeCommand(string timeStr)
@@ -245,12 +245,12 @@ namespace Transidious
             Log($"spent {Translator.GetCurrency(amount, true, false)}");
         }
 
-        public void HandleSpawnCitiziensCommand(int amount)
+        public void HandleSpawnCitizensCommand(int amount)
         {
-            var citiziens = new List<Citizien>();
-            sim.SpawnRandomCitiziens(amount, citiziens);
+            var citizens = new List<Citizen>();
+            sim.SpawnRandomCitizens(amount, citizens);
 
-            foreach (var c in citiziens)
+            foreach (var c in citizens)
             {
                 Log($"spawned {c.Name}");
             }
@@ -258,7 +258,7 @@ namespace Transidious
             if (amount == 1)
             {
                 game.input.SetZoomLevel(50f);
-                game.input.MoveTowards(citiziens.First().currentPosition);
+                game.input.MoveTowards(citizens.First().currentPosition);
             }
         }
 
@@ -301,6 +301,7 @@ namespace Transidious
 
         public void HandleExportMapCommand(string fileName, int resolution)
         {
+#if UNITY_EDITOR
             if (fileName == null)
             {
                 fileName = game.loadedMap.name;
@@ -310,6 +311,7 @@ namespace Transidious
             exporter.ExportMap(fileName);
 
             Log($"exported map as {fileName}.png");
+#endif
         }
 
         public void HandleSetPrefCommand(string key, string value)
@@ -361,17 +363,17 @@ namespace Transidious
 
         public void HandleLocateCommand(string name)
         {
-            var citiziens = game.sim.citiziens.Where(c => c.Value.Name == name);
-            if (citiziens.Count() == 0)
+            var citizens = game.sim.citizens.Where(c => c.Value.Name == name);
+            if (citizens.Count() == 0)
             {
-                Log($"citizien '{name}' not found");
+                Log($"citizen '{name}' not found");
                 return;
             }
 
             Log($"located '{name}'");
 
             game.input.SetZoomLevel(50f);
-            game.input.MoveTowards(citiziens.First().Value.currentPosition);
+            game.input.MoveTowards(citizens.First().Value.currentPosition);
         }
 
         public static void Log(string msg)

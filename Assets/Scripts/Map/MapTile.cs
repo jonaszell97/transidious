@@ -88,6 +88,7 @@ namespace Transidious
             }
 
             this.gameObject.SetActive(false);
+            this.checkMouseOver = false;
         }
 
         public void UpdateSprite()
@@ -419,45 +420,33 @@ namespace Transidious
                     break;
             }
 
+#if DEBUG
+            checkCars = true;
+#endif
+            
             var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if (checkCars)
             {
                 // Check if a car was clicked.
-                foreach (var car in GameController.instance.sim.cars)
+                foreach (var car in mapObjects.OfType<ActivePath>())
                 {
-                    Vector2 pos = car.Value.transform.position;
+                    if (!car.IsDriving)
+                        continue;
+
+                    Vector2 pos = car.transform.position;
                     if (!IsPointInTile(pos))
                     {
                         continue;
                     }
 
-                    var bounds = car.Value.Bounds;
+                    var bounds = car.Bounds;
                     if (bounds.Contains2D(clickedPos))
                     {
-                        car.Value.OnMouseDown();
+                        car.OnMouseDown();
                         break;
                     }
                 }
             }
-
-#if DEBUG
-            // Check if a walking citizien was clicked.
-            foreach (var wc in FindObjectsOfType<WalkingCitizien>())
-            {
-                Vector2 pos = wc.transform.position;
-                if (!IsPointInTile(pos))
-                {
-                    continue;
-                }
-
-                var bounds = wc.Bounds;
-                if (bounds.Contains2D(clickedPos))
-                {
-                    wc.OnMouseDown();
-                    break;
-                }
-            }
-#endif
         }
 
         LineRenderer GetLineRenderer(int i)
@@ -525,7 +514,7 @@ namespace Transidious
             }
         }
 
-        bool checkMouseOver = false;
+        private bool checkMouseOver;
 
         void OnMouseOver()
         {
