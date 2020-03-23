@@ -8,6 +8,112 @@ namespace Transidious
 {
     public class StreetSegment : StaticMapObject, IRoute
     {
+        public class Lane : IRoute
+        {
+            /// The segment this lane belongs to.
+            public StreetSegment segment;
+
+            /// The lane number.
+            public int laneNumber;
+
+            /// The direction of this lane relative to the street segments (arbitrary) direction.
+            public bool forward;
+
+            /// C'tor.
+            public Lane(StreetSegment segment, int laneNumber, bool forward)
+            {
+                this.segment = segment;
+                this.laneNumber = laneNumber;
+                this.forward = forward;
+            }
+
+            /// The start intersection of this lane.
+            public StreetIntersection startIntersection => forward 
+                ? segment.startIntersection
+                : segment.endIntersection;
+            
+            /// The end intersection of this lane.
+            public StreetIntersection endIntersection => forward 
+                ? segment.endIntersection
+                : segment.startIntersection;
+
+            /// The start traffic light of this lane.
+            public TrafficLight startTrafficLight => forward 
+                ? segment.startTrafficLight
+                : segment.endTrafficLight;
+
+            /// The end traffic light of this lane.
+            public TrafficLight endTrafficLight => forward 
+                ? segment.endTrafficLight
+                : segment.startTrafficLight;
+
+            /// The length of this lane.
+            public float length => segment.length;
+
+            /// The positions of this lane.
+            public Vector3[] path
+            {
+                get
+                {
+                    var traffiSim = GameController.instance.sim.trafficSim;
+                    return traffiSim.GetPath(segment, laneNumber);
+                }
+            }
+
+            /// The positions of this segment.
+            public List<Vector3> positions
+            {
+                get
+                {
+                    if (forward)
+                        return segment.positions;
+
+                    var cpy = new List<Vector3>(segment.positions);
+                    cpy.Reverse();
+
+                    return cpy;
+                }
+            }
+
+            /// The drivable positions of this segment.
+            public List<Vector3> drivablePositions
+            {
+                get
+                {
+                    if (forward)
+                        return segment.drivablePositions;
+
+                    var cpy = new List<Vector3>(segment.drivablePositions);
+                    cpy.Reverse();
+
+                    return cpy;
+                }
+            }
+
+            public IStop Begin => startIntersection;
+
+            public IStop End => endIntersection;
+            
+            public bool OneWay => true;
+
+            public TimeSpan TravelTime => GetTravelTime(length);
+
+            public TimeSpan GetTravelTime(float length)
+            {
+                var seconds = (length / (segment.street.AverageSpeedKPH * Math.Kph2Mps));
+                return TimeSpan.FromSeconds(seconds * GameController.instance.sim.trafficSim.CurrentTrafficFactor);
+            }
+
+            public float AverageSpeed => segment.street.AverageSpeedKPH;
+
+            public int AssociatedID => 0;
+
+            public DateTime NextDeparture(DateTime after)
+            {
+                return after;
+            }
+        }
+
         /// The street this segment is part of.
         public Street street;
 
@@ -39,7 +145,7 @@ namespace Transidious
         HashSet<Route>[] transitRoutes;
 
         /// The text label for this segments street name.
-        public Transidious.Text streetName;
+        public Text streetName;
 
         /// The direction arrow on this street segment.
         public GameObject directionArrow;

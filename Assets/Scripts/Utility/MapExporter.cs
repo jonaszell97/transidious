@@ -85,6 +85,7 @@ namespace Transidious
         public Map map;
         public readonly int resolution;
         public Dictionary<IMapObject, MeshInfo> meshInfo;
+        private List<Tuple<MapTile, MeshInfo>> otherMeshes;
         Statistics stats;
 
         List<Tuple<IMapObject, MeshInfo>> _SortedMeshes;
@@ -108,6 +109,7 @@ namespace Transidious
             this.resolution = resolution;
             this.meshInfo = new Dictionary<IMapObject, MeshInfo>();
             this.stats = new Statistics();
+            this.otherMeshes = new List<Tuple<MapTile, MeshInfo>>();
         }
 
         public void RegisterMesh(IMapObject obj, PSLG pslg,
@@ -126,6 +128,30 @@ namespace Transidious
                                  float layer, UnityEngine.Color color)
         {
             this.meshInfo.Add(obj, new MeshInfo(poly, layer, color));
+        }
+
+        public void RegisterMesh(PSLG pslg, float layer, UnityEngine.Color color)
+        {
+            var tiles = map.GetTiles(pslg.Outlines);
+            this.otherMeshes.Add(Tuple.Create(
+                tiles.Count == 1 ? tiles.First() : map.sharedTile,
+                new MeshInfo(pslg, layer, color)));
+        }
+
+        public void RegisterMesh(Vector2[] poly, float layer, UnityEngine.Color color)
+        {
+            var tiles = map.GetTiles(poly);
+            this.otherMeshes.Add(Tuple.Create(
+                tiles.Count == 1 ? tiles.First() : map.sharedTile,
+                new MeshInfo(poly, layer, color)));
+        }
+
+        public void RegisterMesh(Vector3[] poly, float layer, UnityEngine.Color color)
+        {
+            var tiles = map.GetTiles(poly);
+            this.otherMeshes.Add(Tuple.Create(
+                tiles.Count == 1 ? tiles.First() : map.sharedTile,
+                new MeshInfo(poly, layer, color)));
         }
 
         public void ExportMap(string fileName)
@@ -425,6 +451,23 @@ namespace Transidious
                 }
             }
 
+            foreach (var info in otherMeshes)
+            {
+                if (info.Item1 != tile && !info.Item1.IsSharedTile)
+                {
+                    continue;
+                }
+                
+                if (global)
+                {
+                    DrawGlobalMesh(g, info.Item2.color, info.Item2, resolution);
+                }
+                else
+                {
+                    DrawMesh(g, info.Item2.color, info.Item2, tile);
+                }
+            }
+
             if (objectsToDraw.Count == 0)
             {
                 return false;
@@ -466,6 +509,11 @@ namespace Transidious
             {
                 DrawGlobalMesh(g, info.Item2.color, info.Item2, resolution, padding);
             }
+            
+            foreach (var info in otherMeshes)
+            {
+                DrawGlobalMesh(g, info.Item2.color, info.Item2, resolution, padding);
+            }
 
             var path = new GraphicsPath();
             path.AddRectangle(new Rectangle(0, 0, resolution - 1, resolution - 1));
@@ -496,6 +544,11 @@ namespace Transidious
         void DrawLOD(System.Drawing.Graphics g, int resolution)
         {
             foreach (var info in SortedMeshes)
+            {
+                DrawGlobalMesh(g, info.Item2.color, info.Item2, resolution);
+            }
+            
+            foreach (var info in otherMeshes)
             {
                 DrawGlobalMesh(g, info.Item2.color, info.Item2, resolution);
             }
@@ -597,6 +650,14 @@ namespace Transidious
 
                 info.Key.UniqueTile.AddMesh(group, mesh, color, layer, RenderingDistance.Near);
                 stats.AddMesh(group, mesh);
+            }
+
+            foreach (var info in otherMeshes)
+            {
+                var mesh = CreateMesh(info.Item2, fast);
+
+                info.Item1.AddMesh("Uncategorised", mesh, info.Item2.color, info.Item2.layer, RenderingDistance.Near);
+                stats.AddMesh("Uncategorised", mesh);
             }
         }
 

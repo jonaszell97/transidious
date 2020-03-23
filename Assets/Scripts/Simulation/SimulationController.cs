@@ -545,15 +545,15 @@ namespace Transidious
         }
 
         public Citizen CreateCitizen(string firstName = null,
-                                       string lastName = null,
-                                       short? age = null,
-                                       short? birthday = null,
-                                       bool? female = null,
-                                       Citizen.Occupation? occupation = null,
-                                       decimal? money = null,
-                                       bool? educated = null,
-                                       float? happiness = null,
-                                       Car car = null)
+                                     string lastName = null,
+                                     short? age = null,
+                                     short? birthday = null,
+                                     bool? female = null,
+                                     Citizen.Occupation? occupation = null,
+                                     decimal? money = null,
+                                     bool? educated = null,
+                                     float? happiness = null,
+                                     Car car = null)
         {
             var c = new Citizen(this, car);
             c.AssignRandomHome();

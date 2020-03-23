@@ -51,23 +51,19 @@ namespace Transidious
             subject.transform.rotation = prevRotation;
         }
 
-        public void SimulateProgress(float progress)
+        public void SimulateProgress(float relativeProgress)
         {
-            // Progress is a percentage
-            progress *= totalThreshold;
-
-            while (this.totalProgress < progress)
+            var totalProgress = relativeProgress * totalThreshold;
+            while (this.totalProgress < totalProgress)
             {
-                if (this.totalProgress + threshold >= progress)
+                if (this.totalProgress + this.threshold >= totalProgress)
                 {
-                    this.progress = (progress - totalProgress);
+                    this.progress = totalProgress - this.totalProgress;
                     break;
                 }
-                else
-                {
-                    totalProgress += threshold;
-                    MoveNext();
-                }
+
+                this.totalProgress += threshold;
+                MoveNext();
             }
 
             UpdatePositionAndRotation();

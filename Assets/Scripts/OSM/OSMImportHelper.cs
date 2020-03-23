@@ -302,6 +302,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -317,9 +318,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -329,12 +332,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -436,6 +441,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -451,9 +457,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -463,12 +471,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -633,6 +643,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -648,9 +659,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -660,12 +673,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -767,6 +782,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -782,9 +798,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -794,12 +812,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -964,6 +984,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -979,9 +1000,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -991,12 +1014,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -1098,6 +1123,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -1113,9 +1139,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -1125,12 +1153,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -1295,6 +1325,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -1310,9 +1341,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -1322,12 +1355,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -1429,6 +1464,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -1444,9 +1480,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -1456,12 +1494,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -1626,6 +1666,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -1641,9 +1682,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -1653,12 +1696,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -1760,6 +1805,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -1775,9 +1821,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -1787,12 +1835,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -1957,6 +2007,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -1972,9 +2023,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -1984,12 +2037,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -2091,6 +2146,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -2106,9 +2162,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -2118,12 +2176,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -2288,6 +2348,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -2303,9 +2364,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -2315,12 +2378,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -2422,6 +2487,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -2437,9 +2503,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -2449,12 +2517,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -2619,6 +2689,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -2634,9 +2705,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -2646,12 +2719,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -2753,6 +2828,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -2768,9 +2844,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -2780,12 +2858,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -2950,6 +3030,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -2965,9 +3046,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -2977,12 +3060,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -3084,6 +3169,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -3099,9 +3185,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -3111,12 +3199,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -3281,6 +3371,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -3296,9 +3387,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -3308,12 +3401,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -3415,6 +3510,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -3430,9 +3526,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -3442,12 +3540,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -3612,6 +3712,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -3627,9 +3728,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -3639,12 +3742,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -3746,6 +3851,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -3761,9 +3867,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -3773,12 +3881,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -3943,6 +4053,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -3958,9 +4069,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -3970,12 +4083,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -4077,6 +4192,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -4092,9 +4208,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -4104,12 +4222,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -4274,6 +4394,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -4289,9 +4410,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -4301,12 +4424,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -4408,6 +4533,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -4423,9 +4549,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -4435,12 +4563,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -4605,6 +4735,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -4620,9 +4751,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -4632,12 +4765,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -4739,6 +4874,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -4754,9 +4890,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -4766,12 +4904,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -4936,6 +5076,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -4951,9 +5092,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -4963,12 +5106,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -5070,6 +5215,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -5085,9 +5231,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -5097,12 +5245,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -5267,6 +5417,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -5282,9 +5433,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -5294,12 +5447,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -5401,6 +5556,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -5416,9 +5572,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -5428,12 +5586,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -5598,6 +5758,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -5613,9 +5774,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -5625,12 +5788,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -5732,6 +5897,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -5747,9 +5913,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -5759,12 +5927,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -5929,6 +6099,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -5944,9 +6115,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -5956,12 +6129,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -6063,6 +6238,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -6078,9 +6254,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -6090,12 +6268,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -6260,6 +6440,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -6275,9 +6456,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -6287,12 +6470,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -6394,6 +6579,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -6409,9 +6595,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -6421,12 +6609,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -6591,6 +6781,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -6606,9 +6797,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -6618,12 +6811,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -6725,6 +6920,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -6740,9 +6936,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -6752,12 +6950,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -6922,6 +7122,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -6937,9 +7138,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -6949,12 +7152,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -7056,6 +7261,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -7071,9 +7277,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -7083,12 +7291,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -7253,6 +7463,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -7268,9 +7479,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -7280,12 +7493,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -7387,6 +7602,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -7402,9 +7618,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -7414,12 +7632,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -7584,6 +7804,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -7599,9 +7820,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -7611,12 +7834,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -7718,6 +7943,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -7733,9 +7959,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -7745,12 +7973,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -7915,6 +8145,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -7930,9 +8161,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -7942,12 +8175,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -8049,6 +8284,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -8064,9 +8300,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -8076,12 +8314,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }
@@ -8246,6 +8486,7 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -8261,9 +8502,11 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Lake));
 AddGeoReference(rel);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.FootpathArea));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "forest")) {
@@ -8273,12 +8516,14 @@ AddGeoReference(rel);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Beach));
 AddGeoReference(rel);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Parking));
 AddGeoReference(rel);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Residential));
 AddGeoReference(rel);
 }
@@ -8380,6 +8625,7 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Allotment));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "cemetery")) {
@@ -8395,9 +8641,11 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("leisure", "swimming_pool")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Lake));
 AddGeoReference(way);
 }if (tags.Contains("highway", "footpath") && tags.Contains("area", "yes")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.FootpathArea));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "forest")) {
@@ -8407,12 +8655,14 @@ AddGeoReference(way);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("natural", "sand")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Beach));
 AddGeoReference(way);
 }if (tags.Contains("amenity", "parking")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Parking));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "residential")) {
+importer.visualOnlyFeatures.Add(way.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Residential));
 AddGeoReference(way);
 }

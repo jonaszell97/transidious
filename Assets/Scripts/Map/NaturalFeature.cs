@@ -61,6 +61,11 @@ namespace Transidious
 
         public override Color GetColor()
         {
+            return GetColor(type);
+        }
+
+        public static Color GetColor(Type type)
+        {
             switch (type)
             {
             case Type.Lake:
@@ -93,6 +98,11 @@ namespace Transidious
         }
 
         public float GetLayer()
+        {
+            return GetLayer(type);
+        }
+
+        public static float GetLayer(Type type)
         {
             float layer = 0f;
             switch (type)

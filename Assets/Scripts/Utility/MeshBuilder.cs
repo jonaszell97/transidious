@@ -173,9 +173,9 @@ namespace Transidious
                 return 1;
             }
 
-            var prevAngleRad = Math.toRadians(Vector2.Angle(Vector2.right, p1 - p0));
+            var prevAngleRad = Vector2.Angle(Vector2.right, p1 - p0) * Mathf.Deg2Rad;
             var stepDeg = angleDiffDeg / neededSegments;
-            var stepRad = Math.toRadians(stepDeg);
+            var stepRad = stepDeg * Mathf.Deg2Rad;
             baseIndex = vertices.Count;
 
             for (var j = 1; j < neededSegments; ++j)
@@ -805,17 +805,23 @@ namespace Transidious
                 var tmpObj = new GameObject();
                 tmpRenderer = tmpObj.AddComponent<LineRenderer>();
                 tmpRenderer.enabled = false;
+                
+                /* tmpRenderer.material = new Material(Shader.Find("Unlit/Texture"))
+                {
+                    mainTexture = (Texture2D) Resources.Load("Sprites/street_day")
+                };
+                tmpRenderer.textureMode = LineTextureMode.RepeatPerSegment; */
             }
 
             tmpRenderer.positionCount = positions.Count;
             tmpRenderer.SetPositions(positions.ToArray());
-            //tmpRenderer.SetPositions(
-            //    positions.Select(v => new Vector3(v.x, v.y, Map.Layer(MapLayer.TransitLines))).ToArray());
 
             tmpRenderer.numCornerVertices = cornerVerts;
             tmpRenderer.numCapVertices = capVerts;
             tmpRenderer.startWidth = width * 2;
             tmpRenderer.endWidth = tmpRenderer.startWidth;
+
+            // tmpRenderer.material.mainTextureScale = new Vector2(1/tmpRenderer.startWidth, 1/tmpRenderer.startWidth);
 
             var mesh = new Mesh();
             tmpRenderer.BakeMesh(mesh);

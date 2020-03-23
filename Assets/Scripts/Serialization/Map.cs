@@ -52,7 +52,7 @@ namespace Transidious.Serialization {
             "CGVhcm5pbmdzGAQgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5E",
             "ZWNpbWFsEjgKDGVhcm5pbmdJdGVtcxgFIAMoCzIiLlRyYW5zaWRpb3VzLlNl",
             "cmlhbGl6YXRpb24uRWFybmluZxIxCgV0YXhlcxgGIAEoCzIiLlRyYW5zaWRp",
-            "b3VzLlNlcmlhbGl6YXRpb24uRWFybmluZyL/AwoIU2F2ZUZpbGUSOAoGdHJp",
+            "b3VzLlNlcmlhbGl6YXRpb24uRWFybmluZyK7BAoIU2F2ZUZpbGUSOAoGdHJp",
             "cGxlGAEgASgLMiguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZXJzaW9u",
             "VHJpcGxlEjsKBXRpbGVzGAIgAygLMiwuVHJhbnNpZGlvdXMuU2VyaWFsaXph",
             "dGlvbi5TYXZlRmlsZS5NYXBUaWxlcxIuCgVsaW5lcxgDIAMoCzIfLlRyYW5z",
@@ -60,11 +60,13 @@ namespace Transidious.Serialization {
             "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RvcBIwCgZyb3V0ZXMYBSADKAsy",
             "IC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlJvdXRlEjQKCGNpdGl6ZW5z",
             "GAYgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuEiwK",
-            "BGNhcnMYByADKAsyHi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNhchIQ",
-            "CghnYW1lVGltZRgIIAEoBBI1CghmaW5hbmNlcxgJIAEoCzIjLlRyYW5zaWRp",
-            "b3VzLlNlcmlhbGl6YXRpb24uRmluYW5jZXMaPQoITWFwVGlsZXMSMQoFdGls",
-            "ZXMYASADKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1hcFRpbGVC",
-            "HKoCGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
+            "BGNhcnMYByADKAsyHi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNhchI6",
+            "CgthY3RpdmVQYXRocxgIIAMoCzIlLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
+            "b24uQWN0aXZlUGF0aBIQCghnYW1lVGltZRgJIAEoBBI1CghmaW5hbmNlcxgK",
+            "IAEoCzIjLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uRmluYW5jZXMaPQoI",
+            "TWFwVGlsZXMSMQoFdGlsZXMYASADKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxp",
+            "emF0aW9uLk1hcFRpbGVCHKoCGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25i",
+            "BnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.TransitReflection.Descriptor, global::Transidious.Serialization.SimulationReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -73,7 +75,7 @@ namespace Transidious.Serialization {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Expense), global::Transidious.Serialization.Expense.Parser, new[]{ "Description", "Amount" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Earning), global::Transidious.Serialization.Earning.Parser, new[]{ "Description", "Amount" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Finances), global::Transidious.Serialization.Finances.Parser, new[]{ "Money", "Expenses", "ExpenseItems", "Earnings", "EarningItems", "Taxes" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile), global::Transidious.Serialization.SaveFile.Parser, new[]{ "Triple", "Tiles", "Lines", "Stops", "Routes", "Citizens", "Cars", "GameTime", "Finances" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile.Types.MapTiles), global::Transidious.Serialization.SaveFile.Types.MapTiles.Parser, new[]{ "Tiles" }, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile), global::Transidious.Serialization.SaveFile.Parser, new[]{ "Triple", "Tiles", "Lines", "Stops", "Routes", "Citizens", "Cars", "ActivePaths", "GameTime", "Finances" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.SaveFile.Types.MapTiles), global::Transidious.Serialization.SaveFile.Types.MapTiles.Parser, new[]{ "Tiles" }, null, null, null)})
           }));
     }
     #endregion
@@ -1315,6 +1317,7 @@ namespace Transidious.Serialization {
       routes_ = other.routes_.Clone();
       citizens_ = other.citizens_.Clone();
       cars_ = other.cars_.Clone();
+      activePaths_ = other.activePaths_.Clone();
       gameTime_ = other.gameTime_;
       finances_ = other.finances_ != null ? other.finances_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1396,8 +1399,18 @@ namespace Transidious.Serialization {
       get { return cars_; }
     }
 
+    /// <summary>Field number for the "activePaths" field.</summary>
+    public const int ActivePathsFieldNumber = 8;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.ActivePath> _repeated_activePaths_codec
+        = pb::FieldCodec.ForMessage(66, global::Transidious.Serialization.ActivePath.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.ActivePath> activePaths_ = new pbc::RepeatedField<global::Transidious.Serialization.ActivePath>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.ActivePath> ActivePaths {
+      get { return activePaths_; }
+    }
+
     /// <summary>Field number for the "gameTime" field.</summary>
-    public const int GameTimeFieldNumber = 8;
+    public const int GameTimeFieldNumber = 9;
     private ulong gameTime_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong GameTime {
@@ -1408,7 +1421,7 @@ namespace Transidious.Serialization {
     }
 
     /// <summary>Field number for the "finances" field.</summary>
-    public const int FinancesFieldNumber = 9;
+    public const int FinancesFieldNumber = 10;
     private global::Transidious.Serialization.Finances finances_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Transidious.Serialization.Finances Finances {
@@ -1438,6 +1451,7 @@ namespace Transidious.Serialization {
       if(!routes_.Equals(other.routes_)) return false;
       if(!citizens_.Equals(other.citizens_)) return false;
       if(!cars_.Equals(other.cars_)) return false;
+      if(!activePaths_.Equals(other.activePaths_)) return false;
       if (GameTime != other.GameTime) return false;
       if (!object.Equals(Finances, other.Finances)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -1453,6 +1467,7 @@ namespace Transidious.Serialization {
       hash ^= routes_.GetHashCode();
       hash ^= citizens_.GetHashCode();
       hash ^= cars_.GetHashCode();
+      hash ^= activePaths_.GetHashCode();
       if (GameTime != 0UL) hash ^= GameTime.GetHashCode();
       if (finances_ != null) hash ^= Finances.GetHashCode();
       if (_unknownFields != null) {
@@ -1478,12 +1493,13 @@ namespace Transidious.Serialization {
       routes_.WriteTo(output, _repeated_routes_codec);
       citizens_.WriteTo(output, _repeated_citizens_codec);
       cars_.WriteTo(output, _repeated_cars_codec);
+      activePaths_.WriteTo(output, _repeated_activePaths_codec);
       if (GameTime != 0UL) {
-        output.WriteRawTag(64);
+        output.WriteRawTag(72);
         output.WriteUInt64(GameTime);
       }
       if (finances_ != null) {
-        output.WriteRawTag(74);
+        output.WriteRawTag(82);
         output.WriteMessage(Finances);
       }
       if (_unknownFields != null) {
@@ -1503,6 +1519,7 @@ namespace Transidious.Serialization {
       size += routes_.CalculateSize(_repeated_routes_codec);
       size += citizens_.CalculateSize(_repeated_citizens_codec);
       size += cars_.CalculateSize(_repeated_cars_codec);
+      size += activePaths_.CalculateSize(_repeated_activePaths_codec);
       if (GameTime != 0UL) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(GameTime);
       }
@@ -1532,6 +1549,7 @@ namespace Transidious.Serialization {
       routes_.Add(other.routes_);
       citizens_.Add(other.citizens_);
       cars_.Add(other.cars_);
+      activePaths_.Add(other.activePaths_);
       if (other.GameTime != 0UL) {
         GameTime = other.GameTime;
       }
@@ -1583,11 +1601,15 @@ namespace Transidious.Serialization {
             cars_.AddEntriesFrom(input, _repeated_cars_codec);
             break;
           }
-          case 64: {
+          case 66: {
+            activePaths_.AddEntriesFrom(input, _repeated_activePaths_codec);
+            break;
+          }
+          case 72: {
             GameTime = input.ReadUInt64();
             break;
           }
-          case 74: {
+          case 82: {
             if (finances_ == null) {
               Finances = new global::Transidious.Serialization.Finances();
             }

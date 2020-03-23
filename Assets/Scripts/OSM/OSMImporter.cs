@@ -39,6 +39,7 @@ namespace Transidious
         public Dictionary<string, TransitLine> lines = new Dictionary<string, TransitLine>();
         public Dictionary<long, OsmSharp.Node> stops = new Dictionary<long, OsmSharp.Node>();
 
+        public HashSet<long> visualOnlyFeatures = new HashSet<long>();
         public List<Tuple<OsmSharp.OsmGeo, NaturalFeature.Type>> naturalFeatures = new List<Tuple<OsmSharp.OsmGeo, NaturalFeature.Type>>();
         public List<Tuple<OsmSharp.OsmGeo, Building.Type>> buildings = new List<Tuple<OsmSharp.OsmGeo, Building.Type>>();
 
@@ -60,7 +61,7 @@ namespace Transidious
         public float minY;
 
         float cosCenterLat;
-        static readonly float earthRadius = 6371000f * Map.Meters;
+        private static readonly float earthRadius = 6371000f;
 
         public async Task ImportArea(string areaName, string country)
         {
@@ -71,13 +72,13 @@ namespace Transidious
 
             FindMinLngAndLat();
 
-            cosCenterLat = Mathf.Cos(Math.toRadians((float)(minLat + (maxLat - minLat) * 0.5f)));
+            cosCenterLat = Mathf.Cos((float)(minLat + (maxLat - minLat) * 0.5f) * Mathf.Deg2Rad);
 
-            minX = earthRadius * Math.toRadians((float)minLng) * cosCenterLat;
-            minY = earthRadius * Math.toRadians((float)minLat);
+            minX = earthRadius * ((float)minLng * Mathf.Deg2Rad) * cosCenterLat;
+            minY = earthRadius * ((float)minLat * Mathf.Deg2Rad);
 
-            maxX = earthRadius * Math.toRadians((float)maxLng) * cosCenterLat;
-            maxY = earthRadius * Math.toRadians((float)maxLat);
+            maxX = earthRadius * ((float)maxLng * Mathf.Deg2Rad) * cosCenterLat;
+            maxY = earthRadius * ((float)maxLat * Mathf.Deg2Rad);
         }
 
         public Area Deserialize(string fileName)
@@ -114,6 +115,8 @@ namespace Transidious
             foreach (var feature in area.Features)
             {
                 importer.naturalFeatures.Add(Tuple.Create(feature.GeoId, (NaturalFeature.Type)feature.Type));
+                if (feature.VisualOnly)
+                    importer.visualOnlyGeos.Add(feature.GeoId);
             }
             foreach (var building in area.Buildings)
             {
@@ -138,8 +141,8 @@ namespace Transidious
 
         Vector2 Project(float lng, float lat)
         {
-            var x = earthRadius * Math.toRadians(lng) * cosCenterLat;
-            var y = earthRadius * Math.toRadians(lat);
+            var x = earthRadius * (lng * Mathf.Deg2Rad) * cosCenterLat;
+            var y = earthRadius * (lat * Mathf.Deg2Rad);
 
             return new Vector2((x - minX), (y - minY));
         }
@@ -334,6 +337,7 @@ namespace Transidious
                 {
                     GeoId = (ulong)feature.Item1.Id.Value,
                     Type = (Serialization.NaturalFeature.Types.Type)feature.Item2,
+                    VisualOnly = visualOnlyFeatures.Contains(feature.Item1.Id.Value),
                 });
             }
 
@@ -440,6 +444,7 @@ namespace Transidious
         public Dictionary<Vector2, StreetSegment> streetSegmentMap = new Dictionary<Vector2, StreetSegment>();
         public Dictionary<Vector2, Transidious.StreetIntersection> streetIntersectionMap = new Dictionary<Vector2, Transidious.StreetIntersection>();
 
+        public HashSet<ulong> visualOnlyGeos = new HashSet<ulong>();
         public List<Tuple<ulong, NaturalFeature.Type>> naturalFeatures = new List<Tuple<ulong, NaturalFeature.Type>>();
         public List<Tuple<ulong, Building.Type>> buildings = new List<Tuple<ulong, Building.Type>>();
 
@@ -1451,7 +1456,6 @@ namespace Transidious
 
                     Debug.Log("loading natural feature '" + featureName + "'...");
 
-                    Mesh mesh = null;
                     PSLG pslg = null;
                     Vector3[] wayPositionsArr = null;
 
@@ -1489,7 +1493,22 @@ namespace Transidious
                         continue;
                     }
 
-                    totalVerts += mesh?.triangles.Length ?? 0;
+                    if (visualOnlyGeos.Contains(feature.Item1))
+                    {
+                        var layer = NaturalFeature.GetLayer(feature.Item2);
+                        var color = NaturalFeature.GetColor(feature.Item2);
+
+                        if (pslg != null)
+                        {
+                            exporter.RegisterMesh(pslg, layer, color);
+                        }
+                        else if (wayPositionsArr != null)
+                        {
+                            exporter.RegisterMesh(wayPositionsArr, layer, color);
+                        }
+
+                        continue;
+                    }
 
                     var f = map.CreateFeature(featureName, feature.Item2, outlinePositions, area, centroid);
                     if (outlinePositions != null)

@@ -96,12 +96,12 @@ def Spend : Command<"spend"> {
     help = "spend the specified amount of cash"
 }
 
-def SpawnCitiziens : Command<"spawn_citiziens"> {
+def SpawnCitizens : Command<"spawn_citizens"> {
     params = [
-        Parameter<"amount", "int", "amount of citiziens to spawn", "1">
+        Parameter<"amount", "int", "amount of citizens to spawn", "1">
     ]
 
-    help = "spawn a specified amount of randomly generated citiziens"
+    help = "spawn a specified amount of randomly generated citizens"
 }
 
 def SpawnCars : Command<"spawn_cars"> {
@@ -149,10 +149,10 @@ def ClearPref : Command<"clear_pref"> {
 
 def Locate : Command<"locate"> {
     params = [
-        Parameter<"name", "string", "the name of the citizien to locate">
+        Parameter<"name", "string", "the name of the citizen to locate">
     ]
 
-    help = "locate a citizien on the map"
+    help = "locate a citizen on the map"
 }
 
 def AddStartupCommand : Command<"add_startup_cmd"> {

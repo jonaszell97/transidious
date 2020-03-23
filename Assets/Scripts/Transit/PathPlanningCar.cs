@@ -785,6 +785,7 @@ namespace Transidious.PathPlanning
                 Duration = duration,
                 LeaveBy = (ulong)leaveBy.Ticks,
                 ArriveAt = (ulong)arriveAt.Ticks,
+                Options = options.ToProtobuf(),
             };
 
             result.Steps.AddRange(steps.Select(s => s.ToProtobuf()));

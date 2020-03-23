@@ -70,7 +70,8 @@ message SaveFile {
 
     repeated Citizen citizens = 6;
     repeated Car cars = 7;
+    repeated ActivePath activePaths = 8;
 
-    uint64 gameTime = 8;
-    Finances finances = 9;
+    uint64 gameTime = 9;
+    Finances finances = 10;
 }

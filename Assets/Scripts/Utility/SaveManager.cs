@@ -135,11 +135,18 @@ namespace Transidious
 
             if (sim.citizens != null)
             {
-                saveFile.Citizens.AddRange(
-                    sim.citizens.Select(c => c.Value.ToProtobuf()));
-
                 saveFile.Cars.AddRange(
                     sim.cars.Select(c => c.Value.ToProtobuf()));
+
+                foreach (var c in sim.citizens)
+                {
+                    saveFile.Citizens.Add(c.Value.ToProtobuf());
+
+                    if (c.Value.activePath != null)
+                    {
+                        saveFile.ActivePaths.Add(c.Value.activePath.Serialize());
+                    }
+                }
             }
 
             return saveFile;
@@ -565,6 +572,14 @@ namespace Transidious
             foreach (var car in saveFile.Cars)
             {
                 GameController.instance.sim.CreateCar(car);
+            }
+
+            // Deserialize active paths.
+            foreach (var path in saveFile.ActivePaths)
+            {
+                var ap = ActivePath.Deserialize(path);
+                ap.gameObject.SetActive(true);
+                ap.ContinuePath();
             }
 
             yield break;

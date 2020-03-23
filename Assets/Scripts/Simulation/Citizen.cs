@@ -218,7 +218,7 @@ namespace Transidious
         public class ScheduledEvent
         {
             public int startsAt;
-            public PathPlanning.PathPlanningResult path;
+            public PathPlanningResult path;
             public ScheduledEvent nextEvent;
             public ScheduledEvent prevEvent;
             public PointOfInterest place;
@@ -402,6 +402,7 @@ namespace Transidious
 
             this.pointsOfInterest = new Dictionary<PointOfInterest, Building>();
             this.relationships = new Dictionary<Relationship, Citizen>();
+            this.happinessInfluences = new List<HappinessInfluence>();
             this.currentPosition = c.CurrentPosition.Deserialize();
 
             var map = GameController.instance.loadedMap;
@@ -423,9 +424,21 @@ namespace Transidious
                 }
             }
 
-            // FIXME serialize this
-            this.preferredColor = Utility.RandomColor;
-            transitPreferences = new PathPlanning.PathPlanningOptions();
+            foreach (var inf in c.HappinessInfluences)
+            {
+                happinessInfluences.Add(new HappinessInfluence
+                {
+                    descriptionKey = inf.DescriptionKey,
+                    absoluteCapHi = inf.AbsoluteCapHi,
+                    absoluteCapLo = inf.AbsoluteCapLo,
+                    influence = inf.Influence,
+                    relativeCap = inf.RelativeCap,
+                    ticks = inf.Ticks,
+                });
+            }
+
+            this.preferredColor = c.PreferredColor.Deserialize();
+            transitPreferences = PathPlanningOptions.Deserialize(c.TransitPreferences);
         }
 
         public PathPlanning.PathPlanningOptions CreateRandomPreferences()
@@ -981,7 +994,7 @@ namespace Transidious
 
             activePath.Initialize(path, this);
             activePath.gameObject.SetActive(true);
-            activePath.Start();
+            activePath.StartPath();
 
             return activePath;
         }
@@ -1005,7 +1018,7 @@ namespace Transidious
 
             if (activePath != null)
             {
-                // Debug.LogWarning("next event started before current path is done!");
+                Debug.LogWarning("next event started before current path is done!");
                 return;
             }
 
@@ -1150,6 +1163,9 @@ namespace Transidious
                 CurrentPosition = currentPosition.ToProtobuf(),
                 ScheduleIdx = scheduleIdx,
                 ScheduleID = schedules[0]?.id ?? 0,
+                
+                PreferredColor = preferredColor.ToProtobuf(),
+                TransitPreferences = transitPreferences.ToProtobuf(),
             };
 
             c.Relationships.AddRange(relationships.Select(r => new Serialization.Citizen.Types.Relationship
@@ -1162,6 +1178,16 @@ namespace Transidious
             {
                 Kind = (Serialization.Citizen.Types.PointOfInterestKind)r.Key,
                 BuildingId = (uint)r.Value.id,
+            }));
+
+            c.HappinessInfluences.AddRange(happinessInfluences.Select(inf => new Serialization.Citizen.Types.HappinessInfluence
+            {
+                AbsoluteCapHi = inf.absoluteCapHi,
+                AbsoluteCapLo = inf.absoluteCapLo,
+                DescriptionKey = inf.descriptionKey,
+                Influence = inf.influence,
+                RelativeCap = inf.relativeCap,
+                Ticks = inf.ticks,
             }));
 
             return c;

@@ -41,7 +41,7 @@ namespace Transidious.Serialization.OSM {
             "c2lkaW91cy5TZXJpYWxpemF0aW9uLk9TTS5SZWxhdGlvbi5NZW1iZXIaXAoG",
             "TWVtYmVyEjgKBHR5cGUYASABKA4yKi5UcmFuc2lkaW91cy5TZXJpYWxpemF0",
             "aW9uLk9TTS5Pc21HZW8uVHlwZRIKCgJpZBgCIAEoBBIMCgRyb2xlGAMgASgJ",
-            "IvEGCgRBcmVhEjIKBW5vZGVzGAEgAygLMiMuVHJhbnNpZGlvdXMuU2VyaWFs",
+            "IoUHCgRBcmVhEjIKBW5vZGVzGAEgAygLMiMuVHJhbnNpZGlvdXMuU2VyaWFs",
             "aXphdGlvbi5PU00uTm9kZRIwCgR3YXlzGAIgAygLMiIuVHJhbnNpZGlvdXMu",
             "U2VyaWFsaXphdGlvbi5PU00uV2F5EjoKCXJlbGF0aW9ucxgDIAMoCzInLlRy",
             "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uT1NNLlJlbGF0aW9uEhAKCGJvdW5k",
@@ -54,14 +54,15 @@ namespace Transidious.Serialization.OSM {
             "DAoEbWluWBgJIAEoAhIMCgRtYXhYGAogASgCEgwKBG1pblkYCyABKAISDAoE",
             "bWF4WRgMIAEoAhpNCgZTdHJlZXQSDQoFd2F5SWQYASABKAQSNAoEdHlwZRgC",
             "IAEoDjImLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0LlR5cGUa",
-            "XQoOTmF0dXJhbEZlYXR1cmUSDQoFZ2VvSWQYASABKAQSPAoEdHlwZRgCIAEo",
+            "cQoOTmF0dXJhbEZlYXR1cmUSDQoFZ2VvSWQYASABKAQSPAoEdHlwZRgCIAEo",
             "DjIuLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTmF0dXJhbEZlYXR1cmUu",
-            "VHlwZRpRCghCdWlsZGluZxINCgVnZW9JZBgBIAEoBBI2CgR0eXBlGAIgASgO",
-            "MiguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5CdWlsZGluZy5UeXBlGngK",
-            "C1RyYW5zaXRMaW5lEgwKBG5hbWUYASABKAkSNAoEdHlwZRgCIAEoDjImLlRy",
-            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVHJhbnNpdFR5cGUSEQoJaW5ib3Vu",
-            "ZElkGAMgASgEEhIKCm91dGJvdW5kSWQYBCABKARCIKoCHVRyYW5zaWRpb3Vz",
-            "LlNlcmlhbGl6YXRpb24uT1NNYgZwcm90bzM="));
+            "VHlwZRISCgp2aXN1YWxPbmx5GAMgASgIGlEKCEJ1aWxkaW5nEg0KBWdlb0lk",
+            "GAEgASgEEjYKBHR5cGUYAiABKA4yKC5UcmFuc2lkaW91cy5TZXJpYWxpemF0",
+            "aW9uLkJ1aWxkaW5nLlR5cGUaeAoLVHJhbnNpdExpbmUSDAoEbmFtZRgBIAEo",
+            "CRI0CgR0eXBlGAIgASgOMiYuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5U",
+            "cmFuc2l0VHlwZRIRCglpbmJvdW5kSWQYAyABKAQSEgoKb3V0Ym91bmRJZBgE",
+            "IAEoBEIgqgIdVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5PU01iBnByb3Rv",
+            "Mw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, global::Transidious.Serialization.TransitReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -70,7 +71,7 @@ namespace Transidious.Serialization.OSM {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Way), global::Transidious.Serialization.OSM.Way.Parser, new[]{ "Geo", "Nodes" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Relation), global::Transidious.Serialization.OSM.Relation.Parser, new[]{ "Geo", "Members" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Relation.Types.Member), global::Transidious.Serialization.OSM.Relation.Types.Member.Parser, new[]{ "Type", "Id", "Role" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area), global::Transidious.Serialization.OSM.Area.Parser, new[]{ "Nodes", "Ways", "Relations", "Boundary", "Streets", "Features", "Buildings", "Lines", "MinX", "MaxX", "MinY", "MaxY" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Street), global::Transidious.Serialization.OSM.Area.Types.Street.Parser, new[]{ "WayId", "Type" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.NaturalFeature), global::Transidious.Serialization.OSM.Area.Types.NaturalFeature.Parser, new[]{ "GeoId", "Type" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.NaturalFeature), global::Transidious.Serialization.OSM.Area.Types.NaturalFeature.Parser, new[]{ "GeoId", "Type", "VisualOnly" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.Building), global::Transidious.Serialization.OSM.Area.Types.Building.Parser, new[]{ "GeoId", "Type" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.OSM.Area.Types.TransitLine), global::Transidious.Serialization.OSM.Area.Types.TransitLine.Parser, new[]{ "Name", "Type", "InboundId", "OutboundId" }, null, null, null)})
           }));
@@ -1508,6 +1509,7 @@ namespace Transidious.Serialization.OSM {
         public NaturalFeature(NaturalFeature other) : this() {
           geoId_ = other.geoId_;
           type_ = other.type_;
+          visualOnly_ = other.visualOnly_;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -1538,6 +1540,17 @@ namespace Transidious.Serialization.OSM {
           }
         }
 
+        /// <summary>Field number for the "visualOnly" field.</summary>
+        public const int VisualOnlyFieldNumber = 3;
+        private bool visualOnly_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool VisualOnly {
+          get { return visualOnly_; }
+          set {
+            visualOnly_ = value;
+          }
+        }
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as NaturalFeature);
@@ -1553,6 +1566,7 @@ namespace Transidious.Serialization.OSM {
           }
           if (GeoId != other.GeoId) return false;
           if (Type != other.Type) return false;
+          if (VisualOnly != other.VisualOnly) return false;
           return Equals(_unknownFields, other._unknownFields);
         }
 
@@ -1561,6 +1575,7 @@ namespace Transidious.Serialization.OSM {
           int hash = 1;
           if (GeoId != 0UL) hash ^= GeoId.GetHashCode();
           if (Type != 0) hash ^= Type.GetHashCode();
+          if (VisualOnly != false) hash ^= VisualOnly.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -1582,6 +1597,10 @@ namespace Transidious.Serialization.OSM {
             output.WriteRawTag(16);
             output.WriteEnum((int) Type);
           }
+          if (VisualOnly != false) {
+            output.WriteRawTag(24);
+            output.WriteBool(VisualOnly);
+          }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
@@ -1595,6 +1614,9 @@ namespace Transidious.Serialization.OSM {
           }
           if (Type != 0) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+          }
+          if (VisualOnly != false) {
+            size += 1 + 1;
           }
           if (_unknownFields != null) {
             size += _unknownFields.CalculateSize();
@@ -1613,6 +1635,9 @@ namespace Transidious.Serialization.OSM {
           if (other.Type != 0) {
             Type = other.Type;
           }
+          if (other.VisualOnly != false) {
+            VisualOnly = other.VisualOnly;
+          }
           _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
         }
 
@@ -1630,6 +1655,10 @@ namespace Transidious.Serialization.OSM {
               }
               case 16: {
                 Type = (global::Transidious.Serialization.NaturalFeature.Types.Type) input.ReadEnum();
+                break;
+              }
+              case 24: {
+                VisualOnly = input.ReadBool();
                 break;
               }
             }

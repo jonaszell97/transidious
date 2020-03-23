@@ -61,7 +61,7 @@ namespace Transidious.Serialization {
             "VmVsb2NpdHkYBiABKAIinAEKA0NhchIKCgJpZBgBIAEoDRIQCghkcml2ZXJJ",
             "ZBgCIAEoDRIQCghjYXJNb2RlbBgDIAEoDRI0Cghwb3NpdGlvbhgEIAEoCzIi",
             "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhIvCgVjb2xvchgF",
-            "IAEoCzIgLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ29sb3Ii/gcKB0Np",
+            "IAEoCzIgLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ29sb3Ii1wwKB0Np",
             "dGl6ZW4SCgoCaWQYASABKA0SEQoJZmlyc3ROYW1lGAIgASgJEhAKCGxhc3RO",
             "YW1lGAMgASgJEgsKA2FnZRgEIAEoDRIQCghiaXJ0aGRheRgFIAEoDRIOCgZm",
             "ZW1hbGUYBiABKAgSQQoKb2NjdXBhdGlvbhgHIAEoDjItLlRyYW5zaWRpb3Vz",
@@ -70,22 +70,35 @@ namespace Transidious.Serialization {
             "ZWxhdGlvbnNoaXBzGAsgAygLMi8uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
             "bi5DaXRpemVuLlJlbGF0aW9uc2hpcBJMChBwb2ludHNPZkludGVyZXN0GAwg",
             "AygLMjIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlBvaW50",
-            "T2ZJbnRlcmVzdBINCgVjYXJJRBgNIAEoDRI7Cg9jdXJyZW50UG9zaXRpb24Y",
-            "DiABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjISOQoK",
-            "YWN0aXZlUGF0aBgPIAEoCzIlLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24u",
-            "QWN0aXZlUGF0aBITCgtzY2hlZHVsZUlkeBgQIAEoBRISCgpzY2hlZHVsZUlE",
-            "GBEgASgNGmQKDFJlbGF0aW9uc2hpcBJBCgRraW5kGAEgASgOMjMuVHJhbnNp",
-            "ZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlJlbGF0aW9uc2hpcEtpbmQS",
-            "EQoJY2l0aXplbklkGAIgASgNGmsKD1BvaW50T2ZJbnRlcmVzdBJECgRraW5k",
-            "GAEgASgOMjYuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlBv",
-            "aW50T2ZJbnRlcmVzdEtpbmQSEgoKYnVpbGRpbmdJZBgCIAEoDSKPAQoKT2Nj",
-            "dXBhdGlvbhIKCgZXb3JrZXIQABILCgdSZXRpcmVkEAESEAoMS2luZGVyZ2Fy",
-            "ZGVuEAISGwoXRWxlbWVudGFyeVNjaG9vbFN0dWRlbnQQAxIVChFIaWdoU2No",
-            "b29sU3R1ZGVudBAEEhUKEVVuaXZlcnNpdHlTdHVkZW50EAUSCwoHVHJhaW5l",
-            "ZRAGIigKEFJlbGF0aW9uc2hpcEtpbmQSFAoQU2lnbmlmaWNhbnRPdGhlchAA",
-            "IkcKE1BvaW50T2ZJbnRlcmVzdEtpbmQSCAoESG9tZRAAEggKBFdvcmsQARIK",
-            "CgZTY2hvb2wQAhIQCgxHcm9jZXJ5U3RvcmUQA0IcqgIZVHJhbnNpZGlvdXMu",
-            "U2VyaWFsaXphdGlvbmIGcHJvdG8z"));
+            "T2ZJbnRlcmVzdBJSChNoYXBwaW5lc3NJbmZsdWVuY2VzGA0gAygLMjUuVHJh",
+            "bnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLkhhcHBpbmVzc0luZmx1",
+            "ZW5jZRINCgVjYXJJRBgOIAEoDRI7Cg9jdXJyZW50UG9zaXRpb24YDyABKAsy",
+            "Ii5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjISOQoKYWN0aXZl",
+            "UGF0aBgQIAEoCzIlLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQWN0aXZl",
+            "UGF0aBITCgtzY2hlZHVsZUlkeBgRIAEoBRISCgpzY2hlZHVsZUlEGBIgASgN",
+            "EjgKDnByZWZlcnJlZENvbG9yGBMgASgLMiAuVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbi5Db2xvchJKChJ0cmFuc2l0UHJlZmVyZW5jZXMYFCABKAsyLi5U",
+            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlBhdGhQbGFubmluZ09wdGlvbnMa",
+            "ZAoMUmVsYXRpb25zaGlwEkEKBGtpbmQYASABKA4yMy5UcmFuc2lkaW91cy5T",
+            "ZXJpYWxpemF0aW9uLkNpdGl6ZW4uUmVsYXRpb25zaGlwS2luZBIRCgljaXRp",
+            "emVuSWQYAiABKA0aawoPUG9pbnRPZkludGVyZXN0EkQKBGtpbmQYASABKA4y",
+            "Ni5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uUG9pbnRPZklu",
+            "dGVyZXN0S2luZBISCgpidWlsZGluZ0lkGAIgASgNGpEBChJIYXBwaW5lc3NJ",
+            "bmZsdWVuY2USFgoOZGVzY3JpcHRpb25LZXkYASABKAkSEQoJaW5mbHVlbmNl",
+            "GAIgASgCEg0KBXRpY2tzGAMgASgFEhMKC3JlbGF0aXZlQ2FwGAQgASgCEhUK",
+            "DWFic29sdXRlQ2FwTG8YBSABKAISFQoNYWJzb2x1dGVDYXBIaRgGIAEoAhro",
+            "AQoOU2NoZWR1bGVkRXZlbnQSEAoIc3RhcnRzQXQYASABKA0SOwoEcGF0aBgC",
+            "IAEoCzItLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFBsYW5uaW5n",
+            "UmVzdWx0EkQKCW5leHRFdmVudBgDIAEoCzIxLlRyYW5zaWRpb3VzLlNlcmlh",
+            "bGl6YXRpb24uQ2l0aXplbi5TY2hlZHVsZWRFdmVudBJBCgVwbGFjZRgEIAEo",
+            "CzIyLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXplbi5Qb2ludE9m",
+            "SW50ZXJlc3QijwEKCk9jY3VwYXRpb24SCgoGV29ya2VyEAASCwoHUmV0aXJl",
+            "ZBABEhAKDEtpbmRlcmdhcmRlbhACEhsKF0VsZW1lbnRhcnlTY2hvb2xTdHVk",
+            "ZW50EAMSFQoRSGlnaFNjaG9vbFN0dWRlbnQQBBIVChFVbml2ZXJzaXR5U3R1",
+            "ZGVudBAFEgsKB1RyYWluZWUQBiIoChBSZWxhdGlvbnNoaXBLaW5kEhQKEFNp",
+            "Z25pZmljYW50T3RoZXIQACJHChNQb2ludE9mSW50ZXJlc3RLaW5kEggKBEhv",
+            "bWUQABIICgRXb3JrEAESCgoGU2Nob29sEAISEAoMR3JvY2VyeVN0b3JlEANC",
+            "HKoCGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -99,8 +112,10 @@ namespace Transidious.Serialization {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathPlanningResult), global::Transidious.Serialization.PathPlanningResult.Parser, new[]{ "Cost", "Duration", "LeaveBy", "ArriveAt", "Steps", "Options" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.ActivePath), global::Transidious.Serialization.ActivePath.Parser, new[]{ "CitizenId", "Path", "WaitUntil", "CurrentStep", "CurrentStepProgress", "CurrentVelocity" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Car), global::Transidious.Serialization.Car.Parser, new[]{ "Id", "DriverId", "CarModel", "Position", "Color" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen), global::Transidious.Serialization.Citizen.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "Birthday", "Female", "Occupation", "Money", "Educated", "Happiness", "Relationships", "PointsOfInterest", "CarID", "CurrentPosition", "ActivePath", "ScheduleIdx", "ScheduleID" }, null, new[]{ typeof(global::Transidious.Serialization.Citizen.Types.Occupation), typeof(global::Transidious.Serialization.Citizen.Types.RelationshipKind), typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterestKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.Relationship), global::Transidious.Serialization.Citizen.Types.Relationship.Parser, new[]{ "Kind", "CitizenId" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterest), global::Transidious.Serialization.Citizen.Types.PointOfInterest.Parser, new[]{ "Kind", "BuildingId" }, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen), global::Transidious.Serialization.Citizen.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "Birthday", "Female", "Occupation", "Money", "Educated", "Happiness", "Relationships", "PointsOfInterest", "HappinessInfluences", "CarID", "CurrentPosition", "ActivePath", "ScheduleIdx", "ScheduleID", "PreferredColor", "TransitPreferences" }, null, new[]{ typeof(global::Transidious.Serialization.Citizen.Types.Occupation), typeof(global::Transidious.Serialization.Citizen.Types.RelationshipKind), typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterestKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.Relationship), global::Transidious.Serialization.Citizen.Types.Relationship.Parser, new[]{ "Kind", "CitizenId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterest), global::Transidious.Serialization.Citizen.Types.PointOfInterest.Parser, new[]{ "Kind", "BuildingId" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.HappinessInfluence), global::Transidious.Serialization.Citizen.Types.HappinessInfluence.Parser, new[]{ "DescriptionKey", "Influence", "Ticks", "RelativeCap", "AbsoluteCapLo", "AbsoluteCapHi" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.ScheduledEvent), global::Transidious.Serialization.Citizen.Types.ScheduledEvent.Parser, new[]{ "StartsAt", "Path", "NextEvent", "Place" }, null, null, null)})
           }));
     }
     #endregion
@@ -2644,21 +2659,6 @@ namespace Transidious.Serialization {
 
   }
 
-  /// <summary>
-  /// public string firstName;
-  /// public string lastName;
-  /// public short age;
-  /// public short birthday;
-  /// public bool female;
-  /// public Occupation occupation;
-  /// public decimal money;
-  /// public Car car;
-  /// public bool educated;
-  /// public byte happiness;
-  /// public AbstractSchedule[] schedules;
-  /// public Dictionary&lt;Relationship, Citizen> relationships;
-  /// public Dictionary&lt;PointOfInterest, Building> pointsOfInterest;
-  /// </summary>
   public sealed partial class Citizen : pb::IMessage<Citizen> {
     private static readonly pb::MessageParser<Citizen> _parser = new pb::MessageParser<Citizen>(() => new Citizen());
     private pb::UnknownFieldSet _unknownFields;
@@ -2696,11 +2696,14 @@ namespace Transidious.Serialization {
       happiness_ = other.happiness_;
       relationships_ = other.relationships_.Clone();
       pointsOfInterest_ = other.pointsOfInterest_.Clone();
+      happinessInfluences_ = other.happinessInfluences_.Clone();
       carID_ = other.carID_;
       currentPosition_ = other.currentPosition_ != null ? other.currentPosition_.Clone() : null;
       activePath_ = other.activePath_ != null ? other.activePath_.Clone() : null;
       scheduleIdx_ = other.scheduleIdx_;
       scheduleID_ = other.scheduleID_;
+      preferredColor_ = other.preferredColor_ != null ? other.preferredColor_.Clone() : null;
+      transitPreferences_ = other.transitPreferences_ != null ? other.transitPreferences_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2839,8 +2842,18 @@ namespace Transidious.Serialization {
       get { return pointsOfInterest_; }
     }
 
+    /// <summary>Field number for the "happinessInfluences" field.</summary>
+    public const int HappinessInfluencesFieldNumber = 13;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.Citizen.Types.HappinessInfluence> _repeated_happinessInfluences_codec
+        = pb::FieldCodec.ForMessage(106, global::Transidious.Serialization.Citizen.Types.HappinessInfluence.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.Citizen.Types.HappinessInfluence> happinessInfluences_ = new pbc::RepeatedField<global::Transidious.Serialization.Citizen.Types.HappinessInfluence>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.Citizen.Types.HappinessInfluence> HappinessInfluences {
+      get { return happinessInfluences_; }
+    }
+
     /// <summary>Field number for the "carID" field.</summary>
-    public const int CarIDFieldNumber = 13;
+    public const int CarIDFieldNumber = 14;
     private uint carID_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint CarID {
@@ -2851,7 +2864,7 @@ namespace Transidious.Serialization {
     }
 
     /// <summary>Field number for the "currentPosition" field.</summary>
-    public const int CurrentPositionFieldNumber = 14;
+    public const int CurrentPositionFieldNumber = 15;
     private global::Transidious.Serialization.Vector2 currentPosition_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Transidious.Serialization.Vector2 CurrentPosition {
@@ -2862,7 +2875,7 @@ namespace Transidious.Serialization {
     }
 
     /// <summary>Field number for the "activePath" field.</summary>
-    public const int ActivePathFieldNumber = 15;
+    public const int ActivePathFieldNumber = 16;
     private global::Transidious.Serialization.ActivePath activePath_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Transidious.Serialization.ActivePath ActivePath {
@@ -2873,7 +2886,7 @@ namespace Transidious.Serialization {
     }
 
     /// <summary>Field number for the "scheduleIdx" field.</summary>
-    public const int ScheduleIdxFieldNumber = 16;
+    public const int ScheduleIdxFieldNumber = 17;
     private int scheduleIdx_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int ScheduleIdx {
@@ -2884,13 +2897,35 @@ namespace Transidious.Serialization {
     }
 
     /// <summary>Field number for the "scheduleID" field.</summary>
-    public const int ScheduleIDFieldNumber = 17;
+    public const int ScheduleIDFieldNumber = 18;
     private uint scheduleID_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint ScheduleID {
       get { return scheduleID_; }
       set {
         scheduleID_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "preferredColor" field.</summary>
+    public const int PreferredColorFieldNumber = 19;
+    private global::Transidious.Serialization.Color preferredColor_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Color PreferredColor {
+      get { return preferredColor_; }
+      set {
+        preferredColor_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "transitPreferences" field.</summary>
+    public const int TransitPreferencesFieldNumber = 20;
+    private global::Transidious.Serialization.PathPlanningOptions transitPreferences_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.PathPlanningOptions TransitPreferences {
+      get { return transitPreferences_; }
+      set {
+        transitPreferences_ = value;
       }
     }
 
@@ -2919,11 +2954,14 @@ namespace Transidious.Serialization {
       if (Happiness != other.Happiness) return false;
       if(!relationships_.Equals(other.relationships_)) return false;
       if(!pointsOfInterest_.Equals(other.pointsOfInterest_)) return false;
+      if(!happinessInfluences_.Equals(other.happinessInfluences_)) return false;
       if (CarID != other.CarID) return false;
       if (!object.Equals(CurrentPosition, other.CurrentPosition)) return false;
       if (!object.Equals(ActivePath, other.ActivePath)) return false;
       if (ScheduleIdx != other.ScheduleIdx) return false;
       if (ScheduleID != other.ScheduleID) return false;
+      if (!object.Equals(PreferredColor, other.PreferredColor)) return false;
+      if (!object.Equals(TransitPreferences, other.TransitPreferences)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -2942,11 +2980,14 @@ namespace Transidious.Serialization {
       if (Happiness != 0) hash ^= Happiness.GetHashCode();
       hash ^= relationships_.GetHashCode();
       hash ^= pointsOfInterest_.GetHashCode();
+      hash ^= happinessInfluences_.GetHashCode();
       if (CarID != 0) hash ^= CarID.GetHashCode();
       if (currentPosition_ != null) hash ^= CurrentPosition.GetHashCode();
       if (activePath_ != null) hash ^= ActivePath.GetHashCode();
       if (ScheduleIdx != 0) hash ^= ScheduleIdx.GetHashCode();
       if (ScheduleID != 0) hash ^= ScheduleID.GetHashCode();
+      if (preferredColor_ != null) hash ^= PreferredColor.GetHashCode();
+      if (transitPreferences_ != null) hash ^= TransitPreferences.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3002,25 +3043,34 @@ namespace Transidious.Serialization {
       }
       relationships_.WriteTo(output, _repeated_relationships_codec);
       pointsOfInterest_.WriteTo(output, _repeated_pointsOfInterest_codec);
+      happinessInfluences_.WriteTo(output, _repeated_happinessInfluences_codec);
       if (CarID != 0) {
-        output.WriteRawTag(104);
+        output.WriteRawTag(112);
         output.WriteUInt32(CarID);
       }
       if (currentPosition_ != null) {
-        output.WriteRawTag(114);
+        output.WriteRawTag(122);
         output.WriteMessage(CurrentPosition);
       }
       if (activePath_ != null) {
-        output.WriteRawTag(122);
+        output.WriteRawTag(130, 1);
         output.WriteMessage(ActivePath);
       }
       if (ScheduleIdx != 0) {
-        output.WriteRawTag(128, 1);
+        output.WriteRawTag(136, 1);
         output.WriteInt32(ScheduleIdx);
       }
       if (ScheduleID != 0) {
-        output.WriteRawTag(136, 1);
+        output.WriteRawTag(144, 1);
         output.WriteUInt32(ScheduleID);
+      }
+      if (preferredColor_ != null) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(PreferredColor);
+      }
+      if (transitPreferences_ != null) {
+        output.WriteRawTag(162, 1);
+        output.WriteMessage(TransitPreferences);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -3062,6 +3112,7 @@ namespace Transidious.Serialization {
       }
       size += relationships_.CalculateSize(_repeated_relationships_codec);
       size += pointsOfInterest_.CalculateSize(_repeated_pointsOfInterest_codec);
+      size += happinessInfluences_.CalculateSize(_repeated_happinessInfluences_codec);
       if (CarID != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(CarID);
       }
@@ -3069,13 +3120,19 @@ namespace Transidious.Serialization {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(CurrentPosition);
       }
       if (activePath_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ActivePath);
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(ActivePath);
       }
       if (ScheduleIdx != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(ScheduleIdx);
       }
       if (ScheduleID != 0) {
         size += 2 + pb::CodedOutputStream.ComputeUInt32Size(ScheduleID);
+      }
+      if (preferredColor_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(PreferredColor);
+      }
+      if (transitPreferences_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(TransitPreferences);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -3120,6 +3177,7 @@ namespace Transidious.Serialization {
       }
       relationships_.Add(other.relationships_);
       pointsOfInterest_.Add(other.pointsOfInterest_);
+      happinessInfluences_.Add(other.happinessInfluences_);
       if (other.CarID != 0) {
         CarID = other.CarID;
       }
@@ -3140,6 +3198,18 @@ namespace Transidious.Serialization {
       }
       if (other.ScheduleID != 0) {
         ScheduleID = other.ScheduleID;
+      }
+      if (other.preferredColor_ != null) {
+        if (preferredColor_ == null) {
+          PreferredColor = new global::Transidious.Serialization.Color();
+        }
+        PreferredColor.MergeFrom(other.PreferredColor);
+      }
+      if (other.transitPreferences_ != null) {
+        if (transitPreferences_ == null) {
+          TransitPreferences = new global::Transidious.Serialization.PathPlanningOptions();
+        }
+        TransitPreferences.MergeFrom(other.TransitPreferences);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -3200,30 +3270,48 @@ namespace Transidious.Serialization {
             pointsOfInterest_.AddEntriesFrom(input, _repeated_pointsOfInterest_codec);
             break;
           }
-          case 104: {
+          case 106: {
+            happinessInfluences_.AddEntriesFrom(input, _repeated_happinessInfluences_codec);
+            break;
+          }
+          case 112: {
             CarID = input.ReadUInt32();
             break;
           }
-          case 114: {
+          case 122: {
             if (currentPosition_ == null) {
               CurrentPosition = new global::Transidious.Serialization.Vector2();
             }
             input.ReadMessage(CurrentPosition);
             break;
           }
-          case 122: {
+          case 130: {
             if (activePath_ == null) {
               ActivePath = new global::Transidious.Serialization.ActivePath();
             }
             input.ReadMessage(ActivePath);
             break;
           }
-          case 128: {
+          case 136: {
             ScheduleIdx = input.ReadInt32();
             break;
           }
-          case 136: {
+          case 144: {
             ScheduleID = input.ReadUInt32();
+            break;
+          }
+          case 154: {
+            if (preferredColor_ == null) {
+              PreferredColor = new global::Transidious.Serialization.Color();
+            }
+            input.ReadMessage(PreferredColor);
+            break;
+          }
+          case 162: {
+            if (transitPreferences_ == null) {
+              TransitPreferences = new global::Transidious.Serialization.PathPlanningOptions();
+            }
+            input.ReadMessage(TransitPreferences);
             break;
           }
         }
@@ -3561,6 +3649,506 @@ namespace Transidious.Serialization {
               }
               case 16: {
                 BuildingId = input.ReadUInt32();
+                break;
+              }
+            }
+          }
+        }
+
+      }
+
+      public sealed partial class HappinessInfluence : pb::IMessage<HappinessInfluence> {
+        private static readonly pb::MessageParser<HappinessInfluence> _parser = new pb::MessageParser<HappinessInfluence>(() => new HappinessInfluence());
+        private pb::UnknownFieldSet _unknownFields;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<HappinessInfluence> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::Transidious.Serialization.Citizen.Descriptor.NestedTypes[2]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public HappinessInfluence() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public HappinessInfluence(HappinessInfluence other) : this() {
+          descriptionKey_ = other.descriptionKey_;
+          influence_ = other.influence_;
+          ticks_ = other.ticks_;
+          relativeCap_ = other.relativeCap_;
+          absoluteCapLo_ = other.absoluteCapLo_;
+          absoluteCapHi_ = other.absoluteCapHi_;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public HappinessInfluence Clone() {
+          return new HappinessInfluence(this);
+        }
+
+        /// <summary>Field number for the "descriptionKey" field.</summary>
+        public const int DescriptionKeyFieldNumber = 1;
+        private string descriptionKey_ = "";
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public string DescriptionKey {
+          get { return descriptionKey_; }
+          set {
+            descriptionKey_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+          }
+        }
+
+        /// <summary>Field number for the "influence" field.</summary>
+        public const int InfluenceFieldNumber = 2;
+        private float influence_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public float Influence {
+          get { return influence_; }
+          set {
+            influence_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "ticks" field.</summary>
+        public const int TicksFieldNumber = 3;
+        private int ticks_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int Ticks {
+          get { return ticks_; }
+          set {
+            ticks_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "relativeCap" field.</summary>
+        public const int RelativeCapFieldNumber = 4;
+        private float relativeCap_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public float RelativeCap {
+          get { return relativeCap_; }
+          set {
+            relativeCap_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "absoluteCapLo" field.</summary>
+        public const int AbsoluteCapLoFieldNumber = 5;
+        private float absoluteCapLo_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public float AbsoluteCapLo {
+          get { return absoluteCapLo_; }
+          set {
+            absoluteCapLo_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "absoluteCapHi" field.</summary>
+        public const int AbsoluteCapHiFieldNumber = 6;
+        private float absoluteCapHi_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public float AbsoluteCapHi {
+          get { return absoluteCapHi_; }
+          set {
+            absoluteCapHi_ = value;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as HappinessInfluence);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(HappinessInfluence other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (DescriptionKey != other.DescriptionKey) return false;
+          if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Influence, other.Influence)) return false;
+          if (Ticks != other.Ticks) return false;
+          if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(RelativeCap, other.RelativeCap)) return false;
+          if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AbsoluteCapLo, other.AbsoluteCapLo)) return false;
+          if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(AbsoluteCapHi, other.AbsoluteCapHi)) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (DescriptionKey.Length != 0) hash ^= DescriptionKey.GetHashCode();
+          if (Influence != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Influence);
+          if (Ticks != 0) hash ^= Ticks.GetHashCode();
+          if (RelativeCap != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(RelativeCap);
+          if (AbsoluteCapLo != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AbsoluteCapLo);
+          if (AbsoluteCapHi != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(AbsoluteCapHi);
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (DescriptionKey.Length != 0) {
+            output.WriteRawTag(10);
+            output.WriteString(DescriptionKey);
+          }
+          if (Influence != 0F) {
+            output.WriteRawTag(21);
+            output.WriteFloat(Influence);
+          }
+          if (Ticks != 0) {
+            output.WriteRawTag(24);
+            output.WriteInt32(Ticks);
+          }
+          if (RelativeCap != 0F) {
+            output.WriteRawTag(37);
+            output.WriteFloat(RelativeCap);
+          }
+          if (AbsoluteCapLo != 0F) {
+            output.WriteRawTag(45);
+            output.WriteFloat(AbsoluteCapLo);
+          }
+          if (AbsoluteCapHi != 0F) {
+            output.WriteRawTag(53);
+            output.WriteFloat(AbsoluteCapHi);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (DescriptionKey.Length != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeStringSize(DescriptionKey);
+          }
+          if (Influence != 0F) {
+            size += 1 + 4;
+          }
+          if (Ticks != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(Ticks);
+          }
+          if (RelativeCap != 0F) {
+            size += 1 + 4;
+          }
+          if (AbsoluteCapLo != 0F) {
+            size += 1 + 4;
+          }
+          if (AbsoluteCapHi != 0F) {
+            size += 1 + 4;
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(HappinessInfluence other) {
+          if (other == null) {
+            return;
+          }
+          if (other.DescriptionKey.Length != 0) {
+            DescriptionKey = other.DescriptionKey;
+          }
+          if (other.Influence != 0F) {
+            Influence = other.Influence;
+          }
+          if (other.Ticks != 0) {
+            Ticks = other.Ticks;
+          }
+          if (other.RelativeCap != 0F) {
+            RelativeCap = other.RelativeCap;
+          }
+          if (other.AbsoluteCapLo != 0F) {
+            AbsoluteCapLo = other.AbsoluteCapLo;
+          }
+          if (other.AbsoluteCapHi != 0F) {
+            AbsoluteCapHi = other.AbsoluteCapHi;
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 10: {
+                DescriptionKey = input.ReadString();
+                break;
+              }
+              case 21: {
+                Influence = input.ReadFloat();
+                break;
+              }
+              case 24: {
+                Ticks = input.ReadInt32();
+                break;
+              }
+              case 37: {
+                RelativeCap = input.ReadFloat();
+                break;
+              }
+              case 45: {
+                AbsoluteCapLo = input.ReadFloat();
+                break;
+              }
+              case 53: {
+                AbsoluteCapHi = input.ReadFloat();
+                break;
+              }
+            }
+          }
+        }
+
+      }
+
+      public sealed partial class ScheduledEvent : pb::IMessage<ScheduledEvent> {
+        private static readonly pb::MessageParser<ScheduledEvent> _parser = new pb::MessageParser<ScheduledEvent>(() => new ScheduledEvent());
+        private pb::UnknownFieldSet _unknownFields;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<ScheduledEvent> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::Transidious.Serialization.Citizen.Descriptor.NestedTypes[3]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public ScheduledEvent() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public ScheduledEvent(ScheduledEvent other) : this() {
+          startsAt_ = other.startsAt_;
+          path_ = other.path_ != null ? other.path_.Clone() : null;
+          nextEvent_ = other.nextEvent_ != null ? other.nextEvent_.Clone() : null;
+          place_ = other.place_ != null ? other.place_.Clone() : null;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public ScheduledEvent Clone() {
+          return new ScheduledEvent(this);
+        }
+
+        /// <summary>Field number for the "startsAt" field.</summary>
+        public const int StartsAtFieldNumber = 1;
+        private uint startsAt_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public uint StartsAt {
+          get { return startsAt_; }
+          set {
+            startsAt_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "path" field.</summary>
+        public const int PathFieldNumber = 2;
+        private global::Transidious.Serialization.PathPlanningResult path_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public global::Transidious.Serialization.PathPlanningResult Path {
+          get { return path_; }
+          set {
+            path_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "nextEvent" field.</summary>
+        public const int NextEventFieldNumber = 3;
+        private global::Transidious.Serialization.Citizen.Types.ScheduledEvent nextEvent_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public global::Transidious.Serialization.Citizen.Types.ScheduledEvent NextEvent {
+          get { return nextEvent_; }
+          set {
+            nextEvent_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "place" field.</summary>
+        public const int PlaceFieldNumber = 4;
+        private global::Transidious.Serialization.Citizen.Types.PointOfInterest place_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public global::Transidious.Serialization.Citizen.Types.PointOfInterest Place {
+          get { return place_; }
+          set {
+            place_ = value;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as ScheduledEvent);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(ScheduledEvent other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (StartsAt != other.StartsAt) return false;
+          if (!object.Equals(Path, other.Path)) return false;
+          if (!object.Equals(NextEvent, other.NextEvent)) return false;
+          if (!object.Equals(Place, other.Place)) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (StartsAt != 0) hash ^= StartsAt.GetHashCode();
+          if (path_ != null) hash ^= Path.GetHashCode();
+          if (nextEvent_ != null) hash ^= NextEvent.GetHashCode();
+          if (place_ != null) hash ^= Place.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (StartsAt != 0) {
+            output.WriteRawTag(8);
+            output.WriteUInt32(StartsAt);
+          }
+          if (path_ != null) {
+            output.WriteRawTag(18);
+            output.WriteMessage(Path);
+          }
+          if (nextEvent_ != null) {
+            output.WriteRawTag(26);
+            output.WriteMessage(NextEvent);
+          }
+          if (place_ != null) {
+            output.WriteRawTag(34);
+            output.WriteMessage(Place);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (StartsAt != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt32Size(StartsAt);
+          }
+          if (path_ != null) {
+            size += 1 + pb::CodedOutputStream.ComputeMessageSize(Path);
+          }
+          if (nextEvent_ != null) {
+            size += 1 + pb::CodedOutputStream.ComputeMessageSize(NextEvent);
+          }
+          if (place_ != null) {
+            size += 1 + pb::CodedOutputStream.ComputeMessageSize(Place);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(ScheduledEvent other) {
+          if (other == null) {
+            return;
+          }
+          if (other.StartsAt != 0) {
+            StartsAt = other.StartsAt;
+          }
+          if (other.path_ != null) {
+            if (path_ == null) {
+              Path = new global::Transidious.Serialization.PathPlanningResult();
+            }
+            Path.MergeFrom(other.Path);
+          }
+          if (other.nextEvent_ != null) {
+            if (nextEvent_ == null) {
+              NextEvent = new global::Transidious.Serialization.Citizen.Types.ScheduledEvent();
+            }
+            NextEvent.MergeFrom(other.NextEvent);
+          }
+          if (other.place_ != null) {
+            if (place_ == null) {
+              Place = new global::Transidious.Serialization.Citizen.Types.PointOfInterest();
+            }
+            Place.MergeFrom(other.Place);
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 8: {
+                StartsAt = input.ReadUInt32();
+                break;
+              }
+              case 18: {
+                if (path_ == null) {
+                  Path = new global::Transidious.Serialization.PathPlanningResult();
+                }
+                input.ReadMessage(Path);
+                break;
+              }
+              case 26: {
+                if (nextEvent_ == null) {
+                  NextEvent = new global::Transidious.Serialization.Citizen.Types.ScheduledEvent();
+                }
+                input.ReadMessage(NextEvent);
+                break;
+              }
+              case 34: {
+                if (place_ == null) {
+                  Place = new global::Transidious.Serialization.Citizen.Types.PointOfInterest();
+                }
+                input.ReadMessage(Place);
                 break;
               }
             }

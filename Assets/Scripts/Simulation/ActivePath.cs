@@ -121,10 +121,9 @@ namespace Transidious
 
 #if DEBUG
         private Text _metricsTxt;
-        private float __h;
 #endif
 
-        public void Start()
+        public void StartPath()
         {
             _currentStep = 0;
             ContinuePath();
@@ -183,7 +182,7 @@ namespace Transidious
 #if DEBUG
             if (trafficSim.displayPathMetrics)
             {
-                _metricsTxt.SetText($"v {_currentVelocity:n2}\nd {(_drivingState?.drivingCar.DistanceToGoal ?? 0f):n2}\nvT {(1.5f*_currentVelocity*__h):n2}");
+                _metricsTxt.SetText($"v {_currentVelocity:n2}\nd {(_drivingState?.drivingCar.DistanceToGoal ?? 0f):n2}");
                 var tf = transform.position;
                 _metricsTxt.textMesh.transform.position = new Vector3(tf.x, tf.y + 5f, tf.z);
             }
@@ -513,6 +512,7 @@ namespace Transidious
         {
             return new Serialization.ActivePath
             {
+                Path = path.ToProtobuf(),
                 CitizenId = citizen.id,
                 CurrentStep = _currentStep,
                 WaitUntil = _waitUntil?.Ticks ?? -1,
@@ -524,18 +524,18 @@ namespace Transidious
         public static ActivePath Deserialize(Serialization.ActivePath path)
         {
             var result = ResourceManager.instance.GetActivePath(true);
-            result._currentStep = path.CurrentStep;
-            result._currentStepProgress = path.CurrentStepProgress;
-            result._currentVelocity = path.CurrentVelocity;
+            result.Initialize(
+                PathPlanningResult.Deserialize(GameController.instance.loadedMap, path.Path), 
+                GameController.instance.sim.GetCitizen(path.CitizenId));
             
             if (path.WaitUntil != -1)
             {
                 result._waitUntil = new DateTime(path.WaitUntil);
             }
-
-            result.Initialize(
-                PathPlanningResult.Deserialize(GameController.instance.loadedMap, path.Path), 
-                GameController.instance.sim.GetCitizen(path.CitizenId));
+            
+            result._currentStep = path.CurrentStep;
+            result._currentStepProgress = path.CurrentStepProgress;
+            result._currentVelocity = path.CurrentVelocity;
 
             return result;
         }

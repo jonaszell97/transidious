@@ -45,11 +45,6 @@ namespace Transidious
             return len;
         }
 
-        public static float toRadians(float degrees)
-        {
-            return degrees * Mathf.Rad2Deg;
-        }
-
         public static float PointAngleDeg(Vector3 p0, Vector3 p3)
         {
             return PointAngleRad(p0, p3) * Mathf.Rad2Deg;

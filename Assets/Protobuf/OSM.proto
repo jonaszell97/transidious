@@ -51,6 +51,7 @@ message Area {
     message NaturalFeature {
         uint64 geoId = 1;
         Transidious.Serialization.NaturalFeature.Type type = 2;
+        bool visualOnly = 3;
     }
 
     message Building {

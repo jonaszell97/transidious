@@ -100,23 +100,6 @@ message Car {
 }
 
 message Citizen {
-    // public string firstName;
-    // public string lastName;
-    // public short age;
-    // public short birthday;
-    // public bool female;
-    // public Occupation occupation;
-    // public decimal money;
-    // public Car car;
-    // public bool educated;
-    // public byte happiness;
-    // public AbstractSchedule[] schedules;
-    // public Dictionary<Relationship, Citizen> relationships;
-    // public Dictionary<PointOfInterest, Building> pointsOfInterest;
-
-    // public Vector3 currentPosition;
-    // public ScheduledEvent dailySchedule;
-
     enum Occupation {
         Worker = 0;
         Retired = 1;
@@ -148,6 +131,22 @@ message Citizen {
         uint32 buildingId = 2;
     }
 
+    message HappinessInfluence {
+        string descriptionKey = 1;
+        float influence = 2;
+        int32 ticks = 3;
+        float relativeCap = 4;
+        float absoluteCapLo = 5;
+        float absoluteCapHi = 6;
+    }
+
+    message ScheduledEvent {
+        uint32 startsAt = 1;
+        PathPlanningResult path = 2;
+        ScheduledEvent nextEvent = 3;
+        PointOfInterest place = 4;
+    }
+
     uint32 id = 1;
     string firstName = 2;
     string lastName = 3;
@@ -161,10 +160,13 @@ message Citizen {
 
     repeated Relationship relationships = 11;
     repeated PointOfInterest pointsOfInterest = 12;
+    repeated HappinessInfluence happinessInfluences = 13;
 
-    uint32 carID = 13;
-    Vector2 currentPosition = 14;
-    ActivePath activePath = 15;
-    int32 scheduleIdx = 16;
-    uint32 scheduleID = 17;
+    uint32 carID = 14;
+    Vector2 currentPosition = 15;
+    ActivePath activePath = 16;
+    int32 scheduleIdx = 17;
+    uint32 scheduleID = 18;
+    Color preferredColor = 19;
+    PathPlanningOptions transitPreferences = 20;
 }

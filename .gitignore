@@ -16,6 +16,8 @@ Assets/NuGet
 /TblGen/.cache
 /TblGen/env
 
+Assets/Resources/Meshes
+Assets/Resources/Maps
 Assets/Resources/Saves
 Assets/Plugins/UnityTriangle.bundle
 Assets/Plugins/UnityTriangle.bundle.meta

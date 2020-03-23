@@ -272,7 +272,7 @@ class DefaultArea : Area
 
         NaturalFeatureInfo<.Residential, [
             Tag<"landuse", "residential">,
-        ], [.Way, .Relation]>,
+        ], [.Way, .Relation], true>,
     ]
 
     override buildings = [

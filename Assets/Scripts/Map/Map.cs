@@ -739,6 +739,54 @@ namespace Transidious
             return GetTile(tileX, tileY);
         }
 
+        public HashSet<MapTile> GetTiles(IEnumerable<Vector3> positions)
+        {
+            var tiles = new HashSet<MapTile>();
+            foreach (var pos in positions)
+            {
+                var tile = GetTile(pos);
+                if (tile != null)
+                {
+                    tiles.Add(tile);
+                }
+            }
+
+            return tiles;
+        }
+        
+        public HashSet<MapTile> GetTiles(IEnumerable<Vector2> positions)
+        {
+            var tiles = new HashSet<MapTile>();
+            foreach (var pos in positions)
+            {
+                var tile = GetTile(pos);
+                if (tile != null)
+                {
+                    tiles.Add(tile);
+                }
+            }
+
+            return tiles;
+        }
+        
+        public HashSet<MapTile> GetTiles(IEnumerable<Vector2[]> positions)
+        {
+            var tiles = new HashSet<MapTile>();
+            foreach (var arr in positions)
+            {
+                foreach (var pos in arr)
+                {
+                    var tile = GetTile(pos);
+                    if (tile != null)
+                    {
+                        tiles.Add(tile);
+                    }
+                }
+            }
+
+            return tiles;
+        }
+
         public class PointOnStreet
         {
             public StreetSegment seg;
