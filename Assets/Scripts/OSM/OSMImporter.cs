@@ -474,9 +474,7 @@ namespace Transidious
             map.name = this.area.ToString();
             map.input = GameController.instance.input;
 
-            this.exporter = new MapExporter(
-                map,
-                exportType == MapExportType.Mesh ? 1024 : 4096);
+            this.exporter = new MapExporter(map, 8192);
 
             await this.ImportArea();
 
@@ -1525,8 +1523,7 @@ namespace Transidious
                     }
                     else if (wayPositionsArr != null)
                     {
-                        exporter.RegisterMesh(f, wayPositionsArr, f.GetLayer(),
-                            f.GetColor());
+                        exporter.RegisterMesh(f, wayPositionsArr, f.GetLayer(), f.GetColor());
                     }
                 }
                 catch (Exception e)

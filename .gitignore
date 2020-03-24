@@ -16,6 +16,7 @@ Assets/NuGet
 /TblGen/.cache
 /TblGen/env
 
+Assets/Resources/Materials
 Assets/Resources/Meshes
 Assets/Resources/Maps
 Assets/Resources/Saves

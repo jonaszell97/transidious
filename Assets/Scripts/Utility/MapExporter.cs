@@ -83,7 +83,7 @@ namespace Transidious
         }
 
         public Map map;
-        public readonly int resolution;
+        public int resolution;
         public Dictionary<IMapObject, MeshInfo> meshInfo;
         private List<Tuple<MapTile, MeshInfo>> otherMeshes;
         Statistics stats;
@@ -169,6 +169,7 @@ namespace Transidious
                     graphics.CompositingQuality = CompositingQuality.HighQuality;
                     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphics.CompositingMode = CompositingMode.SourceCopy;
+                    graphics.SmoothingMode = SmoothingMode.HighQuality;
 
                     for (var x = 0; x < map.tilesWidth; ++x)
                     {
@@ -177,7 +178,7 @@ namespace Transidious
                             var backgroundColor = ToDrawingColor(map.GetDefaultBackgroundColor(MapDisplayMode.Day));
                             graphics.FillRectangle(
                                 new SolidBrush(backgroundColor),
-                                new Rectangle(0, 0, resolution - 1, resolution - 1));
+                                new Rectangle(0, 0, resolution, resolution));
 
                             if (DrawTile(map.GetTile(x, y), graphics, false))
                             {
@@ -212,7 +213,7 @@ namespace Transidious
                     graphics.CompositingMode = CompositingMode.SourceCopy;
                     graphics.FillRectangle(
                         Brushes.Transparent,
-                        new Rectangle(0, 0, resolution - 1, resolution - 1));
+                        new Rectangle(0, 0, resolution, resolution));
 
                     System.IO.Directory.CreateDirectory($"Assets/Resources/Maps/{fileName}");
                     DrawMinimap(graphics, resolution);
@@ -236,7 +237,7 @@ namespace Transidious
                     var backgroundColor = ToDrawingColor(map.GetDefaultBackgroundColor(MapDisplayMode.Day));
                     graphics.FillRectangle(
                         new SolidBrush(backgroundColor),
-                        new Rectangle(0, 0, resolution - 1, resolution - 1));
+                        new Rectangle(0, 0, resolution, resolution));
 
                     System.IO.Directory.CreateDirectory($"Assets/Resources/Maps/{fileName}");
 
