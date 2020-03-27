@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using Transidious;
+using UnityEditor;
 using UnityEngine;
 
 public class StaticMarker : AssetPostprocessor
@@ -10,9 +11,17 @@ public class StaticMarker : AssetPostprocessor
     {
         foreach (var assetName in importedAssets)
         {
-            if (!assetName.StartsWith("Assets/Resources/Prefabs/Maps", System.StringComparison.CurrentCulture))
+            if (assetName.StartsWith("Assets/Resources/Maps/", System.StringComparison.CurrentCulture)
+                && assetName.Contains(".png")
+                && !assetName.Contains("minimap"))
             {
-                return;
+                ImportMapTileSprite(assetName);
+                continue;
+            }
+            if (!assetName.StartsWith("Assets/Resources/Maps", System.StringComparison.CurrentCulture)
+            || !assetName.Contains(".prefab"))
+            {
+                continue;
             }
 
             var prefab = PrefabUtility.LoadPrefabContents(assetName);            
@@ -53,8 +62,42 @@ public class StaticMarker : AssetPostprocessor
                 GameObjectUtility.SetStaticEditorFlags(sprite.gameObject, staticFlags);
             }
 
+            foreach (var route in prefab.GetComponentsInChildren<Route>())
+            {
+                route.gameObject.transform.SetParent(null);
+            }
+            foreach (var stop in prefab.GetComponentsInChildren<Stop>())
+            {
+                stop.gameObject.transform.SetParent(null);
+            }
+
             PrefabUtility.SaveAsPrefabAsset(prefab, assetName);
             PrefabUtility.UnloadPrefabContents(prefab);
         }
+    }
+
+    static void ImportMapTileSprite(string path)
+    {
+        var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+        if (importer == null)
+            return;
+
+        if (importer.alphaSource == TextureImporterAlphaSource.None)
+            return;
+
+        Debug.Log($"changing {path} import settings");
+
+        importer.mipmapEnabled = true;
+        importer.maxTextureSize = 4096;
+        importer.textureType = TextureImporterType.Sprite;
+        importer.spriteImportMode = SpriteImportMode.Single;
+        importer.spritePixelsPerUnit = 100;
+        importer.alphaSource = TextureImporterAlphaSource.None;
+        importer.filterMode = FilterMode.Trilinear;
+
+        importer.textureCompression = TextureImporterCompression.Compressed;
+        // importer.textureCompression = TextureImporterCompression.CompressedHQ;
+
+        importer.SaveAndReimport();
     }
 }

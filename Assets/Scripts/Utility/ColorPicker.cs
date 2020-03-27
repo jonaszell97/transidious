@@ -36,13 +36,7 @@ namespace Transidious
 
         public ChangeEvent onChange;
 
-        public Color SelectedColor
-        {
-            get
-            {
-                return new Color(r, g, b);
-            }
-        }
+        public Color SelectedColor => new Color(r, g, b);
 
         char ValidateHexInput(string text, int charIndex, char addedChar)
         {

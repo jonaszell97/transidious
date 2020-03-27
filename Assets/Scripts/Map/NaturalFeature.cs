@@ -9,6 +9,7 @@ namespace Transidious
         {
             Park,
             Lake,
+            River,
             Green,
             SportsPitch,
             Allotment,
@@ -19,12 +20,21 @@ namespace Transidious
             Parking,
             Footpath,
             Residential,
+            Zoo,
         }
 
         public Type type;
         public Mesh mesh;
         public int visitors;
         public int capacity;
+
+        public override int Capacity => capacity;
+
+        public override int Occupants
+        {
+            get => visitors;
+            set => visitors = value;
+        }
 
         public void UpdateMesh(Map map)
         {
@@ -66,35 +76,7 @@ namespace Transidious
 
         public static Color GetColor(Type type)
         {
-            switch (type)
-            {
-            case Type.Lake:
-                return new Color(160f / 255f, 218f / 255f, 242f / 255f);
-            case Type.Green:
-                return new Color(174.9f / 255f, 224.1f / 255f, 159.2f / 255f);
-            case Type.SportsPitch:
-                return new Color(170.4f / 255f, 224.4f / 255f, 202.6f / 255f);
-            case Type.Cemetery:
-                return new Color(201f / 255f, 225.3f / 255f, 191.3f / 255f);
-            case Type.Park:
-                return new Color(200.1f / 255f, 250.4f / 255f, 204.2f / 255f);
-            case Type.Allotment:
-                return new Color(201f / 255f, 225.3f / 255f, 191.3f / 255f);
-            case Type.FootpathArea:
-                return new Color(221.1f / 255f, 220.6f / 255f, 231.8f / 255f);
-            case Type.Beach:
-                return new Color(248.9f / 255f, 234.5f / 255f, 181.6f / 255f);
-            case Type.Forest:
-                return new Color(174.9f / 255f, 224.1f / 255f, 159.2f / 255f);
-            case Type.Parking:
-                return new Color(.8f, .8f, .8f);
-            case Type.Footpath:
-                return new Color(232f / 255f, 220f / 255f, 192f / 255f);
-            case Type.Residential:
-                return new Color(245f / 255f, 245f / 255f, 245f / 255f);
-            default:
-                return new Color();
-            }
+            return Colors.GetColor($"feature.{type}");
         }
 
         public float GetLayer()
@@ -122,6 +104,7 @@ namespace Transidious
                     break;
                 case NaturalFeature.Type.Forest:
                 case Type.Residential:
+                case Type.Zoo:
                     layer = Map.Layer(MapLayer.NatureBackground, 0);
                     break;
                 case NaturalFeature.Type.Beach:
@@ -129,6 +112,9 @@ namespace Transidious
                     break;
                 case NaturalFeature.Type.Lake:
                     layer = Map.Layer(MapLayer.Lakes);
+                    break;
+                case NaturalFeature.Type.River:
+                    layer = Map.Layer(MapLayer.Rivers);
                     break;
                 case NaturalFeature.Type.Footpath:
                     layer = Map.Layer(MapLayer.Rivers, 1);
@@ -151,20 +137,20 @@ namespace Transidious
             case Type.Green:
             case Type.Beach:
             default:
-                return (int)Mathf.Ceil(area / 10f);
+                return (int)Mathf.Ceil(area / 50f);
             case Type.Forest:
             case Type.Lake:
-                return (int)Mathf.Ceil(area / 50f);
+                return (int)Mathf.Ceil(area / 500f);
             case Type.SportsPitch:
-                return (int)Mathf.Ceil(area / 5f);
+                return (int)Mathf.Ceil(area / 50f);
             case Type.Allotment:
             case Type.Cemetery:
-                return (int)Mathf.Ceil(area / 25f);
+                return (int)Mathf.Ceil(area / 100f);
             case Type.FootpathArea:
             case Type.Footpath:
-                return (int)Mathf.Ceil(area / 5f);
+                return (int)Mathf.Ceil(area / 50f);
             case Type.Parking:
-                return (int)Mathf.Ceil(area / 5f);
+                return (int)Mathf.Ceil(area / 50f);
             }
         }
 
@@ -182,6 +168,7 @@ namespace Transidious
                 MapObject = base.ToProtobuf(),
                 // Mesh = mesh?.ToProtobuf2D() ?? new Serialization.Mesh2D(),
                 Type = (Serialization.NaturalFeature.Types.Type)type,
+                Visitors = visitors,
             };
         }
 
@@ -193,6 +180,7 @@ namespace Transidious
                 feature.MapObject.Area, feature.MapObject.Centroid.Deserialize(),
                 (int)feature.MapObject.Id);
 
+            newFeature.visitors = feature.Visitors;
             newFeature.Deserialize(feature.MapObject);
             return newFeature;
         }

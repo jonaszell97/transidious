@@ -44,7 +44,7 @@ namespace Transidious
         /// <summary>
         /// The maximum speed (in kmh) of this street.
         /// </summary>
-        public int maxspeed;
+        public Velocity maxspeed;
 
         /// The number of lanes on the road.
         public int lanes;
@@ -62,7 +62,7 @@ namespace Transidious
             this.name = name;
             this.lit = lit;
             this.isOneWay = isOneWay;
-            this.maxspeed = maxspeed > 0 ? maxspeed : GetDefaultMaxSpeed();
+            this.maxspeed = Velocity.FromKPH(maxspeed > 0 ? maxspeed : GetDefaultMaxSpeed());
             this.lanes = lanes > 0 ? lanes : GetDefaultLanes();
             this.segments = new List<StreetSegment>();
             this.length = 0f;
@@ -81,29 +81,9 @@ namespace Transidious
             }
         }
 
-        public float MaxSpeedMetersPerSecond
-        {
-            get
-            {
-                return maxspeed * (1f / 3.6f);
-            }
-        }
+        public Velocity MaxSpeed => maxspeed;
 
-        public int AverageSpeedKPH
-        {
-            get
-            {
-                switch (maxspeed)
-                {
-                    case 30: return 20;
-                    case 50: return 35;
-                    case 70: return 60;
-                    case 80: return 70;
-                    default:
-                        return maxspeed;
-                }
-            }
-        }
+        public Velocity AverageSpeed => maxspeed;
 
         int GetDefaultLanes()
         {
@@ -275,7 +255,7 @@ namespace Transidious
 
         void GenerateDirectionalArrow(StreetSegment seg, PositionOnStreetSegment posOnStreet)
         {
-            if (!seg.street.isOneWay || seg.length < 50f * Map.Meters)
+            if (!seg.street.isOneWay || seg.length < 50f)
             {
                 return;
             }
@@ -301,7 +281,7 @@ namespace Transidious
 
         void GenerateDirectionalArrow(StreetSegment seg)
         {
-            if (!seg.street.isOneWay || seg.length < 30f * Map.Meters)
+            if (!seg.street.isOneWay || seg.length < 30f)
             {
                 return;
             }
@@ -320,13 +300,12 @@ namespace Transidious
 
         public void CreateTextMeshes()
         {
-            switch (type)
+            foreach (var seg in segments)
             {
-            case Type.Path:
-                return;
-            default:
-                break;
+                GenerateDirectionalArrow(seg);
             }
+
+            return;
 
             var txt = map.CreateText(Vector3.zero, DisplayName, new Color(0.3f, 0.3f, 0.3f, 1f));
             txt.textMesh.autoSizeTextContainer = true;
@@ -446,6 +425,7 @@ namespace Transidious
                                     map.GetMapObject<StreetIntersection>((int)seg.EndIntersectionID),
                                     -1, seg.HasTramTracks, (int)seg.MapObject.Id);
 
+            newSeg.occupiedParkingSpots = seg.OccupiedParkingSpots;
             newSeg.Deserialize(seg.MapObject);
         }
 
@@ -501,7 +481,7 @@ namespace Transidious
                 DisplayName = displayName ?? string.Empty,
                 Lit = lit,
                 Oneway = isOneWay,
-                Maxspeed = (uint)maxspeed,
+                Maxspeed = (uint)maxspeed.KPH,
                 Lanes = (uint)lanes,
                 Type = (Serialization.Street.Types.Type)type,
             };

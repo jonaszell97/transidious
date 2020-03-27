@@ -1,10 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 
 namespace Transidious
 {
     public static class DictionaryExtensions
     {
+        public static void Deconstruct<T1, T2>(this KeyValuePair<T1, T2> tuple, out T1 key, out T2 value)
+        {
+            key = tuple.Key;
+            value = tuple.Value;
+        }
+        
         public static TValue GetOrPutDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary,
                                                            TKey key,
                                                            TValue defaultValue = default(TValue))
@@ -61,6 +68,30 @@ namespace Transidious
                 + (FrameTimer.instance.stopwatch.ElapsedMilliseconds - startTime) + "ms");
         }
 #endif
+
+        public class Timer : IDisposable
+        {
+            private readonly long _startTime;
+            private readonly string _description;
+
+            public Timer(string description)
+            {
+                _description = description;
+                _startTime = DateTime.Now.Ticks;
+
+                Debug.Log($"Starting '{description}' at {DateTime.Now.ToShortTimeString()}");
+            }
+
+            public void Dispose()
+            {
+                Debug.Log($"[{_description}] {TimeSpan.FromTicks(DateTime.Now.Ticks - _startTime).TotalMilliseconds:n0}ms");
+            }
+        }
+
+        public static Timer CreateTimer(this MonoBehaviour obj, string description = null)
+        {
+            return new Timer(description ?? obj.name);
+        }
 
         public static void DisableImmediateChildren(this GameObject obj)
         {

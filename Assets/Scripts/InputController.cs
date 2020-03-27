@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Transidious
 {
@@ -61,8 +62,8 @@ namespace Transidious
         public float minY = float.NegativeInfinity;
 
         Dictionary<ControlType, Tuple<KeyCode, KeyCode>> keyBindings;
-        public static float minZoom = 50f * Map.Meters;
-        public static float maxZoom = 15000f * Map.Meters;
+        public static float minZoom = 50f;
+        public static float maxZoom = 15000f;
         static float zoomSensitivityMouse = 25.0f;
         static float zoomSensitivityTrackpad = 5.0f;
         static float zoomSensitivityTouchscreen = 5.0f;
@@ -76,9 +77,9 @@ namespace Transidious
         public float lineWidth;
         public float stopWidth;
 
-        static readonly float farThreshold = 650f * Map.Meters;
-        static readonly float veryFarThreshold = 2000f * Map.Meters;
-        static readonly float farthestThreshold = 7000f * Map.Meters;
+        static readonly float farThreshold = 650f;
+        static readonly float veryFarThreshold = 2000f;
+        static readonly float farthestThreshold = 7000f;
 
         public bool combineStreetMeshes = false;
         public bool combineNatureMeshes = true;
@@ -656,7 +657,7 @@ namespace Transidious
 
             camera = Camera.main;
             aspectRatio = camera.aspect;
-            camera.orthographicSize = 5000f * Map.Meters;
+            camera.orthographicSize = 5000f;
 
             UpdateRenderingDistance();
 
@@ -840,14 +841,9 @@ namespace Transidious
                 }
                 else
                 {
-                    var options = new PathPlanning.PathPlanningOptions
-                    {
-                        maxWalkingDistance = 100f,
-                        allowCar = false,
-                        time = controller.sim.GameTime,
-                    };
+                    var c = controller.sim.CreateCitizen(true);
 
-                    var planner = new PathPlanning.PathPlanner(options);
+                    var planner = new PathPlanning.PathPlanner(c.transitPreferences);
                     var map = controller.loadedMap;
                     var from = fromPos.Value;
                     var to = clickedPos;
@@ -868,16 +864,44 @@ namespace Transidious
 
                     if (Input.GetKeyDown(KeyCode.F3) && transitResult != null)
                     {
-                        var c = controller.sim.CreateCitizen(true);
                         c.FollowPath(transitResult);
                     }
                     else if (Input.GetKeyDown(KeyCode.F4) && carResult != null)
                     {
-                        var c = controller.sim.CreateCitizen(true);
                         c.FollowPath(carResult);
                     }
 
                     fromPos = null;
+                }
+            }
+
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F5))
+            {
+                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                var found = controller.loadedMap.FindClosest(
+                    out NaturalFeature parkingLot, clickedPos,
+                    feature => feature.type == NaturalFeature.Type.Parking);
+
+                if (found)
+                {
+                    Utility.DrawLine(parkingLot.outlinePositions[0].Select(
+                        v2 => new Vector3(v2.x, v2.y, Map.Layer(MapLayer.Foreground))).ToArray(), 
+                        3f, Color.red);
+                }
+                else
+                {
+                    Debug.Log("no parking lot found????");
+                }
+            }
+
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F6))
+            {
+                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                var pos = controller.loadedMap.GetClosestStreet(clickedPos);
+
+                if (pos.seg != null)
+                {
+                    Utility.DrawCircle(pos.pos, 3f, 3f, Color.red);
                 }
             }
 
@@ -890,14 +914,14 @@ namespace Transidious
                 {
                     if (highlighted != null)
                     {
-                        highlighted.ResetColor(renderingDistance);
+                        highlighted.ResetColor();
                     }
 
                     highlighted = posOnStreet.seg;
                     posOnStreet.seg.UpdateColor(Color.red);
 
                     this.gameObject.transform.position = posOnStreet.pos;
-                    this.gameObject.DrawCircle(10f * Map.Meters, 10f * Map.Meters, Color.blue);
+                    this.gameObject.DrawCircle(10f, 10f, Color.blue);
                 }
             }
 

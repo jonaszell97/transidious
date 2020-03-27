@@ -23,4 +23,5 @@ message Building {
     uint32 streetID = 3;
     Type type = 4;
     Vector2 position = 5;
+    int32 occupants = 6;
 }

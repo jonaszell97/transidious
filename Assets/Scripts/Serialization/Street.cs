@@ -28,25 +28,26 @@ namespace Transidious.Serialization {
             "bW1vbi5wcm90byKDAQoSU3RyZWV0SW50ZXJzZWN0aW9uEjcKCW1hcE9iamVj",
             "dBgBIAEoCzIkLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTWFwT2JqZWN0",
             "EjQKCHBvc2l0aW9uGAIgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
-            "bi5WZWN0b3IyIs4BCg1TdHJlZXRTZWdtZW50EjcKCW1hcE9iamVjdBgBIAEo",
+            "bi5WZWN0b3IyIuwBCg1TdHJlZXRTZWdtZW50EjcKCW1hcE9iamVjdBgBIAEo",
             "CzIkLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTWFwT2JqZWN0EjUKCXBv",
             "c2l0aW9ucxgCIAMoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVj",
             "dG9yMhIbChNzdGFydEludGVyc2VjdGlvbklEGAMgASgNEhkKEWVuZEludGVy",
-            "c2VjdGlvbklEGAQgASgNEhUKDWhhc1RyYW1UcmFja3MYBSABKAgi6AIKBlN0",
-            "cmVldBI3CgltYXBPYmplY3QYASABKAsyJC5UcmFuc2lkaW91cy5TZXJpYWxp",
-            "emF0aW9uLk1hcE9iamVjdBITCgtkaXNwbGF5TmFtZRgCIAEoCRI0CgR0eXBl",
-            "GAMgASgOMiYuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5TdHJlZXQuVHlw",
-            "ZRI6CghzZWdtZW50cxgEIAMoCzIoLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
-            "b24uU3RyZWV0U2VnbWVudBILCgNsaXQYBSABKAgSDgoGb25ld2F5GAYgASgI",
-            "EhAKCG1heHNwZWVkGAcgASgNEg0KBWxhbmVzGAggASgNImAKBFR5cGUSCwoH",
-            "UHJpbWFyeRAAEg0KCVNlY29uZGFyeRABEgwKCFRlcnRpYXJ5EAISDwoLUmVz",
-            "aWRlbnRpYWwQAxIICgRMaW5rEAQSCAoEUGF0aBAFEgkKBVJpdmVyEAZCHKoC",
-            "GVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
+            "c2VjdGlvbklEGAQgASgNEhUKDWhhc1RyYW1UcmFja3MYBSABKAgSHAoUb2Nj",
+            "dXBpZWRQYXJraW5nU3BvdHMYBiABKAUi6AIKBlN0cmVldBI3CgltYXBPYmpl",
+            "Y3QYASABKAsyJC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1hcE9iamVj",
+            "dBITCgtkaXNwbGF5TmFtZRgCIAEoCRI0CgR0eXBlGAMgASgOMiYuVHJhbnNp",
+            "ZGlvdXMuU2VyaWFsaXphdGlvbi5TdHJlZXQuVHlwZRI6CghzZWdtZW50cxgE",
+            "IAMoCzIoLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0U2VnbWVu",
+            "dBILCgNsaXQYBSABKAgSDgoGb25ld2F5GAYgASgIEhAKCG1heHNwZWVkGAcg",
+            "ASgNEg0KBWxhbmVzGAggASgNImAKBFR5cGUSCwoHUHJpbWFyeRAAEg0KCVNl",
+            "Y29uZGFyeRABEgwKCFRlcnRpYXJ5EAISDwoLUmVzaWRlbnRpYWwQAxIICgRM",
+            "aW5rEAQSCAoEUGF0aBAFEgkKBVJpdmVyEAZCHKoCGVRyYW5zaWRpb3VzLlNl",
+            "cmlhbGl6YXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetIntersection), global::Transidious.Serialization.StreetIntersection.Parser, new[]{ "MapObject", "Position" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetSegment), global::Transidious.Serialization.StreetSegment.Parser, new[]{ "MapObject", "Positions", "StartIntersectionID", "EndIntersectionID", "HasTramTracks" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetSegment), global::Transidious.Serialization.StreetSegment.Parser, new[]{ "MapObject", "Positions", "StartIntersectionID", "EndIntersectionID", "HasTramTracks", "OccupiedParkingSpots" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Street), global::Transidious.Serialization.Street.Parser, new[]{ "MapObject", "DisplayName", "Type", "Segments", "Lit", "Oneway", "Maxspeed", "Lanes" }, null, new[]{ typeof(global::Transidious.Serialization.Street.Types.Type) }, null)
           }));
     }
@@ -253,6 +254,7 @@ namespace Transidious.Serialization {
       startIntersectionID_ = other.startIntersectionID_;
       endIntersectionID_ = other.endIntersectionID_;
       hasTramTracks_ = other.hasTramTracks_;
+      occupiedParkingSpots_ = other.occupiedParkingSpots_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -315,6 +317,17 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "occupiedParkingSpots" field.</summary>
+    public const int OccupiedParkingSpotsFieldNumber = 6;
+    private int occupiedParkingSpots_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int OccupiedParkingSpots {
+      get { return occupiedParkingSpots_; }
+      set {
+        occupiedParkingSpots_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as StreetSegment);
@@ -333,6 +346,7 @@ namespace Transidious.Serialization {
       if (StartIntersectionID != other.StartIntersectionID) return false;
       if (EndIntersectionID != other.EndIntersectionID) return false;
       if (HasTramTracks != other.HasTramTracks) return false;
+      if (OccupiedParkingSpots != other.OccupiedParkingSpots) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -344,6 +358,7 @@ namespace Transidious.Serialization {
       if (StartIntersectionID != 0) hash ^= StartIntersectionID.GetHashCode();
       if (EndIntersectionID != 0) hash ^= EndIntersectionID.GetHashCode();
       if (HasTramTracks != false) hash ^= HasTramTracks.GetHashCode();
+      if (OccupiedParkingSpots != 0) hash ^= OccupiedParkingSpots.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -374,6 +389,10 @@ namespace Transidious.Serialization {
         output.WriteRawTag(40);
         output.WriteBool(HasTramTracks);
       }
+      if (OccupiedParkingSpots != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(OccupiedParkingSpots);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -394,6 +413,9 @@ namespace Transidious.Serialization {
       }
       if (HasTramTracks != false) {
         size += 1 + 1;
+      }
+      if (OccupiedParkingSpots != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(OccupiedParkingSpots);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -421,6 +443,9 @@ namespace Transidious.Serialization {
       }
       if (other.HasTramTracks != false) {
         HasTramTracks = other.HasTramTracks;
+      }
+      if (other.OccupiedParkingSpots != 0) {
+        OccupiedParkingSpots = other.OccupiedParkingSpots;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -454,6 +479,10 @@ namespace Transidious.Serialization {
           }
           case 40: {
             HasTramTracks = input.ReadBool();
+            break;
+          }
+          case 48: {
+            OccupiedParkingSpots = input.ReadInt32();
             break;
           }
         }

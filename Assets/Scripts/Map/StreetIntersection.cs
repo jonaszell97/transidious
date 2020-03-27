@@ -293,7 +293,7 @@ namespace Transidious
 
         public Vector3 GetTrafficLightPosition(StreetSegment seg)
         {
-            return GetOffsetPosition(seg, 10f * Map.Meters);
+            return GetOffsetPosition(seg, 10f);
         }
 
         public Vector3 GetOffsetPosition(StreetSegment seg, float offset)
@@ -455,7 +455,7 @@ namespace Transidious
             {
                 foreach (var seg in intersectingStreets)
                 {
-                    var pos = GetOffsetPosition(seg, 5 * Map.Meters);
+                    var pos = GetOffsetPosition(seg, 5);
                     pos.z = Map.Layer(MapLayer.Foreground);
 
                     var txt = map.CreateText(pos, relativePositions[seg].ToString(), Color.black);

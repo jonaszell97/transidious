@@ -23,4 +23,5 @@ message NaturalFeature {
     MapObject mapObject = 1;
     Mesh2D mesh = 2;
     Type type = 3;
+    int32 visitors = 4;
 }

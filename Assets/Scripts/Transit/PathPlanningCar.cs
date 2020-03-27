@@ -24,21 +24,17 @@ namespace Transidious.PathPlanning
             float x2 = goal.Location.x;
             float y2 = goal.Location.y;
 
-            float speed;
+            Velocity speed;
             if (route != null)
             {
                 speed = route.AverageSpeed;
             }
             else
             {
-                speed = 50.0f;
+                speed = Velocity.FromKPH(50);
             }
 
-            float dist = (float)System.Math.Sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-            float kmPerMinute = speed / 60f;
-            float distInKm = dist / 1000f;
-
-            return kmPerMinute * distInKm;
+            return (float)(Distance.Between(start.Location, goal.Location) / speed).TotalSeconds;
         }
     }
 
@@ -48,8 +44,8 @@ namespace Transidious.PathPlanning
         IStop End { get; }
         bool OneWay { get; }
 
-        TimeSpan TravelTime { get; }
-        float AverageSpeed { get; }
+        GameTimeSpan TravelTime { get; }
+        Velocity AverageSpeed { get; }
         int AssociatedID { get; }
 
         DateTime NextDeparture(DateTime after);
@@ -76,7 +72,7 @@ namespace Transidious.PathPlanning
             this.time = default;
         }
 
-        public abstract TimeSpan EstimateDuration(PathPlanningOptions options);
+        public abstract GameTimeSpan EstimateDuration(PathPlanningOptions options);
 
         protected abstract Google.Protobuf.IMessage ToProtobufInternal();
 
@@ -96,7 +92,7 @@ namespace Transidious.PathPlanning
         {
             if (pathStep.Details.TryUnpack(out Serialization.PathStep.Types.WaitStep waitStep))
             {
-                return new WaitStep(TimeSpan.FromMilliseconds(waitStep.WaitingTime));
+                return new WaitStep(GameTimeSpan.FromGameTimeMilliseconds(waitStep.WaitingTime));
             }
 
             if (pathStep.Details.TryUnpack(out Serialization.PathStep.Types.WalkStep walkStep))
@@ -124,7 +120,8 @@ namespace Transidious.PathPlanning
                         segment = map.GetMapObject<StreetSegment>((int)partialDriveStep.SegmentID),
                         backward = partialDriveStep.Backward,
                     }, partialDriveStep.PartialStart,
-                    partialDriveStep.PartialEnd);
+                    partialDriveStep.PartialEnd,
+                    map.GetMapObject((int)(partialDriveStep.ParkingLotID)));
             }
 
             if (pathStep.Details.TryUnpack(out Serialization.PathStep.Types.PublicTransitStep transitStep))
@@ -161,21 +158,16 @@ namespace Transidious.PathPlanning
         /// The ending point of the walk.
         public Vector2 to;
 
-        private static readonly float avgSpeedKMH = 7f;
-        private static readonly float avgSpeedMPS = avgSpeedKMH / 3.6f;
-
         public WalkStep(Vector2 from, Vector2 to) : base(Type.Walk)
         {
             this.from = from;
             this.to = to;
         }
 
-        public override TimeSpan EstimateDuration(PathPlanningOptions options)
+        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
         {
-            var distMeters = (from - to).magnitude;
-            var seconds = distMeters * avgSpeedMPS;
-
-            return TimeSpan.FromSeconds(seconds);
+            var distMeters = Distance.Between(from, to);
+            return distMeters / (options.citizen?.WalkingSpeed ?? Velocity.FromKPH(5));
         }
 
         protected override Google.Protobuf.IMessage ToProtobufInternal()
@@ -191,14 +183,14 @@ namespace Transidious.PathPlanning
     public class WaitStep : PathStep
     {
         /// The waiting time.
-        public TimeSpan waitingTime;
+        public GameTimeSpan waitingTime;
 
-        public WaitStep(TimeSpan waitingTime) : base(Type.Wait)
+        public WaitStep(GameTimeSpan waitingTime) : base(Type.Wait)
         {
             this.waitingTime = waitingTime;
         }
 
-        public override TimeSpan EstimateDuration(PathPlanningOptions options)
+        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
         {
             return waitingTime;
         }
@@ -226,9 +218,9 @@ namespace Transidious.PathPlanning
             this.routes = routes;
         }
 
-        public override TimeSpan EstimateDuration(PathPlanningOptions options)
+        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
         {
-            var ts = new TimeSpan();
+            var ts = new GameTimeSpan();
             foreach (var route in routes)
             {
                 ts += route.TravelTime;
@@ -265,7 +257,7 @@ namespace Transidious.PathPlanning
             this.driveSegment = driveSegment;
         }
 
-        public override TimeSpan EstimateDuration(PathPlanningOptions options)
+        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
         {
             return driveSegment.segment.TravelTime;
         }
@@ -297,9 +289,13 @@ namespace Transidious.PathPlanning
         /// This step is partial at the end.
         public bool partialEnd;
 
+        // The parking lot that this drive ends at.
+        public IMapObject parkingLot;
+
         public PartialDriveStep(Vector2 startPos, Vector2 endPos,
                                 DriveSegment segment,
-                                bool partialStart, bool partialEnd)
+                                bool partialStart, bool partialEnd,
+                                IMapObject parkingLot = null)
             : base(Type.PartialDrive)
         {
             this.startPos = startPos;
@@ -307,9 +303,10 @@ namespace Transidious.PathPlanning
             this.driveSegment = segment;
             this.partialStart = partialStart;
             this.partialEnd = partialEnd;
+            this.parkingLot = parkingLot;
         }
 
-        public override TimeSpan EstimateDuration(PathPlanningOptions options)
+        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
         {
             var seg = driveSegment.segment;
 
@@ -371,7 +368,7 @@ namespace Transidious.PathPlanning
                 totalLength = seg.length;
             }
 
-            return seg.GetTravelTime(totalLength);
+            return seg.GetTravelTime(Distance.FromMeters(totalLength));
         }
 
         protected override Google.Protobuf.IMessage ToProtobufInternal()
@@ -384,6 +381,7 @@ namespace Transidious.PathPlanning
                 Backward = driveSegment.backward,
                 PartialStart = partialStart,
                 PartialEnd = partialEnd,
+                ParkingLotID = (uint) (parkingLot?.Id ?? 0),
             };
         }
     }
@@ -406,10 +404,10 @@ namespace Transidious.PathPlanning
             this.intersection = intersection;
         }
 
-        public override TimeSpan EstimateDuration(PathPlanningOptions options)
+        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
         {
             // FIXME
-            return TimeSpan.FromSeconds(5f);
+            return GameTimeSpan.zero;
         }
 
         protected override Google.Protobuf.IMessage ToProtobufInternal()
@@ -444,13 +442,7 @@ namespace Transidious.PathPlanning
             }
         }
 
-        public Vector3 Location
-        {
-            get
-            {
-                return pos;
-            }
-        }
+        public Vector3 Location => pos;
 
         public bool IsGoalReached(IStop goal)
         {
@@ -471,31 +463,19 @@ namespace Transidious.PathPlanning
             return false;
         }
 
-        public bool uTurnAllowed
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool uTurnAllowed => false;
     }
 
     public class PathPlanningOptions
     {
+        /// The citizen these options belong to.
+        public Citizen citizen;
+
         /// Whether or not a car can be used.
         public bool allowCar = true;
 
         /// Whether or not to allow walking.
         public bool allowWalk = true;
-
-        /// The starting position.
-        public IStop start;
-
-        /// The goal position.
-        public IStop goal;
-
-        /// The time of the trip.
-        public DateTime time;
 
         /// The maximum acceptable walking distance between stations.
         public float maxWalkingDistance = 1000f;
@@ -521,7 +501,6 @@ namespace Transidious.PathPlanning
             {
                 AllowCar = allowCar,
                 AllowWalk = allowWalk,
-                Time = (ulong)time.Ticks,
                 MaxWalkingDistance = maxWalkingDistance,
                 WalkingTimeFactor = walkingTimeFactor,
                 TravelTimeFactor = travelTimeFactor,
@@ -537,7 +516,6 @@ namespace Transidious.PathPlanning
             {
                 allowCar = o.AllowCar,
                 allowWalk = o.AllowWalk,
-                time = new DateTime((long)o.Time),
                 maxWalkingDistance = o.MaxWalkingDistance,
                 walkingTimeFactor = o.WalkingTimeFactor,
                 travelTimeFactor = o.TravelTimeFactor,
@@ -556,9 +534,6 @@ namespace Transidious.PathPlanning
         /// The total cost of the path.
         public readonly float cost = 0.0f;
 
-        /// The total duration of the path in minutes.
-        public readonly float duration = 0.0f;
-
         /// The time you have to leave when taking this path.
         public readonly DateTime leaveBy;
 
@@ -568,45 +543,26 @@ namespace Transidious.PathPlanning
         /// The steps to take on this path.
         public readonly List<PathStep> steps;
 
+        /// The total duration of the path in minutes.
+        public float duration => (float)(arriveAt - leaveBy).TotalMinutes;
+        
         public PathPlanningResult(PathPlanningOptions options,
-                                  float cost, float duration, DateTime leaveBy,
+                                  float cost, DateTime leaveBy,
                                   DateTime? arriveAt, List<PathStep> steps)
         {
             this.options = options;
             this.cost = cost;
-            this.duration = duration;
             this.leaveBy = leaveBy;
             this.arriveAt = arriveAt.HasValue ? arriveAt.Value : new DateTime();
             this.steps = steps;
         }
 
-        public PathPlanningResult(PathPlanningOptions options,
-                                  float cost, float duration, List<PathStep> steps)
+        public PathPlanningResult(PathPlanningOptions options, float cost, List<PathStep> steps)
         {
             this.options = options;
             this.cost = cost;
-            this.duration = duration;
             this.leaveBy = DateTime.Now;
-            this.arriveAt = this.leaveBy.AddMinutes(duration);
             this.steps = steps;
-        }
-
-        public PointOnStreet GetStartPointOnStreet()
-        {
-            if (steps.Count < 2 || !(steps[1] is PartialDriveStep))
-                return null;
-
-            var drive = steps[1] as PartialDriveStep;
-            return new PointOnStreet { street = drive.driveSegment.segment, pos = drive.startPos };
-        }
-
-        public PointOnStreet GetEndPointOnStreet()
-        {
-            if (steps.Count < 2 || !(steps[steps.Count - 2] is PartialDriveStep))
-                return null;
-
-            var drive = steps[steps.Count - 2] as PartialDriveStep;
-            return new PointOnStreet { street = drive.driveSegment.segment, pos = drive.endPos };
         }
 
         public void RecalculateTimes()
@@ -628,7 +584,7 @@ namespace Transidious.PathPlanning
                         {
                             if (i == 0 || !(steps[i - 1] is WaitStep))
                             {
-                                var waitStep = new WaitStep(departure - time);
+                                var waitStep = new WaitStep(GameTimeSpan.Difference(departure, time));
                                 waitStep.time = time;
 
                                 steps.Insert(i, waitStep);
@@ -682,7 +638,7 @@ namespace Transidious.PathPlanning
 
                 step.time = time;
                 time = time.Add(step.EstimateDuration(options));
-                
+
                 previousDrive = step as DriveStep;
                 previousPartialDrive = step as PartialDriveStep;
             }
@@ -694,7 +650,7 @@ namespace Transidious.PathPlanning
         {
             get
             {
-                return steps.Count == 2 && steps.All(s => s is WalkStep);
+                return steps.All(s => s is WalkStep);
             }
         }
 
@@ -782,7 +738,6 @@ namespace Transidious.PathPlanning
             var result = new Serialization.PathPlanningResult
             {
                 Cost = cost,
-                Duration = duration,
                 LeaveBy = (ulong)leaveBy.Ticks,
                 ArriveAt = (ulong)arriveAt.Ticks,
                 Options = options.ToProtobuf(),
@@ -795,7 +750,7 @@ namespace Transidious.PathPlanning
         public static PathPlanningResult Deserialize(Map map, Serialization.PathPlanningResult p)
         {
             return new PathPlanningResult(PathPlanningOptions.Deserialize(p.Options),
-                p.Cost, p.Duration,
+                p.Cost,
                 new DateTime((long)p.LeaveBy), new DateTime((long)p.ArriveAt),
                 p.Steps.Select(s => PathStep.Deserialize(map, s)).ToList());
         }
@@ -853,6 +808,15 @@ namespace Transidious.PathPlanning
         // The path planning options.
         PathPlanningOptions options;
 
+        /// The starting position.
+        IStop start;
+
+        /// The goal position.
+        IStop goal;
+
+        /// The time of the trip.
+        DateTime time;
+
         // The set of nodes already evaluated
         HashSet<IStop> closedSet;
 
@@ -879,7 +843,7 @@ namespace Transidious.PathPlanning
         // by passing by that node. That value is partly known, partly heuristic.
         Dictionary<IStop, float> fScore;
 
-        public PathPlanner(PathPlanningOptions options)
+        public PathPlanner(PathPlanningOptions options, DateTime? time = null)
         {
             this.options = options;
             this.closedSet = new HashSet<IStop>();
@@ -890,14 +854,19 @@ namespace Transidious.PathPlanning
             this.waitingTimeMap = new Dictionary<IStop, float>();
             this.gScore = new Dictionary<IStop, float>();
             this.fScore = new Dictionary<IStop, float>();
+            this.time = time ?? GameController.instance.sim.GameTime;
         }
 
-        static float EstimateWalkingDuration(Vector3 from, Vector3 to)
+        void Reset()
         {
-            from.z = 0f;
-            to.z = 0f;
-
-            return (from - to).magnitude * 7f;
+            closedSet.Clear();
+            openSet.Clear();
+            cameFrom.Clear();
+            cameFromRoute.Clear();
+            durationMap.Clear();
+            waitingTimeMap.Clear();
+            gScore.Clear();
+            fScore.Clear();
         }
 
         static float GetScore(Dictionary<IStop, float> map, IStop stop)
@@ -930,7 +899,7 @@ namespace Transidious.PathPlanning
 
         PathPlanningResult ReconstructPath()
         {
-            var current = options.goal;
+            var current = this.goal;
             var stops = new List<IStop> { current };
 
             while (cameFrom.TryGetValue(current, out IStop prev))
@@ -973,7 +942,7 @@ namespace Transidious.PathPlanning
                     firstTransitStop = false;
 
                     var transitRoute = route as Route;
-                    if (!currentLine || currentLine == transitRoute.line)
+                    if (currentLine == null || currentLine == transitRoute.line)
                     {
                         currentLine = transitRoute.line;
                         routes.Add(new Tuple<IRoute, bool>(route, backward));
@@ -998,7 +967,7 @@ namespace Transidious.PathPlanning
                     preferenceMultiplier = options.carTimeFactor;
                 }
 
-                cost += (float)route.TravelTime.TotalMinutes * options.travelTimeFactor * preferenceMultiplier;
+                cost += (float)route.TravelTime.TotalSeconds * options.travelTimeFactor * preferenceMultiplier;
 
                 Debug.Assert(route != null, "No route found!");
                 previous = stop;
@@ -1032,13 +1001,12 @@ namespace Transidious.PathPlanning
             //    }
             //}
 
-            cost += GetScore(waitingTimeMap, options.goal) * options.waitingTimeFactor;
+            cost += GetScore(waitingTimeMap, this.goal) * options.waitingTimeFactor;
 
             var result = new PathPlanningResult(
                 options,
                 cost,
-                GetScore(durationMap, options.goal),
-                options.time,
+                this.time,
                 null,
                 steps
             );
@@ -1049,11 +1017,9 @@ namespace Transidious.PathPlanning
 
         public PathPlanningResult GetPath()
         {
-            IStop start = options.start;
-            IStop goal = options.goal;
-
+            Reset();
             openSet.Add(start);
-
+            
             // The cost of going from start to start is zero.
             gScore[start] = 0.0f;
             durationMap[start] = 0.0f;
@@ -1119,7 +1085,7 @@ namespace Transidious.PathPlanning
                     // Find the next departure of this line at the station.
                     if ((prevRoute == null || route.AssociatedID != prevRoute.AssociatedID))
                     {
-                        var arrival = options.time.AddMinutes(durationUntilNow);
+                        var arrival = this.time.AddMinutes(durationUntilNow);
                         var nextDep = route.NextDeparture(arrival);
                         var wait = (nextDep - arrival).Minutes;
 
@@ -1169,7 +1135,7 @@ namespace Transidious.PathPlanning
             var duration = (float)walkStep.EstimateDuration(options).TotalSeconds;
 
             var result = new PathPlanningResult(options,
-                duration * options.walkingTimeFactor, duration,
+                duration * options.walkingTimeFactor,
                 new List<PathStep> { walkStep });
 
             result.RecalculateTimes();
@@ -1188,11 +1154,34 @@ namespace Transidious.PathPlanning
             return StreetSegment.GetClosestPointAndPosition(loc, positions);
         }
 
-        public PathPlanningResult FindClosestDrive(Map map, Vector2 from, Vector2 to)
+        IMapObject FindNearestParkingLot(Vector2 pos)
+        {
+            var found = GameController.instance.loadedMap.FindClosest(out NaturalFeature lot, pos, f =>
+            {
+                if (f.type != NaturalFeature.Type.Parking)
+                    return false;
+
+                if (f.visitors == f.capacity)
+                    return false;
+
+                return true;
+            });
+
+            Debug.Assert(found, "no parking lot found");
+            return lot;
+        }
+        
+        public PathPlanningResult FindClosestDrive(Map map, Vector2 from, Vector2 to, bool endAtParkingLot = false)
         {
             var nearestPtFrom = map.GetClosestStreet(from);
-            var nearestPtTo = map.GetClosestStreet(to);
 
+            IMapObject nearestParking = null;
+            if (endAtParkingLot)
+            {
+                nearestParking = FindNearestParkingLot(to);
+            }
+
+            var nearestPtTo = map.GetClosestStreet(endAtParkingLot ? nearestParking.Centroid : to);
             if (nearestPtFrom == null || nearestPtTo == null)
             {
                 if (!this.options.allowWalk)
@@ -1206,11 +1195,8 @@ namespace Transidious.PathPlanning
             var startSide = Math.GetPointPosition(from, nearestPtFrom);
             var endSide = Math.GetPointPosition(to, nearestPtTo);
 
-            var options = new PathPlanningOptions
-            {
-                start = GetNearestIntersection(startSide, nearestPtFrom),
-                goal = GetNearestIntersection(endSide, nearestPtTo, true),
-            };
+            this.start = GetNearestIntersection(startSide, nearestPtFrom);
+            this.goal = GetNearestIntersection(endSide, nearestPtTo, true);
 
             var startPosOnLane = GetPositionOnLane(nearestPtFrom, from);
             var endPosOnLane = GetPositionOnLane(nearestPtTo, to);
@@ -1230,12 +1216,11 @@ namespace Transidious.PathPlanning
             PathPlanningResult result;
             if (simpleJourney)
             {
-                result = new PathPlanningResult(options, 0f, 0f, options.time, options.time, new List<PathStep>());
+                result = new PathPlanningResult(options, 0f, this.time, null, new List<PathStep>());
             }
             else
             {
-                var planner = new PathPlanner(options);
-                result = planner.GetPath();
+                result = GetPath();
 
                 if (result == null)
                 {
@@ -1251,7 +1236,7 @@ namespace Transidious.PathPlanning
             var startPos = startPosOnLane.Item1;
             var endPos = endPosOnLane.Item1;
 
-            var time = options.time;
+            var time = this.time;
             result.steps.Insert(0, new WalkStep(from, startPos));
 
             time = time.Add(result.steps.First().EstimateDuration(options));
@@ -1266,32 +1251,37 @@ namespace Transidious.PathPlanning
                         new DriveSegment
                         {
                             segment = nearestPtFrom.seg,
-                            backward = nearestPtFrom.seg.Begin == options.start
-                        }, true, true));
+                            backward = nearestPtFrom.seg.Begin == start
+                        }, true, true, nearestParking));
                 }
             }
             else
             {
-                if (!nearestPtFrom.pos.Equals(options.start.Location))
+                if (!nearestPtFrom.pos.Equals(start.Location))
                 {
                     result.steps.Insert(1, new PartialDriveStep(
                         startPos,
-                        options.start.Location,
+                        start.Location,
                         new DriveSegment
                         {
                             segment = nearestPtFrom.seg,
-                            backward = nearestPtFrom.seg.Begin == options.start
+                            backward = nearestPtFrom.seg.Begin == start
                         }, true, false));
                 }
 
                 result.steps.Add(new PartialDriveStep(
-                        options.goal.Location,
+                        goal.Location,
                         endPos,
                         new DriveSegment
                         {
                             segment = nearestPtTo.seg,
-                            backward = nearestPtTo.seg.End == options.goal,
-                        }, false, true));
+                            backward = nearestPtTo.seg.End == goal,
+                        }, false, true, nearestParking));
+            }
+
+            if (nearestParking is NaturalFeature f)
+            {
+                endPos = f.centroid;
             }
 
             result.steps.Add(new WalkStep(endPos, to));
@@ -1300,7 +1290,7 @@ namespace Transidious.PathPlanning
             return result;
         }
 
-        public PathPlanningResult FindFastestTransitRoute(Map map, Vector2 from, Vector2 to, int tries = 3)
+        public PathPlanningResult FindFastestTransitRoute(Map map, Vector2 from, Vector2 to)
         {
             var nearbyStopsFrom = map.GetMapObjectsInRadius<Stop>(from, options.maxWalkingDistance);
             var nearbyStopsTo = map.GetMapObjectsInRadius<Stop>(to, options.maxWalkingDistance);
@@ -1314,12 +1304,10 @@ namespace Transidious.PathPlanning
                         continue;
                     }
 
-                    options.start = fromStop;
-                    options.goal = toStop;
+                    start = fromStop;
+                    goal = toStop;
 
-                    var planner = new PathPlanner(options);
-                    var path = planner.GetPath();
-                    
+                    var path = GetPath();
                     if (path != null)
                     {
                         path.steps.Insert(0, new WalkStep(from, fromStop.location));
@@ -1329,12 +1317,6 @@ namespace Transidious.PathPlanning
                         return path;
                     }
                 }
-            }
-
-            if (tries != 0)
-            {
-                options.maxWalkingDistance *= 2;
-                return FindFastestTransitRoute(map, from, to, tries - 1);
             }
 
             return CreateWalk(from, to);

@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Transidious.PathPlanning;
+using Random = UnityEngine.Random;
 
 namespace Transidious
 {
@@ -501,8 +503,9 @@ namespace Transidious
                 this.car = sim.CreateCar(this, currentPosition);
             }
 
-            return new PathPlanning.PathPlanningOptions
+            return new PathPlanningOptions
             {
+                citizen = this,
                 allowCar = allowCar,
                 carTimeFactor = carTimeFactor,
                 changingPenalty = changingPenalty,
@@ -913,7 +916,7 @@ namespace Transidious
                     continue;
                 }
 
-                var planner = new PathPlanning.PathPlanner(transitPreferences);
+                var planner = new PathPlanner(transitPreferences, sim.GameTime.Date.AddMinutes(earliestStartTime));
                 var path = planner.FindClosestPath(sim.game.loadedMap, currentPosition, poi.centroid);
                 var pathDuration = (int)Mathf.Ceil(path.duration * 60);
 
@@ -1049,42 +1052,30 @@ namespace Transidious
             }
         }
 
-        public string Name
-        {
-            get
-            {
-                return firstName + " " + lastName;
-            }
-        }
+        public string Name => $"{firstName} {lastName}";
 
-        public PointOfInterest? CurrentDestination
-        {
-            get
-            {
-                return dailySchedule?.prevEvent?.place ?? null;
-            }
-        }
+        public PointOfInterest? CurrentDestination => dailySchedule?.prevEvent?.place ?? null;
 
-        public float WalkingSpeed
+        public Velocity WalkingSpeed
         {
             get
             {
                 if (age < 10)
                 {
-                    return 5f;
+                    return Velocity.FromKPH(5f);
                 }
                 
                 if (age < 30)
                 {
-                    return 8f;
+                    return Velocity.FromKPH(8f);
                 }
                 
                 if (age < 60f)
                 {
-                    return 7f;
+                    return Velocity.FromKPH(7f);
                 }
 
-                return 3f;
+                return Velocity.FromKPH(3f);
             }
         }
 

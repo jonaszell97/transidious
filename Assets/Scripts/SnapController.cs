@@ -229,7 +229,7 @@ namespace Transidious
             activeSnap = null;
         }
 
-        static readonly float endSnapThreshold = 5f * Map.Meters;
+        static readonly float endSnapThreshold = 5f;
 
         void SnapToStreet(StreetSnap snapSettings, StreetSegment street)
         {

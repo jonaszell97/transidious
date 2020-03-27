@@ -37,11 +37,11 @@ namespace Transidious
             public Text numberTxt;
 #endif
 
-            public float CurrentVelocity => path.CurrentVelocity;
+            public Velocity CurrentVelocity => path.CurrentVelocity;
 
             public Vector2 CurrentDirection => path.CurrentDirection;
 
-            public float Acceleration => car.acceleration;
+            public float Acceleration => car.Acceleration;
 
             public Vector2 CurrentPosition => path.transform.position;
 
@@ -54,6 +54,8 @@ namespace Transidious
             public float DistanceToIntersection => DistanceToGoal;
 
             public float DistanceToGoal => path.PathFollowingHelper.threshold - path.PathFollowingHelper.progress;
+
+            public bool Turning => path.currentStep is TurnStep;
         }
 
         public class CarOnIntersection
@@ -322,7 +324,7 @@ namespace Transidious
                             out positions, out bool partialStart, out bool partialEnd,
                             out Vector2 direction);
 
-                if (segment != null && nextSegment != null)
+                /*if (segment != null && nextSegment != null)
                 {
                     StreetIntersection nextIntersection;
                     if (backward)
@@ -375,7 +377,7 @@ namespace Transidious
                     }
                 }
 
-                addFirstIntersectionPos = false;
+                addFirstIntersectionPos = false;*/
 
                 if (positions != null)
                 {
@@ -396,7 +398,7 @@ namespace Transidious
 
                     path.AddRange(positions);
                 }
-                else if (partialStart)
+                /*else if (partialStart)
                 {
                     addFirstIntersectionPos = true;
                 }
@@ -416,7 +418,7 @@ namespace Transidious
                                                    nextSegment, prevLane);
 
                     path.Add(intersectionPath.Last());
-                }
+                }*/
 
                 segment = nextSegment;
                 prevLane = lane;
@@ -698,8 +700,8 @@ namespace Transidious
                         // might not make sense.
                         if (uturn)
                         {
-                            var controlPt1 = p1_A + (p1_A - p0_A).normalized * 5f * Map.Meters;
-                            var controlPt2 = p0_B + (p0_B - p1_B).normalized * 5f * Map.Meters;
+                            var controlPt1 = p1_A + (p1_A - p0_A).normalized * 5f;
+                            var controlPt2 = p0_B + (p0_B - p1_B).normalized * 5f;
 
                             MeshBuilder.AddCubicBezierCurve(currentPath,
                                 p1_A, p0_B, controlPt1, controlPt2, 4);
@@ -1043,6 +1045,13 @@ namespace Transidious
                 {
                     positions.Add(endPos);
                 }
+            }
+            else if (step is TurnStep turnStep)
+            {
+                segment = null;
+                backward = false;
+                lane = GetDefaultLane(turnStep.from.segment, turnStep.from.backward);
+                positions = GetIntersectionPath(turnStep, lane);
             }
             else
             {
@@ -1459,7 +1468,7 @@ namespace Transidious
             }
 
             // If the other car is more than 10m away, we try to cross the intersection.
-            if (otherCar.DistanceToIntersection >= 10f * Map.Meters)
+            if (otherCar.DistanceToIntersection >= 10f)
             {
                 return true;
             }
@@ -1563,7 +1572,6 @@ namespace Transidious
                 ? car.segment.startTrafficLight
                 : car.segment.endTrafficLight;
 
-            
             // Check if we have to wait for the traffic light.
             if (tl != null && MustStop(car, v_alpha, tl))
             {
@@ -1582,7 +1590,7 @@ namespace Transidious
         float GetNextCarTerm(DrivingCar car, float v_alpha, float a)
         {
             // Approaching rate.
-            float deltaV = v_alpha - car.next.CurrentVelocity;
+            float deltaV = v_alpha - car.next.CurrentVelocity.MPS;
 
             // Net distance to next vehicle.
             float s_alpha = car.DistanceToNextCar;
@@ -1593,7 +1601,7 @@ namespace Transidious
         float GetNextCarTerm(DrivingCar car, DrivingCar nextCar, float v_alpha, float a)
         {
             // Approaching rate.
-            float deltaV = v_alpha - nextCar.CurrentVelocity;
+            float deltaV = v_alpha - nextCar.CurrentVelocity.MPS;
 
             // Net distance to next vehicle.
             float s_alpha = car.DistanceToIntersection + nextCar.distanceFromStart;
@@ -1604,15 +1612,19 @@ namespace Transidious
         public float GetSafeAcceleration(DrivingCar car, float t, float v_alpha, float a)
         {
             // Desired velocity.
-            var v0 = Mathf.Min(car.car.maxVelocity, car.segment.street.MaxSpeedMetersPerSecond);
+            var v0 = Mathf.Min(car.car.MaxVelocity.MPS, car.segment.street.MaxSpeed.MPS);
 
             // Free road term
             float freeRoadTerm = Mathf.Pow(v_alpha / v0, delta);
-
             float busyRoadTerm;
-            
+
+            // FIXME next car for turns
+            if (car.Turning)
+            {
+                busyRoadTerm = 0f;
+            }
             // If there's another car on the same segment before any intersection, use that.
-            if (car.next != null)
+            else if (car.next != null)
             {
                 busyRoadTerm = GetNextCarTerm(car, v_alpha, a);
             }
@@ -1693,10 +1705,10 @@ namespace Transidious
         }
 
         /// Based on Intelligent Driver Model (https://en.wikipedia.org/wiki/Intelligent_driver_model)
-        public float GetCarVelocity(DrivingCar car, float timeSinceLastUpdate)
+        public Velocity GetCarVelocity(DrivingCar car, float timeSinceLastUpdate)
         {
-            var yn = car.CurrentVelocity;
-            return RungeKutta(car, yn, 3);
+            var yn = car.CurrentVelocity.MPS;
+            return Velocity.FromMPS(RungeKutta(car, yn, 3));
         }
 
         void UpdateTrafficLights()

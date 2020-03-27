@@ -634,65 +634,65 @@ namespace Transidious
             float scale;
             string scaleTxt;
 
-            if (maxLength >= 10000f * Map.Meters)
+            if (maxLength >= 10000f)
             {
                 scaleTxt = "10km";
-                scale = 10000f * Map.Meters;
+                scale = 10000f;
             }
-            else if (maxLength >= 5000f * Map.Meters)
+            else if (maxLength >= 5000f)
             {
                 scaleTxt = "5km";
-                scale = 5000f * Map.Meters;
+                scale = 5000f;
             }
-            else if (maxLength >= 2000f * Map.Meters)
+            else if (maxLength >= 2000f)
             {
                 scaleTxt = "2km";
-                scale = 2000f * Map.Meters;
+                scale = 2000f;
             }
-            else if (maxLength >= 1000f * Map.Meters)
+            else if (maxLength >= 1000f)
             {
                 scaleTxt = "1km";
-                scale = 1000f * Map.Meters;
+                scale = 1000f;
             }
-            else if (maxLength >= 500f * Map.Meters)
+            else if (maxLength >= 500f)
             {
                 scaleTxt = "500m";
-                scale = 500f * Map.Meters;
+                scale = 500f;
             }
-            else if (maxLength >= 200f * Map.Meters)
+            else if (maxLength >= 200f)
             {
                 scaleTxt = "200m";
-                scale = 200f * Map.Meters;
+                scale = 200f;
             }
-            else if (maxLength >= 100f * Map.Meters)
+            else if (maxLength >= 100f)
             {
                 scaleTxt = "100m";
-                scale = 100f * Map.Meters;
+                scale = 100f;
             }
-            else if (maxLength >= 50f * Map.Meters)
+            else if (maxLength >= 50f)
             {
                 scaleTxt = "50m";
-                scale = 50f * Map.Meters;
+                scale = 50f;
             }
-            else if (maxLength >= 20f * Map.Meters)
+            else if (maxLength >= 20f)
             {
                 scaleTxt = "20m";
-                scale = 20f * Map.Meters;
+                scale = 20f;
             }
-            else if (maxLength >= 10f * Map.Meters)
+            else if (maxLength >= 10f)
             {
                 scaleTxt = "10m";
-                scale = 10f * Map.Meters;
+                scale = 10f;
             }
-            else if (maxLength >= 5f * Map.Meters)
+            else if (maxLength >= 5f)
             {
                 scaleTxt = "5m";
-                scale = 5f * Map.Meters;
+                scale = 5f;
             }
             else
             {
                 scaleTxt = "1m";
-                scale = 1f * Map.Meters;
+                scale = 1f;
             }
 
             scaleText.text = scaleTxt;

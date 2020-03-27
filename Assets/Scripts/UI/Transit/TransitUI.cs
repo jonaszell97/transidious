@@ -218,7 +218,7 @@ namespace Transidious
 
                 if (k == (int)type)
                 {
-                    img.color = Map.defaultLineColors[type];
+                    img.color = Colors.GetDefaultSystemColor(type);
                     txt.color = Color.white;
                 }
                 else
@@ -294,7 +294,7 @@ namespace Transidious
                     var img = transitSystemButtons[k].GetComponent<Image>();
                     var txt = transitSystemButtons[k].transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
 
-                    img.color = Map.defaultLineColors[(TransitType)k];
+                    img.color = Colors.GetDefaultSystemColor((TransitType)k);
                     txt.color = Color.white;
                 }
 

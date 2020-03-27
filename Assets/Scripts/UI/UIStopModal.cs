@@ -63,11 +63,6 @@ namespace Transidious
             var time = GameController.instance.sim.GameTime;
             var lines = new List<Tuple<Line, DateTime>>();
 
-            if (stop.lineData == null)
-            {
-                Debug.Log($"no line data for stop {stop.name}");
-            }
-
             foreach (var line in stop.lineData)
             {
                 lines.Add(Tuple.Create(line.Key, line.Value.schedule.GetNextDeparture(time)));

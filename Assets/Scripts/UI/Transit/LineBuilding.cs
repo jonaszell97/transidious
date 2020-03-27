@@ -449,7 +449,7 @@ namespace Transidious
             game.financeController.AddExpense("ui:line:operating_cost", totalMonthlyCost);
 
             var line = game.loadedMap.CreateLine(transitType, currentLine.name,
-                                                 game.GetDefaultSystemColor(transitType));
+                                                 Colors.GetDefaultSystemColor(transitType));
             
             currentLine.stops.Add(currentLine.stops.First());
             currentLine.completePath.AddRange(temporaryPath);
@@ -550,7 +550,7 @@ namespace Transidious
                     = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
-            var color = game.GetDefaultSystemColor(transitType);
+            var color = Colors.GetDefaultSystemColor(transitType);
             var mesh = MeshBuilder.CreateSmoothLine(currentLine.completePath, 1.25f, 10);
             var renderer = existingPathMesh.GetComponent<MeshRenderer>();
             var filter = existingPathMesh.GetComponent<MeshFilter>();
@@ -581,7 +581,7 @@ namespace Transidious
                     = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
-            var color = game.GetDefaultSystemColor(transitType);
+            var color = Colors.GetDefaultSystemColor(transitType);
             var mesh = MeshBuilder.CreateSmoothLine(temporaryPath, 1.25f, 10);
             var renderer = plannedPathMesh.GetComponent<MeshRenderer>();
             var filter = plannedPathMesh.GetComponent<MeshFilter>();
@@ -897,7 +897,7 @@ namespace Transidious
             this.snapSettingID = game.snapController.AddSnap(typeof(StreetSegment), new SnapSettings
             {
                 snapCursor = game.createStreetSprite,
-                snapCursorColor = game.GetDefaultSystemColor(TransitType.Bus),
+                snapCursorColor = Colors.GetDefaultSystemColor(TransitType.Bus),
                 snapCursorScale = new Vector3(3f, 3f, 1f),
 
                 hideCursor = true,
@@ -967,7 +967,7 @@ namespace Transidious
             this.snapSettingID = game.snapController.AddSnap(typeof(StreetSegment), new SnapSettings
             {
                 snapCursor = game.createStreetSprite,
-                snapCursorColor = game.GetDefaultSystemColor(TransitType.Tram),
+                snapCursorColor = Colors.GetDefaultSystemColor(TransitType.Tram),
                 snapCursorScale = new Vector3(2f, 2f, 1f),
 
                 hideCursor = true,

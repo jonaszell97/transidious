@@ -25,20 +25,21 @@ namespace Transidious.Serialization {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg5CdWlsZGluZy5wcm90bxIZVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbhoM",
-            "Q29tbW9uLnByb3RvIocDCghCdWlsZGluZxI3CgltYXBPYmplY3QYASABKAsy",
+            "Q29tbW9uLnByb3RvIpoDCghCdWlsZGluZxI3CgltYXBPYmplY3QYASABKAsy",
             "JC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1hcE9iamVjdBIvCgRtZXNo",
             "GAIgASgLMiEuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5NZXNoMkQSEAoI",
             "c3RyZWV0SUQYAyABKA0SNgoEdHlwZRgEIAEoDjIoLlRyYW5zaWRpb3VzLlNl",
             "cmlhbGl6YXRpb24uQnVpbGRpbmcuVHlwZRI0Cghwb3NpdGlvbhgFIAEoCzIi",
-            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMiKQAQoEVHlwZRIP",
-            "CgtSZXNpZGVudGlhbBAAEggKBFNob3AQARIKCgZPZmZpY2UQAhIUChBFbGVt",
-            "ZW50YXJ5U2Nob29sEAMSDgoKSGlnaFNjaG9vbBAEEg4KClVuaXZlcnNpdHkQ",
-            "BRIMCghIb3NwaXRhbBAGEgsKB1N0YWRpdW0QBxIQCgxHcm9jZXJ5U3RvcmUQ",
-            "CEIcqgIZVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbmIGcHJvdG8z"));
+            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhIRCglvY2N1cGFu",
+            "dHMYBiABKAUikAEKBFR5cGUSDwoLUmVzaWRlbnRpYWwQABIICgRTaG9wEAES",
+            "CgoGT2ZmaWNlEAISFAoQRWxlbWVudGFyeVNjaG9vbBADEg4KCkhpZ2hTY2hv",
+            "b2wQBBIOCgpVbml2ZXJzaXR5EAUSDAoISG9zcGl0YWwQBhILCgdTdGFkaXVt",
+            "EAcSEAoMR3JvY2VyeVN0b3JlEAhCHKoCGVRyYW5zaWRpb3VzLlNlcmlhbGl6",
+            "YXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Building), global::Transidious.Serialization.Building.Parser, new[]{ "MapObject", "Mesh", "StreetID", "Type", "Position" }, null, new[]{ typeof(global::Transidious.Serialization.Building.Types.Type) }, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Building), global::Transidious.Serialization.Building.Parser, new[]{ "MapObject", "Mesh", "StreetID", "Type", "Position", "Occupants" }, null, new[]{ typeof(global::Transidious.Serialization.Building.Types.Type) }, null)
           }));
     }
     #endregion
@@ -75,6 +76,7 @@ namespace Transidious.Serialization {
       streetID_ = other.streetID_;
       type_ = other.type_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
+      occupants_ = other.occupants_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -138,6 +140,17 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "occupants" field.</summary>
+    public const int OccupantsFieldNumber = 6;
+    private int occupants_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Occupants {
+      get { return occupants_; }
+      set {
+        occupants_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Building);
@@ -156,6 +169,7 @@ namespace Transidious.Serialization {
       if (StreetID != other.StreetID) return false;
       if (Type != other.Type) return false;
       if (!object.Equals(Position, other.Position)) return false;
+      if (Occupants != other.Occupants) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -167,6 +181,7 @@ namespace Transidious.Serialization {
       if (StreetID != 0) hash ^= StreetID.GetHashCode();
       if (Type != 0) hash ^= Type.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
+      if (Occupants != 0) hash ^= Occupants.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -200,6 +215,10 @@ namespace Transidious.Serialization {
         output.WriteRawTag(42);
         output.WriteMessage(Position);
       }
+      if (Occupants != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Occupants);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -222,6 +241,9 @@ namespace Transidious.Serialization {
       }
       if (position_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
+      }
+      if (Occupants != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Occupants);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -257,6 +279,9 @@ namespace Transidious.Serialization {
           Position = new global::Transidious.Serialization.Vector2();
         }
         Position.MergeFrom(other.Position);
+      }
+      if (other.Occupants != 0) {
+        Occupants = other.Occupants;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -296,6 +321,10 @@ namespace Transidious.Serialization {
               Position = new global::Transidious.Serialization.Vector2();
             }
             input.ReadMessage(Position);
+            break;
+          }
+          case 48: {
+            Occupants = input.ReadInt32();
             break;
           }
         }

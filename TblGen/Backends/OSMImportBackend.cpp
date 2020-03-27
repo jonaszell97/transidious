@@ -552,6 +552,7 @@ void OSMImportBackend::EmitBuildings(Record *area)
       auto tags = llvm::cast<ListLiteral>(building->getFieldValue("tags"))
                       ->getValues();
       auto geoTypes = llvm::cast<ListLiteral>(building->getFieldValue("geoTypes"))->getValues();
+      auto visualOnly = llvm::cast<IntegerLiteral>(building->getFieldValue("visualOnly"))->getVal() != 0;
 
       for (auto *geoType : geoTypes)
       {
@@ -559,6 +560,9 @@ void OSMImportBackend::EmitBuildings(Record *area)
          if (name == "Relation")
          {
             CheckTags(REL, tags, [&]() {
+                if (visualOnly)
+                  REL << "importer.visualOnlyFeatures.Add(rel.Id.Value);\n";
+
                REL << "importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(rel, Building.Type." << type << "));\n"
                    << "AddGeoReference(rel);";
             });
@@ -566,6 +570,9 @@ void OSMImportBackend::EmitBuildings(Record *area)
          else if (name == "Way")
          {
             CheckTags(WAY, tags, [&]() {
+                if (visualOnly)
+                 WAY << "importer.visualOnlyFeatures.Add(way.Id.Value);\n";
+
                WAY << "importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(way, Building.Type." << type << "));\n"
                    << "AddGeoReference(way);";
             });

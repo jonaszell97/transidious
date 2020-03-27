@@ -72,7 +72,7 @@ namespace Transidious
                 // Bus
                 game.snapController.AddStreetSnap(
                     game.createStreetSprite,
-                    game.GetDefaultSystemColor(TransitType.Bus),
+                    Colors.GetDefaultSystemColor(TransitType.Bus),
                     new Vector3(.3f, .3f, .3f),
                     false,
                     true,
@@ -82,7 +82,7 @@ namespace Transidious
                 // Tram
                 game.snapController.AddStreetSnap(
                     game.createStreetSprite,
-                    game.GetDefaultSystemColor(TransitType.Tram),
+                    Colors.GetDefaultSystemColor(TransitType.Tram),
                     new Vector3(.3f, .3f, .3f),
                     false,
                     true,
@@ -92,7 +92,7 @@ namespace Transidious
                 // Subway
                 game.snapController.AddStreetSnap(
                     game.createStreetSprite,
-                    game.GetDefaultSystemColor(TransitType.Subway),
+                    Colors.GetDefaultSystemColor(TransitType.Subway),
                     new Vector3(.3f, .3f, .3f),
                     false,
                     false,
@@ -102,7 +102,7 @@ namespace Transidious
                 // Light Rail
                 game.snapController.AddStreetSnap(
                     game.createStreetSprite,
-                    game.GetDefaultSystemColor(TransitType.LightRail),
+                    Colors.GetDefaultSystemColor(TransitType.LightRail),
                     new Vector3(.3f, .3f, .3f),
                     false,
                     false,
@@ -112,7 +112,7 @@ namespace Transidious
                 // Intercity
                 game.snapController.AddStreetSnap(
                     game.createStreetSprite,
-                    game.GetDefaultSystemColor(TransitType.IntercityRail),
+                    Colors.GetDefaultSystemColor(TransitType.IntercityRail),
                     new Vector3(.3f, .3f, .3f),
                     false,
                     false,
@@ -122,7 +122,7 @@ namespace Transidious
                 // Ferry
                 game.snapController.AddStreetSnap(
                     game.createStreetSprite,
-                    game.GetDefaultSystemColor(TransitType.Ferry),
+                    Colors.GetDefaultSystemColor(TransitType.Ferry),
                     new Vector3(.3f, .3f, .3f),
                     false,
                     true,
@@ -359,7 +359,7 @@ namespace Transidious
                     = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
-            var color = game.GetDefaultSystemColor(selectedSystem.Value);
+            var color = Colors.GetDefaultSystemColor(selectedSystem.Value);
             var mesh = MeshBuilder.CreateSmoothLine(currentLine.completePath, 1.25f, 10);
             var renderer = existingPathMesh.GetComponent<MeshRenderer>();
             var filter = existingPathMesh.GetComponent<MeshFilter>();
@@ -392,7 +392,7 @@ namespace Transidious
 
             currentSegments.Clear();
 
-            var color = game.GetDefaultSystemColor(selectedSystem.Value);
+            var color = Colors.GetDefaultSystemColor(selectedSystem.Value);
             currentPath = game.sim.trafficSim.GetCompletePath(result, currentSegments);
 
             var mesh = MeshBuilder.CreateSmoothLine(currentPath, 1.25f, 10);
@@ -779,7 +779,7 @@ namespace Transidious
         {
             var type = selectedSystem.Value;
             var line = game.loadedMap.CreateLine(type, currentLine.name,
-                                                 game.GetDefaultSystemColor(type));
+                                                 Colors.GetDefaultSystemColor(type));
 
             currentLine.stops.Add(currentLine.stops.First());
             currentLine.completePath.AddRange(currentPath);

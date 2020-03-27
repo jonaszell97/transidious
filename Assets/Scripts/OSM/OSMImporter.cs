@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Transidious.Serialization.OSM;
+using UnityEditor;
 
 namespace Transidious
 {
@@ -63,12 +64,11 @@ namespace Transidious
         float cosCenterLat;
         private static readonly float earthRadius = 6371000f;
 
-        public async Task ImportArea(string areaName, string country)
+        public void ImportArea(string areaName, string country)
         {
-            await Task.Factory.StartNew(() =>
             {
                 var _ = new OSMImportHelper(this, areaName, country);
-            });
+            }
 
             FindMinLngAndLat();
 
@@ -294,8 +294,6 @@ namespace Transidious
                 area.Nodes.Add(Serialize(node.Value));
             }
 
-            Debug.Log(nodes.Count + " <> " + area.Nodes.Count);
-
             foreach (var way in ways)
             {
                 area.Ways.Add(Serialize(way.Value));
@@ -429,6 +427,7 @@ namespace Transidious
         public bool loadGame = true;
         public bool importOnly = false;
         public bool forceReload = false;
+        public int resolution = 8192;
 
         public Relation boundary = null;
         public Dictionary<ulong, Node> nodes = new Dictionary<ulong, Node>();
@@ -473,10 +472,10 @@ namespace Transidious
             map = mapObj.GetComponent<Map>();
             map.name = this.area.ToString();
             map.input = GameController.instance.input;
+            SaveManager.loadedMap = map;
 
-            this.exporter = new MapExporter(map, 8192);
-
-            await this.ImportArea();
+            this.exporter = new MapExporter(map, resolution);
+            this.ImportArea();
 
             if (importOnly)
             {
@@ -487,9 +486,10 @@ namespace Transidious
             StartCoroutine(LoadFeatures());
         }
 
-        public async Task ImportArea()
+        void ImportArea()
         {
             var areaName = this.area.ToString();
+
             string fileName = "Resources/Areas/";
             fileName += areaName;
             fileName += ".bytes";
@@ -499,7 +499,7 @@ namespace Transidious
             Area area;
             if (!System.IO.File.Exists(fileName) || forceReload)
             {
-                await proxy.ImportArea(areaName, country);
+                proxy.ImportArea(areaName, country);
                 area = proxy.Save(fileName);
             }
             else
@@ -517,53 +517,82 @@ namespace Transidious
 
         IEnumerator LoadFeatures()
         {
-            yield return null;
+            using (this.CreateTimer("Boundary"))
+            {
+                LoadBoundary();
+            }
 
-            LoadBoundary();
-            Debug.Log("loaded boundary");
+            using (this.CreateTimer("Features"))
+            {
+                yield return LoadParks();
+            }
 
-            yield return LoadParks();
-            Debug.Log("loaded natural features");
+            using (this.CreateTimer("Streets"))
+            {
+                yield return LoadStreets();
+            }
 
-            yield return LoadStreets();
-            Debug.Log("loaded streets");
+            using (this.CreateTimer("Buildings"))
+            {
+                yield return LoadBuildings();
+            }
 
-            yield return LoadBuildings();
-            Debug.Log("loaded buildings");
-
-            yield return map.FinalizeStreetMeshes(thresholdTime);
+            using (this.CreateTimer("Create Street Names"))
+            {
+                yield return map.FinalizeStreetMeshes(thresholdTime);
+            }
 
             if (exportType == MapExportType.Mesh)
             {
-                exporter.CreatePrefabMeshes(importType == ImportType.Fast);
+                using (this.CreateTimer("Create Prefab Meshes"))
+                {
+                    yield return exporter.CreatePrefabMeshes(
+                        importType == ImportType.Fast,
+                        exportType == MapExportType.Mesh);
+                }
             }
 
-            yield return map.DoFinalize(thresholdTime);
+            using (this.CreateTimer("Finalize"))
+            {
+                yield return map.DoFinalize(thresholdTime);
+            }
 
             if (loadTransitLines)
             {
-                yield return LoadTransitLines();
-                Debug.Log("loaded transit lines");
+                using (this.CreateTimer("Transit Lines"))
+                {
+                    yield return LoadTransitLines();
+                }
             }
 
-            SaveManager.SaveMapLayout(map);
-            SaveManager.SaveMapData(map, map.name);
+            using (this.CreateTimer("Save Map"))
+            {
+                SaveManager.SaveMapLayout(map);
+                SaveManager.SaveMapData(map, map.name);
+            }
 
-            Debug.Log("Exporting map screenshots...");
-            exporter.ExportMap(map.name);
+            using (this.CreateTimer("Screenshots"))
+            {
+                exporter.ExportMap(map.name);
+            }
 
             if (exportType == MapExportType.Mesh)
             {
-                Debug.Log("Exporting map prefab...");
-                exporter.ExportMapPrefab();
+                using (this.CreateTimer("Map Prefab"))
+                {
+                    exporter.ExportMapPrefab();
+                }
             }
 
-            Debug.Log("Exporting minimap...");
-            exporter.ExportMinimap(map.name);
-            
-            Debug.Log("Saving assets...");
-            UnityEditor.AssetDatabase.SaveAssets();
-            // exporter.ExportLOD(map.name);
+            using (this.CreateTimer("Minimap"))
+            {
+                exporter.ExportMinimap(map.name);
+            }
+
+            using (this.CreateTimer("Save Assets"))
+            {
+                UnityEditor.AssetDatabase.SaveAssets();
+            }
 
             exporter.PrintStats();
             Debug.Log("Done!");
@@ -915,14 +944,10 @@ namespace Transidious
                 var l1 = linePair.Value.inbound;
                 var l2 = linePair.Value.outbound;
 
-                Color color;
+                Color? color = null;
                 if (ColorUtility.TryParseHtmlString(l1.Geo.Tags.GetValue("colour"), out Color c))
                 {
                     color = c;
-                }
-                else
-                {
-                    color = Map.defaultLineColors[linePair.Value.type];
                 }
 
                 var name = l1.Geo.Tags.GetValue("ref");
@@ -1098,7 +1123,7 @@ namespace Transidious
             {
                 var tags = street.Item1.Geo.Tags;
                 var streetName = tags.GetValue("name");
-                Debug.Log("loading street '" + streetName + "'...");
+                // Debug.Log("loading street '" + streetName + "'...");
 
                 if (string.IsNullOrEmpty(streetName))
                 {
@@ -1276,11 +1301,10 @@ namespace Transidious
                                                   startSeg.oneway, startSeg.maxspeed,
                                                   startSeg.lanes);
 
-                    var seg = street.AddSegment(segPositions,
-                                                map.streetIntersectionMap[Project(
-                                                    startSeg.start.position)],
-                                                map.streetIntersectionMap[Project(
-                                                    startSeg.end.position)]);
+                    var seg = street.AddSegment(
+                        segPositions,
+                        map.streetIntersectionMap[Project(startSeg.start.position)],
+                        map.streetIntersectionMap[Project(startSeg.end.position)]);
 
                     if (exportType == MapExportType.Mesh)
                     {
@@ -1331,9 +1355,10 @@ namespace Transidious
 
                             removedVerts += nextSeg.positions.Count - nextSegPositions.Count;
 
-                            seg = street.AddSegment(nextSegPositions,
-                                                    map.streetIntersectionMap[Project(nextSeg.start.position)],
-                                                    map.streetIntersectionMap[Project(nextSeg.end.position)]);
+                            seg = street.AddSegment(
+                                nextSegPositions,
+                                map.streetIntersectionMap[Project(nextSeg.start.position)],
+                                map.streetIntersectionMap[Project(nextSeg.end.position)]);
 
                             if (exportType == MapExportType.Mesh)
                             {
@@ -1423,11 +1448,12 @@ namespace Transidious
             LoadPolygon(pslg, rel, simplificationThresholdAngle, outer, inner);
         }
 
-        static readonly float ParkThresholdSize = 150f;
+        private static readonly float inclusionThresholdArea = 250f;
+        private static readonly float interactableThresholdArea = 1000f;
 
         IEnumerator LoadParks()
         {
-            var totalVerts = 0;
+            var tinyParks = 0;
             var smallParks = 0;
 
             foreach (var feature in naturalFeatures)
@@ -1452,7 +1478,7 @@ namespace Transidious
                     float area = 0f;
                     Vector2 centroid = Vector2.zero;
 
-                    Debug.Log("loading natural feature '" + featureName + "'...");
+                    //Debug.Log("loading natural feature '" + featureName + "'...");
 
                     PSLG pslg = null;
                     Vector3[] wayPositionsArr = null;
@@ -1485,13 +1511,19 @@ namespace Transidious
                         centroid = Math.GetCentroid(wayPositionsArr);
                     }
 
-                    if (area < ParkThresholdSize)
+                    var visualOnly = visualOnlyGeos.Contains(feature.Item1);
+                    if (area < inclusionThresholdArea && feature.Item2 != NaturalFeature.Type.Parking)
                     {
-                        ++smallParks;
+                        ++tinyParks;
                         continue;
                     }
+                    if (area < interactableThresholdArea && feature.Item2 != NaturalFeature.Type.Parking)
+                    {
+                        ++smallParks;
+                        visualOnly = true;
+                    }
 
-                    if (visualOnlyGeos.Contains(feature.Item1))
+                    if (visualOnly)
                     {
                         var layer = NaturalFeature.GetLayer(feature.Item2);
                         var color = NaturalFeature.GetColor(feature.Item2);
@@ -1538,8 +1570,7 @@ namespace Transidious
                 }
             }
 
-            Debug.Log("feature verts: " + totalVerts);
-            Debug.Log("yeeted " + smallParks + " parks for being too god damn small");
+            Debug.Log($"tiny features: {tinyParks}, small features: {smallParks}");
             // yield return LoadFootpaths();
         }
 
@@ -1758,7 +1789,7 @@ namespace Transidious
                 if (visitedBuildings.Count == partialBuildings.Count)
                     break;
 
-                Debug.Log("[MergeBuildings] " + (int)((float)visitedBuildings.Count / (float)partialBuildings.Count * 100f) + "%");
+                //Debug.Log("[MergeBuildings] " + (int)((float)visitedBuildings.Count / (float)partialBuildings.Count * 100f) + "%");
 
                 var original = originalBuildings[id];
                 var type = original.buildingData.Item2;
@@ -1813,7 +1844,6 @@ namespace Transidious
         /// <summary>
         ///  Buildings with an area lower than this will not be imported. (in m^2)
         /// </summary>
-        static readonly float ThresholdArea = 100f;
         Dictionary<Street, int> assignedNumbers = new Dictionary<Street, int>();
 
         // TODO: Generate sensible building names.
@@ -1922,9 +1952,7 @@ namespace Transidious
 
         IEnumerator LoadBuildings()
         {
-            var totalVerts = 0;
             var partialBuildings = new List<PartialBuilding>();
-
             foreach (var building in buildings)
             {
                 var pslg = new PSLG();
@@ -1998,28 +2026,47 @@ namespace Transidious
                 partialBuildings = mergedBuildings;
             }
 
+            var tinyBuildings = 0;
             var smallBuildings = 0;
             var n = 0;
 
             foreach (var building in partialBuildings)
             {
-                Debug.Log("[TriangulateBuildings] " + (int)((float)n / (float)partialBuildings.Count * 100f) + "%");
+                //Debug.Log("[TriangulateBuildings] " + (int)((float)n / (float)partialBuildings.Count * 100f) + "%");
 
                 var type = building.buildingData.Item2;
                 var outlinePositions = building.pslg?.Outlines;
                 var centroid = building.centroid;
                 var area = building.pslg?.Area ?? 0f;
 
-                if (area < ThresholdArea)
+                var visualOnly = visualOnlyGeos.Contains(building.geo.Id);
+                if (area < inclusionThresholdArea)
+                {
+                    ++tinyBuildings;
+                    continue;
+                }
+                if (area < interactableThresholdArea)
                 {
                     ++smallBuildings;
+                    visualOnly = true;
+                }
+
+                if (visualOnly)
+                {
+                    var layer = Building.GetLayer(building.buildingData.Item2);
+                    var color = Building.GetColor(building.buildingData.Item2);
+
+                    if (building.pslg != null)
+                    {
+                        exporter.RegisterMesh(building.pslg, layer, color);
+                    }
+
                     ++n;
                     continue;
                 }
 
-                var b = map.CreateBuilding(type, outlinePositions,
-                                           GetBuildingName(building, area),
-                                           "", area, centroid);
+                var b = map.CreateBuilding(type, outlinePositions, GetBuildingName(building, area),
+                                         "", area, centroid);
 
                 if (outlinePositions != null)
                 {
@@ -2031,9 +2078,7 @@ namespace Transidious
 
                 if (building.pslg != null)
                 {
-                    exporter.RegisterMesh(b, building.pslg,
-                            Map.Layer(MapLayer.Buildings),
-                            b.GetColor());
+                    exporter.RegisterMesh(b, building.pslg, b.GetLayer(), b.GetColor());
                 }
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
@@ -2044,8 +2089,7 @@ namespace Transidious
                 ++n;
             }
 
-            Debug.Log("yeeted " + smallBuildings + " buildings because of small area");
-            Debug.Log("building verts: " + totalVerts);
+            Debug.Log($"tiny buildings: {tinyBuildings}, small buildings: {smallBuildings}");
             Debug.Log("'nique buildings: " + uniqueBuildings.Count);
         }
     }

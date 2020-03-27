@@ -1,12 +1,11 @@
-using UnityEngine;
 using System;
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace Transidious
 {
     public class Car
     {
-        static Tuple<float, Color>[] colorDistribution =
+        static readonly Tuple<float, Color>[] _colorDistribution =
         {
             new Tuple<float, Color>(0.24f, Color.white),
             new Tuple<float, Color>(0.16f, new Color(.7f, .7f, .7f)),    // silver
@@ -17,14 +16,64 @@ namespace Transidious
             new Tuple<float, Color>(0.03f, new Color(.082f, .305f, 0f)), // green
         };
 
-        static uint lastAssignedID = 0;
+        static uint _lastAssignedId = 0;
 
+        /// The ID of this car.
         public uint id;
+
+        /// The model ID of this car.
         public int model;
+
+        /// The citizen this car belongs to.
         public Citizen driver;
-        public float maxVelocity;
-        public float acceleration;
+
+        /// The color of this car.
         public Color color;
+
+        /// The parking lot this car is currently parked at.
+        public IMapObject parkingLot;
+
+        public Velocity MaxVelocity
+        {
+            get
+            {
+                switch (model)
+                {
+                    default:
+                    case 0:
+                        return Velocity.FromMPS(33.333f); // 120 km/h
+                    case 1:
+                        return Velocity.FromMPS(19.444f); // 70 km/h
+                    case 2:
+                        return Velocity.FromMPS(27.777f); // 100 km/h
+                    case 3:
+                        return Velocity.FromMPS(27.777f); // 100 km/h
+                    case 4:
+                        return Velocity.FromMPS(22.222f); // 80 km/h
+                }
+            }
+        }
+
+        public float Acceleration
+        {
+            get
+            {
+                switch (model)
+                {
+                    default:
+                    case 0:
+                        return 0.73f;
+                    case 1:
+                        return 0.73f;
+                    case 2:
+                        return 0.73f;
+                    case 3:
+                        return 0.73f;
+                    case 4:
+                        return 0.73f;
+                }
+            }
+        }
 
         public Color RandomCarColor
         {
@@ -33,66 +82,57 @@ namespace Transidious
                 var rnd = UnityEngine.Random.Range(0f, 1f);
 
                 var i = 0;
-                var sum = colorDistribution[i].Item1;
+                var sum = _colorDistribution[i].Item1;
 
                 while (rnd > sum)
                 {
-                    if (++i == colorDistribution.Length)
+                    if (++i == _colorDistribution.Length)
                     {
                         return Utility.RandomColor;
                     }
 
-                    sum += colorDistribution[i].Item1;
+                    sum += _colorDistribution[i].Item1;
                 }
 
-                return colorDistribution[i].Item2;
+                return _colorDistribution[i].Item2;
+            }
+        }
+
+        public int RandomCarModel
+        {
+            get
+            {
+                var rnd = UnityEngine.Random.Range(0f, 1f);
+                if (rnd < 0.4f)
+                    return 1;
+
+                if (rnd < 0.8f)
+                    return 4;
+
+                if (rnd < .85f)
+                    return 2;
+
+                if (rnd < .9f)
+                    return 5;
+
+                return 3;
             }
         }
 
         public Car(SimulationController sim, Citizen driver,
                    Color? c = null, int carModel = -1, uint id = 0)
         {
-            if (carModel == -1)
-            {
-                carModel = UnityEngine.Random.Range(1, 6);
-            }
-
             this.color = c ?? RandomCarColor;
-            this.model = carModel;
-
-            switch (carModel)
-            {
-            default:
-            case 0:
-                this.maxVelocity = 33.333f; // 120 km/h
-                this.acceleration = 0.73f;
-                break;
-            case 1:
-                this.maxVelocity = 19.444f; // 70 km/h
-                this.acceleration = 0.73f;
-                break;
-            case 2:
-                this.maxVelocity = 27.777f; // 100 km/h
-                this.acceleration = 0.73f;
-                break;
-            case 3:
-                this.maxVelocity = 27.777f; // 100 km/h
-                this.acceleration = 0.73f;
-                break;
-            case 4:
-                this.maxVelocity = 22.222f; // 80 km/h
-                this.acceleration = 0.73f;
-                break;
-            }
+            this.model = carModel < 0 || carModel > 5 ? RandomCarModel : carModel;
 
             if (id == 0)
             {
-                this.id = ++lastAssignedID;
+                this.id = ++_lastAssignedId;
             }
             else
             {
                 this.id = id;
-                lastAssignedID = System.Math.Max(id, lastAssignedID);
+                _lastAssignedId = System.Math.Max(id, _lastAssignedId);
             }
 
             this.driver = driver;
@@ -107,6 +147,7 @@ namespace Transidious
                 CarModel = (uint)model,
                 DriverId = driver.id,
                 Color = color.ToProtobuf(),
+                ParkingLotID = (uint) (parkingLot?.Id ?? 0),
             };
         }
     }

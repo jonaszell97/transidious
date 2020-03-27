@@ -40,6 +40,7 @@ class RiverInfo<let relationTags: list<Tag>, let wayTags: list<Tag> >
 enum NatureType {
     Park,
     Lake,
+    River,
     Green,
     SportsPitch,
     Allotment,
@@ -49,6 +50,7 @@ enum NatureType {
     Forest,
     Parking,
     Residential,
+    Zoo,
 }
 
 class NaturalFeatureInfo<let type: NatureType,
@@ -137,9 +139,9 @@ class DefaultArea : Area
         // StreetInfo<.Path, [
         //     Tag<"highway", "service">
         // ]>,
-        StreetInfo<.Tertiary, [
-            Tag<"highway", "track">
-        ]>,
+        // StreetInfo<.Tertiary, [
+        //     Tag<"highway", "track">
+        // ]>,
         // StreetInfo<.Path, [
         //     Tag<"highway", "footway">
         // ]>,
@@ -227,6 +229,13 @@ class DefaultArea : Area
         NaturalFeatureInfo<.Green, [
             Tag<"natural", "heath">
         ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Green, [
+            Tag<"natural", "grassland">
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Zoo, [
+            Tag<"leisure", "zoo">
+        ], [.Way, .Relation]>,
 
         NaturalFeatureInfo<.Allotment, [
             Tag<"landuse", "allotments">
@@ -242,6 +251,24 @@ class DefaultArea : Area
         NaturalFeatureInfo<.SportsPitch, [
             Tag<"leisure", "track">
         ], [.Way, .Relation]>,
+
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"natural", "water">,
+        //     Tag<"water", "river">
+        // ], [.Way, .Relation]>,
+
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"waterway", "river">
+        // ], [.Way, .Relation]>,
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"waterway", "riverbank">
+        // ], [.Way, .Relation]>,
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"waterway", "stream">
+        // ], [.Way, .Relation]>,
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"waterway", "canal">
+        // ], [.Way, .Relation]>,
 
         NaturalFeatureInfo<.Lake, [
             Tag<"natural", "water">

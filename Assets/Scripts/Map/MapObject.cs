@@ -45,6 +45,9 @@ namespace Transidious
         Transform transform { get; }
         Vector2[][] outlinePositions { get; }
 
+        int Capacity { get; }
+        int Occupants { get; set; }
+
         void Hide();
         void Show(RenderingDistance renderingDistance);
         void Destroy();
@@ -69,78 +72,38 @@ namespace Transidious
 
         public int Id
         {
-            get
-            {
-                return id;
-            }
-            set
-            {
-                id = value;
-            }
+            get => id;
+            set => id = value;
         }
 
-        public bool Active
-        {
-            get
-            {
-                return uniqueTile?.gameObject.activeSelf ?? true;
-            }
-        }
+        public bool Active => uniqueTile?.gameObject.activeSelf ?? true;
 
-        public MapObjectKind Kind
-        {
-            get
-            {
-                return kind;
-            }
-        }
+        public MapObjectKind Kind => kind;
 
         public string Name
         {
-            get
-            {
-                return name;
-            }
-            set
-            {
-                name = value;
-            }
+            get => name;
+            set => name = value;
         }
 
         public MapTile UniqueTile
         {
-            get
-            {
-                return uniqueTile;
-            }
-            set
-            {
-                uniqueTile = value;
-            }
+            get => uniqueTile;
+            set => uniqueTile = value;
         }
 
-        public Transform transform
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public Transform transform => null;
 
-        public GameController Game
-        {
-            get
-            {
-                return GameController.instance;
-            }
-        }
+        public GameController Game => GameController.instance;
 
-        public Vector2 Centroid
+        public Vector2 Centroid => centroid;
+
+        public virtual int Capacity => 0;
+
+        public virtual int Occupants
         {
-            get
-            {
-                return centroid;
-            }
+            get => 0;
+            set => Debug.Assert(false, "map object does not have occupants");
         }
 
         protected void Initialize(MapObjectKind kind, int id,
@@ -257,83 +220,42 @@ namespace Transidious
 
         public int Id
         {
-            get
-            {
-                return id;
-            }
-            set
-            {
-                id = value;
-            }
+            get => id;
+            set => id = value;
         }
 
         public bool Active
         {
-            get
-            {
-                return gameObject.activeSelf;
-            }
-
-            set
-            {
-                gameObject.SetActive(value);
-            }
+            get => gameObject.activeSelf;
+            set => gameObject.SetActive(value);
         }
 
-        public MapObjectKind Kind
-        {
-            get
-            {
-                return kind;
-            }
-        }
+        public MapObjectKind Kind => kind;
 
         public string Name
         {
-            get
-            {
-                return name;
-            }
-            set
-            {
-                name = value;
-            }
+            get => name;
+            set => name = value;
         }
 
         public MapTile UniqueTile
         {
-            get
-            {
-                return uniqueTile;
-            }
-            set
-            {
-                uniqueTile = value;
-            }
+            get => uniqueTile;
+            set => uniqueTile = value;
         }
 
-        public GameController Game
-        {
-            get
-            {
-                return GameController.instance;
-            }
-        }
+        public GameController Game => GameController.instance;
 
-        public InputController inputController
-        {
-            get
-            {
-                return GameController.instance.input;
-            }
-        }
+        public InputController inputController => GameController.instance.input;
 
-        public Vector2 Centroid
+        public Vector2 Centroid => centroid;
+        
+        public virtual int Capacity => 0;
+
+        public virtual int Occupants
         {
-            get
-            {
-                return centroid;
-            }
+            get => 0;
+            set => Debug.Assert(false, "map object does not have occupants");
         }
 
         public void Hide()

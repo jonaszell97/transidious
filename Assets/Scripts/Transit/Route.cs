@@ -29,13 +29,15 @@ namespace Transidious
         public Stop endStop;
         public Stop.Slot endSlot;
 
-        public TimeSpan totalTravelTime;
+        public GameTimeSpan totalTravelTime;
         public bool isBackRoute = false;
 
         public Mesh mesh;
         MeshFilter meshFilter;
         public MeshRenderer meshRenderer;
 
+        private static ColorGradient _lineGradient;
+        
         public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector3> positions,
                                bool isBackRoute = false, int id = -1)
         {
@@ -86,74 +88,23 @@ namespace Transidious
             }
         }
 
-        public TimeSpan TravelTime
-        {
-            get
-            {
-                return TimeSpan.FromSeconds(length / (AverageSpeed * Math.Kph2Mps));
-            }
-        }
+        public GameTimeSpan TravelTime => Distance.FromMeters(length) / AverageSpeed;
 
-        public IStop Begin
-        {
-            get
-            {
-                return beginStop;
-            }
-        }
+        public IStop Begin => beginStop;
 
-        public IStop End
-        {
-            get
-            {
-                return endStop;
-            }
-        }
+        public IStop End => endStop;
 
-        public bool OneWay
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool OneWay => true;
 
-        public float AverageSpeed
-        {
-            get
-            {
-                return line.AverageSpeed;
-            }
-        }
+        public Velocity AverageSpeed => line.AverageSpeed;
 
-        public int AssociatedID
-        {
-            get
-            {
-                return line.id;
-            }
-        }
+        public int AssociatedID => line.id;
 
-        public List<Vector3> CurrentPositions
-        {
-            get
-            {
-                if (overlapAwarePositions != null)
-                {
-                    return overlapAwarePositions;
-                }
+        public List<Vector3> CurrentPositions => overlapAwarePositions ?? positions;
 
-                return positions;
-            }
-        }
-
-        public List<float> CurrentWidths
-        {
-            get
-            {
-                return overlapAwareWidths;
-            }
-        }
+        public List<float> CurrentWidths => overlapAwareWidths;
+        
+        public Distance distance => Distance.FromMeters(length);
 
         public void UpdateMesh(Mesh mesh, List<Vector3> newPositions, List<float> newWidths)
         {
@@ -470,7 +421,7 @@ namespace Transidious
                 return;
             }
 
-            if (line.map.Game.transitEditor.active || selectedLine == line)
+            if (selectedLine == line)
             {
                 return;
             }
@@ -489,7 +440,14 @@ namespace Transidious
                 high = Color.HSVToRGB(h, s, v - increase);
             }
 
-            line.gradient = new ColorGradient(line.color, high, 1.25f);
+            if (_lineGradient == null)
+            {
+                var gr = Instantiate(GameController.instance.colorGradientPrefab);
+                _lineGradient = gr.GetComponent<ColorGradient>();
+            }
+
+            _lineGradient.Initialize(line.color, high, c => line.material.color = c, 1.25f);
+            _lineGradient.gameObject.SetActive(true);
         }
 
         public override void OnMouseExit()
@@ -501,7 +459,7 @@ namespace Transidious
                 return;
             }
 
-            line.gradient = null;
+            DeactivateGradient();
 
             if (line.material == null)
             {
@@ -513,12 +471,12 @@ namespace Transidious
             }
         }
 
-        private static Line selectedLine
+        private static Line selectedLine => GameController.instance.transitEditor.lineInfoModal.selectedLine;
+
+        public static void DeactivateGradient()
         {
-            get
-            {
-                return GameController.instance.transitEditor.lineInfoModal.selectedLine;
-            }
+            if (_lineGradient != null)
+                _lineGradient.gameObject.SetActive(false);
         }
 
         public override void OnMouseDown()
@@ -538,7 +496,7 @@ namespace Transidious
             var modal = GameController.instance.transitEditor.lineInfoModal;
             if (modal.selectedLine != null && modal.selectedLine != this.line)
             {
-                modal.selectedLine.gradient = null;
+                DeactivateGradient();
                 modal.selectedLine.material.color = selectedLine.color;
             }
 

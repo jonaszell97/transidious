@@ -26,13 +26,12 @@ namespace Transidious
         LightRail,
     }
 
-    public class Line : DynamicMapObject
+    public class Line : StaticMapObject
     {
         public Map map;
 
         public TransitType type;
         public Color color;
-        public ColorGradient gradient;
         public Material material;
 
         public bool wasModified = false;
@@ -44,31 +43,30 @@ namespace Transidious
         public float length;
         public float stopDuration;
         public float endOfLineWaitTime = 0f;
-        public float velocity;
+        public Velocity velocity;
 
         public int weeklyPassengers;
 
         public Dictionary<Stop, float> scheduleOffsets;
         public Schedule schedule;
 
-        public GameObject routePrefab;
+        public Distance distance => Distance.FromMeters(length);
 
-        /// \return The average travel speed of vehicles on this line, in km/h.
-        public float AverageSpeed
+        public Velocity AverageSpeed
         {
             get
             {
                 switch (type)
                 {
-                case TransitType.Bus: return 45.0f;
-                case TransitType.Tram: return 45.0f;
-                case TransitType.Subway: return 50.0f;
-                case TransitType.LightRail: return 60.0f;
-                case TransitType.IntercityRail: return 80.0f;
-                case TransitType.Ferry: return 10.0f;
+                case TransitType.Bus: return Velocity.FromKPH(45.0f);
+                case TransitType.Tram: return Velocity.FromKPH(45.0f);
+                case TransitType.Subway: return Velocity.FromKPH(50.0f);
+                case TransitType.LightRail: return Velocity.FromKPH(60.0f);
+                case TransitType.IntercityRail: return Velocity.FromKPH(80.0f);
+                case TransitType.Ferry: return Velocity.FromKPH(10.0f);
                 default:
                     Debug.LogError("Unknown transit type!");
-                    return 50.0f;
+                    return Velocity.FromKPH(50.0f);
                 }
             }
         }
@@ -112,9 +110,9 @@ namespace Transidious
             }
         }
 
-        public void Initialize(Map map, string name, TransitType type, Color color, int id)
+        public Line(Map map, string name, TransitType type, Color color, int id)
         {
-            base.Initialize(MapObjectKind.Line, id, new Vector2());
+            base.Initialize(MapObjectKind.Line, id);
             this.map = map;
             this.name = name;
             this.color = color;
@@ -125,11 +123,13 @@ namespace Transidious
             {
                 color = color,
             };
-            
-            Debug.Log($"assigning material to line {name}");
 
             this.stopDuration = AverageStopDuration;
             this.velocity = AverageSpeed;
+            
+            this.routes = new List<Route>();
+            this.stops = new List<Stop>();
+            this.vehicles = new List<TransitVehicle>();
         }
 
         public void SetName(string name)
@@ -166,7 +166,7 @@ namespace Transidious
         /// Add a stop to the end of this line.
         public Route AddRoute(Stop begin, Stop end, List<Vector3> positions, bool oneWay, bool isBackRoute)
         {
-            GameObject routeObject = Instantiate(routePrefab);
+            GameObject routeObject = GameObject.Instantiate(GameController.instance.loadedMap.routePrefab);
             Route route = routeObject.GetComponent<Route>();
             route.Initialize(this, begin, end, positions, isBackRoute);
 
@@ -187,7 +187,7 @@ namespace Transidious
 
             if (!oneWay)
             {
-                GameObject backRouteObject = Instantiate(routePrefab);
+                GameObject backRouteObject = GameObject.Instantiate(GameController.instance.loadedMap.routePrefab);
                 Route backRoute = backRouteObject.GetComponent<Route>();
                 backRoute.Initialize(this, end, begin, positions, true);
 
@@ -220,7 +220,7 @@ namespace Transidious
             var sim = Game.sim;
             var fixedUpdateInterval = sim.FixedUpdateInterval / 1000f;
             var interval = schedule.dayInterval * 60f;
-            var speedMetersPerSecond = AverageSpeed / 3.6f;
+            var speedMetersPerSecond = AverageSpeed.MPS;
             var earliestDeparture = sim.GameTime;
 
             // Round to the nearest fixed update interval.
@@ -325,21 +325,6 @@ namespace Transidious
 
             wasModified = true;
             this.FinalizeLine();
-        }
-
-        void Awake()
-        {
-            routePrefab = Resources.Load("Prefabs/Route") as GameObject;
-            routes = new List<Route>();
-            stops = new List<Stop>();
-        }
-
-        void Update()
-        {
-            if (gradient != null)
-            {
-                this.material.color = gradient.CurrentColor;
-            }
         }
     }
 }

@@ -8,6 +8,7 @@ namespace Transidious
     public abstract class Math
     {
         public static readonly float Kph2Mps = 1f / 3.6f;
+        public static readonly float Mps2Kph = 3.6f;
 
         private static void arcLengthUtil(Vector2 A, Vector2 B,
                                           Vector2 C, Vector2 D,

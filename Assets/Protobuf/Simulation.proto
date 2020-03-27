@@ -32,6 +32,7 @@ message PathStep {
         bool backward = 4;
         bool partialStart = 5;
         bool partialEnd = 6;
+        uint32 parkingLotID = 7;
     }
 
     message PublicTransitStep {
@@ -97,6 +98,7 @@ message Car {
     uint32 carModel = 3;
     Vector2 position = 4;
     Color color = 5;
+    uint32 parkingLotID = 6;
 }
 
 message Citizen {

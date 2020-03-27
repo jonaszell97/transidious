@@ -16,6 +16,7 @@ message StreetSegment {
     uint32 startIntersectionID = 3;
     uint32 endIntersectionID = 4;
     bool hasTramTracks = 5;
+    int32 occupiedParkingSpots = 6;
 }
 
 message Street {

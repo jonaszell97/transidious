@@ -8,7 +8,7 @@ namespace Transidious
         public GameObject subject;
         public SimulationController sim;
         public List<Vector3> pathNodes;
-        public float velocity;
+        public Velocity velocity;
         public float threshold;
         public Vector2 direction;
         public float progress;
@@ -27,7 +27,7 @@ namespace Transidious
         public float TotalProgress => Mathf.Min(1f, totalProgress / totalThreshold);
 
         public PathFollowingObject(SimulationController sim, GameObject subject,
-                                   List<Vector3> pathNodes, float velocity,
+                                   List<Vector3> pathNodes, Velocity velocity,
                                    CompletionCallback callback = null)
         {
             this.sim = sim;
@@ -120,7 +120,7 @@ namespace Transidious
 
         public void Update(float delta)
         {
-            var newProgress = velocity * delta;
+            var newProgress = velocity.MPS * delta;
 
             progress += newProgress;
             totalProgress += newProgress;

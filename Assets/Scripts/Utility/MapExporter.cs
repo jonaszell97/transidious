@@ -3,6 +3,7 @@
 using UnityEditor;
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -12,7 +13,7 @@ namespace Transidious
 {
     public class MapExporter
     {
-        public struct MeshInfo
+        public class MeshInfo
         {
             internal float layer;
             internal UnityEngine.Color color;
@@ -86,6 +87,7 @@ namespace Transidious
         public int resolution;
         public Dictionary<IMapObject, MeshInfo> meshInfo;
         private List<Tuple<MapTile, MeshInfo>> otherMeshes;
+        private Dictionary<StreetSegment, Tuple<Mesh, Mesh>> streetMeshes;
         Statistics stats;
 
         List<Tuple<IMapObject, MeshInfo>> _SortedMeshes;
@@ -110,6 +112,7 @@ namespace Transidious
             this.meshInfo = new Dictionary<IMapObject, MeshInfo>();
             this.stats = new Statistics();
             this.otherMeshes = new List<Tuple<MapTile, MeshInfo>>();
+            this.streetMeshes = new Dictionary<StreetSegment, Tuple<Mesh, Mesh>>();
         }
 
         public void RegisterMesh(IMapObject obj, PSLG pslg,
@@ -152,6 +155,19 @@ namespace Transidious
             this.otherMeshes.Add(Tuple.Create(
                 tiles.Count == 1 ? tiles.First() : map.sharedTile,
                 new MeshInfo(poly, layer, color)));
+        }
+
+        Tuple<Mesh, Mesh> GetStreetMesh(StreetSegment seg)
+        {
+            if (streetMeshes.TryGetValue(seg, out Tuple<Mesh, Mesh> meshes))
+            {
+                return meshes;
+            }
+
+            meshes = seg.CreateMeshes();
+            streetMeshes.Add(seg, meshes);
+            
+            return meshes;
         }
 
         public void ExportMap(string fileName)
@@ -284,35 +300,53 @@ namespace Transidious
             );
         }
 
-        void DrawMesh(System.Drawing.Graphics g, UnityEngine.Color c, Mesh mesh,
-                      MapTile tile)
+        void FillGlobalPoly(System.Drawing.Graphics g, UnityEngine.Color c, Mesh mesh, int resolution,
+                            float padding = 0f)
         {
-            if (mesh == null)
-            {
-                return;
-            }
-
-            var c_real = ToDrawingColor(c);
-
             var verts = mesh.vertices;
             var tris = mesh.triangles;
+            var brush = new SolidBrush(ToDrawingColor(c));
 
-            var tri = new PointF[3];
+            var path = new GraphicsPath();
             for (var i = 0; i < tris.Length; i += 3)
             {
-                tri[0] = GetCoordinate(tile, verts[tris[i + 0]]);
-                tri[1] = GetCoordinate(tile, verts[tris[i + 1]]);
-                tri[2] = GetCoordinate(tile, verts[tris[i + 2]]);
+                var p0 = verts[tris[i]];
+                var p1 = verts[tris[i + 1]];
+                var p2 = verts[tris[i + 2]];
 
-                g.FillPolygon(new SolidBrush(c_real), tri);
+                path.AddPolygon(new []
+                {
+                    GetGlobalCoordinate(map, p0, resolution, padding),
+                    GetGlobalCoordinate(map, p1, resolution, padding),
+                    GetGlobalCoordinate(map, p2, resolution, padding),
+                });
             }
+
+            g.FillPath(brush, path);
         }
 
-        void DrawPoly(System.Drawing.Graphics g, UnityEngine.Color c,
-                      Vector2[] poly, MapTile tile)
+        void FillPoly(System.Drawing.Graphics g, UnityEngine.Color c, Mesh mesh, MapTile tile)
         {
-            g.FillPolygon(new SolidBrush(ToDrawingColor(c)),
-                poly.Select(v => GetCoordinate(tile, v)).ToArray());
+            var verts = mesh.vertices;
+            var tris = mesh.triangles;
+            var brush = new SolidBrush(ToDrawingColor(c));
+
+            var path = new GraphicsPath();
+            for (var i = 0; i < tris.Length; i += 3)
+            {
+                var p0 = verts[tris[i]];
+                var p1 = verts[tris[i + 1]];
+                var p2 = verts[tris[i + 2]];
+
+                path.AddPolygon(new []
+                {
+                    GetCoordinate(tile, p0),
+                    GetCoordinate(tile, p1),
+                    GetCoordinate(tile, p2),
+                });
+            }
+            
+            g.FillPath(brush, path);
         }
 
         void DrawMesh(System.Drawing.Graphics g, UnityEngine.Color c,
@@ -429,6 +463,8 @@ namespace Transidious
         bool DrawTile(MapTile tile, System.Drawing.Graphics g, bool global)
         {
             var objectsToDraw = new HashSet<IMapObject>();
+            var streetsToDraw = new HashSet<StreetSegment>();
+            
             foreach (var obj in tile.mapObjects)
             {
                 if (!meshInfo.ContainsKey(obj))
@@ -436,7 +472,14 @@ namespace Transidious
                     continue;
                 }
 
-                objectsToDraw.Add(obj);
+                if (obj is StreetSegment seg)
+                {
+                    streetsToDraw.Add(seg);
+                }
+                else
+                {
+                    objectsToDraw.Add(obj);
+                }
             }
 
             if (tile.orphanedObjects != null)
@@ -448,7 +491,14 @@ namespace Transidious
                         continue;
                     }
 
-                    objectsToDraw.Add(obj);
+                    if (obj is StreetSegment seg)
+                    {
+                        streetsToDraw.Add(seg);
+                    }
+                    else
+                    {
+                        objectsToDraw.Add(obj);
+                    }
                 }
             }
 
@@ -488,6 +538,39 @@ namespace Transidious
                 else
                 {
                     DrawMesh(g, entry.Item2.color, entry.Item2, tile);
+                }
+            }
+
+            foreach (var seg in streetsToDraw)
+            {
+                var meshes = GetStreetMesh(seg);
+                var outlineColor = seg.GetBorderColor();
+
+                if (meshes.Item2 == null)
+                    continue;
+
+                if (global)
+                {
+                    FillGlobalPoly(g, outlineColor, meshes.Item2, resolution);
+                }
+                else
+                {
+                    FillPoly(g, outlineColor, meshes.Item2, tile);
+                }
+            }
+            
+            foreach (var seg in streetsToDraw)
+            {
+                var meshes = GetStreetMesh(seg);
+                var streetColor = seg.GetStreetColor();
+                    
+                if (global)
+                {
+                    FillGlobalPoly(g, streetColor, meshes.Item1, resolution);
+                }
+                else
+                {
+                    FillPoly(g, streetColor, meshes.Item1, tile);
                 }
             }
 
@@ -603,25 +686,62 @@ namespace Transidious
             return TriangleAPI.CreateMesh(pslg, fast || pslg.Simple);
         }
 
-        public void CreatePrefabMeshes(bool fast)
+        float GetIntensity(MeshInfo info)
+        {
+            if (info.pslg == null)
+                return 0;
+
+            var n = info.Outlines.Sum(outline => outline.Length);
+            n += info.Holes.Sum(hole => hole.Length);
+
+            return n;
+        }
+
+        public void AddColorDensity()
+        {
+            var maxIntensity = meshInfo.Aggregate(0f,
+                (current, info) => System.Math.Max(current, GetIntensity(info.Value)));
+            maxIntensity = otherMeshes.Aggregate(maxIntensity,
+                (current, info) => System.Math.Max(current, GetIntensity(info.Item2)));
+
+            foreach (var key in meshInfo.Keys)
+            {
+                var info = meshInfo[key];
+                info.color = new UnityEngine.Color(GetIntensity(info) / maxIntensity, 0f, 0f);
+            }
+            foreach (var info in otherMeshes)
+            {
+                info.Item2.color = new UnityEngine.Color(GetIntensity(info.Item2) / maxIntensity, 0f, 0f);
+            }
+        }
+        
+        public IEnumerator CreatePrefabMeshes(bool fast, bool includeFeatures, float thresholdTime = 1000)
         {
             foreach (var info in meshInfo)
             {
                 if (info.Key is StreetSegment seg)
                 {
-                    var meshes = seg.CreateMeshes();
-                    var streetColor = seg.GetStreetColor(RenderingDistance.Near);
-                    var outlineColor = seg.GetBorderColor(RenderingDistance.Near);
+                    var meshes = GetStreetMesh(seg);
+                    var streetColor = seg.GetStreetColor();
                     var streetLayer = Map.Layer(MapLayer.Streets);
-                    var outlineLayer = Map.Layer(MapLayer.StreetOutlines);
 
-                    var dist = seg.GetMaxVisibleRenderingDistance();
-                    info.Key.UniqueTile.AddMesh("Streets", meshes.Item1, streetColor, streetLayer, dist);
-                    info.Key.UniqueTile.AddMesh("Streets", meshes.Item2, outlineColor, outlineLayer, dist);
-
+                    info.Key.UniqueTile.AddMesh("Streets", meshes.Item1, streetColor, streetLayer);
                     stats.AddMesh("Streets", meshes.Item1);
-                    stats.AddMesh("StreetOutlines", meshes.Item2);
 
+                    if (meshes.Item2 != null)
+                    {
+                        var outlineColor = seg.GetBorderColor();
+                        var outlineLayer = Map.Layer(MapLayer.StreetOutlines);
+                        
+                        info.Key.UniqueTile.AddMesh("Streets", meshes.Item2, outlineColor, outlineLayer);
+                        stats.AddMesh("StreetOutlines", meshes.Item2);
+                    }
+
+                    continue;
+                }
+
+                if (!includeFeatures)
+                {
                     continue;
                 }
 
@@ -649,16 +769,29 @@ namespace Transidious
                     continue;
                 }
 
-                info.Key.UniqueTile.AddMesh(group, mesh, color, layer, RenderingDistance.Near);
+                info.Key.UniqueTile.AddMesh(group, mesh, color, layer);
                 stats.AddMesh(group, mesh);
+                
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
             }
+
+            if (!includeFeatures)
+                yield break;
 
             foreach (var info in otherMeshes)
             {
                 var mesh = CreateMesh(info.Item2, fast);
-
-                info.Item1.AddMesh("Uncategorised", mesh, info.Item2.color, info.Item2.layer, RenderingDistance.Near);
+                
+                info.Item1.AddMesh("Uncategorised", mesh, info.Item2.color, info.Item2.layer);
                 stats.AddMesh("Uncategorised", mesh);
+                
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
             }
         }
 
@@ -670,10 +803,10 @@ namespace Transidious
 
         public void ExportMapPrefab()
         {
-            string meshPath = $"Assets/Resources/Meshes/{map.name}";
+            string meshPath = $"Assets/Resources/Maps/{map.name}/Meshes";
             if (!AssetDatabase.IsValidFolder(meshPath))
             {
-                AssetDatabase.CreateFolder("Assets/Resources/Meshes", map.name);
+                AssetDatabase.CreateFolder($"Assets/Resources/Maps/{map.name}", "Meshes");
             }
 
             // Save multi meshes.
@@ -711,7 +844,7 @@ namespace Transidious
             SaveMesh(map.boundaryBackgroundObj, $"{meshPath}/BoundaryBackground.asset");
 
             PrefabUtility.SaveAsPrefabAsset(
-                map.gameObject, $"Assets/Resources/Prefabs/Maps/{map.name}.prefab");
+                map.gameObject, $"Assets/Resources/Maps/{map.name}/{map.name}.prefab");
         }
 
         public void PrintStats()

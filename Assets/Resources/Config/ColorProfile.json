@@ -1,52 +1,176 @@
 {
-    "map": {
-        "backgroundDay": "#F9F5ED",
-        "backgroundNight": "#2A3C3D",
-        "boundaryDay": "#000",
-        "boundaryNight": "#FF7700",
-        "voidDay": "#FFF",
-        "voidNight": "#000",
-        "seaDay": "#0388fc",
-        "seaNight": "#000e6b"
-    },
-    "transit": {
-        "defaultBus": "#9800C1",
-        "defaultTram": "#F00",
-        "defaultSubway": "#1705AF",
-        "defaultLightRail": "#25660A",
-        "defaultIntercity": "#F00",
-        "defaultFerry": "#24A8C9"
-    },
-    "buildings": {
-        "defaultDay": "#DDD3D8",
-        "defaultNight": "#333"
-    },
-    "features": {
-        "Lake": "#A0DAF2",
-        "Green": "#AFE09F",
-        "SportsPitch": "#AAE0CA",
-        "Cemetery": "#CAE1BF",
-        "Park": "#C8FACC",
-        "Allotment": "#C9E1BF",
-        "FootpathArea": "#DDDCE7",
-        "Beach": "#F9EAB6",
-        "Forest": "#AFE09F",
-        "Parking": "#CCC",
-        "Footpath": "#E8DCC0",
-        "Residential": "#F5F5F5"
-    },
-    "streets": {
-        "defaultDay": "#FFF",
-        "defaultNight": "#595959",
-        "defaultBorderDay": "#B3B3B3",
-        "defaultBorderNight": "#7F7F7F",
-        "riverDay": "#A0DAF2",
-        "riverBorderDay": "#A0DAF2",
-        "riverNight": "#A0DAF2",
-        "riverBorderNight": "#A0DAF2",
-        "pathDay": "#E8DCC0",
-        "pathBorderDay": "#E8DCC0",
-        "pathNight": "#E8DCC0",
-        "pathBorderNight": "#E8DCC0"
-    }
+    "colors": [
+        {
+            "key": "map.backgroundDay",
+            "value": "#F9F5ED"
+        },
+        {
+            "key": "map.backgroundNight",
+            "value": "#2A3C3D"
+        },
+        {
+            "key": "map.boundaryDay",
+            "value": "#000"
+        },
+        {
+            "key": "map.boundaryNight",
+            "value": "#FF7700"
+        },
+        {
+            "key": "map.voidDay",
+            "value": "#FFF"
+        },
+        {
+            "key": "map.voidNight",
+            "value": "#000"
+        },
+        {
+            "key": "map.seaDay",
+            "value": "#0388fc"
+        },
+        {
+            "key": "map.seaNight",
+            "value": "#000e6b"
+        },
+
+        {
+            "key": "transit.defaultBus",
+            "value": "#9800C1"
+        },
+        {
+            "key": "transit.defaultTram",
+            "value": "#F00"
+        },
+        {
+            "key": "transit.defaultSubway",
+            "value": "#1705AF"
+        },
+        {
+            "key": "transit.defaultLightRail",
+            "value": "#25660A"
+        },
+        {
+            "key": "transit.defaultIntercity",
+            "value": "#F00"
+        },
+        {
+            "key": "transit.defaultFerry",
+            "value": "#24A8C9"
+        },
+        
+        {
+            "key": "building.defaultDay",
+            "value": "#DDE2E8"
+        },
+        {
+            "key": "building.defaultNight",
+            "value": "#333"
+        },
+
+        {
+            "key": "feature.Lake",
+            "value": "#A0DAF2"
+        },
+        {
+            "key": "feature.River",
+            "value": "#A0DAF2"
+        },
+        {
+            "key": "feature.Green",
+            "value": "#AFE09F"
+        },
+        {
+            "key": "feature.SportsPitch",
+            "value": "#AAE0CA"
+        },
+        {
+            "key": "feature.Cemetery",
+            "value": "#CAE1BF"
+        },
+        {
+            "key": "feature.Park",
+            "value": "#C8FACC"
+        },
+        {
+            "key": "feature.Allotment",
+            "value": "#C9E1BF"
+        },
+        {
+            "key": "feature.FootpathArea",
+            "value": "#DDDCE7"
+        },
+        {
+            "key": "feature.Beach",
+            "value": "#F9EAB6"
+        },
+        {
+            "key": "feature.Forest",
+            "value": "#AFE09F"
+        },
+        {
+            "key": "feature.Parking",
+            "value": "#CCC"
+        },
+        {
+            "key": "feature.Footpath",
+            "value": "#E8DCC0"
+        },
+        {
+            "key": "feature.Residential",
+            "value": "#F5F5F5"
+        },
+        {
+            "key": "feature.Zoo",
+            "value": "#EEE"
+        },
+
+        {
+            "key": "street.defaultDay",
+            "value": "#FFF"
+        },
+        {
+            "key": "street.defaultNight",
+            "value": "#595959"
+        },
+        {
+            "key": "street.defaultBorderDay",
+            "value": "#B3B3B3"
+        },
+        {
+            "key": "street.defaultBorderNight",
+            "value": "#7F7F7F"
+        },
+        {
+            "key": "street.riverDay",
+            "value": "#A0DAF2"
+        },
+        {
+            "key": "street.riverBorderDay",
+            "value": "#A0DAF2"
+        },
+        {
+            "key": "street.riverNight",
+            "value": "#A0DAF2"
+        },
+        {
+            "key": "street.riverBorderNight",
+            "value": "#A0DAF2"
+        },
+        {
+            "key": "street.pathDay",
+            "value": "#E8DCC0"
+        },
+        {
+            "key": "street.pathBorderDay",
+            "value": "#E8DCC0"
+        },
+        {
+            "key": "street.pathNight",
+            "value": "#E8DCC0"
+        },
+        {
+            "key": "street.pathBorderNight",
+            "value": "#E8DCC0"
+        }
+    ]
 }

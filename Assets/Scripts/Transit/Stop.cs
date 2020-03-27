@@ -299,8 +299,6 @@ namespace Transidious
             this.waitingCitizens = new Dictionary<Line, List<WaitingCitizen>>();
 
             this.spriteRenderer = this.GetComponent<SpriteRenderer>();
-            Debug.Log($"assigning line data to stop {name}");
-
             this.circleSprite = Resources.Load("Sprites/stop_ring", typeof(Sprite)) as Sprite;
             this.smallRectSprite = Resources.Load("Sprites/stop_small_rect", typeof(Sprite)) as Sprite;
             this.largeRectSprite = Resources.Load("Sprites/stop_large_rect", typeof(Sprite)) as Sprite;
@@ -309,13 +307,7 @@ namespace Transidious
                                                   Map.Layer(MapLayer.TransitStops));
         }
 
-        public Vector3 Location
-        {
-            get
-            {
-                return location;
-            }
-        }
+        public Vector3 Location => location;
 
         public IEnumerable<IRoute> Routes
         {

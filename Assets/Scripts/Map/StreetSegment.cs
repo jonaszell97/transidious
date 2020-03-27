@@ -48,7 +48,7 @@ namespace Transidious
                 : segment.startTrafficLight;
 
             /// The length of this lane.
-            public float length => segment.length;
+            public Distance length => Distance.FromMeters(segment.length);
 
             /// The positions of this lane.
             public Vector3[] path
@@ -96,15 +96,15 @@ namespace Transidious
             
             public bool OneWay => true;
 
-            public TimeSpan TravelTime => GetTravelTime(length);
+            public GameTimeSpan TravelTime => GetTravelTime(length);
 
-            public TimeSpan GetTravelTime(float length)
+            public GameTimeSpan GetTravelTime(Distance length)
             {
-                var seconds = (length / (segment.street.AverageSpeedKPH * Math.Kph2Mps));
-                return TimeSpan.FromSeconds(seconds * GameController.instance.sim.trafficSim.CurrentTrafficFactor);
+                var seconds = length / segment.street.AverageSpeed;
+                return seconds * GameController.instance.sim.trafficSim.CurrentTrafficFactor;
             }
 
-            public float AverageSpeed => segment.street.AverageSpeedKPH;
+            public Velocity AverageSpeed => segment.street.AverageSpeed;
 
             public int AssociatedID => 0;
 
@@ -158,13 +158,29 @@ namespace Transidious
 
         public GameObject tramTrackMeshObj;
 
-        public static readonly float laneWidth = 3f * Map.Meters;
+        public static readonly float laneWidth = 3f;
 
         /// Distance of the stop line from the middle of the intersection.
-        public float BeginStopLineDistance = 10f * Map.Meters;
+        public float BeginStopLineDistance = 10f;
 
         /// Distance of the stop line from the middle of the intersection.
-        public float EndStopLineDistance = 10f * Map.Meters;
+        public float EndStopLineDistance = 10f;
+
+        /// The number of available parking spots on this street.
+        public int totalParkingSpots;
+
+        /// The number of used parking spots on this street.
+        public int occupiedParkingSpots;
+        
+        public Distance distance => Distance.FromMeters(length);
+
+        public override int Capacity => totalParkingSpots;
+
+        public override int Occupants
+        {
+            get => occupiedParkingSpots;
+            set => occupiedParkingSpots = value;
+        }
 
         public void Initialize(Street street, int position, List<Vector3> positions,
                                StreetIntersection startIntersection,
@@ -204,41 +220,42 @@ namespace Transidious
 
             cumulativeDistances.Add(length);
 
-            if (/*(startIntersection?.NumIntersectingStreets ?? 0) < 2 ||*/ length <= 10f * Map.Meters)
+            if (/*(startIntersection?.NumIntersectingStreets ?? 0) < 2 ||*/ length <= 10f)
             {
                 BeginStopLineDistance = 0f;
             }
-            else if (length <= 20f * Map.Meters)
+            else if (length <= 20f)
             {
-                BeginStopLineDistance = 3f * Map.Meters;
+                BeginStopLineDistance = 3f;
             }
-            else if (length <= 30f * Map.Meters)
+            else if (length <= 30f)
             {
-                BeginStopLineDistance = 5f * Map.Meters;
+                BeginStopLineDistance = 5f;
             }
             else
             {
-                BeginStopLineDistance = 10f * Map.Meters;
+                BeginStopLineDistance = 10f;
             }
 
-            if (/*(endIntersection?.NumIntersectingStreets ?? 0) < 2 ||*/ length <= 10f * Map.Meters)
+            if (/*(endIntersection?.NumIntersectingStreets ?? 0) < 2 ||*/ length <= 10f)
             {
                 EndStopLineDistance = 0f;
             }
-            else if (length <= 20f * Map.Meters)
+            else if (length <= 20f)
             {
-                EndStopLineDistance = 3f * Map.Meters;
+                EndStopLineDistance = 3f;
             }
-            else if (length <= 30f * Map.Meters)
+            else if (length <= 30f)
             {
-                EndStopLineDistance = 5f * Map.Meters;
+                EndStopLineDistance = 5f;
             }
             else
             {
-                EndStopLineDistance = 10f * Map.Meters;
+                EndStopLineDistance = 10f;
             }
 
             UpdateDrivablePositions();
+            totalParkingSpots = (int)Mathf.Floor(length / 15f) * 2;
         }
 
         void UpdateDrivablePositions()
@@ -560,59 +577,23 @@ namespace Transidious
             }
         }
 
-        public IStop Begin
+        public IStop Begin => startIntersection;
+
+        public IStop End => endIntersection;
+
+        public bool OneWay => street.isOneWay;
+
+        public GameTimeSpan TravelTime => GetTravelTime(Distance.FromMeters(length));
+
+        public GameTimeSpan GetTravelTime(Distance length)
         {
-            get
-            {
-                return startIntersection;
-            }
+            var seconds = length / street.AverageSpeed;
+            return seconds * Game.sim.trafficSim.CurrentTrafficFactor;
         }
 
-        public IStop End
-        {
-            get
-            {
-                return endIntersection;
-            }
-        }
+        public Velocity AverageSpeed => street.AverageSpeed;
 
-        public bool OneWay
-        {
-            get
-            {
-                return street.isOneWay;
-            }
-        }
-
-        public TimeSpan TravelTime
-        {
-            get
-            {
-                return GetTravelTime(this.length);
-            }
-        }
-
-        public TimeSpan GetTravelTime(float length)
-        {
-            var seconds = (length / (street.AverageSpeedKPH * Math.Kph2Mps));
-            return TimeSpan.FromSeconds(seconds * Game.sim.trafficSim.CurrentTrafficFactor);
-        }
-
-        public float AverageSpeed
-        {
-            get
-            {
-                return street.AverageSpeedKPH;
-            }
-        }
-
-        public int AssociatedID
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int AssociatedID => 0;
 
         public DateTime NextDeparture(DateTime after)
         {
@@ -633,7 +614,7 @@ namespace Transidious
                 switch (distance)
                 {
                 case RenderingDistance.Near:
-                    return lanes * laneWidth + 3f * Map.Meters;
+                    return lanes * laneWidth + 3f;
                 case RenderingDistance.Far:
                 case RenderingDistance.VeryFar:
                 case RenderingDistance.Farthest:
@@ -645,7 +626,7 @@ namespace Transidious
                 switch (distance)
                 {
                 case RenderingDistance.Near:
-                    return lanes * laneWidth + 2f * Map.Meters;
+                    return lanes * laneWidth + 2f;
                 case RenderingDistance.Far:
                 case RenderingDistance.VeryFar:
                     return lanes * laneWidth;
@@ -659,7 +640,7 @@ namespace Transidious
                 switch (distance)
                 {
                 case RenderingDistance.Near:
-                    return lanes * laneWidth + 1f * Map.Meters;
+                    return lanes * laneWidth + 1f;
                 case RenderingDistance.Far:
                 case RenderingDistance.VeryFar:
                     return lanes * laneWidth;
@@ -674,7 +655,7 @@ namespace Transidious
                 case RenderingDistance.Near:
                     return lanes * laneWidth;
                 case RenderingDistance.Far:
-                    return lanes * laneWidth - 1f * Map.Meters;
+                    return lanes * laneWidth - 1f;
                 case RenderingDistance.VeryFar:
                 case RenderingDistance.Farthest:
                     return 0f;
@@ -724,7 +705,7 @@ namespace Transidious
 #if DEBUG
             if (GameController.instance.ImportingMap)
             {
-                return 3f * Map.Meters;
+                return 3f;
             }
 #endif
 
@@ -735,9 +716,9 @@ namespace Transidious
                 switch (distance)
                 {
                 case RenderingDistance.Near:
-                    return 1f * Map.Meters;
+                    return 1f;
                 case RenderingDistance.Far:
-                    return 3f * Map.Meters;
+                    return 3f;
                 case RenderingDistance.VeryFar:
                 case RenderingDistance.Farthest:
                     return 0f;
@@ -748,10 +729,10 @@ namespace Transidious
                 switch (distance)
                 {
                 case RenderingDistance.Near:
-                    return 1f * Map.Meters;
+                    return 1f;
                 case RenderingDistance.Far:
                 case RenderingDistance.VeryFar:
-                    return 3f * Map.Meters;
+                    return 3f;
                 case RenderingDistance.Farthest:
                     return 0f;
                 }
@@ -763,9 +744,9 @@ namespace Transidious
                 switch (distance)
                 {
                 case RenderingDistance.Near:
-                    return 1f * Map.Meters;
+                    return 1f;
                 case RenderingDistance.Far:
-                    return 3f * Map.Meters;
+                    return 3f;
                 case RenderingDistance.VeryFar:
                 case RenderingDistance.Farthest:
                     return 0f;
@@ -787,9 +768,9 @@ namespace Transidious
                 switch (distance)
                 {
                 case RenderingDistance.Near:
-                    return 2f * Map.Meters;
+                    return 2f;
                 case RenderingDistance.Far:
-                    return 3f * Map.Meters;
+                    return 3f;
                 case RenderingDistance.VeryFar:
                 case RenderingDistance.Farthest:
                     return 0f;
@@ -803,163 +784,40 @@ namespace Transidious
             throw new System.ArgumentException(string.Format("Illegal enum value {0}", distance));
         }
 
-        public Color GetStreetColor(RenderingDistance distance,
-                                    MapDisplayMode mode = MapDisplayMode.Day)
+        public Color GetStreetColor(MapDisplayMode mode = MapDisplayMode.Day)
         {
-            return GetStreetColor(street.type, distance, mode);
+            return GetStreetColor(street.type, mode);
         }
 
-        public static Color GetStreetColor(Street.Type type, RenderingDistance distance,
-                                           MapDisplayMode mode = MapDisplayMode.Day)
+        public static Color GetStreetColor(Street.Type type, MapDisplayMode mode = MapDisplayMode.Day)
         {
             switch (type)
             {
-            case Street.Type.Highway:
-            case Street.Type.Primary:
-            case Street.Type.Secondary:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                case RenderingDistance.Far:
-                    switch (mode)
-                    {
-                    case MapDisplayMode.Day:
-                    default:
-                        return Color.white;
-                    case MapDisplayMode.Night:
-                        return new Color(.35f, .35f, .35f);
-                    }
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    switch (mode)
-                    {
-                    case MapDisplayMode.Day:
-                    default:
-                        return new Color(0.7f, 0.7f, 0.7f);
-                    case MapDisplayMode.Night:
-                        return new Color(.35f, .35f, .35f);
-                    }
-                }
-
-                break;
-            case Street.Type.Tertiary:
-            case Street.Type.Residential:
-            case Street.Type.Link:
-                switch (mode)
-                {
-                case MapDisplayMode.Day:
+                case Street.Type.Path:
+                    return Colors.GetColor($"street.path{mode}");
+                case Street.Type.River:
+                    return Colors.GetColor($"street.river{mode}");
                 default:
-                    return Color.white;
-                case MapDisplayMode.Night:
-                    return new Color(.35f, .35f, .35f);
-                }
-            case Street.Type.Path:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    return new Color(232f / 255f, 220f / 255f, 192f / 255f);
-                }
-
-                break;
-            case Street.Type.River:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    return new Color(160f / 255f, 218f / 255f, 242f / 255f);
-                }
-
-                break;
-            default:
-                break;
+                    return Colors.GetColor($"street.default{mode}");
             }
-
-            throw new System.ArgumentException(string.Format("Illegal enum value {0}", distance));
         }
 
-        public Color GetBorderColor(RenderingDistance distance,
-                                    MapDisplayMode mode = MapDisplayMode.Day)
+        public Color GetBorderColor(MapDisplayMode mode = MapDisplayMode.Day)
         {
-            return GetBorderColor(street.type, distance, mode);
+            return GetBorderColor(street.type, mode);
         }
 
-        public static Color GetBorderColor(Street.Type type, RenderingDistance distance,
-                                           MapDisplayMode mode = MapDisplayMode.Day)
+        public static Color GetBorderColor(Street.Type type, MapDisplayMode mode = MapDisplayMode.Day)
         {
             switch (type)
             {
-            case Street.Type.Highway:
-            case Street.Type.Primary:
-            case Street.Type.Secondary:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    switch (mode)
-                    {
-                    case MapDisplayMode.Day:
-                    default:
-                        return Color.gray;
-                    case MapDisplayMode.Night:
-                        return new Color(.7f, .7f, .7f);
-                    }
-                }
-
-                break;
-            case Street.Type.Tertiary:
-            case Street.Type.Residential:
-            case Street.Type.Link:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    switch (mode)
-                    {
-                    case MapDisplayMode.Day:
-                    default:
-                        return Color.gray;
-                    case MapDisplayMode.Night:
-                        return new Color(.7f, .7f, .7f);
-                    }
-                }
-
-                break;
-            case Street.Type.Path:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    return new Color(0f, 0f, 0f, 0f);
-                }
-
-                break;
-            case Street.Type.River:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    return new Color(116f / 255f, 187f / 255f, 218f / 255f);
-                }
-
-                break;
-            default:
-                break;
+                case Street.Type.Path:
+                    return Colors.GetColor($"street.pathBorder{mode}");
+                case Street.Type.River:
+                    return Colors.GetColor($"street.riverBorder{mode}");
+                default:
+                    return Colors.GetColor($"street.defaultBorder{mode}");
             }
-
-            throw new System.ArgumentException(string.Format("Illegal enum value {0}", distance));
         }
 
         public static RenderingDistance GetMaxVisibleRenderingDistance(Street.Type type)
@@ -1019,16 +877,17 @@ namespace Transidious
                 positions.Select(v => new Vector3(v.x, v.y, lineLayer)).ToArray());
 
             tmpRenderer.numCornerVertices = Settings.Current.qualitySettings.StreetCornerVerts;
+            tmpRenderer.numCapVertices = Settings.Current.qualitySettings.StreetCapVerts;
 
-            if (startIntersection.RelativePosition(this) == 0
-            || endIntersection.RelativePosition(this) == 0)
-            {
-                tmpRenderer.numCapVertices = Settings.Current.qualitySettings.StreetCapVerts;
-            }
-            else
-            {
-                tmpRenderer.numCapVertices = 0;
-            }
+            // if (startIntersection.RelativePosition(this) == 0
+            // || endIntersection.RelativePosition(this) == 0)
+            // {
+            //     tmpRenderer.numCapVertices = Settings.Current.qualitySettings.StreetCapVerts;
+            // }
+            // else
+            // {
+            //     tmpRenderer.numCapVertices = 0;
+            // }
 
             var streetWidth = 2f * GetStreetWidth(RenderingDistance.Near);
             tmpRenderer.startWidth = streetWidth;
@@ -1037,15 +896,19 @@ namespace Transidious
             var streetMesh = new Mesh();
             tmpRenderer.BakeMesh(streetMesh);
 
-            tmpRenderer.SetPositions(
-                positions.Select(v => new Vector3(v.x, v.y, lineOutlineLayer)).ToArray());
+            Mesh outlineMesh = null;
+            if (street.type != Street.Type.River)
+            {
+                tmpRenderer.SetPositions(
+                    positions.Select(v => new Vector3(v.x, v.y, lineOutlineLayer)).ToArray());
 
-            var borderWidth = streetWidth + GetBorderWidth(RenderingDistance.Near);
-            tmpRenderer.startWidth = borderWidth;
-            tmpRenderer.endWidth = tmpRenderer.startWidth;
+                var borderWidth = streetWidth + GetBorderWidth(RenderingDistance.Near);
+                tmpRenderer.startWidth = borderWidth;
+                tmpRenderer.endWidth = tmpRenderer.startWidth;
 
-            var outlineMesh = new Mesh();
-            tmpRenderer.BakeMesh(outlineMesh);
+                outlineMesh = new Mesh();
+                tmpRenderer.BakeMesh(outlineMesh);
+            }
 
             return Tuple.Create(streetMesh, outlineMesh);
         }
@@ -1061,25 +924,15 @@ namespace Transidious
 
             var meshes = CreateMeshes();
             var streetMesh = meshes.Item1;
-            var outlineMesh = meshes.Item2;
 
             var streetWidth = 2f * GetStreetWidth(RenderingDistance.Near);
             var borderWidth = streetWidth + 2f * GetBorderWidth(RenderingDistance.Near);
 
             var colliderPath = MeshBuilder.CreateLineCollider(positions, borderWidth * .5f);
-            var collisionRect = MeshBuilder.GetCollisionRect(outlineMesh);
-            // var renderingDist = GetMaxVisibleRenderingDistance();
+            var collisionRect = MeshBuilder.GetCollisionRect(streetMesh);
 
             foreach (var tile in street.map.GetTilesForObject(this))
             {
-                //tile.AddMesh("Streets", streetMesh,
-                //             GetStreetColor(RenderingDistance.Near),
-                //             lineLayer, renderingDist);
-
-                //tile.AddMesh("Streets", outlineMesh,
-                //             GetBorderColor(RenderingDistance.Near),
-                //             lineOutlineLayer, renderingDist);
-
                 tile.AddCollider(this, colliderPath, collisionRect, false);
             }
         }
@@ -1236,8 +1089,8 @@ namespace Transidious
 
         public void UpdateColor(MapDisplayMode mode)
         {
-            UpdateColor(GetStreetColor(RenderingDistance.Near, mode));
-            UpdateBorderColor(GetBorderColor(RenderingDistance.Near, mode));
+            UpdateColor(GetStreetColor(mode));
+            UpdateBorderColor(GetBorderColor(mode));
         }
 
         Tuple<Mesh, Mesh> GetTramTrackMesh(Vector3[] path, bool isRightLane)
@@ -1341,7 +1194,7 @@ namespace Transidious
             filter.sharedMesh = tramTrackMesh;
 
             var renderer = tramTrackMeshObj.GetComponent<MeshRenderer>();
-            renderer.material = GameController.instance.GetUnlitMaterial(GetBorderColor(RenderingDistance.Near));
+            renderer.material = GameController.instance.GetUnlitMaterial(GetBorderColor());
         }
 
         void UpdateTramTracks(Mesh trackRight, Mesh trackLeft)
@@ -1381,14 +1234,14 @@ namespace Transidious
             Gizmos.color = Color.red;
             foreach (var pos in positions)
             {
-                Gizmos.DrawSphere(pos, 3f * Map.Meters);
+                Gizmos.DrawSphere(pos, 3f);
             }
 
             Gizmos.color = Color.green;
-            Gizmos.DrawSphere(GetStartStopLinePosition(), 3f * Map.Meters);
+            Gizmos.DrawSphere(GetStartStopLinePosition(), 3f);
 
             Gizmos.color = Color.black;
-            Gizmos.DrawSphere(GetEndStopLinePosition(), 3f * Map.Meters);
+            Gizmos.DrawSphere(GetEndStopLinePosition(), 3f);
 
             // #if DRAW_STREETS
             //             var trafficSim = street.map.Game.sim.trafficSim;
@@ -1398,7 +1251,7 @@ namespace Transidious
             //                 for (int lane = 0; lane < street.lanes; ++lane)
             //                 {
             //                     var path = trafficSim.GetPath(this, lane);
-            //                     _laneMeshes[lane] = MeshBuilder.CreateSmoothLine(new List<Vector3>(path), 1f * Map.Meters);
+            //                     _laneMeshes[lane] = MeshBuilder.CreateSmoothLine(new List<Vector3>(path), 1f);
             //                 }
             //             }
             //             if (!street.isOneWay && startIntersection != null && _startIntersectionMeshes == null)
@@ -1415,7 +1268,7 @@ namespace Transidious
             //                             continue;
             //                         }
 
-            //                         _startIntersectionMeshes.Add(MeshBuilder.CreateSmoothLine(new List<Vector3>(path), .75f * Map.Meters));
+            //                         _startIntersectionMeshes.Add(MeshBuilder.CreateSmoothLine(new List<Vector3>(path), .75f));
             //                     }
             //                 }
             //             }
@@ -1433,7 +1286,7 @@ namespace Transidious
             //                             continue;
             //                         }
 
-            //                         _endIntersectionMeshes.Add(MeshBuilder.CreateSmoothLine(new List<Vector3>(path), .75f * Map.Meters));
+            //                         _endIntersectionMeshes.Add(MeshBuilder.CreateSmoothLine(new List<Vector3>(path), .75f));
             //                     }
             //                 }
             //             }
@@ -1500,15 +1353,15 @@ namespace Transidious
             {
             case Street.Type.Highway:
             case Street.Type.Primary:
-                min = 7f * Map.Meters;
-                max = 12f * Map.Meters;
-                factor = 6f / (100f * Map.Meters);
+                min = 7f;
+                max = 12f;
+                factor = 6f / (100f);
 
                 break;
             default:
-                min = 5f * Map.Meters;
-                max = 10f * Map.Meters;
-                factor = 5f / (100f * Map.Meters);
+                min = 5f;
+                max = 10f;
+                factor = 5f / (100f);
 
                 break;
             }
@@ -1573,20 +1426,15 @@ namespace Transidious
             //streetRenderer.material = GameController.instance.GetUnlitMaterial(c);
         }
 
-        public void ResetColor(RenderingDistance dist)
+        public void ResetColor()
         {
-            UpdateColor(GetStreetColor(dist));
+            UpdateColor(GetStreetColor());
         }
 
         public void UpdateBorderColor(Color c)
         {
             //var outlineRenderer = outlineMeshObj.GetComponent<MeshRenderer>();
             //outlineRenderer.material = GameController.instance.GetUnlitMaterial(c);
-        }
-
-        public void ResetBorderColor(RenderingDistance dist)
-        {
-            UpdateBorderColor(GetBorderColor(dist));
         }
 
         public new Serialization.StreetSegment ToProtobuf()
@@ -1597,6 +1445,7 @@ namespace Transidious
                 StartIntersectionID = (uint)(startIntersection?.id ?? 0),
                 EndIntersectionID = (uint)(endIntersection?.id ?? 0),
                 HasTramTracks = hasTramTracks,
+                OccupiedParkingSpots = occupiedParkingSpots,
             };
 
             result.Positions.AddRange(positions.Select(s => ((Vector2)s).ToProtobuf()));
@@ -1628,6 +1477,12 @@ namespace Transidious
             {
                 UpdateBorderColor(game.highlightColor);
             }
+        }
+
+        public override void OnMouseDown()
+        {
+            base.OnMouseDown();
+            Debug.Log($"free parking spots: {occupiedParkingSpots} / {totalParkingSpots}");
         }
 
         public override bool ShouldCheckMouseOver()

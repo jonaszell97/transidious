@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Transidious
 {
@@ -41,16 +42,6 @@ namespace Transidious
 
     public class Map : MonoBehaviour
     {
-        public static readonly Dictionary<TransitType, Color> defaultLineColors = new Dictionary<TransitType, Color>
-        {
-            { TransitType.Bus, new Color(0.58f, 0.0f, 0.83f)  },
-            { TransitType.Tram, new Color(1.0f, 0.0f, 0.0f)  },
-            { TransitType.Subway, new Color(0.09f, 0.02f, 0.69f)  },
-            { TransitType.LightRail, new Color(37f/255f, 102f/255f, 10f/255f)  },
-            { TransitType.IntercityRail, new Color(37f/255f, 102f/255f, 10f/255f)  },
-            { TransitType.Ferry, new Color(0.14f, 0.66f, 0.79f)  }
-        };
-
         /// Reference to the input controller.
         public InputController input;
 
@@ -144,9 +135,6 @@ namespace Transidious
 
         /// Prefab for creating stops.
         public GameObject stopPrefab;
-
-        /// Prefab for creating lines.
-        public GameObject linePrefab;
 
         /// Prefab for creating routes.
         public GameObject routePrefab;
@@ -660,12 +648,10 @@ namespace Transidious
         {
             switch (mode)
             {
-            case MapDisplayMode.Day:
             default:
-                return new Color(249f / 255f, 245f / 255f, 237f / 255f, 1);
+                return Colors.GetColor("map.backgroundDay");
             case MapDisplayMode.Night:
-                return new Color(.167f, .178f, .183f);
-                // return new Color(.6f, .6f, .6f, 1f);
+                return Colors.GetColor("map.backgroundNight");
             }
         }
 
@@ -678,11 +664,10 @@ namespace Transidious
         {
             switch (mode)
             {
-            case MapDisplayMode.Day:
             default:
-                return Color.black;
+                return Colors.GetColor("map.boundaryDay");
             case MapDisplayMode.Night:
-                return new Color(255f / 255f, 59f / 126f, 0f / 255f, 1);
+                return Colors.GetColor("map.boundaryNight");
             }
         }
 
@@ -695,11 +680,10 @@ namespace Transidious
         {
             switch (mode)
             {
-            case MapDisplayMode.Day:
             default:
-                return Color.white;
+                return Colors.GetColor("map.voidDay");
             case MapDisplayMode.Night:
-                return new Color(.32f, .37f, .43f, 1);
+                return Colors.GetColor("map.voidNight");
             }
         }
 
@@ -927,8 +911,15 @@ namespace Transidious
                                     minPnt, prevIdx, disregardRivers);
         }
 
-        public T[] GetMapObjectsInRadius<T>(Vector2 position, float radius, bool sortByDistance = true) where T: IMapObject
+        public T[] GetMapObjectsInRadius<T>(Vector2 position, float radius,
+                                            bool sortByDistance = true,
+                                            Func<T, bool> filter = null) where T: IMapObject
         {
+            if (radius < 0f)
+            {
+                radius = Mathf.Max(width, height) / 2f;
+            }
+
             var minPos = new Vector2(Mathf.Max(position.x - radius, minX), Mathf.Max(position.y - radius, minY));
             var maxPos = new Vector2(Mathf.Min(position.x + radius, maxX), Mathf.Min(position.y + radius, maxY));
 
@@ -948,18 +939,135 @@ namespace Transidious
                         var dst = (obj.Centroid - position).sqrMagnitude;
                         if (dst <= sqrDist)
                         {
+                            if (filter != null)
+                            {
+                                if (!filter(obj))
+                                {
+                                    continue;
+                                }
+                            }
+                            
                             results.Add(Tuple.Create(dst, obj));
                         }
                     }
                 }
             }
 
+            foreach (var obj in sharedTile.mapObjects.OfType<T>())
+            {
+                var dst = (obj.Centroid - position).sqrMagnitude;
+                if (dst <= sqrDist)
+                {
+                    if (filter != null)
+                    {
+                        if (!filter(obj))
+                        {
+                            continue;
+                        }
+                    }
+
+                    results.Add(Tuple.Create(dst, obj));
+                }
+            }
+
             if (sortByDistance)
             {
-                results.Sort((Tuple<float, T> t1, Tuple<float, T> t2) => t1.Item1.CompareTo(t2.Item1));
+                results.Sort((t1, t2) => t1.Item1.CompareTo(t2.Item1));
             }
 
             return results.Select(t => t.Item2).ToArray();
+        }
+
+        void FindInTile<T>(ref T result, ref bool found, ref float minDistance,
+                           MapTile tile, Vector2 position, Func<T, bool> filter) where T : IMapObject
+        {
+            foreach (var obj in tile.mapObjects.OfType<T>())
+            {
+                if (filter != null && !filter(obj))
+                    continue;
+
+                var dst = (obj.Centroid - position).sqrMagnitude;
+                if (dst < minDistance)
+                {
+                    found = true;
+                    minDistance = dst;
+                    result = obj;
+                }
+            }
+        }
+        
+        void FindInSearchRadius<T>(ref T result, ref bool found, ref float minDistance,
+                                   MapTile centerTile, int searchRadius,
+                                   Vector2 position, Func<T, bool> filter) where T : IMapObject
+        {
+            var minX = System.Math.Max(centerTile.x - searchRadius, 0);
+            var maxX = System.Math.Min(centerTile.x + searchRadius, tilesWidth - 1);
+            
+            var minY = System.Math.Max(centerTile.y - searchRadius, 0);
+            var maxY = System.Math.Min(centerTile.y + searchRadius, tilesHeight - 1);
+
+            for (var x = minX; x < maxX; ++x)
+            {
+                for (var y = minY; y < maxY; ++y)
+                {
+                    if (searchRadius > 1)
+                    {
+                        // Only look in the outermost tiles.
+                        if ((x > 0 && x < centerTile.x + searchRadius - 1)
+                            && (y > 0 && y < centerTile.y + searchRadius - 1))
+                        {
+                            continue;
+                        }
+                    }
+
+                    var tile = GetTile(x, y);
+                    if (tile == null)
+                        continue;
+
+                    FindInTile(ref result, ref found, ref minDistance, tile, position, filter);
+                }
+            }
+        }
+
+        public bool FindClosest<T>(out T result, Vector2 position,
+                                   Func<T, bool> filter = null) where T : IMapObject
+        {
+            result = default(T);
+
+            var centerTile = GetTile(position);
+            if (centerTile == null)
+            {
+                return false;
+            }
+
+            var found = false;
+            var minDistance = float.PositiveInfinity;
+
+            // Look in the shared tile first.
+            FindInTile(ref result, ref found, ref minDistance, sharedTile, position, filter);
+
+            // We can't just look on the current tile since something on another tile may be closer.
+            var searchRadius = 1;
+            FindInSearchRadius(ref result, ref found, ref minDistance, centerTile, searchRadius, position, filter);
+
+            if (found)
+            {
+                return true;
+            }
+
+            // Increase the search radius until we find something.
+            var maxRadius = System.Math.Max(tilesWidth, tilesHeight);
+            while (++searchRadius < maxRadius)
+            {
+                FindInSearchRadius(ref result, ref found, ref minDistance, centerTile, searchRadius, position, filter);
+
+                if (found)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         void OnDrawGizmosSelected()
@@ -1085,7 +1193,7 @@ namespace Transidious
         }
 
         /// Create a new public transit line.
-        public LineBuilder CreateLine(TransitType type, string name, Color color, int id = -1)
+        public LineBuilder CreateLine(TransitType type, string name, Color? color = null, int id = -1)
         {
             string currentName = name;
 
@@ -1096,55 +1204,46 @@ namespace Transidious
                 ++i;
             }
 
-            GameObject lineObject = Instantiate(linePrefab);
-            Line line = lineObject.GetComponent<Line>();
-            line.transform.SetParent(this.transform);
-            line.Initialize(this, currentName, type, color, id);
-
+            Line line = new Line(this, currentName, type, color ?? Colors.GetColor($"transit.default{type}"), id);
             RegisterLine(line, id);
+
             return new LineBuilder(line);
         }
 
         /// Create a new bus line.
-        public LineBuilder CreateBusLine(string name, Color color = new Color())
+        public LineBuilder CreateBusLine(string name, Color? color = null)
         {
-            return CreateLine(TransitType.Bus, name,
-                              color.a > 0.0f ? color : defaultLineColors[TransitType.Bus]);
+            return CreateLine(TransitType.Bus, name, color ?? Colors.GetColor("transit.defaultBus"));
         }
 
         /// Create a new tram line.
-        public LineBuilder CreateTramLine(string name, Color color = new Color())
+        public LineBuilder CreateTramLine(string name, Color? color = null)
         {
-            return CreateLine(TransitType.Tram, name,
-                              color.a > 0.0f ? color : defaultLineColors[TransitType.Tram]);
+            return CreateLine(TransitType.Tram, name, color ?? Colors.GetColor("transit.defaultTram"));
         }
 
         /// Create a new subway line.
-        public LineBuilder CreateSubwayLine(string name, Color color = new Color())
+        public LineBuilder CreateSubwayLine(string name, Color? color = null)
         {
-            return CreateLine(TransitType.Subway, name,
-                              color.a > 0.0f ? color : defaultLineColors[TransitType.Subway]);
+            return CreateLine(TransitType.Subway, name, color ?? Colors.GetColor("transit.defaultSubway"));
         }
 
         /// Create a new S-Train line.
-        public LineBuilder CreateSTrainLine(string name, Color color = new Color())
+        public LineBuilder CreateSTrainLine(string name, Color? color = null)
         {
-            return CreateLine(TransitType.LightRail, name,
-                              color.a > 0.0f ? color : defaultLineColors[TransitType.LightRail]);
+            return CreateLine(TransitType.LightRail, name, color ?? Colors.GetColor("transit.defaultLightRail"));
         }
 
         /// Create a new regional train line.
-        public LineBuilder CreateRegionalTrainLine(string name, Color color = new Color())
+        public LineBuilder CreateRegionalTrainLine(string name, Color? color = null)
         {
-            return CreateLine(TransitType.IntercityRail, name,
-                              color.a > 0.0f ? color : defaultLineColors[TransitType.IntercityRail]);
+            return CreateLine(TransitType.IntercityRail, name, color ?? Colors.GetColor("transit.defaultIntercity"));
         }
 
         /// Create a new ferry line.
-        public LineBuilder CreateFerryLine(string name, Color color = new Color())
+        public LineBuilder CreateFerryLine(string name, Color? color = null)
         {
-            return CreateLine(TransitType.Ferry, name,
-                              color.a > 0.0f ? color : defaultLineColors[TransitType.Ferry]);
+            return CreateLine(TransitType.Ferry, name, color ?? Colors.GetColor("transit.defaultFerry"));
         }
 
 #if DEBUG
@@ -2028,6 +2127,7 @@ namespace Transidious
             foreach (var street in streets)
             {
                 street.CreateTextMeshes();
+
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
@@ -2037,59 +2137,24 @@ namespace Transidious
 
         public IEnumerator DoFinalize(float thresholdTime = 50)
         {
-            var i = 0;
             foreach (var building in buildings)
             {
-                Debug.Log("[BuildingMesh] " + ++i + " / " + buildings.Count);
-
                 building.UpdateMesh(this);
-
-                if (FrameTimer.instance.FrameDuration >= thresholdTime)
-                {
-                    yield return null;
-                }
             }
 
-            i = 0;
             foreach (var feature in naturalFeatures)
             {
-                Debug.Log("[FeatureMesh] " + ++i + " / " + naturalFeatures.Count);
-
                 feature.UpdateMesh(this);
-
-                if (FrameTimer.instance.FrameDuration >= thresholdTime)
-                {
-                    yield return null;
-                }
             }
 
-            i = 0;
             foreach (var seg in streetSegments)
             {
-                Debug.Log("[StreetMesh] " + ++i + " / " + streetSegments.Count);
-
                 seg.UpdateMesh();
-
-                if (FrameTimer.instance.FrameDuration >= thresholdTime)
-                {
-                    yield return null;
-                }
             }
-
-#if DEBUG
-            Debug.Log("street verts: " + StreetSegment.totalVerts);
-            Debug.Log("quad verts: " + MeshBuilder.quadVerts);
-            Debug.Log("circle verts: " + MeshBuilder.circleVerts);
-#endif
 
             foreach (var tile in tiles)
             {
                 tile.FinalizeTile();
-
-                if (FrameTimer.instance.FrameDuration >= thresholdTime)
-                {
-                    yield return null;
-                }
             }
 
             sharedTile.FinalizeTile();
@@ -2110,6 +2175,8 @@ namespace Transidious
             {
                 Game.transitEditor.InitOverlappingRoutes();
             }
+
+            yield break;
         }
     }
 }

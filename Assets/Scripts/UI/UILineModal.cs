@@ -66,14 +66,15 @@ namespace Transidious
 
             modal.onClose.AddListener(() =>
             {
-                selectedLine.gradient = null;
+                Route.DeactivateGradient();
                 selectedLine.material.color = selectedLine.color;
                 selectedLine = null;
             });
 
             colorPicker.onChange.AddListener((Color c) =>
             {
-                selectedLine.gradient = null;
+                Route.DeactivateGradient();
+                
                 selectedLine.SetColor(c);
                 logo.SetColor(c);
                 lineColorButtonImg.color = c;

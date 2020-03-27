@@ -67,7 +67,8 @@ namespace Transidious
                 if (_spriteRenderer == null)
                 {
                     _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
-                    _boxCollider2D = gameObject.AddComponent<BoxCollider2D>();
+                    // _boxCollider2D = gameObject.AddComponent<BoxCollider2D>();
+                    // _boxCollider2D.enabled = false;
                 }
 
                 return _spriteRenderer;
@@ -101,9 +102,9 @@ namespace Transidious
         private float _currentStepProgress = 0f;
 
         /// The current velocity (for steps where it matters).
-        private float _currentVelocity = 0f;
+        private Velocity _currentVelocity;
 
-        public float CurrentVelocity => _currentVelocity;
+        public Velocity CurrentVelocity => _currentVelocity;
 
         /// Initialize a path for a citizen.
         public void Initialize(PathPlanningResult path, Citizen c)
@@ -225,7 +226,13 @@ namespace Transidious
                         out bool _, out bool _,
                         out Vector2 _);
 
-                    InitDrive(positions, segment, backward, lane);
+                    IMapObject dstParkingLot = null;
+                    if (step is PartialDriveStep ps)
+                    {
+                        dstParkingLot = ps.parkingLot;
+                    }
+
+                    InitDrive(positions, segment, backward, lane, dstParkingLot);
                     break;
                 }
                 case PathStep.Type.Turn:
@@ -276,13 +283,13 @@ namespace Transidious
             if (!IsDrivingStep(currentStep) || !IsDrivingStep(nextStep))
             {
                 _drivingState = null;
-                _currentVelocity = 0f;
+                _currentVelocity = Velocity.zero;
                 transform.localScale = Vector3.one;
 
                 if (_spriteRenderer != null)
                 {
                     _spriteRenderer.enabled = false;
-                    _boxCollider2D.enabled = false;
+                    // _boxCollider2D.enabled = false;
                 }
             }
 
@@ -303,8 +310,8 @@ namespace Transidious
             sr.sprite = SpriteManager.GetSprite(spriteName);
             sr.enabled = true;
 
-            _boxCollider2D.size = sr.bounds.size;
-            _boxCollider2D.enabled = true;
+            // _boxCollider2D.size = sr.bounds.size;
+            // _boxCollider2D.enabled = true;
         }
 
         /**
@@ -346,10 +353,17 @@ namespace Transidious
          * Driving steps
          */
 
-        void InitDrive(List<Vector3> positions, StreetSegment segment, bool backward, int lane)
+        void InitDrive(List<Vector3> positions, StreetSegment segment, bool backward, int lane,
+                       IMapObject dstParkingLot = null)
         {
             var car = citizen.car;
             Debug.Assert(car != null, "citizen has no car!");
+
+            // Leave the parking lot (if necessary).
+            if (_drivingState == null && car.parkingLot != null)
+            {
+                --car.parkingLot.Occupants;
+            }
 
             // Initialize car sprite.
             UpdateSprite($"Sprites/car{car.model}", car.color);
@@ -373,6 +387,12 @@ namespace Transidious
                 trafficSim.sim, this.gameObject, positions, _currentVelocity,
                 () =>
                 {
+                    if (dstParkingLot != null)
+                    {
+                        ++dstParkingLot.Occupants;
+                        car.parkingLot = dstParkingLot;
+                    }
+
                     trafficSim.ExitStreetSegment(segment, drivingCar);
                     CompleteStep();
                 });
@@ -517,7 +537,7 @@ namespace Transidious
                 CurrentStep = _currentStep,
                 WaitUntil = _waitUntil?.Ticks ?? -1,
                 CurrentStepProgress = _currentStepProgress,
-                CurrentVelocity = _currentVelocity,
+                CurrentVelocity = _currentVelocity.MPS,
             };
         }
 
@@ -535,7 +555,7 @@ namespace Transidious
             
             result._currentStep = path.CurrentStep;
             result._currentStepProgress = path.CurrentStepProgress;
-            result._currentVelocity = path.CurrentVelocity;
+            result._currentVelocity = Velocity.FromMPS(path.CurrentVelocity);
 
             return result;
         }

@@ -275,6 +275,11 @@ namespace Transidious
                 SpriteManager.instance.simSpeedSprites[Mathf.Min((int)simSpeed, 2)];
         }
 
+        public static TimeSpan RealTimeToGameTime(TimeSpan ts)
+        {
+            return TimeSpan.FromSeconds(ts.TotalSeconds * 60);
+        }
+
         void OnLanguageChange()
         {
             if (this.timeStringBuffer.Length != Translator.MaxTimeStringLength)
@@ -355,13 +360,12 @@ namespace Transidious
             UpdateGameTimeString();
             UpdateCitizenUI();
 
-            var hour = gameTime.Hour;
-            if (hour == 7)
+            if (gameTime.Hour == 7 && gameTime.Minute == 0)
             {
                 game.displayMode = MapDisplayMode.Day;
                 game.input.FireEvent(InputEvent.DisplayModeChange);
             }
-            else if (hour == 19)
+            else if (gameTime.Hour == 19 && gameTime.Minute == 0)
             {
                 game.displayMode = MapDisplayMode.Night;
                 game.input.FireEvent(InputEvent.DisplayModeChange);
@@ -433,6 +437,11 @@ namespace Transidious
             var car = new Car(this, driver, c.Color?.Deserialize() ?? Utility.RandomColor,
                               (int)c.CarModel, c.Id);
 
+            if (c.ParkingLotID != 0)
+            {
+                car.parkingLot = game.loadedMap.GetMapObject((int)c.ParkingLotID);
+            }
+            
             cars.Add(car.id, car);
             return car;
         }

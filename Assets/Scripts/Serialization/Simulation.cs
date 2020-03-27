@@ -25,93 +25,94 @@ namespace Transidious.Serialization {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChBTaW11bGF0aW9uLnByb3RvEhlUcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
-            "GgxDb21tb24ucHJvdG8aGWdvb2dsZS9wcm90b2J1Zi9hbnkucHJvdG8imAYK",
+            "GgxDb21tb24ucHJvdG8aGWdvb2dsZS9wcm90b2J1Zi9hbnkucHJvdG8irgYK",
             "CFBhdGhTdGVwEj4KBGtpbmQYASABKA4yMC5UcmFuc2lkaW91cy5TZXJpYWxp",
             "emF0aW9uLlBhdGhTdGVwLlBhdGhTdGVwS2luZBIRCgl0aW1lc3RhbXAYAiAB",
             "KAQSJQoHZGV0YWlscxgDIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkabAoI",
             "V2Fsa1N0ZXASMAoEZnJvbRgBIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
             "YXRpb24uVmVjdG9yMhIuCgJ0bxgCIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlh",
             "bGl6YXRpb24uVmVjdG9yMhowCglEcml2ZVN0ZXASEQoJc2VnbWVudElEGAEg",
-            "ASgNEhAKCGJhY2t3YXJkGAIgASgIGssBChBQYXJ0aWFsRHJpdmVTdGVwEjQK",
+            "ASgNEhAKCGJhY2t3YXJkGAIgASgIGuEBChBQYXJ0aWFsRHJpdmVTdGVwEjQK",
             "CHN0YXJ0UG9zGAEgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5W",
             "ZWN0b3IyEjIKBmVuZFBvcxgCIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
             "YXRpb24uVmVjdG9yMhIRCglzZWdtZW50SUQYAyABKA0SEAoIYmFja3dhcmQY",
             "BCABKAgSFAoMcGFydGlhbFN0YXJ0GAUgASgIEhIKCnBhcnRpYWxFbmQYBiAB",
-            "KAgaNQoRUHVibGljVHJhbnNpdFN0ZXASDgoGbGluZUlEGAEgASgNEhAKCHJv",
-            "dXRlSURzGAIgAygNGngKCFR1cm5TdGVwEhUKDWZyb21TZWdtZW50SUQYASAB",
-            "KA0SFAoMZnJvbUJhY2t3YXJkGAIgASgIEhMKC3RvU2VnbWVudElEGAMgASgN",
-            "EhIKCnRvQmFja3dhcmQYBCABKAgSFgoOaW50ZXJzZWN0aW9uSUQYBSABKA0a",
-            "HwoIV2FpdFN0ZXASEwoLd2FpdGluZ1RpbWUYASABKAIiUgoMUGF0aFN0ZXBL",
-            "aW5kEggKBFdhbGsQABIJCgVEcml2ZRABEhAKDFBhcnRpYWxEcml2ZRACEhEK",
-            "DVB1YmxpY1RyYW5zaXQQAxIICgRXYWl0EAQihAIKE1BhdGhQbGFubmluZ09w",
-            "dGlvbnMSEAoIYWxsb3dDYXIYASABKAgSEQoJYWxsb3dXYWxrGAIgASgIEg8K",
-            "B3N0YXJ0SUQYAyABKAQSDQoFZW5kSUQYBCABKAQSDAoEdGltZRgFIAEoBBIa",
-            "ChJtYXhXYWxraW5nRGlzdGFuY2UYBiABKAISGQoRd2Fsa2luZ1RpbWVGYWN0",
-            "b3IYByABKAISGAoQdHJhdmVsVGltZUZhY3RvchgIIAEoAhIZChF3YWl0aW5n",
-            "VGltZUZhY3RvchgJIAEoAhIVCg1jYXJUaW1lRmFjdG9yGAogASgCEhcKD2No",
-            "YW5naW5nUGVuYWx0eRgLIAEoAiLMAQoSUGF0aFBsYW5uaW5nUmVzdWx0EgwK",
-            "BGNvc3QYASABKAISEAoIZHVyYXRpb24YAiABKAISDwoHbGVhdmVCeRgDIAEo",
-            "BBIQCghhcnJpdmVBdBgEIAEoBBIyCgVzdGVwcxgFIAMoCzIjLlRyYW5zaWRp",
-            "b3VzLlNlcmlhbGl6YXRpb24uUGF0aFN0ZXASPwoHb3B0aW9ucxgGIAEoCzIu",
-            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFBsYW5uaW5nT3B0aW9u",
-            "cyK+AQoKQWN0aXZlUGF0aBIRCgljaXRpemVuSWQYASABKA0SOwoEcGF0aBgC",
-            "IAEoCzItLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFBsYW5uaW5n",
-            "UmVzdWx0EhIKCl93YWl0VW50aWwYAyABKAMSFAoMX2N1cnJlbnRTdGVwGAQg",
-            "ASgFEhwKFF9jdXJyZW50U3RlcFByb2dyZXNzGAUgASgCEhgKEF9jdXJyZW50",
-            "VmVsb2NpdHkYBiABKAIinAEKA0NhchIKCgJpZBgBIAEoDRIQCghkcml2ZXJJ",
-            "ZBgCIAEoDRIQCghjYXJNb2RlbBgDIAEoDRI0Cghwb3NpdGlvbhgEIAEoCzIi",
-            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhIvCgVjb2xvchgF",
-            "IAEoCzIgLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ29sb3Ii1wwKB0Np",
-            "dGl6ZW4SCgoCaWQYASABKA0SEQoJZmlyc3ROYW1lGAIgASgJEhAKCGxhc3RO",
-            "YW1lGAMgASgJEgsKA2FnZRgEIAEoDRIQCghiaXJ0aGRheRgFIAEoDRIOCgZm",
-            "ZW1hbGUYBiABKAgSQQoKb2NjdXBhdGlvbhgHIAEoDjItLlRyYW5zaWRpb3Vz",
-            "LlNlcmlhbGl6YXRpb24uQ2l0aXplbi5PY2N1cGF0aW9uEg0KBW1vbmV5GAgg",
-            "ASgCEhAKCGVkdWNhdGVkGAkgASgIEhEKCWhhcHBpbmVzcxgKIAEoDRJGCg1y",
-            "ZWxhdGlvbnNoaXBzGAsgAygLMi8uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
-            "bi5DaXRpemVuLlJlbGF0aW9uc2hpcBJMChBwb2ludHNPZkludGVyZXN0GAwg",
-            "AygLMjIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlBvaW50",
-            "T2ZJbnRlcmVzdBJSChNoYXBwaW5lc3NJbmZsdWVuY2VzGA0gAygLMjUuVHJh",
-            "bnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLkhhcHBpbmVzc0luZmx1",
-            "ZW5jZRINCgVjYXJJRBgOIAEoDRI7Cg9jdXJyZW50UG9zaXRpb24YDyABKAsy",
-            "Ii5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjISOQoKYWN0aXZl",
-            "UGF0aBgQIAEoCzIlLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQWN0aXZl",
-            "UGF0aBITCgtzY2hlZHVsZUlkeBgRIAEoBRISCgpzY2hlZHVsZUlEGBIgASgN",
-            "EjgKDnByZWZlcnJlZENvbG9yGBMgASgLMiAuVHJhbnNpZGlvdXMuU2VyaWFs",
-            "aXphdGlvbi5Db2xvchJKChJ0cmFuc2l0UHJlZmVyZW5jZXMYFCABKAsyLi5U",
-            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlBhdGhQbGFubmluZ09wdGlvbnMa",
-            "ZAoMUmVsYXRpb25zaGlwEkEKBGtpbmQYASABKA4yMy5UcmFuc2lkaW91cy5T",
-            "ZXJpYWxpemF0aW9uLkNpdGl6ZW4uUmVsYXRpb25zaGlwS2luZBIRCgljaXRp",
-            "emVuSWQYAiABKA0aawoPUG9pbnRPZkludGVyZXN0EkQKBGtpbmQYASABKA4y",
-            "Ni5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uUG9pbnRPZklu",
-            "dGVyZXN0S2luZBISCgpidWlsZGluZ0lkGAIgASgNGpEBChJIYXBwaW5lc3NJ",
-            "bmZsdWVuY2USFgoOZGVzY3JpcHRpb25LZXkYASABKAkSEQoJaW5mbHVlbmNl",
-            "GAIgASgCEg0KBXRpY2tzGAMgASgFEhMKC3JlbGF0aXZlQ2FwGAQgASgCEhUK",
-            "DWFic29sdXRlQ2FwTG8YBSABKAISFQoNYWJzb2x1dGVDYXBIaRgGIAEoAhro",
-            "AQoOU2NoZWR1bGVkRXZlbnQSEAoIc3RhcnRzQXQYASABKA0SOwoEcGF0aBgC",
-            "IAEoCzItLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFBsYW5uaW5n",
-            "UmVzdWx0EkQKCW5leHRFdmVudBgDIAEoCzIxLlRyYW5zaWRpb3VzLlNlcmlh",
-            "bGl6YXRpb24uQ2l0aXplbi5TY2hlZHVsZWRFdmVudBJBCgVwbGFjZRgEIAEo",
-            "CzIyLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXplbi5Qb2ludE9m",
-            "SW50ZXJlc3QijwEKCk9jY3VwYXRpb24SCgoGV29ya2VyEAASCwoHUmV0aXJl",
-            "ZBABEhAKDEtpbmRlcmdhcmRlbhACEhsKF0VsZW1lbnRhcnlTY2hvb2xTdHVk",
-            "ZW50EAMSFQoRSGlnaFNjaG9vbFN0dWRlbnQQBBIVChFVbml2ZXJzaXR5U3R1",
-            "ZGVudBAFEgsKB1RyYWluZWUQBiIoChBSZWxhdGlvbnNoaXBLaW5kEhQKEFNp",
-            "Z25pZmljYW50T3RoZXIQACJHChNQb2ludE9mSW50ZXJlc3RLaW5kEggKBEhv",
-            "bWUQABIICgRXb3JrEAESCgoGU2Nob29sEAISEAoMR3JvY2VyeVN0b3JlEANC",
-            "HKoCGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
+            "KAgSFAoMcGFya2luZ0xvdElEGAcgASgNGjUKEVB1YmxpY1RyYW5zaXRTdGVw",
+            "Eg4KBmxpbmVJRBgBIAEoDRIQCghyb3V0ZUlEcxgCIAMoDRp4CghUdXJuU3Rl",
+            "cBIVCg1mcm9tU2VnbWVudElEGAEgASgNEhQKDGZyb21CYWNrd2FyZBgCIAEo",
+            "CBITCgt0b1NlZ21lbnRJRBgDIAEoDRISCgp0b0JhY2t3YXJkGAQgASgIEhYK",
+            "DmludGVyc2VjdGlvbklEGAUgASgNGh8KCFdhaXRTdGVwEhMKC3dhaXRpbmdU",
+            "aW1lGAEgASgCIlIKDFBhdGhTdGVwS2luZBIICgRXYWxrEAASCQoFRHJpdmUQ",
+            "ARIQCgxQYXJ0aWFsRHJpdmUQAhIRCg1QdWJsaWNUcmFuc2l0EAMSCAoEV2Fp",
+            "dBAEIoQCChNQYXRoUGxhbm5pbmdPcHRpb25zEhAKCGFsbG93Q2FyGAEgASgI",
+            "EhEKCWFsbG93V2FsaxgCIAEoCBIPCgdzdGFydElEGAMgASgEEg0KBWVuZElE",
+            "GAQgASgEEgwKBHRpbWUYBSABKAQSGgoSbWF4V2Fsa2luZ0Rpc3RhbmNlGAYg",
+            "ASgCEhkKEXdhbGtpbmdUaW1lRmFjdG9yGAcgASgCEhgKEHRyYXZlbFRpbWVG",
+            "YWN0b3IYCCABKAISGQoRd2FpdGluZ1RpbWVGYWN0b3IYCSABKAISFQoNY2Fy",
+            "VGltZUZhY3RvchgKIAEoAhIXCg9jaGFuZ2luZ1BlbmFsdHkYCyABKAIizAEK",
+            "ElBhdGhQbGFubmluZ1Jlc3VsdBIMCgRjb3N0GAEgASgCEhAKCGR1cmF0aW9u",
+            "GAIgASgCEg8KB2xlYXZlQnkYAyABKAQSEAoIYXJyaXZlQXQYBCABKAQSMgoF",
+            "c3RlcHMYBSADKAsyIy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlBhdGhT",
+            "dGVwEj8KB29wdGlvbnMYBiABKAsyLi5UcmFuc2lkaW91cy5TZXJpYWxpemF0",
+            "aW9uLlBhdGhQbGFubmluZ09wdGlvbnMivgEKCkFjdGl2ZVBhdGgSEQoJY2l0",
+            "aXplbklkGAEgASgNEjsKBHBhdGgYAiABKAsyLS5UcmFuc2lkaW91cy5TZXJp",
+            "YWxpemF0aW9uLlBhdGhQbGFubmluZ1Jlc3VsdBISCgpfd2FpdFVudGlsGAMg",
+            "ASgDEhQKDF9jdXJyZW50U3RlcBgEIAEoBRIcChRfY3VycmVudFN0ZXBQcm9n",
+            "cmVzcxgFIAEoAhIYChBfY3VycmVudFZlbG9jaXR5GAYgASgCIrIBCgNDYXIS",
+            "CgoCaWQYASABKA0SEAoIZHJpdmVySWQYAiABKA0SEAoIY2FyTW9kZWwYAyAB",
+            "KA0SNAoIcG9zaXRpb24YBCABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0",
+            "aW9uLlZlY3RvcjISLwoFY29sb3IYBSABKAsyIC5UcmFuc2lkaW91cy5TZXJp",
+            "YWxpemF0aW9uLkNvbG9yEhQKDHBhcmtpbmdMb3RJRBgGIAEoDSLXDAoHQ2l0",
+            "aXplbhIKCgJpZBgBIAEoDRIRCglmaXJzdE5hbWUYAiABKAkSEAoIbGFzdE5h",
+            "bWUYAyABKAkSCwoDYWdlGAQgASgNEhAKCGJpcnRoZGF5GAUgASgNEg4KBmZl",
+            "bWFsZRgGIAEoCBJBCgpvY2N1cGF0aW9uGAcgASgOMi0uVHJhbnNpZGlvdXMu",
+            "U2VyaWFsaXphdGlvbi5DaXRpemVuLk9jY3VwYXRpb24SDQoFbW9uZXkYCCAB",
+            "KAISEAoIZWR1Y2F0ZWQYCSABKAgSEQoJaGFwcGluZXNzGAogASgNEkYKDXJl",
+            "bGF0aW9uc2hpcHMYCyADKAsyLy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
+            "LkNpdGl6ZW4uUmVsYXRpb25zaGlwEkwKEHBvaW50c09mSW50ZXJlc3QYDCAD",
+            "KAsyMi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uUG9pbnRP",
+            "ZkludGVyZXN0ElIKE2hhcHBpbmVzc0luZmx1ZW5jZXMYDSADKAsyNS5UcmFu",
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uSGFwcGluZXNzSW5mbHVl",
+            "bmNlEg0KBWNhcklEGA4gASgNEjsKD2N1cnJlbnRQb3NpdGlvbhgPIAEoCzIi",
+            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhI5CgphY3RpdmVQ",
+            "YXRoGBAgASgLMiUuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5BY3RpdmVQ",
+            "YXRoEhMKC3NjaGVkdWxlSWR4GBEgASgFEhIKCnNjaGVkdWxlSUQYEiABKA0S",
+            "OAoOcHJlZmVycmVkQ29sb3IYEyABKAsyIC5UcmFuc2lkaW91cy5TZXJpYWxp",
+            "emF0aW9uLkNvbG9yEkoKEnRyYW5zaXRQcmVmZXJlbmNlcxgUIAEoCzIuLlRy",
+            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFBsYW5uaW5nT3B0aW9ucxpk",
+            "CgxSZWxhdGlvbnNoaXASQQoEa2luZBgBIAEoDjIzLlRyYW5zaWRpb3VzLlNl",
+            "cmlhbGl6YXRpb24uQ2l0aXplbi5SZWxhdGlvbnNoaXBLaW5kEhEKCWNpdGl6",
+            "ZW5JZBgCIAEoDRprCg9Qb2ludE9mSW50ZXJlc3QSRAoEa2luZBgBIAEoDjI2",
+            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXplbi5Qb2ludE9mSW50",
+            "ZXJlc3RLaW5kEhIKCmJ1aWxkaW5nSWQYAiABKA0akQEKEkhhcHBpbmVzc0lu",
+            "Zmx1ZW5jZRIWCg5kZXNjcmlwdGlvbktleRgBIAEoCRIRCglpbmZsdWVuY2UY",
+            "AiABKAISDQoFdGlja3MYAyABKAUSEwoLcmVsYXRpdmVDYXAYBCABKAISFQoN",
+            "YWJzb2x1dGVDYXBMbxgFIAEoAhIVCg1hYnNvbHV0ZUNhcEhpGAYgASgCGugB",
+            "Cg5TY2hlZHVsZWRFdmVudBIQCghzdGFydHNBdBgBIAEoDRI7CgRwYXRoGAIg",
+            "ASgLMi0uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5QYXRoUGxhbm5pbmdS",
+            "ZXN1bHQSRAoJbmV4dEV2ZW50GAMgASgLMjEuVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbi5DaXRpemVuLlNjaGVkdWxlZEV2ZW50EkEKBXBsYWNlGAQgASgL",
+            "MjIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlBvaW50T2ZJ",
+            "bnRlcmVzdCKPAQoKT2NjdXBhdGlvbhIKCgZXb3JrZXIQABILCgdSZXRpcmVk",
+            "EAESEAoMS2luZGVyZ2FyZGVuEAISGwoXRWxlbWVudGFyeVNjaG9vbFN0dWRl",
+            "bnQQAxIVChFIaWdoU2Nob29sU3R1ZGVudBAEEhUKEVVuaXZlcnNpdHlTdHVk",
+            "ZW50EAUSCwoHVHJhaW5lZRAGIigKEFJlbGF0aW9uc2hpcEtpbmQSFAoQU2ln",
+            "bmlmaWNhbnRPdGhlchAAIkcKE1BvaW50T2ZJbnRlcmVzdEtpbmQSCAoESG9t",
+            "ZRAAEggKBFdvcmsQARIKCgZTY2hvb2wQAhIQCgxHcm9jZXJ5U3RvcmUQA0Ic",
+            "qgIZVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep), global::Transidious.Serialization.PathStep.Parser, new[]{ "Kind", "Timestamp", "Details" }, null, new[]{ typeof(global::Transidious.Serialization.PathStep.Types.PathStepKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.WalkStep), global::Transidious.Serialization.PathStep.Types.WalkStep.Parser, new[]{ "From", "To" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.DriveStep), global::Transidious.Serialization.PathStep.Types.DriveStep.Parser, new[]{ "SegmentID", "Backward" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.PartialDriveStep), global::Transidious.Serialization.PathStep.Types.PartialDriveStep.Parser, new[]{ "StartPos", "EndPos", "SegmentID", "Backward", "PartialStart", "PartialEnd" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.PartialDriveStep), global::Transidious.Serialization.PathStep.Types.PartialDriveStep.Parser, new[]{ "StartPos", "EndPos", "SegmentID", "Backward", "PartialStart", "PartialEnd", "ParkingLotID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.PublicTransitStep), global::Transidious.Serialization.PathStep.Types.PublicTransitStep.Parser, new[]{ "LineID", "RouteIDs" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.TurnStep), global::Transidious.Serialization.PathStep.Types.TurnStep.Parser, new[]{ "FromSegmentID", "FromBackward", "ToSegmentID", "ToBackward", "IntersectionID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.WaitStep), global::Transidious.Serialization.PathStep.Types.WaitStep.Parser, new[]{ "WaitingTime" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathPlanningOptions), global::Transidious.Serialization.PathPlanningOptions.Parser, new[]{ "AllowCar", "AllowWalk", "StartID", "EndID", "Time", "MaxWalkingDistance", "WalkingTimeFactor", "TravelTimeFactor", "WaitingTimeFactor", "CarTimeFactor", "ChangingPenalty" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathPlanningResult), global::Transidious.Serialization.PathPlanningResult.Parser, new[]{ "Cost", "Duration", "LeaveBy", "ArriveAt", "Steps", "Options" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.ActivePath), global::Transidious.Serialization.ActivePath.Parser, new[]{ "CitizenId", "Path", "WaitUntil", "CurrentStep", "CurrentStepProgress", "CurrentVelocity" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Car), global::Transidious.Serialization.Car.Parser, new[]{ "Id", "DriverId", "CarModel", "Position", "Color" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Car), global::Transidious.Serialization.Car.Parser, new[]{ "Id", "DriverId", "CarModel", "Position", "Color", "ParkingLotID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen), global::Transidious.Serialization.Citizen.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "Birthday", "Female", "Occupation", "Money", "Educated", "Happiness", "Relationships", "PointsOfInterest", "HappinessInfluences", "CarID", "CurrentPosition", "ActivePath", "ScheduleIdx", "ScheduleID", "PreferredColor", "TransitPreferences" }, null, new[]{ typeof(global::Transidious.Serialization.Citizen.Types.Occupation), typeof(global::Transidious.Serialization.Citizen.Types.RelationshipKind), typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterestKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.Relationship), global::Transidious.Serialization.Citizen.Types.Relationship.Parser, new[]{ "Kind", "CitizenId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterest), global::Transidious.Serialization.Citizen.Types.PointOfInterest.Parser, new[]{ "Kind", "BuildingId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.HappinessInfluence), global::Transidious.Serialization.Citizen.Types.HappinessInfluence.Parser, new[]{ "DescriptionKey", "Influence", "Ticks", "RelativeCap", "AbsoluteCapLo", "AbsoluteCapHi" }, null, null, null),
@@ -680,6 +681,7 @@ namespace Transidious.Serialization {
           backward_ = other.backward_;
           partialStart_ = other.partialStart_;
           partialEnd_ = other.partialEnd_;
+          parkingLotID_ = other.parkingLotID_;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -754,6 +756,17 @@ namespace Transidious.Serialization {
           }
         }
 
+        /// <summary>Field number for the "parkingLotID" field.</summary>
+        public const int ParkingLotIDFieldNumber = 7;
+        private uint parkingLotID_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public uint ParkingLotID {
+          get { return parkingLotID_; }
+          set {
+            parkingLotID_ = value;
+          }
+        }
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as PartialDriveStep);
@@ -773,6 +786,7 @@ namespace Transidious.Serialization {
           if (Backward != other.Backward) return false;
           if (PartialStart != other.PartialStart) return false;
           if (PartialEnd != other.PartialEnd) return false;
+          if (ParkingLotID != other.ParkingLotID) return false;
           return Equals(_unknownFields, other._unknownFields);
         }
 
@@ -785,6 +799,7 @@ namespace Transidious.Serialization {
           if (Backward != false) hash ^= Backward.GetHashCode();
           if (PartialStart != false) hash ^= PartialStart.GetHashCode();
           if (PartialEnd != false) hash ^= PartialEnd.GetHashCode();
+          if (ParkingLotID != 0) hash ^= ParkingLotID.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -822,6 +837,10 @@ namespace Transidious.Serialization {
             output.WriteRawTag(48);
             output.WriteBool(PartialEnd);
           }
+          if (ParkingLotID != 0) {
+            output.WriteRawTag(56);
+            output.WriteUInt32(ParkingLotID);
+          }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
@@ -847,6 +866,9 @@ namespace Transidious.Serialization {
           }
           if (PartialEnd != false) {
             size += 1 + 1;
+          }
+          if (ParkingLotID != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ParkingLotID);
           }
           if (_unknownFields != null) {
             size += _unknownFields.CalculateSize();
@@ -882,6 +904,9 @@ namespace Transidious.Serialization {
           }
           if (other.PartialEnd != false) {
             PartialEnd = other.PartialEnd;
+          }
+          if (other.ParkingLotID != 0) {
+            ParkingLotID = other.ParkingLotID;
           }
           _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
         }
@@ -922,6 +947,10 @@ namespace Transidious.Serialization {
               }
               case 48: {
                 PartialEnd = input.ReadBool();
+                break;
+              }
+              case 56: {
+                ParkingLotID = input.ReadUInt32();
                 break;
               }
             }
@@ -2436,6 +2465,7 @@ namespace Transidious.Serialization {
       carModel_ = other.carModel_;
       position_ = other.position_ != null ? other.position_.Clone() : null;
       color_ = other.color_ != null ? other.color_.Clone() : null;
+      parkingLotID_ = other.parkingLotID_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2499,6 +2529,17 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "parkingLotID" field.</summary>
+    public const int ParkingLotIDFieldNumber = 6;
+    private uint parkingLotID_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint ParkingLotID {
+      get { return parkingLotID_; }
+      set {
+        parkingLotID_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Car);
@@ -2517,6 +2558,7 @@ namespace Transidious.Serialization {
       if (CarModel != other.CarModel) return false;
       if (!object.Equals(Position, other.Position)) return false;
       if (!object.Equals(Color, other.Color)) return false;
+      if (ParkingLotID != other.ParkingLotID) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -2528,6 +2570,7 @@ namespace Transidious.Serialization {
       if (CarModel != 0) hash ^= CarModel.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
       if (color_ != null) hash ^= Color.GetHashCode();
+      if (ParkingLotID != 0) hash ^= ParkingLotID.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2561,6 +2604,10 @@ namespace Transidious.Serialization {
         output.WriteRawTag(42);
         output.WriteMessage(Color);
       }
+      if (ParkingLotID != 0) {
+        output.WriteRawTag(48);
+        output.WriteUInt32(ParkingLotID);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -2583,6 +2630,9 @@ namespace Transidious.Serialization {
       }
       if (color_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Color);
+      }
+      if (ParkingLotID != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ParkingLotID);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2615,6 +2665,9 @@ namespace Transidious.Serialization {
           Color = new global::Transidious.Serialization.Color();
         }
         Color.MergeFrom(other.Color);
+      }
+      if (other.ParkingLotID != 0) {
+        ParkingLotID = other.ParkingLotID;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2651,6 +2704,10 @@ namespace Transidious.Serialization {
               Color = new global::Transidious.Serialization.Color();
             }
             input.ReadMessage(Color);
+            break;
+          }
+          case 48: {
+            ParkingLotID = input.ReadUInt32();
             break;
           }
         }

@@ -158,13 +158,7 @@ namespace Transidious
             }
         }
 
-        public Vector2 Centroid
-        {
-            get
-            {
-                return Math.GetCentroid(vertices);
-            }
-        }
+        public Vector2 Centroid => Math.GetCentroid(vertices);
 
 #if DEBUG
         public void Draw(GameObject obj, Color outlineColor, Color holeColor)

@@ -301,6 +301,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -413,8 +419,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -439,6 +443,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -642,6 +652,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -754,8 +770,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -780,6 +794,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -983,6 +1003,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -1095,8 +1121,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -1121,6 +1145,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -1324,6 +1354,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -1436,8 +1472,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -1462,6 +1496,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -1665,6 +1705,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -1777,8 +1823,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -1803,6 +1847,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -2006,6 +2056,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -2118,8 +2174,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -2144,6 +2198,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -2347,6 +2407,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -2459,8 +2525,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -2485,6 +2549,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -2688,6 +2758,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -2800,8 +2876,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -2826,6 +2900,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -3029,6 +3109,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -3141,8 +3227,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -3167,6 +3251,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -3370,6 +3460,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -3482,8 +3578,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -3508,6 +3602,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -3711,6 +3811,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -3823,8 +3929,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -3849,6 +3953,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -4052,6 +4162,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -4164,8 +4280,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -4190,6 +4304,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -4393,6 +4513,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -4505,8 +4631,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -4531,6 +4655,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -4734,6 +4864,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -4846,8 +4982,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -4872,6 +5006,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -5075,6 +5215,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -5187,8 +5333,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -5213,6 +5357,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -5416,6 +5566,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -5528,8 +5684,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -5554,6 +5708,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -5757,6 +5917,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -5869,8 +6035,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -5895,6 +6059,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -6098,6 +6268,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -6210,8 +6386,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -6236,6 +6410,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -6439,6 +6619,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -6551,8 +6737,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -6577,6 +6761,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -6780,6 +6970,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -6892,8 +7088,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -6918,6 +7112,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -7121,6 +7321,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -7233,8 +7439,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -7259,6 +7463,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -7462,6 +7672,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -7574,8 +7790,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -7600,6 +7814,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -7803,6 +8023,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -7915,8 +8141,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -7941,6 +8165,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -8144,6 +8374,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -8256,8 +8492,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -8282,6 +8516,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);
@@ -8485,6 +8725,12 @@ AddGeoReference(rel);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
 AddGeoReference(rel);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Green));
+AddGeoReference(rel);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Zoo));
+AddGeoReference(rel);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(rel.Id.Value);
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(rel, NaturalFeature.Type.Allotment));
@@ -8597,8 +8843,6 @@ importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); Ad
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("highway", "tertiary_link")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Link)); AddGeoReference(way);
-} else if (tags.Contains("highway", "track")) {
-importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.Tertiary)); AddGeoReference(way);
 } else if (tags.Contains("waterway", "river")) {
 importer.streets.Add(new Tuple<Way, Street.Type>(way, Street.Type.River)); AddGeoReference(way);
 }
@@ -8623,6 +8867,12 @@ importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, Natural
 AddGeoReference(way);
 }if (tags.Contains("natural", "heath")) {
 importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("natural", "grassland")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Green));
+AddGeoReference(way);
+}if (tags.Contains("leisure", "zoo")) {
+importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(way, NaturalFeature.Type.Zoo));
 AddGeoReference(way);
 }if (tags.Contains("landuse", "allotments")) {
 importer.visualOnlyFeatures.Add(way.Id.Value);

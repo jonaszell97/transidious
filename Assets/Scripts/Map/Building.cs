@@ -31,6 +31,14 @@ namespace Transidious
         public int occupants;
         public Rect collisionRect;
 
+        public override int Capacity => capacity;
+
+        public override int Occupants
+        {
+            get => occupants;
+            set => occupants = value;
+        }
+
         public void Initialize(Map map, Type type,
                                StreetSegment street, string numberStr,
                                Mesh mesh, float area, string name = "",
@@ -85,29 +93,29 @@ namespace Transidious
                     floors = 3;
                 }
 
-                return (int)Mathf.Ceil(floors * (area / 40f));
+                return (int)Mathf.Ceil(floors * (area / 400f));
             case Type.Office:
                 // Calculate with an average of 3 floors and 1 person per 10m^2.
-                return (int)Mathf.Ceil(3 * (area / 10f));
+                return (int)Mathf.Ceil(3 * (area / 200f));
             case Type.Shop:
             case Type.GroceryStore:
                 // Calculate with an average of 1 floors and 1 worker per 100m^2.
-                return (int)Mathf.Ceil(1 * (area / 100f));
+                return (int)Mathf.Ceil(1 * (area / 500f));
             case Type.Hospital:
                 // Calculate with an average of 5 floors and 1 worker per 20m^2.
-                return (int)Mathf.Ceil(5 * (area / 20f));
+                return (int)Mathf.Ceil(5 * (area / 200f));
             case Type.ElementarySchool:
                 // Calculate with an average of 2 floors and 1 student per 5m^2.
-                return (int)Mathf.Ceil(2 * (area / 50f));
+                return (int)Mathf.Ceil(2 * (area / 5000f));
             case Type.HighSchool:
                 // Calculate with an average of 3 floors and 1 student per 5m^2.
-                return (int)Mathf.Ceil(3 * (area / 40f));
+                return (int)Mathf.Ceil(3 * (area / 400f));
             case Type.University:
                 // Calculate with an average of 5 floors and 1 student per 5,^2.
-                return (int)Mathf.Ceil(5 * (area / 25f));
+                return (int)Mathf.Ceil(5 * (area / 250f));
             case Type.Stadium:
                 // Calculate with an average of 1 floors and 1 visitor per 2m^2.
-                return (int)Mathf.Ceil(1 * (area / 2f));
+                return (int)Mathf.Ceil(1 * (area / 200f));
             case Type.Airport:
                 // Calculate with an average of 1 floors and 1 visitor per m^2.
                 return (int)Mathf.Ceil(area);
@@ -123,21 +131,23 @@ namespace Transidious
 
         public static Color GetColor(Type type, MapDisplayMode mode = MapDisplayMode.Day)
         {
-#if DEBUG
-            if (GameController.instance.ImportingMap)
-            {
-                // return Color.black;
-            }
-#endif
-
             switch (mode)
             {
-            case MapDisplayMode.Day:
             default:
-                return new Color(.87f, .89f, .91f);
+                return Colors.GetColor("building.defaultDay");
             case MapDisplayMode.Night:
-                return new Color(.20f, .21f, .22f);
+                return Colors.GetColor("building.defaultNight");
             }
+        }
+
+        public float GetLayer()
+        {
+            return GetLayer(type);
+        }
+
+        public static float GetLayer(Type type)
+        {
+            return Map.Layer(MapLayer.Buildings);
         }
 
         public void UpdateMesh(Map map)
@@ -180,6 +190,7 @@ namespace Transidious
                 StreetID = (uint)(street?.id ?? 0),
                 Type = (Serialization.Building.Types.Type)type,
                 Position = centroid.ToProtobuf(),
+                Occupants = occupants,
             };
         }
 
@@ -192,6 +203,7 @@ namespace Transidious
                 b.MapObject.Area, b.MapObject.Centroid.Deserialize(),
                 (int)b.MapObject.Id);
 
+            building.occupants = b.Occupants;
             building.streetID = (int)b.StreetID;
             building.Deserialize(b.MapObject);
 

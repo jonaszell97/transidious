@@ -58,13 +58,7 @@ namespace Transidious
         /// <summary>
         ///  The currently loaded map.
         /// </summary>
-        public Map loadedMap
-        {
-            get
-            {
-                return SaveManager.loadedMap;
-            }
-        }
+        public Map loadedMap => SaveManager.loadedMap;
 
         public GameObject loadedMapObj;
 
@@ -96,6 +90,9 @@ namespace Transidious
 
         /// Prefab for line renderers.
         public GameObject lineRendererPrefab;
+
+        /// Prefab for color gradients.
+        public GameObject colorGradientPrefab;
 
         /// <summary>
         /// Callback to be executed once the game is loaded.
@@ -419,11 +416,6 @@ namespace Transidious
 
             this.lang = translator;
             return false;
-        }
-
-        public Color GetDefaultSystemColor(TransitType system)
-        {
-            return Map.defaultLineColors[system];
         }
 
         public string GetSystemName(TransitType system)

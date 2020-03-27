@@ -25,19 +25,20 @@ namespace Transidious.Serialization {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChROYXR1cmFsRmVhdHVyZS5wcm90bxIZVHJhbnNpZGlvdXMuU2VyaWFsaXph",
-            "dGlvbhoMQ29tbW9uLnByb3RvItICCg5OYXR1cmFsRmVhdHVyZRI3CgltYXBP",
+            "dGlvbhoMQ29tbW9uLnByb3RvIuQCCg5OYXR1cmFsRmVhdHVyZRI3CgltYXBP",
             "YmplY3QYASABKAsyJC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1hcE9i",
             "amVjdBIvCgRtZXNoGAIgASgLMiEuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
             "bi5NZXNoMkQSPAoEdHlwZRgDIAEoDjIuLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uTmF0dXJhbEZlYXR1cmUuVHlwZSKXAQoEVHlwZRIICgRQYXJrEAAS",
-            "CAoETGFrZRABEgkKBUdyZWVuEAISDwoLU3BvcnRzUGl0Y2gQAxINCglBbGxv",
-            "dG1lbnQQBBIMCghDZW1ldGVyeRAFEhAKDEZvb3RwYXRoQXJlYRAGEgkKBUJl",
-            "YWNoEAcSCgoGRm9yZXN0EAgSCwoHUGFya2luZxAJEgwKCEZvb3RwYXRoEApC",
-            "HKoCGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
+            "YXRpb24uTmF0dXJhbEZlYXR1cmUuVHlwZRIQCgh2aXNpdG9ycxgEIAEoBSKX",
+            "AQoEVHlwZRIICgRQYXJrEAASCAoETGFrZRABEgkKBUdyZWVuEAISDwoLU3Bv",
+            "cnRzUGl0Y2gQAxINCglBbGxvdG1lbnQQBBIMCghDZW1ldGVyeRAFEhAKDEZv",
+            "b3RwYXRoQXJlYRAGEgkKBUJlYWNoEAcSCgoGRm9yZXN0EAgSCwoHUGFya2lu",
+            "ZxAJEgwKCEZvb3RwYXRoEApCHKoCGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
+            "b25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.NaturalFeature), global::Transidious.Serialization.NaturalFeature.Parser, new[]{ "MapObject", "Mesh", "Type" }, null, new[]{ typeof(global::Transidious.Serialization.NaturalFeature.Types.Type) }, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.NaturalFeature), global::Transidious.Serialization.NaturalFeature.Parser, new[]{ "MapObject", "Mesh", "Type", "Visitors" }, null, new[]{ typeof(global::Transidious.Serialization.NaturalFeature.Types.Type) }, null)
           }));
     }
     #endregion
@@ -72,6 +73,7 @@ namespace Transidious.Serialization {
       mapObject_ = other.mapObject_ != null ? other.mapObject_.Clone() : null;
       mesh_ = other.mesh_ != null ? other.mesh_.Clone() : null;
       type_ = other.type_;
+      visitors_ = other.visitors_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -113,6 +115,17 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "visitors" field.</summary>
+    public const int VisitorsFieldNumber = 4;
+    private int visitors_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Visitors {
+      get { return visitors_; }
+      set {
+        visitors_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as NaturalFeature);
@@ -129,6 +142,7 @@ namespace Transidious.Serialization {
       if (!object.Equals(MapObject, other.MapObject)) return false;
       if (!object.Equals(Mesh, other.Mesh)) return false;
       if (Type != other.Type) return false;
+      if (Visitors != other.Visitors) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -138,6 +152,7 @@ namespace Transidious.Serialization {
       if (mapObject_ != null) hash ^= MapObject.GetHashCode();
       if (mesh_ != null) hash ^= Mesh.GetHashCode();
       if (Type != 0) hash ^= Type.GetHashCode();
+      if (Visitors != 0) hash ^= Visitors.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -163,6 +178,10 @@ namespace Transidious.Serialization {
         output.WriteRawTag(24);
         output.WriteEnum((int) Type);
       }
+      if (Visitors != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Visitors);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -179,6 +198,9 @@ namespace Transidious.Serialization {
       }
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      if (Visitors != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Visitors);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -205,6 +227,9 @@ namespace Transidious.Serialization {
       }
       if (other.Type != 0) {
         Type = other.Type;
+      }
+      if (other.Visitors != 0) {
+        Visitors = other.Visitors;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -233,6 +258,10 @@ namespace Transidious.Serialization {
           }
           case 24: {
             Type = (global::Transidious.Serialization.NaturalFeature.Types.Type) input.ReadEnum();
+            break;
+          }
+          case 32: {
+            Visitors = input.ReadInt32();
             break;
           }
         }

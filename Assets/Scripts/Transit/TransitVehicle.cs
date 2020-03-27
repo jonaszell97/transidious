@@ -41,8 +41,7 @@ namespace Transidious
         public Dictionary<Stop, List<Stop.WaitingCitizen>> passengers;
 
         public int passengerCount;
-
-        float velocity;
+        Velocity velocity;
 
         public Stop NextStop
         {
@@ -57,31 +56,16 @@ namespace Transidious
             }
         }
 
-        public void Initialize(Line line, float? velocity = null, int? capacity = null)
+        public void Initialize(Line line, Velocity? velocity = null, int? capacity = null)
         {
             this.line = line;
             this.spriteRenderer.color = line.color;
             this.sim = GameController.instance.sim;
             this.passengers = new Dictionary<Stop, List<Stop.WaitingCitizen>>();
             this.passengerCount = 0;
-            
-            if (velocity != null)
-            {
-                this.velocity = velocity.Value;
-            }
-            else
-            {
-                this.velocity = line.AverageSpeed / 3.6f;
-            }
 
-            if (capacity != null)
-            {
-                this.capacity = capacity.Value;
-            }
-            else
-            {
-                this.capacity = GetDefaultCapacity(line.type);
-            }
+            this.velocity = velocity ?? line.AverageSpeed;
+            this.capacity = capacity ?? GetDefaultCapacity(line.type);
         }
 
         public static int GetDefaultCapacity(TransitType type)
@@ -173,10 +157,10 @@ namespace Transidious
                   {
                       nextStopTime = sim.GameTime.AddSeconds(line.stopDuration + line.endOfLineWaitTime);
 
-                      var estimateSeconds = (line.length / (line.AverageSpeed / 3.6f)) * sim.BaseSpeedMultiplier;
+                      var estimateSeconds = (line.distance / line.AverageSpeed).TotalSeconds;
                       estimateSeconds += line.stops.Count * line.stopDuration;
+                      
                       var realSeconds = (sim.GameTime - _startTime).TotalSeconds;
-
                       Debug.Log($"estimate {estimateSeconds}s <-> real {realSeconds}s, diff {realSeconds - estimateSeconds}s");
                   }
 

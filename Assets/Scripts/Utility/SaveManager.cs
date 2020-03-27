@@ -215,7 +215,15 @@ namespace Transidious
 
         public static void SaveMapLayout(Map map)
         {
-            string fileName = $"Assets/Resources/Maps/{map.name}.bytes";
+            var dst = $"Assets/Resources/Maps/{map.name}";
+#if UNITY_EDITOR
+            if (!AssetDatabase.IsValidFolder(dst))
+            {
+                AssetDatabase.CreateFolder("Assets/Resources/Maps", map.name);
+            }
+#endif
+
+            string fileName = $"{dst}/MapData.bytes";
 
             var sm = GetProtobufMap(map);
             using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
@@ -257,7 +265,7 @@ namespace Transidious
 
         static IEnumerator LoadMap(Map map, string mapName)
         {
-            var resourceName = "Maps/" + mapName;
+            var resourceName = $"Maps/{mapName}/MapData";
             var asyncResource = Resources.LoadAsync(resourceName);
 
             yield return asyncResource;
@@ -632,7 +640,7 @@ namespace Transidious
 
         public static Map CreateMap(GameController game, string saveName)
         {
-            var mapPrefab = Resources.Load($"Prefabs/Maps/{saveName}") as GameObject;
+            var mapPrefab = Resources.Load($"Maps/{saveName}/{saveName}") as GameObject;
             var mapObj = GameObject.Instantiate(mapPrefab);
 
             var map = mapObj.GetComponent<Map>();

@@ -8434,7 +8434,6 @@ MonoBehaviour:
   lineColorButtonImg: {fileID: 1916410770473789740}
   lineView: {fileID: 638169035}
   colorPicker: {fileID: 1768680478}
-  selectedLine: {fileID: 0}
   infoPanel: {fileID: 1634417546}
 --- !u!114 &1916410769914299376
 MonoBehaviour:
@@ -9359,6 +9358,11 @@ PrefabInstance:
     - target: {fileID: 5287185505245174272, guid: 8e3ff855e7ea34cdd995207225aa57e2,
         type: 3}
       propertyPath: renderStreetOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5287185505245174272, guid: 8e3ff855e7ea34cdd995207225aa57e2,
+        type: 3}
+      propertyPath: renderTrafficLights
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7479790127519674387, guid: 8e3ff855e7ea34cdd995207225aa57e2,
@@ -10425,6 +10429,12 @@ PrefabInstance:
       propertyPath: saveFileToLoad
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
+        type: 3}
+      propertyPath: colorGradientPrefab
+      value: 
+      objectReference: {fileID: 1211915089223440763, guid: d39282b7bfb284803a2a179918c3d51f,
+        type: 3}
     - target: {fileID: 8936710921022106518, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
       propertyPath: m_Name

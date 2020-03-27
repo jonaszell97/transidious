@@ -1067,7 +1067,7 @@ namespace Transidious
         {
             if (maxDistance.Equals(-1f))
             {
-                maxDistance = 5f * Map.Meters;
+                maxDistance = 5f;
             }
 
             var newPositions = new List<Vector3>(positions.Count);
