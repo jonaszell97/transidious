@@ -309,75 +309,12 @@ namespace Transidious
         {
             var path = new List<Vector3>();
 
-            List<Vector3> positions;
-            StreetSegment segment = null;
-            int prevLane = 0;
-            bool backward;
-            int lane;
-            bool finalStep;
-
-            var addFirstIntersectionPos = false;
             foreach (var step in result.steps)
             {
                 StreetSegment nextSegment;
-                GetStepPath(step, out nextSegment, out backward, out finalStep, out lane,
-                            out positions, out bool partialStart, out bool partialEnd,
+                GetStepPath(step, out nextSegment, out bool backward, out bool finalStep, out int lane,
+                            out List<Vector3> positions, out bool partialStart, out bool partialEnd,
                             out Vector2 direction);
-
-                /*if (segment != null && nextSegment != null)
-                {
-                    StreetIntersection nextIntersection;
-                    if (backward)
-                    {
-                        nextIntersection = nextSegment.endIntersection;
-                    }
-                    else
-                    {
-                        nextIntersection = nextSegment.startIntersection;
-                    }
-
-#if false
-                    var _ids = nextIntersection.intersectingStreets.Select(s => s.id);
-                    if (!(_ids.Contains(segment.Id) && _ids.Contains(nextSegment.Id)))
-                    {
-                        gameObject.transform.position = nextIntersection.position;
-                        gameObject.DrawCircle(5f, 5f, Color.red);
-
-                        gameObject.transform.position = segment.positions[segment.positions.Count / 2];
-                        gameObject.DrawCircle(5f, 5f, Color.blue);
-
-                        gameObject.transform.position = nextSegment.positions[segment.positions.Count / 2];
-                        gameObject.DrawCircle(5f, 5f, Color.green);
-
-                        Debug.LogWarning(nextIntersection.intersectingStreets.Count);
-                    }
-#endif
-
-                    var intersectionPath = GetPath(nextIntersection, segment,
-                                                   nextSegment, prevLane);
-
-                    if (intersectionPath == null)
-                    {
-                        Debug.LogWarning("missing intersection path");
-                    }
-                    else
-                    {
-                        var begin = 1;
-                        var end = intersectionPath.Length - 1;
-
-                        if (addFirstIntersectionPos)
-                        {
-                            begin = 0;
-                        }
-
-                        for (int i = begin; i < end; ++i)
-                        {
-                            path.Add(intersectionPath[i]);
-                        }
-                    }
-                }
-
-                addFirstIntersectionPos = false;*/
 
                 if (positions != null)
                 {
@@ -398,30 +335,6 @@ namespace Transidious
 
                     path.AddRange(positions);
                 }
-                /*else if (partialStart)
-                {
-                    addFirstIntersectionPos = true;
-                }
-                else if (partialEnd)
-                {
-                    StreetIntersection nextIntersection;
-                    if (backward)
-                    {
-                        nextIntersection = nextSegment.endIntersection;
-                    }
-                    else
-                    {
-                        nextIntersection = nextSegment.startIntersection;
-                    }
-
-                    var intersectionPath = GetPath(nextIntersection, segment,
-                                                   nextSegment, prevLane);
-
-                    path.Add(intersectionPath.Last());
-                }*/
-
-                segment = nextSegment;
-                prevLane = lane;
             }
 
             return path;

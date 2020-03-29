@@ -548,7 +548,8 @@ namespace Transidious
                 {
                     yield return exporter.CreatePrefabMeshes(
                         importType == ImportType.Fast,
-                        exportType == MapExportType.Mesh);
+                        exportType == MapExportType.Mesh,
+                        9999999);
                 }
             }
 
@@ -918,8 +919,6 @@ namespace Transidious
             }
 
             var stopName = stopNode.Geo.Tags.GetValue("name");
-            Debug.Log("loading stop '" + stopName + "'...");
-
             stopName = stopName.Replace("S+U ", "");
             stopName = stopName.Replace("S ", "");
             stopName = stopName.Replace("U ", "");
@@ -953,8 +952,6 @@ namespace Transidious
                 var name = l1.Geo.Tags.GetValue("ref");
                 var type = linePair.Value.type;
                 var l = map.CreateLine(type, name, color);
-                
-                Debug.Log("loading line '" + name + "'...");
 
                 var members = l1.Members.ToList();
                 if (l2 != null)

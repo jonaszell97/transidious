@@ -130,7 +130,28 @@ namespace Transidious
                 fromIdx = baseIndex - 4 - connectionOffset - 2;
             }
 
+            if (vertices[fromIdx].Equals(vertices[toIdx]))
+            {
+                // Debug.Break();
+            }
+            
             var totalAngle = Math.DirectionalAngleRad(p1 - vertices[fromIdx], p1 - vertices[toIdx]);
+            if (totalAngle.Equals(0f))
+            {
+                return 0;
+            }
+
+            if (goesRight)
+            {
+                Utility.DrawCircle(vertices[fromIdx], .2f, .2f, Color.red);
+                Utility.DrawCircle(vertices[toIdx], .2f, .2f, Color.green);
+            }
+            else
+            {
+                Utility.DrawCircle(vertices[fromIdx], .2f, .2f, Color.yellow);
+                Utility.DrawCircle(vertices[toIdx], .2f, .2f, Color.cyan);
+            }
+
             if (goesRight)
             {
                 totalAngle = Math.TwoPI - totalAngle;
@@ -261,9 +282,8 @@ namespace Transidious
             var p1 = positions[i - 1];
             var p2 = positions[i];
 
-            if (p1.Equals(Vector3.positiveInfinity) || p2.Equals(Vector3.positiveInfinity))
+            if (p1.Equals(Vector3.positiveInfinity) || p2.Equals(Vector3.positiveInfinity) || p2.Equals(p1))
             {
-                connectionOffset = 0;
                 return;
             }
 
