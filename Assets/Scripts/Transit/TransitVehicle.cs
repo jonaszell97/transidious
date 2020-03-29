@@ -63,6 +63,7 @@ namespace Transidious
             this.sim = GameController.instance.sim;
             this.passengers = new Dictionary<Stop, List<Stop.WaitingCitizen>>();
             this.passengerCount = 0;
+            this.currentRoute = line.routes.Count;
 
             this.velocity = velocity ?? line.AverageSpeed;
             this.capacity = capacity ?? GetDefaultCapacity(line.type);
@@ -93,8 +94,8 @@ namespace Transidious
             this.spriteRenderer.color = line.color;
         }
 
-        static System.Collections.Generic.Dictionary<Stop, DateTime> lastStopAtStation
-            = new System.Collections.Generic.Dictionary<Stop, DateTime>();
+        static System.Collections.Generic.Dictionary<Tuple<Line, Stop>, DateTime> lastStopAtStation
+            = new System.Collections.Generic.Dictionary<Tuple<Line, Stop>, DateTime>();
 
         DateTime _startTime;
         float _length;
@@ -143,32 +144,40 @@ namespace Transidious
             waitingCitizens.RemoveRange(0, taken);
 
             this.gameObject.SetActive(true);
-            this.transform.position = new Vector3(route.positions[0].x, route.positions[0].y, transform.position.z);
+            this.transform.SetPositionInLayer(route.positions[0]);
+
             this.pathFollow = new PathFollowingObject(
                 sim, this.gameObject, route.positions,
                 velocity,
                 () =>
                 {
+                  var nextDep = route.endStop.NextDeparture(line, sim.GameTime - TimeSpan.FromMinutes(5));
                   if (currentRoute < line.routes.Count - 1)
                   {
-                      nextStopTime = sim.GameTime.AddSeconds(line.stopDuration);
+                      nextStopTime = nextDep.Add(line.stopDuration);
+
+                      var diff = sim.GameTime - nextDep;
+                      if (System.Math.Abs(diff.TotalSeconds) >= 100)
+                      {
+                          // GameController.instance.EnterPause();
+                          GameController.instance.input.MoveTowards(transform.position, 100f);
+                          Debug.LogError($"Diff: {diff.TotalSeconds:n2}sec, next dep {nextDep.ToLongTimeString()} <-> actual {sim.GameTime.ToLongTimeString()}");
+                      }
+                      else
+                      {
+                          Debug.Log($"Diff: {diff.TotalSeconds:n2}sec");
+                      }
                   }
                   else
                   {
-                      nextStopTime = sim.GameTime.AddSeconds(line.stopDuration + line.endOfLineWaitTime);
-
-                      var estimateSeconds = (line.distance / line.AverageSpeed).TotalSeconds;
-                      estimateSeconds += line.stops.Count * line.stopDuration;
-                      
-                      var realSeconds = (sim.GameTime - _startTime).TotalSeconds;
-                      Debug.Log($"estimate {estimateSeconds}s <-> real {realSeconds}s, diff {realSeconds - estimateSeconds}s");
+                      nextStopTime = nextDep.Add(line.stopDuration + line.endOfLineWaitTime);
+                      Debug.Log($"line done");
                   }
 
                   pathFollow = null;
 
-                  var stop = route.endStop;
-
                   // Check citizens leaving here.
+                  var stop = route.endStop;
                   if (passengers.TryGetValue(stop, out List<Stop.WaitingCitizen> leaving))
                   {
                       foreach (var c in leaving)
@@ -179,15 +188,25 @@ namespace Transidious
                       passengerCount -= leaving.Count;
                       leaving.Clear();
                   }
-                  
-                  if (lastStopAtStation.ContainsKey(stop))
+
+                  var key = Tuple.Create(line, stop);
+                  if (lastStopAtStation.ContainsKey(key))
                   {
-                      Debug.Log($"time between stops: {(sim.GameTime - lastStopAtStation[stop]).TotalMinutes}m");
-                      lastStopAtStation[stop] = sim.GameTime;
+                      var diff = (nextDep - lastStopAtStation[key]).TotalMinutes;
+                      if ((diff - line.schedule.dayInterval) >= .5)
+                      {
+                          Debug.LogError($"diff: {(diff - line.schedule.dayInterval):n2}min, time between stops: {(sim.GameTime - lastStopAtStation[key]).TotalMinutes}m");
+                      }
+                      else
+                      {
+                          Debug.Log($"time between stops: {(sim.GameTime - lastStopAtStation[key]).TotalMinutes}m");
+                      }
+
+                      lastStopAtStation[key] = sim.GameTime;
                   }
                   else
                   {
-                      lastStopAtStation.Add(stop, sim.GameTime);
+                      lastStopAtStation.Add(key, sim.GameTime);
                   }
                 });
 
@@ -214,7 +233,7 @@ namespace Transidious
             timeSinceLastUpdate = 0f;
         }
 
-        void FixedUpdate()
+        void Update()
         {
             if (sim.game.Paused)
             {
@@ -223,12 +242,15 @@ namespace Transidious
 
             if (pathFollow != null)
             {
-                pathFollow.Update(Time.fixedDeltaTime * sim.SpeedMultiplier);
+                pathFollow.Update(Time.deltaTime * sim.SpeedMultiplier);
                 return;
             }
 
             if (nextStopTime.HasValue && sim.GameTime >= nextStopTime.Value)
             {
+                var diff = SimulationController.GameTimeToRealTime(sim.GameTime - nextStopTime.Value);
+                Debug.Log($"diff: {diff}");
+
                 nextStopTime = null;
 
                 if (currentRoute + 1 >= line.routes.Count)
@@ -240,7 +262,7 @@ namespace Transidious
                     StartDrive(currentRoute + 1);
                 }
 
-                pathFollow?.Update(Time.fixedDeltaTime * sim.SpeedMultiplier);
+                pathFollow?.Update((Time.deltaTime + (float)diff.TotalSeconds) * sim.SpeedMultiplier);
             }
 
             //if (!sim.game.Paused && pathFollow != null)

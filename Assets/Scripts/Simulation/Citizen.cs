@@ -1062,20 +1062,20 @@ namespace Transidious
             {
                 if (age < 10)
                 {
-                    return Velocity.FromKPH(5f);
+                    return Velocity.FromRealTimeKPH(5f);
                 }
                 
                 if (age < 30)
                 {
-                    return Velocity.FromKPH(8f);
+                    return Velocity.FromRealTimeKPH(8f);
                 }
                 
                 if (age < 60f)
                 {
-                    return Velocity.FromKPH(7f);
+                    return Velocity.FromRealTimeKPH(7f);
                 }
 
-                return Velocity.FromKPH(3f);
+                return Velocity.FromRealTimeKPH(3f);
             }
         }
 

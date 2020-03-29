@@ -3,115 +3,157 @@ using UnityEngine;
 
 namespace Transidious
 {
-    public struct GameTimeSpan
+    /*public struct TimeSpan
     {
         /// The internal time span.
         internal TimeSpan _ts;
 
-        public static GameTimeSpan zero => new GameTimeSpan();
+        public static TimeSpan zero => new TimeSpan();
 
         /// Create a time span as the difference between two game time dates.
-        public static GameTimeSpan Difference(DateTime t1, DateTime t2)
+        public static TimeSpan Difference(DateTime t1, DateTime t2)
         {
-            return new GameTimeSpan
+            return new TimeSpan
             {
                 _ts = t1 - t2,
             };
         }
         
         /// Create from real time seconds.
-        public static GameTimeSpan FromRealTimeSeconds(float seconds)
+        public static TimeSpan FromRealTimeSeconds(float seconds)
         {
-            return new GameTimeSpan
+            return new TimeSpan
             {
                 _ts = TimeSpan.FromSeconds(seconds * 60),
             };
         }
 
         /// Create from game time seconds.
-        public static GameTimeSpan FromGameTimeSeconds(float seconds)
+        public static TimeSpan FromGameTimeSeconds(float seconds)
         {
-            return new GameTimeSpan
+            return new TimeSpan
             {
                 _ts = TimeSpan.FromSeconds(seconds),
             };
         }
 
         /// Create from real time minutes.
-        public static GameTimeSpan FromRealTimeMinutes(float minutes)
+        public static TimeSpan FromRealTimeMinutes(float minutes)
         {
-            return new GameTimeSpan
+            return new TimeSpan
             {
                 _ts = TimeSpan.FromMinutes(minutes * 60),
             };
         }
 
         /// Create from real time seconds.
-        public static GameTimeSpan FromGameTimeMinutes(float minutes)
+        public static TimeSpan FromGameTimeMinutes(float minutes)
         {
-            return new GameTimeSpan
+            return new TimeSpan
             {
                 _ts = TimeSpan.FromMinutes(minutes),
             };
         }
         
         /// Create from real time minutes.
-        public static GameTimeSpan FromRealTimeMilliseconds(float millis)
+        public static TimeSpan FromRealTimeMilliseconds(float millis)
         {
-            return new GameTimeSpan
+            return new TimeSpan
             {
                 _ts = TimeSpan.FromMilliseconds(millis * 60),
             };
         }
 
         /// Create from real time seconds.
-        public static GameTimeSpan FromGameTimeMilliseconds(float millis)
+        public static TimeSpan FromMilliseconds(float millis)
         {
-            return new GameTimeSpan
+            return new TimeSpan
             {
                 _ts = TimeSpan.FromMilliseconds(millis),
             };
         }
 
-        public double TotalSeconds => _ts.TotalSeconds;
-        public double TotalMinutes => _ts.TotalMinutes;
-        public double TotalMilliseconds => _ts.TotalMilliseconds;
+        public float TotalSeconds => (float)_ts.TotalSeconds;
+        public float TotalMinutes => (float)_ts.TotalMinutes;
+        public float TotalMilliseconds => (float)_ts.TotalMilliseconds;
 
-        public static GameTimeSpan operator+(GameTimeSpan lhs, GameTimeSpan rhs)
+        public TimeSpan RoundToInterval(TimeSpan interval)
         {
-            return new GameTimeSpan
+            return new TimeSpan
+            {
+                _ts = TimeSpan.FromSeconds(Mathf.Ceil((float)(_ts.TotalSeconds / interval.TotalSeconds)) * interval.TotalSeconds)
+            };
+        }
+        
+        public static TimeSpan operator+(TimeSpan lhs, TimeSpan rhs)
+        {
+            return new TimeSpan
             {
                 _ts = lhs._ts + rhs._ts,
             };
         }
 
-        public static GameTimeSpan operator-(GameTimeSpan lhs, GameTimeSpan rhs)
+        public static TimeSpan operator-(TimeSpan lhs, TimeSpan rhs)
         {
-            return new GameTimeSpan
+            return new TimeSpan
             {
                 _ts = lhs._ts - rhs._ts,
             };
         }
 
-        public static GameTimeSpan operator*(GameTimeSpan lhs, float rhs)
+        public static TimeSpan operator*(TimeSpan lhs, float rhs)
         {
-            return new GameTimeSpan
+            return new TimeSpan
             {
                 _ts = TimeSpan.FromSeconds(lhs.TotalSeconds * rhs),
             };
         }
-    }
+        
+        public static TimeSpan operator*(TimeSpan lhs, TimeSpan rhs)
+        {
+            return new TimeSpan
+            {
+                _ts = TimeSpan.FromSeconds(lhs.TotalSeconds * rhs.TotalSeconds),
+            };
+        }
+        
+        public static TimeSpan operator/(TimeSpan lhs, float rhs)
+        {
+            return new TimeSpan
+            {
+                _ts = TimeSpan.FromSeconds(lhs.TotalSeconds * rhs),
+            };
+        }
+        
+        public static TimeSpan operator/(TimeSpan lhs, TimeSpan rhs)
+        {
+            return new TimeSpan
+            {
+                _ts = TimeSpan.FromSeconds(lhs.TotalSeconds / rhs.TotalSeconds),
+            };
+        }
+    }*/
 
     public static class TimeExtensions
     {
-        public static DateTime Add(this DateTime d, GameTimeSpan ts)
+        // public static DateTime Add(this DateTime d, TimeSpan ts)
+        // {
+        //     return d.Add(ts._ts);
+        // }
+        //
+        // public static DateTime Subtract(this DateTime d, TimeSpan ts)
+        // {
+        //     return d.Subtract(ts._ts);
+        // }
+
+        public static TimeSpan Multiply(this TimeSpan lhs, float rhs)
         {
-            return d.Add(ts._ts);
+            return TimeSpan.FromSeconds(lhs.TotalSeconds * rhs);
         }
 
-        public static DateTime Subtract(this DateTime d, GameTimeSpan ts)
+        public static TimeSpan RoundToInterval(this TimeSpan ts, TimeSpan interval)
         {
-            return d.Subtract(ts._ts);
+            return TimeSpan.FromSeconds(Mathf.Ceil((float)(ts.TotalSeconds / interval.TotalSeconds)) * interval.TotalSeconds);
         }
     }
 
@@ -147,9 +189,9 @@ namespace Transidious
         public float Kilometers => _m / 1000f;
 
         /// The time it takes to travel distance d at velocity v (in game).
-        public static GameTimeSpan operator /(Distance d, Velocity v)
+        public static TimeSpan operator /(Distance d, Velocity v)
         {
-            return GameTimeSpan.FromRealTimeSeconds(d.Meters / v.MPS);
+            return TimeSpan.FromSeconds(d.Meters / v.MPS);
         }
     }
 
@@ -161,21 +203,39 @@ namespace Transidious
         public static Velocity zero => new Velocity {_mps = 0};
 
         /// Create a velocity from real-time mps.
+        public static Velocity FromRealTimeMPS(float mps)
+        {
+            return new Velocity {_mps = mps / 60f};
+        }
+        
+        /// Create a velocity from game-time mps.
         public static Velocity FromMPS(float mps)
         {
             return new Velocity {_mps = mps};
         }
 
-        /// Create a velocity from kph.
+        /// Create a velocity from real-time kph.
+        public static Velocity FromRealTimeKPH(float kph)
+        {
+            return FromRealTimeMPS(kph * Math.Kph2Mps);
+        }
+        
+        /// Create a velocity from game-time kph.
         public static Velocity FromKPH(float kph)
         {
-            return new Velocity {_mps = kph * Math.Kph2Mps};
+            return FromMPS(kph * Math.Kph2Mps);
         }
 
         /// Return the velocity in mps.
         public float MPS => _mps;
 
+        /// Return the real-time velocity in mps.
+        public float RealTimeMPS => _mps * 60f;
+
         /// Return the velocity in kph.
         public float KPH => _mps * Math.Mps2Kph;
+        
+        /// Return the real-time velocity in kph.
+        public float RealTimeKPH => RealTimeMPS * Math.Mps2Kph;
     }
 }

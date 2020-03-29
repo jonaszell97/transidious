@@ -29,7 +29,7 @@ namespace Transidious
         public Stop endStop;
         public Stop.Slot endSlot;
 
-        public GameTimeSpan totalTravelTime;
+        public TimeSpan totalTravelTime;
         public bool isBackRoute = false;
 
         public Mesh mesh;
@@ -88,7 +88,7 @@ namespace Transidious
             }
         }
 
-        public GameTimeSpan TravelTime => Distance.FromMeters(length) / AverageSpeed;
+        public TimeSpan TravelTime => Distance.FromMeters(length) / AverageSpeed;
 
         public IStop Begin => beginStop;
 
@@ -171,7 +171,7 @@ namespace Transidious
             }
 
             var collider = this.GetComponent<PolygonCollider2D>();
-            //mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 20, 0, collider);
+            // mesh = MeshBuilder.CreateSmoothLine(positions, line.LineWidth, 20, 0, collider);
             mesh = MeshBuilder.CreateBakedLineMesh(positions, line.LineWidth, collider);
 
             UpdateMesh();

@@ -10,6 +10,10 @@ namespace Transidious
         public static readonly float Kph2Mps = 1f / 3.6f;
         public static readonly float Mps2Kph = 3.6f;
 
+        public static readonly float TwoPI = 2f * Mathf.PI;
+        public static readonly float HalfPI = .5f * Mathf.PI;
+        public static readonly float ThreeHalvesPI = 1.5f * Mathf.PI;
+
         private static void arcLengthUtil(Vector2 A, Vector2 B,
                                           Vector2 C, Vector2 D,
                                           uint subdiv, ref float L)
@@ -137,6 +141,14 @@ namespace Transidious
         public static bool PointOnLine(Vector2 a, Vector2 b, Vector2 pt)
         {
             return Mathf.Approximately((pt - a).magnitude + (pt - b).magnitude, (a - b).magnitude);
+        }
+
+        public static Vector2 GetPointOnCircleClockwiseRad(Vector2 center, float radius, float angleRad)
+        {
+            var x = radius * Mathf.Sin(angleRad);
+            var y = radius * Mathf.Cos(angleRad);
+
+            return center + new Vector2(x, y);
         }
 
         public static Vector3 NearestPointOnLine(Vector3 p0, Vector3 p1, Vector3 pnt)

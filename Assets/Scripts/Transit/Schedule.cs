@@ -28,12 +28,12 @@ namespace Transidious
     public class ContinuousSchedule : ISchedule
     {
         public DateTime firstDeparture;
-        public float interval;
+        public TimeSpan interval;
 
-        public ContinuousSchedule(DateTime firstDeparture, float intervalSeconds)
+        public ContinuousSchedule(DateTime firstDeparture, TimeSpan interval)
         {
             this.firstDeparture = firstDeparture;
-            this.interval = intervalSeconds;
+            this.interval = interval;
         }
 
         public DateTime GetNextDeparture(DateTime currentTime)
@@ -43,15 +43,15 @@ namespace Transidious
                 return firstDeparture;
             }
 
-            var secondDiff = (currentTime - firstDeparture).TotalSeconds;
-            var nextDeparture = Mathf.Ceil((float)secondDiff / interval) * interval;
+            var diff = currentTime - firstDeparture;
+            var nextDeparture = diff.RoundToInterval(interval);
 
-            return firstDeparture.AddSeconds(nextDeparture);
+            return firstDeparture.Add(nextDeparture);
         }
 
         public override string ToString()
         {
-            return $"Continuous (starting at {Translator.GetDate(firstDeparture, Translator.DateFormat.DateTimeLong)} , every {interval}s)";
+            return $"Continuous (starting at {Translator.GetDate(firstDeparture, Translator.DateFormat.DateTimeLong)} , every {interval.TotalSeconds}s)";
         }
 
         public Serialization.Schedule Serialize()
@@ -59,13 +59,14 @@ namespace Transidious
             return new Serialization.Schedule
             {
                 FirstDeparture = (ulong)firstDeparture.Ticks,
-                Interval = interval,
+                Interval = (float)interval.TotalSeconds,
             };
         }
 
         public static ContinuousSchedule Deserialize(Serialization.Schedule sched)
         {
-            return new ContinuousSchedule(new DateTime((long)sched.FirstDeparture), sched.Interval);
+            return new ContinuousSchedule(new DateTime((long)sched.FirstDeparture),
+                TimeSpan.FromSeconds(sched.Interval));
         }
     }
 

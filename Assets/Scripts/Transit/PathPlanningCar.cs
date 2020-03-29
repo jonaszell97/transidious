@@ -31,7 +31,7 @@ namespace Transidious.PathPlanning
             }
             else
             {
-                speed = Velocity.FromKPH(50);
+                speed = Velocity.FromRealTimeKPH(50);
             }
 
             return (float)(Distance.Between(start.Location, goal.Location) / speed).TotalSeconds;
@@ -44,7 +44,7 @@ namespace Transidious.PathPlanning
         IStop End { get; }
         bool OneWay { get; }
 
-        GameTimeSpan TravelTime { get; }
+        TimeSpan TravelTime { get; }
         Velocity AverageSpeed { get; }
         int AssociatedID { get; }
 
@@ -72,7 +72,7 @@ namespace Transidious.PathPlanning
             this.time = default;
         }
 
-        public abstract GameTimeSpan EstimateDuration(PathPlanningOptions options);
+        public abstract TimeSpan EstimateDuration(PathPlanningOptions options);
 
         protected abstract Google.Protobuf.IMessage ToProtobufInternal();
 
@@ -92,7 +92,7 @@ namespace Transidious.PathPlanning
         {
             if (pathStep.Details.TryUnpack(out Serialization.PathStep.Types.WaitStep waitStep))
             {
-                return new WaitStep(GameTimeSpan.FromGameTimeMilliseconds(waitStep.WaitingTime));
+                return new WaitStep(TimeSpan.FromMilliseconds(waitStep.WaitingTime));
             }
 
             if (pathStep.Details.TryUnpack(out Serialization.PathStep.Types.WalkStep walkStep))
@@ -164,7 +164,7 @@ namespace Transidious.PathPlanning
             this.to = to;
         }
 
-        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
+        public override TimeSpan EstimateDuration(PathPlanningOptions options)
         {
             var distMeters = Distance.Between(from, to);
             return distMeters / (options.citizen?.WalkingSpeed ?? Velocity.FromKPH(5));
@@ -183,14 +183,14 @@ namespace Transidious.PathPlanning
     public class WaitStep : PathStep
     {
         /// The waiting time.
-        public GameTimeSpan waitingTime;
+        public TimeSpan waitingTime;
 
-        public WaitStep(GameTimeSpan waitingTime) : base(Type.Wait)
+        public WaitStep(TimeSpan waitingTime) : base(Type.Wait)
         {
             this.waitingTime = waitingTime;
         }
 
-        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
+        public override TimeSpan EstimateDuration(PathPlanningOptions options)
         {
             return waitingTime;
         }
@@ -218,9 +218,9 @@ namespace Transidious.PathPlanning
             this.routes = routes;
         }
 
-        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
+        public override TimeSpan EstimateDuration(PathPlanningOptions options)
         {
-            var ts = new GameTimeSpan();
+            var ts = new TimeSpan();
             foreach (var route in routes)
             {
                 ts += route.TravelTime;
@@ -257,7 +257,7 @@ namespace Transidious.PathPlanning
             this.driveSegment = driveSegment;
         }
 
-        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
+        public override TimeSpan EstimateDuration(PathPlanningOptions options)
         {
             return driveSegment.segment.TravelTime;
         }
@@ -306,7 +306,7 @@ namespace Transidious.PathPlanning
             this.parkingLot = parkingLot;
         }
 
-        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
+        public override TimeSpan EstimateDuration(PathPlanningOptions options)
         {
             var seg = driveSegment.segment;
 
@@ -404,10 +404,10 @@ namespace Transidious.PathPlanning
             this.intersection = intersection;
         }
 
-        public override GameTimeSpan EstimateDuration(PathPlanningOptions options)
+        public override TimeSpan EstimateDuration(PathPlanningOptions options)
         {
             // FIXME
-            return GameTimeSpan.zero;
+            return TimeSpan.Zero;
         }
 
         protected override Google.Protobuf.IMessage ToProtobufInternal()
@@ -584,7 +584,7 @@ namespace Transidious.PathPlanning
                         {
                             if (i == 0 || !(steps[i - 1] is WaitStep))
                             {
-                                var waitStep = new WaitStep(GameTimeSpan.Difference(departure, time));
+                                var waitStep = new WaitStep(departure - time);
                                 waitStep.time = time;
 
                                 steps.Insert(i, waitStep);

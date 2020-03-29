@@ -96,12 +96,12 @@ namespace Transidious
             
             public bool OneWay => true;
 
-            public GameTimeSpan TravelTime => GetTravelTime(length);
+            public TimeSpan TravelTime => GetTravelTime(length);
 
-            public GameTimeSpan GetTravelTime(Distance length)
+            public TimeSpan GetTravelTime(Distance length)
             {
                 var seconds = length / segment.street.AverageSpeed;
-                return seconds * GameController.instance.sim.trafficSim.CurrentTrafficFactor;
+                return seconds.Multiply(GameController.instance.sim.trafficSim.CurrentTrafficFactor);
             }
 
             public Velocity AverageSpeed => segment.street.AverageSpeed;
@@ -583,12 +583,12 @@ namespace Transidious
 
         public bool OneWay => street.isOneWay;
 
-        public GameTimeSpan TravelTime => GetTravelTime(Distance.FromMeters(length));
+        public TimeSpan TravelTime => GetTravelTime(Distance.FromMeters(length));
 
-        public GameTimeSpan GetTravelTime(Distance length)
+        public TimeSpan GetTravelTime(Distance length)
         {
             var seconds = length / street.AverageSpeed;
-            return seconds * Game.sim.trafficSim.CurrentTrafficFactor;
+            return seconds.Multiply(Game.sim.trafficSim.CurrentTrafficFactor);
         }
 
         public Velocity AverageSpeed => street.AverageSpeed;

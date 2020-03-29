@@ -1301,7 +1301,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: linesToLoad.Array.size
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1351,27 +1351,27 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: linesToLoad.Array.data[0]
-      value: M49
-      objectReference: {fileID: 0}
-    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
-        type: 3}
-      propertyPath: linesToLoad.Array.data[1]
       value: 309
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
-      propertyPath: linesToLoad.Array.data[2]
-      value: 139
+      propertyPath: linesToLoad.Array.data[1]
+      value: M49
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
-      propertyPath: linesToLoad.Array.data[3]
+      propertyPath: linesToLoad.Array.data[2]
       value: X34
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
-      propertyPath: linesToLoad.Array.data[4]
+      propertyPath: linesToLoad.Array.data[3]
       value: M45
+      objectReference: {fileID: 0}
+    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
+        type: 3}
+      propertyPath: linesToLoad.Array.data[4]
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}

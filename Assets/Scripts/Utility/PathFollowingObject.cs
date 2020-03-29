@@ -120,7 +120,7 @@ namespace Transidious
 
         public void Update(float delta)
         {
-            var newProgress = velocity.MPS * delta;
+            var newProgress = velocity.RealTimeMPS * delta;
 
             progress += newProgress;
             totalProgress += newProgress;

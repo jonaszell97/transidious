@@ -7,11 +7,6 @@ namespace Transidious
 {
     public abstract class MeshBuilder
     {
-#if DEBUG
-        public static int quadVerts = 0;
-        public static int circleVerts = 0;
-#endif
-
         public static void AddQuad(List<Vector3> vertices,
                                    List<int> triangles,
                                    List<Vector3> normals,
@@ -37,10 +32,6 @@ namespace Transidious
             triangles.Add(2 + baseIndex);
             triangles.Add(3 + baseIndex);
             triangles.Add(0 + baseIndex);
-
-#if DEBUG
-            quadVerts += 6;
-#endif
 
             uvs.Add(new Vector2(0, 0));
             uvs.Add(new Vector2(0, 1));
@@ -104,17 +95,17 @@ namespace Transidious
                                                 List<int> triangles,
                                                 List<Vector2> uvs,
                                                 float radius,
-                                                int segments,
+                                                int circleSegments,
                                                 float z,
                                                 bool useZ,
                                                 int connectionOffset,
                                                 Vector3 p0, Vector3 p1, Vector3 p2)
         {
             var baseIndex = vertices.Count;
-            var angleDeg = Vector2.SignedAngle(p1 - p0, p2 - p1);
+            var angle = Math.DirectionalAngleRad(p1 - p0, p1 - p2);
 
-            var cmp = angleDeg.CompareTo(0f);
-            if (cmp == 0)
+            var cmp = angle.CompareTo(Mathf.PI);
+            if (cmp == 0 || angle.Equals(0f))
             {
                 return 0;
             }
@@ -139,94 +130,70 @@ namespace Transidious
                 fromIdx = baseIndex - 4 - connectionOffset - 2;
             }
 
-            var circleSegmentWidth = 2.5f;
-            var totalCircumference = 2 * Mathf.PI * radius;
-            var angleDiffDeg = Vector2.Angle(p1 - p0, p2 - p1);
-            var circumference = totalCircumference * (angleDiffDeg / 360f);
-            var neededSegments = (int)Mathf.Floor(circumference / circleSegmentWidth);
+            var totalAngle = Math.DirectionalAngleRad(p1 - vertices[fromIdx], p1 - vertices[toIdx]);
+            if (goesRight)
+            {
+                totalAngle = Math.TwoPI - totalAngle;
+            }
+
+            var segments = (int) Mathf.Ceil(circleSegments * (totalAngle / Math.TwoPI));
+            var angleStep = totalAngle / segments;
 
             var center = p1;
             var centerIdx = vertices.Count;
             vertices.Add(new Vector3(center.x, center.y, useZ ? z : 0f));
+
+            var currentAngle = angleStep;
+            var baseAngle = Math.DirectionalAngleRad(new Vector2(1, 0), p1 - vertices[fromIdx]);
+            if (goesRight)
+            {
+                baseAngle = (2f * Mathf.PI) - baseAngle;
+            }
             
-            // Just add a straight line, the connection is too short to notice.
-            if (true || neededSegments <= 1)
+            for (var k = 0; k < segments; ++k, currentAngle += angleStep)
             {
-                // Clockwise
-                triangles.Add(centerIdx);
-
-                if (goesRight)
+                int nextIdx;
+                if (k == segments - 1)
                 {
-                    triangles.Add(fromIdx);
-                    triangles.Add(toIdx);
+                    nextIdx = toIdx;
                 }
                 else
                 {
-                    triangles.Add(toIdx);
-                    triangles.Add(fromIdx);
-                }
+                    float realAngle;
+                    if (goesRight)
+                    {
+                        realAngle = Math.ThreeHalvesPI + currentAngle + baseAngle;
+                    }
+                    else
+                    {
+                        realAngle = Math.ThreeHalvesPI - currentAngle - baseAngle;
+                    }
 
-#if DEBUG
-                circleVerts += 3;
-#endif
-
-                return 1;
-            }
-
-            var prevAngleRad = Vector2.Angle(Vector2.right, p1 - p0) * Mathf.Deg2Rad;
-            var stepDeg = angleDiffDeg / neededSegments;
-            var stepRad = stepDeg * Mathf.Deg2Rad;
-            baseIndex = vertices.Count;
-
-            for (var j = 1; j < neededSegments; ++j)
-            {
-                // x = cx + r * cos(a)
-                // y = cy + r * sin(a)
-                var nextAngle = prevAngleRad + j * stepRad;
-                var x = center.x + radius * Mathf.Cos(nextAngle);
-                var y = center.y + radius * Mathf.Sin(nextAngle);
-
-                vertices.Add(new Vector3(x, y, z));
-            }
-
-            for (var j = 0; j < neededSegments; ++j)
-            {
-                int idx0, idx1;
-                if (j == 0)
-                {
-                    idx0 = fromIdx;
-                    idx1 = baseIndex + j;
-                }
-                else if (j == neededSegments - 1)
-                {
-                    idx0 = baseIndex + j;
-                    idx1 = toIdx;
-                }
-                else
-                {
-                    idx0 = baseIndex + j;
-                    idx1 = baseIndex + j + 1;
+                    var nextPt = Math.GetPointOnCircleClockwiseRad(center, radius, realAngle);
+                    nextIdx = vertices.Count;
+                    vertices.Add(nextPt);
                 }
 
                 triangles.Add(centerIdx);
 
                 if (goesRight)
                 {
-                    triangles.Add(idx0);
-                    triangles.Add(idx1);
+                    triangles.Add(fromIdx);
+                    triangles.Add(nextIdx);
                 }
                 else
                 {
-                    triangles.Add(idx1);
-                    triangles.Add(idx0);
+                    triangles.Add(nextIdx);
+                    triangles.Add(fromIdx);
                 }
 
-#if DEBUG
-                circleVerts += 3;
-#endif
+                // Uncomment for debugging
+                Utility.DrawArrow(vertices[centerIdx], vertices[nextIdx], .2f, Color.blue);
+
+                fromIdx = nextIdx;
             }
 
-            return neededSegments;
+            return segments;
         }
 
         public static void AddCirclePart(List<Vector3> vertices,
@@ -269,63 +236,6 @@ namespace Transidious
 
                 lastIdx = nextIdx;
             }
-
-            /*var centerIdx = vertices.Count;
-            vertices.Add(center);
-
-            var left = Vector2.Perpendicular(direction).normalized * radius;
-            var right = -left;
-
-            var leftIdx = vertices.Count;
-            vertices.Add(center + (Vector3)left);
-
-            var rightIdx = vertices.Count;
-            vertices.Add(center + (Vector3)right);
-
-            var beginAngleRad = Math.toRadians(Vector2.Angle(Vector2.right, left));
-            var stepRad = Mathf.PI / segments;
-            var baseIndex = vertices.Count;
-
-            for (var i = 1; i < segments; ++i)
-            {
-                // x = cx + r * cos(a)
-                // y = cy + r * sin(a)
-                var nextAngle = beginAngleRad + i * stepRad;
-                var x = center.x + radius * Mathf.Cos(nextAngle);
-                var y = center.y + radius * Mathf.Sin(nextAngle);
-
-                vertices.Add(new Vector3(x, y, z));
-
-                Utility.DrawCircle(vertices.Last(), .1f, .1f, Color.black);
-            }
-
-            for (var i = 0; i < segments; ++i)
-            {
-                int idx0, idx1;
-                if (i == 0)
-                {
-                    idx0 = leftIdx;
-                    idx1 = baseIndex + i;
-                }
-                else if (i == segments - 1)
-                {
-                    idx0 = baseIndex + i - 1;
-                    idx1 = rightIdx;
-                }
-                else
-                {
-                    idx0 = baseIndex + i - 1;
-                    idx1 = baseIndex + i;
-                }
-
-                triangles.Add(centerIdx);
-                triangles.Add(idx1);
-                triangles.Add(idx0);
-
-#if DEBUG
-                circleVerts += 3;
-#endif
-            }*/
         }
 
         static void CreateSmoothLine_AddQuad(IReadOnlyList<Vector3> positions,
@@ -433,7 +343,7 @@ namespace Transidious
             AddQuad(vertices, triangles, normals, uv, bl, tr, br, tl);
             ++quads;
 
-            if (i > 1 && quads > 1)
+            if (quads > 1)
             {
                 //AddCirclePart(vertices, triangles, uv, p1, endWidth, line, 10, z);
                 connectionOffset = AddSmoothIntersection(positions, i, vertices, triangles, uv,
@@ -441,7 +351,8 @@ namespace Transidious
                                                          z, useZ, connectionOffset,
                                                          p0, p1, p2);
             }
-            else if (i == positions.Count - 1 && endCap)
+
+            if (i == positions.Count - 1 && endCap)
             {
                 AddCirclePart(vertices, triangles, uv, p2, endWidth, line12, 10, z);
             }

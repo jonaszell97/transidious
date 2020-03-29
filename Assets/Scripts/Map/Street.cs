@@ -62,7 +62,7 @@ namespace Transidious
             this.name = name;
             this.lit = lit;
             this.isOneWay = isOneWay;
-            this.maxspeed = Velocity.FromKPH(maxspeed > 0 ? maxspeed : GetDefaultMaxSpeed());
+            this.maxspeed = Velocity.FromRealTimeKPH(maxspeed > 0 ? maxspeed : GetDefaultMaxSpeed());
             this.lanes = lanes > 0 ? lanes : GetDefaultLanes();
             this.segments = new List<StreetSegment>();
             this.length = 0f;

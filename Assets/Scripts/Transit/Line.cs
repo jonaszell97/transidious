@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -41,8 +42,8 @@ namespace Transidious
         public List<Route> routes;
         public List<TransitVehicle> vehicles;
         public float length;
-        public float stopDuration;
-        public float endOfLineWaitTime = 0f;
+        public TimeSpan stopDuration;
+        public TimeSpan endOfLineWaitTime;
         public Velocity velocity;
 
         public int weeklyPassengers;
@@ -58,15 +59,15 @@ namespace Transidious
             {
                 switch (type)
                 {
-                case TransitType.Bus: return Velocity.FromKPH(45.0f);
-                case TransitType.Tram: return Velocity.FromKPH(45.0f);
-                case TransitType.Subway: return Velocity.FromKPH(50.0f);
-                case TransitType.LightRail: return Velocity.FromKPH(60.0f);
-                case TransitType.IntercityRail: return Velocity.FromKPH(80.0f);
-                case TransitType.Ferry: return Velocity.FromKPH(10.0f);
+                case TransitType.Bus: return Velocity.FromRealTimeKPH(45.0f);
+                case TransitType.Tram: return Velocity.FromRealTimeKPH(45.0f);
+                case TransitType.Subway: return Velocity.FromRealTimeKPH(50.0f);
+                case TransitType.LightRail: return Velocity.FromRealTimeKPH(60.0f);
+                case TransitType.IntercityRail: return Velocity.FromRealTimeKPH(80.0f);
+                case TransitType.Ferry: return Velocity.FromRealTimeKPH(10.0f);
                 default:
                     Debug.LogError("Unknown transit type!");
-                    return Velocity.FromKPH(50.0f);
+                    return Velocity.FromRealTimeKPH(50.0f);
                 }
             }
         }
@@ -74,19 +75,20 @@ namespace Transidious
         /// <summary>
         /// Average time spent waiting at a stop (in seconds).
         /// </summary>
-        public float AverageStopDuration
+        public TimeSpan AverageStopDuration
         {
             get
             {
+                return TimeSpan.Zero;
                 switch (type)
                 {
                     default:
-                    case TransitType.Bus: return 30.0f;
-                    case TransitType.Tram: return 30.0f;
-                    case TransitType.Subway: return 20.0f;
-                    case TransitType.LightRail: return 20.0f;
-                    case TransitType.IntercityRail: return 180.0f;
-                    case TransitType.Ferry: return 180.0f;
+                    case TransitType.Bus: return TimeSpan.FromSeconds(90.0f);
+                    case TransitType.Tram: return TimeSpan.FromSeconds(90.0f);
+                    case TransitType.Subway: return TimeSpan.FromSeconds(120.0f);
+                    case TransitType.LightRail: return TimeSpan.FromSeconds(240.0f);
+                    case TransitType.IntercityRail: return TimeSpan.FromSeconds(300.0f);
+                    case TransitType.Ferry: return TimeSpan.FromSeconds(300.0f);
                 }
             }
         }
@@ -130,11 +132,6 @@ namespace Transidious
             this.routes = new List<Route>();
             this.stops = new List<Stop>();
             this.vehicles = new List<TransitVehicle>();
-        }
-
-        public void SetName(string name)
-        {
-            this.name = name;
         }
 
         public void SetColor(Color color)
@@ -218,45 +215,36 @@ namespace Transidious
             Debug.Assert(routes.Count > 0, "empty line!");
 
             var sim = Game.sim;
-            var fixedUpdateInterval = sim.FixedUpdateInterval / 1000f;
-            var interval = schedule.dayInterval * 60f;
-            var speedMetersPerSecond = AverageSpeed.MPS;
+            var interval = TimeSpan.FromMinutes(schedule.dayInterval);
             var earliestDeparture = sim.GameTime;
 
-            // Round to the nearest fixed update interval.
-            interval = Mathf.Ceil(interval / fixedUpdateInterval) * fixedUpdateInterval;
+            var lineDuration = distance / AverageSpeed;
+            lineDuration += AverageStopDuration.Multiply(stops.Count - 1);
 
-            var lineDurationSeconds = (length / speedMetersPerSecond) * sim.BaseSpeedMultiplier;
-            lineDurationSeconds += stops.Count * AverageStopDuration;
-
-            var neededVehiclesExact = lineDurationSeconds / interval;
+            var neededVehiclesExact = (float) (lineDuration.TotalSeconds / interval.TotalSeconds);
             var neededVehicles = (int)Mathf.Ceil(neededVehiclesExact);
 
             var extraPercentage = (neededVehicles / neededVehiclesExact) - 1f;
-            var extraTime = extraPercentage * lineDurationSeconds;
+            var extraTime = lineDuration.Multiply(extraPercentage);
 
             // Increase stop duration to ensure equal spacing between vehicles.
-            this.endOfLineWaitTime = Mathf.Ceil(
-               extraTime / fixedUpdateInterval) * fixedUpdateInterval;
+            this.endOfLineWaitTime = extraTime;
 
             if (!Game.ImportingMap)
             {
-                var departure = earliestDeparture.AddSeconds(stopDuration);
-                departure = sim.RoundToNextFixedUpdate(departure);
-
+                var departure = earliestDeparture;
                 for (var i = 0; i < neededVehicles; ++i)
                 {
                     var v = sim.CreateVehicle(this);
                     this.vehicles.Add(v);
 
                     v.nextStopTime = departure;
-                    departure = departure.AddSeconds(interval);
+                    departure = departure.Add(interval).Add(AverageStopDuration);
                 }
             }
 
-            var totalTravelTimeSeconds = 0f;
-            var firstDeparture = earliestDeparture.AddSeconds(stopDuration);
-            firstDeparture = sim.RoundToNextFixedUpdate(firstDeparture);
+            var totalTravelTime = TimeSpan.Zero;
+            var firstDeparture = earliestDeparture;
 
             for (var i = 0; i < routes.Count; ++i)
             {
@@ -266,14 +254,15 @@ namespace Transidious
                     route.beginStop.SetSchedule(this, new ContinuousSchedule(firstDeparture, interval));
                 }
 
-                totalTravelTimeSeconds += (route.length / speedMetersPerSecond) * sim.BaseSpeedMultiplier;
-                totalTravelTimeSeconds += stopDuration;
+                totalTravelTime += route.distance / AverageSpeed;
 
                 if (i != routes.Count - 1)
                 {
                     route.endStop.SetSchedule(this, new ContinuousSchedule(
-                        firstDeparture.AddSeconds(totalTravelTimeSeconds), interval));
+                        firstDeparture.Add(totalTravelTime), interval));
                 }
+                
+                totalTravelTime += stopDuration;
             }
         }
 

@@ -41,15 +41,15 @@ namespace Transidious
                 {
                     default:
                     case 0:
-                        return Velocity.FromMPS(33.333f); // 120 km/h
+                        return Velocity.FromRealTimeKPH(120f);
                     case 1:
-                        return Velocity.FromMPS(19.444f); // 70 km/h
+                        return Velocity.FromRealTimeKPH(70f);
                     case 2:
-                        return Velocity.FromMPS(27.777f); // 100 km/h
+                        return Velocity.FromRealTimeKPH(100f);
                     case 3:
-                        return Velocity.FromMPS(27.777f); // 100 km/h
+                        return Velocity.FromRealTimeKPH(100f);
                     case 4:
-                        return Velocity.FromMPS(22.222f); // 80 km/h
+                        return Velocity.FromRealTimeKPH(80f);
                 }
             }
         }

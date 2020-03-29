@@ -135,6 +135,47 @@ namespace Transidious
         {
             EventManager.current.RegisterEventListener(this);
             UpdateCitizenUI();
+            
+            /*var p0 = new Vector2(0,0);
+            var p1 = new Vector2(0, 1);
+            var p2 = new Vector2(1, 1);
+            
+            var angleDeg = Math.DirectionalAngleDeg(p1 - p0, p1 - p2);
+            Debug.Log($"angle: {angleDeg}");
+            
+            p0 = new Vector2(0,0);
+            p1 = new Vector2(0, 1);
+            p2 = new Vector2(0, 2);
+            
+            angleDeg = Math.DirectionalAngleDeg(p1 - p0, p1 - p2);
+            Debug.Log($"angle: {angleDeg}");
+            
+            p0 = new Vector2(0,0);
+            p1 = new Vector2(0, 1);
+            p2 = new Vector2(-1, 1);
+            
+            angleDeg = Math.DirectionalAngleDeg(p1 - p0, p1 - p2);
+            Debug.Log($"angle: {angleDeg}");*/
+
+            // var positions = new Vector2[]
+            // {
+            //     new Vector2(0f, 0f), 
+            //     new Vector2(0f, 20f),
+            //     new Vector2(15f, 40f),
+            //     new Vector2(15f, 60f),
+            //     new Vector2(0f, 80f),
+            //     new Vector2(15f, 100f),
+            // };
+            //
+            // var mesh = MeshBuilder.CreateSmoothLine(positions.Select(v => new Vector3(v.x - 1500f, v.y - 1500f, 0f)).ToArray(),
+            //     5f, 20, 0f);
+            //
+            // var obj = new GameObject();
+            // var r = obj.AddComponent<MeshRenderer>();
+            // var f = obj.AddComponent<MeshFilter>();
+            //
+            // f.mesh = mesh;
+            // r.material = GameController.instance.GetUnlitMaterial(Color.red);
         }
 
         void FixedUpdate()
@@ -209,19 +250,10 @@ namespace Transidious
 #endif
 
             timedEvents.Add(Tuple.Create(gameTime, callback));
-            timedEvents.Sort((Tuple<DateTime, TimedEvent> t1, Tuple<DateTime, TimedEvent> t2) =>
-            {
-                return t1.Item1.CompareTo(t2.Item1);
-            });
+            timedEvents.Sort((t1, t2) => t1.Item1.CompareTo(t2.Item1));
         }
 
-        public float FixedUpdateInterval
-        {
-            get
-            {
-                return Time.fixedDeltaTime * 1000 * BaseSpeedMultiplier;
-            }
-        }
+        public float FixedUpdateInterval => Time.fixedDeltaTime * 1000 * BaseSpeedMultiplier;
 
         public DateTime RoundToNextFixedUpdate(DateTime gameTime)
         {
@@ -278,6 +310,11 @@ namespace Transidious
         public static TimeSpan RealTimeToGameTime(TimeSpan ts)
         {
             return TimeSpan.FromSeconds(ts.TotalSeconds * 60);
+        }
+
+        public static TimeSpan GameTimeToRealTime(TimeSpan ts)
+        {
+            return TimeSpan.FromSeconds(ts.TotalSeconds / 60);
         }
 
         void OnLanguageChange()
