@@ -43,10 +43,13 @@ namespace Transidious
                                                    Vector2 startPt, Vector2 endPt,
                                                    Vector2 controlPt,
                                                    int segments = 15,
+                                                   bool includeBasePoints = true,
                                                    float z = 0f)
         {
             Debug.Assert(segments > 0, "segment count must be positive!");
-            points.Add(startPt);
+            
+            if (includeBasePoints)
+                points.Add(startPt);
 
             var tStep = 1f / segments;
             for (float t = tStep; t < 1f; t += tStep)
@@ -59,16 +62,21 @@ namespace Transidious
                 points.Add(new Vector3(x, y, z));
             }
 
-            points.Add(endPt);
+            if (includeBasePoints)
+                points.Add(endPt);
         }
 
         public static void AddCubicBezierCurve(List<Vector3> points,
                                                Vector2 startPt, Vector2 endPt,
                                                Vector2 controlPt1, Vector2 controlPt2,
-                                               int segments = 15, float z = 0f)
+                                               int segments = 15,
+                                               bool includeBasePoints = true,
+                                               float z = 0f)
         {
             Debug.Assert(segments > 0, "segment count must be positive!");
-            points.Add(startPt);
+            
+            if (includeBasePoints)
+                points.Add(startPt);
 
             var tStep = 1f / segments;
             for (float t = tStep; t < 1f; t += tStep)
@@ -86,7 +94,8 @@ namespace Transidious
                 points.Add(new Vector3(x, y, z));
             }
 
-            points.Add(endPt);
+            if (includeBasePoints)
+                points.Add(endPt);
         }
 
         public static int AddSmoothIntersection(IReadOnlyList<Vector3> positions,
@@ -132,24 +141,13 @@ namespace Transidious
 
             if (vertices[fromIdx].Equals(vertices[toIdx]))
             {
-                // Debug.Break();
+                return 0;
             }
-            
+
             var totalAngle = Math.DirectionalAngleRad(p1 - vertices[fromIdx], p1 - vertices[toIdx]);
             if (totalAngle.Equals(0f))
             {
                 return 0;
-            }
-
-            if (goesRight)
-            {
-                Utility.DrawCircle(vertices[fromIdx], .2f, .2f, Color.red);
-                Utility.DrawCircle(vertices[toIdx], .2f, .2f, Color.green);
-            }
-            else
-            {
-                Utility.DrawCircle(vertices[fromIdx], .2f, .2f, Color.yellow);
-                Utility.DrawCircle(vertices[toIdx], .2f, .2f, Color.cyan);
             }
 
             if (goesRight)
@@ -209,7 +207,7 @@ namespace Transidious
                 }
 
                 // Uncomment for debugging
-                Utility.DrawArrow(vertices[centerIdx], vertices[nextIdx], .2f, Color.blue);
+                // Utility.DrawArrow(vertices[centerIdx], vertices[nextIdx], .2f, Color.blue);
 
                 fromIdx = nextIdx;
             }
@@ -501,6 +499,11 @@ namespace Transidious
 
             for (int i = 1; i < positions.Count; ++i)
             {
+                if (positions[i].Equals(positions[i - 1]))
+                {
+                    continue;
+                }
+
                 CreateSmoothLine_AddQuad(positions, i, width, width,
                                          startCap, endCap, vertices,
                                          triangles, uv, normals, cornerVertices, z,
@@ -517,17 +520,17 @@ namespace Transidious
             }
         }
 
-        public static void CreateSmoothLine(IReadOnlyList<Vector3> positions,
-                                            IReadOnlyList<float> widths,
-                                            bool startCap,
-                                            bool endCap,
-                                            List<Vector3> vertices,
-                                            List<int> triangles,
-                                            List<Vector2> uv,
-                                            int cornerVertices = 5,
-                                            float z = 0f,
-                                            PolygonCollider2D collider = null,
-                                            float offset = 0f)
+        static void CreateSmoothLine(IReadOnlyList<Vector3> positions,
+                                     IReadOnlyList<float> widths,
+                                     bool startCap,
+                                     bool endCap,
+                                     List<Vector3> vertices,
+                                     List<int> triangles,
+                                     List<Vector2> uv,
+                                     int cornerVertices,
+                                     float z,
+                                     PolygonCollider2D collider,
+                                     float offset)
         {
             Debug.Assert(widths.Count == positions.Count);
 
@@ -547,6 +550,11 @@ namespace Transidious
 
             for (int i = 1; i < positions.Count; ++i)
             {
+                if (positions[i].Equals(positions[i - 1]))
+                {
+                    continue;
+                }
+
                 CreateSmoothLine_AddQuad(positions, i, widths[i - 1], widths[i],
                                          startCap, endCap, vertices,
                                          triangles, uv, normals, cornerVertices, z,
@@ -594,6 +602,8 @@ namespace Transidious
                                             bool startCap = true, bool endCap = true,
                                             float offset = 0f)
         {
+            // positions = positions.Distinct().ToArray();
+            
             var vertices = new List<Vector3>();
             var triangles = new List<int>();
             var uv = new List<Vector2>();

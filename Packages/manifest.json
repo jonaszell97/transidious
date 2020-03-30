@@ -12,7 +12,7 @@
     "com.unity.purchasing": "2.0.6",
     "com.unity.test-framework": "1.1.11",
     "com.unity.textmeshpro": "2.0.1",
-    "com.unity.timeline": "1.2.10",
+    "com.unity.timeline": "1.1.0",
     "com.unity.ugui": "1.0.0",
     "com.unity.xr.legacyinputhelpers": "2.0.2",
     "com.whinarn.unitymeshsimplifier": "https://github.com/Whinarn/UnityMeshSimplifier.git",
@@ -50,8 +50,8 @@
   },
   "lock": {
     "com.whinarn.unitymeshsimplifier": {
-      "revision": "HEAD",
-      "hash": "e8ff4e8862735197c3308cfe926eeba68e0d2edb"
+      "hash": "e8ff4e8862735197c3308cfe926eeba68e0d2edb",
+      "revision": "HEAD"
     }
   }
 }

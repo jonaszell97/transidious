@@ -2173,7 +2173,7 @@ namespace Transidious
 
             if (isLoadedFromSaveFile)
             {
-                Game.transitEditor.InitOverlappingRoutes();
+                // Game.transitEditor.InitOverlappingRoutes();
             }
 
             yield break;

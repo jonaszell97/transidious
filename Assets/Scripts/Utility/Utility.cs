@@ -278,6 +278,24 @@ namespace Transidious
             return obj;
         }
 
+        public static GameObject DrawText(Vector2 pos, string text, float fontSize, Color c)
+        {
+            if (!DrawingEnabled)
+            {
+                return null;
+            }
+
+            var obj = new GameObject {name = "DebugText"};
+            obj.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.Foreground, 9));
+
+            var txt = obj.AddComponent<TMPro.TextMeshProUGUI>();
+            txt.text = text;
+            txt.fontSize = fontSize;
+            txt.color = c;
+
+            return obj;
+        }
+
         public static Rect RectTransformToScreenSpace(Camera cam, RectTransform transform)
         {
             var corners = new Vector3[4];

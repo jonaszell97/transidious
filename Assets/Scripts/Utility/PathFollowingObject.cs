@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Transidious
 {
@@ -28,7 +29,8 @@ namespace Transidious
 
         public PathFollowingObject(SimulationController sim, GameObject subject,
                                    List<Vector3> pathNodes, Velocity velocity,
-                                   CompletionCallback callback = null)
+                                   CompletionCallback callback = null, 
+                                   bool setRotation = false)
         {
             this.sim = sim;
             this.subject = subject;
@@ -45,10 +47,18 @@ namespace Transidious
                 this.totalThreshold += (pathNodes[i + 1] - pathNodes[i]).magnitude;
             }
 
+            if (subject.transform.position.Equals(pathNodes.First()))
+            {
+                MoveNext();
+            }
+            
             MoveNext();
 
-            prevRotation = Quaternion.FromToRotation(Vector3.up, nextPosition - startPosition);
-            subject.transform.rotation = prevRotation;
+            if (setRotation)
+            {
+                prevRotation = Quaternion.FromToRotation(Vector3.up, nextPosition - startPosition);
+                subject.transform.rotation = prevRotation;
+            }
         }
 
         public void SimulateProgress(float relativeProgress)
@@ -75,7 +85,7 @@ namespace Transidious
             startPosition = subject.transform.position;
             nextPosition = pathNodes[currentNode++];
 
-            var dir = (nextPosition - startPosition);
+            var dir = nextPosition - startPosition;
             threshold = dir.magnitude;
             direction = dir.normalized;
             prevRotation = subject.transform.rotation;
@@ -83,7 +93,7 @@ namespace Transidious
 
         void UpdateRotation(float progress)
         {
-            if (startPosition.Equals(subject.transform.position))
+            if (progress > 1f)
                 return;
 
             var rot = Quaternion.FromToRotation(Vector3.up, nextPosition - startPosition);
@@ -98,10 +108,8 @@ namespace Transidious
                 var progressPercentage = progress / threshold;
                 var lerpedPos = Vector2.Lerp(startPosition, nextPosition, progressPercentage);
 
-                subject.transform.position = new Vector3(lerpedPos.x, lerpedPos.y,
-                                                     subject.transform.position.z);
-
-                UpdateRotation(progressPercentage);
+                subject.transform.position = new Vector3(lerpedPos.x, lerpedPos.y, subject.transform.position.z);
+                UpdateRotation(progress / Mathf.Min(threshold, 5f));
             }
             else if (currentNode < pathNodes.Count)
             {

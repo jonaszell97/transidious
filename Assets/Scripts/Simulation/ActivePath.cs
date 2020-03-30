@@ -369,7 +369,6 @@ namespace Transidious
             UpdateSprite($"Sprites/car{car.model}", car.color);
 
             var tf = transform;
-            tf.SetPositionInLayer(positions.First());
             tf.localScale = new Vector3(.6f, .6f, 1f);
 
             // Inform traffic sim that a car is entering the intersection.
@@ -395,7 +394,7 @@ namespace Transidious
 
                     trafficSim.ExitStreetSegment(segment, drivingCar);
                     CompleteStep();
-                });
+                }, (currentStep as PartialDriveStep)?.partialStart ?? false);
 
             if (_currentStepProgress > 0f)
             {

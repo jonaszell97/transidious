@@ -544,7 +544,7 @@ namespace Transidious
                             {
                                 continue;
                             }
-                            else if (!endsHere && !from.EndUTurnAllowed)
+                            if (!endsHere && !from.EndUTurnAllowed)
                             {
                                 continue;
                             }
@@ -617,7 +617,7 @@ namespace Transidious
                             var controlPt2 = p0_B + (p0_B - p1_B).normalized * 5f;
 
                             MeshBuilder.AddCubicBezierCurve(currentPath,
-                                p1_A, p0_B, controlPt1, controlPt2, 4);
+                                p1_A, p0_B, controlPt1, controlPt2, 8, false);
                         }
                         else if (!Math.EquivalentAngles(p0_A, p1_A, p0_B, p1_B, 10f))
                         {
@@ -627,17 +627,17 @@ namespace Transidious
                             Debug.Assert(found, "streets do not intersect!");
 
                             MeshBuilder.AddQuadraticBezierCurve(
-                                currentPath, p1_A, p0_B, intPt, 4);
+                                currentPath, p1_A, p0_B, intPt, 8, false);
                         }
                         else
                         {
-                            currentPath.Add(p1_A);
+                            // currentPath.Add(p1_A);
 
                             var dir = p0_B - p1_A;
                             currentPath.Add(p1_A + (dir * .25f));
                             currentPath.Add(p1_A + (dir * .75f));
 
-                            currentPath.Add(p0_B);
+                            // currentPath.Add(p0_B);
                         }
 
                         toPaths[intersection.RelativePosition(to)] = currentPath.ToArray();
@@ -1503,7 +1503,7 @@ namespace Transidious
         float GetNextCarTerm(DrivingCar car, float v_alpha, float a)
         {
             // Approaching rate.
-            float deltaV = v_alpha - car.next.CurrentVelocity.MPS;
+            float deltaV = v_alpha - car.next.CurrentVelocity.RealTimeMPS;
 
             // Net distance to next vehicle.
             float s_alpha = car.DistanceToNextCar;
@@ -1514,7 +1514,7 @@ namespace Transidious
         float GetNextCarTerm(DrivingCar car, DrivingCar nextCar, float v_alpha, float a)
         {
             // Approaching rate.
-            float deltaV = v_alpha - nextCar.CurrentVelocity.MPS;
+            float deltaV = v_alpha - nextCar.CurrentVelocity.RealTimeMPS;
 
             // Net distance to next vehicle.
             float s_alpha = car.DistanceToIntersection + nextCar.distanceFromStart;
@@ -1525,7 +1525,7 @@ namespace Transidious
         public float GetSafeAcceleration(DrivingCar car, float t, float v_alpha, float a)
         {
             // Desired velocity.
-            var v0 = Mathf.Min(car.car.MaxVelocity.MPS, car.segment.street.MaxSpeed.MPS);
+            var v0 = Mathf.Min(car.car.MaxVelocity.RealTimeMPS, car.segment.street.MaxSpeed.RealTimeMPS);
 
             // Free road term
             float freeRoadTerm = Mathf.Pow(v_alpha / v0, delta);
@@ -1620,8 +1620,8 @@ namespace Transidious
         /// Based on Intelligent Driver Model (https://en.wikipedia.org/wiki/Intelligent_driver_model)
         public Velocity GetCarVelocity(DrivingCar car, float timeSinceLastUpdate)
         {
-            var yn = car.CurrentVelocity.MPS;
-            return Velocity.FromMPS(RungeKutta(car, yn, 3));
+            var yn = car.CurrentVelocity.RealTimeMPS;
+            return Velocity.FromRealTimeMPS(RungeKutta(car, yn, 3));
         }
 
         void UpdateTrafficLights()

@@ -702,86 +702,10 @@ namespace Transidious
 
         public static float GetBorderWidth(Street.Type type, RenderingDistance distance)
         {
-#if DEBUG
-            if (GameController.instance.ImportingMap)
-            {
-                return 3f;
-            }
-#endif
+            if (type == Street.Type.River)
+                return 0f;
 
-            switch (type)
-            {
-            case Street.Type.Highway:
-            case Street.Type.Primary:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                    return 1f;
-                case RenderingDistance.Far:
-                    return 3f;
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    return 0f;
-                }
-
-                break;
-            case Street.Type.Secondary:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                    return 1f;
-                case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                    return 3f;
-                case RenderingDistance.Farthest:
-                    return 0f;
-                }
-
-                break;
-            case Street.Type.Tertiary:
-            case Street.Type.Residential:
-            case Street.Type.Link:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                    return 1f;
-                case RenderingDistance.Far:
-                    return 3f;
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    return 0f;
-                }
-
-                break;
-            case Street.Type.Path:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    return 0f;
-                }
-
-                break;
-            case Street.Type.River:
-                switch (distance)
-                {
-                case RenderingDistance.Near:
-                    return 2f;
-                case RenderingDistance.Far:
-                    return 3f;
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    return 0f;
-                }
-
-                break;
-            default:
-                break;
-            }
-
-            throw new System.ArgumentException(string.Format("Illegal enum value {0}", distance));
+            return 1f;
         }
 
         public Color GetStreetColor(MapDisplayMode mode = MapDisplayMode.Day)
