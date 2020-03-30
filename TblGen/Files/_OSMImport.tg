@@ -40,6 +40,7 @@ class RiverInfo<let relationTags: list<Tag>, let wayTags: list<Tag> >
 enum NatureType {
     Park,
     Lake,
+    River,
     Green,
     SportsPitch,
     Allotment,
@@ -48,9 +49,14 @@ enum NatureType {
     Beach,
     Forest,
     Parking,
+    Residential,
+    Zoo,
 }
 
-class NaturalFeatureInfo<let type: NatureType, let tags: list<Tag>, let geoTypes: list<GeoType> >
+class NaturalFeatureInfo<let type: NatureType,
+                         let tags: list<Tag>,
+                         let geoTypes: list<GeoType>,
+                         let visualOnly: i1 = false>
 
 enum BuildingType {
     Residential,
@@ -61,11 +67,15 @@ enum BuildingType {
     University,
     Hospital,
     Stadium,
+    Airport,
 
     GroceryStore,
 }
 
-class BuildingInfo<let type: BuildingType, let tags: list<Tag>, let geoTypes: list<GeoType> >
+class BuildingInfo<let type: BuildingType,
+                   let tags: list<Tag>,
+                   let geoTypes: list<GeoType>,
+                   let visualOnly: i1 = false>
 
 class Area {
     let country: string
@@ -117,6 +127,9 @@ class DefaultArea : Area
         StreetInfo<.Tertiary, [
             Tag<"highway", "tertiary">
         ]>,
+        StreetInfo<.Tertiary, [
+            Tag<"highway", "unclassified">
+        ]>,
         StreetInfo<.Link, [
             Tag<"highway", "tertiary_link">
         ]>,
@@ -126,7 +139,7 @@ class DefaultArea : Area
         // StreetInfo<.Path, [
         //     Tag<"highway", "service">
         // ]>,
-        // StreetInfo<.Path, [
+        // StreetInfo<.Tertiary, [
         //     Tag<"highway", "track">
         // ]>,
         // StreetInfo<.Path, [
@@ -213,10 +226,20 @@ class DefaultArea : Area
         NaturalFeatureInfo<.Green, [
             Tag<"landuse", "recreation_ground">
         ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Green, [
+            Tag<"natural", "heath">
+        ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Green, [
+            Tag<"natural", "grassland">
+        ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Zoo, [
+            Tag<"leisure", "zoo">
+        ], [.Way, .Relation]>,
 
         NaturalFeatureInfo<.Allotment, [
             Tag<"landuse", "allotments">
-        ], [.Way, .Relation]>,
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.Cemetery, [
             Tag<"landuse", "cemetery">
@@ -229,14 +252,35 @@ class DefaultArea : Area
             Tag<"leisure", "track">
         ], [.Way, .Relation]>,
 
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"natural", "water">,
+        //     Tag<"water", "river">
+        // ], [.Way, .Relation]>,
+
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"waterway", "river">
+        // ], [.Way, .Relation]>,
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"waterway", "riverbank">
+        // ], [.Way, .Relation]>,
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"waterway", "stream">
+        // ], [.Way, .Relation]>,
+        // NaturalFeatureInfo<.River, [
+        //     Tag<"waterway", "canal">
+        // ], [.Way, .Relation]>,
+
         NaturalFeatureInfo<.Lake, [
             Tag<"natural", "water">
         ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Lake, [
+            Tag<"leisure", "swimming_pool">
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.FootpathArea, [
             Tag<"highway", "footpath">,
             Tag<"area", "yes">,
-        ], [.Way, .Relation]>,
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.Forest, [
             Tag<"landuse", "forest">,
@@ -245,10 +289,17 @@ class DefaultArea : Area
         NaturalFeatureInfo<.Beach, [
             Tag<"natural", "beach">,
         ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.Beach, [
+            Tag<"natural", "sand">,
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.Parking, [
             Tag<"amenity", "parking">,
         ], [.Way, .Relation]>,
+
+        NaturalFeatureInfo<.Residential, [
+            Tag<"landuse", "residential">,
+        ], [.Way, .Relation], true>,
     ]
 
     override buildings = [
@@ -290,6 +341,10 @@ class DefaultArea : Area
 
         BuildingInfo<.Stadium, [
             Tag<"building", "stadium">
+        ], [.Way, .Relation]>,
+
+        BuildingInfo<.Airport, [
+            Tag<"building", "airport">
         ], [.Way, .Relation]>
     ]
 }
@@ -306,29 +361,9 @@ def Berlin : DefaultArea {
     ]>
 }
 
-def Charlottenburg : DefaultArea {
-    country = "Deutschland/Berlin"
-    boundary = BoundaryInfo<"Charlottenburg", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "10">
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "10">
-    ]>
-}
 
-def CharlottenburgWilmersdorf : DefaultArea {
-    country = "Deutschland/Berlin"
-    nodeFile = "Deutschland/Berlin"
 
-    boundary = BoundaryInfo<"Charlottenburg-Wilmersdorf", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "9">
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "9">
-    ]>
-}
+
 
 def Mitte : DefaultArea {
     nodeFile = "Deutschland/Berlin"
@@ -556,9 +591,20 @@ def Fuerteventura : DefaultArea {
     country = "CanaryIslands"
     boundary = BoundaryInfo<"Fuerteventura", [
         Tag<"type", "boundary">,
-        Tag<"admin_level", "0">
+        
     ], [
         Tag<"boundary", "political">,
-        Tag<"admin_level", "0">
+        
+    ]>
+}
+
+def Charlottenburg : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"Charlottenburg", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "10>,"
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "10>,"
     ]>
 }

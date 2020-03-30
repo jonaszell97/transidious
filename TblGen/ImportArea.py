@@ -8,6 +8,7 @@ import io
 import json
 import numpy as np
 import pyclipper as clip
+import math
 from xml.etree import ElementTree
 
 import matplotlib.pyplot as plt
@@ -36,6 +37,34 @@ def scale_polygon(delta, vertices):
 def display_poly(vertices, color):
     xs, ys = zip(*vertices)
     plt.plot(xs, ys, color)
+
+def create_poly(vertices, poly_file_name, in_pbf_file_name, out_pbf_file_name):
+    poly_str = 'polygon\n1\n'
+
+    for pt in vertices:
+        poly_str += '  '
+        poly_str += str(pt[0])
+        poly_str += '  '
+        poly_str += str(pt[1])
+        poly_str += '\n'
+
+    poly_str += 'END\nEND\n'
+
+    poly_file = open(poly_file_name, 'wt')
+    poly_file.write(poly_str)
+    poly_file.close()
+
+    # generate pbf file from polygon
+    if not os.path.isfile(out_pbf_file_name):
+        # FNULL = open(os.devnull, 'w')
+        subprocess.run(
+            [
+                'osmosis',
+                '--read-pbf', in_pbf_file_name,
+                '--bounding-polygon', 'file=' + os.path.abspath(poly_file_name),
+                '--write-pbf', out_pbf_file_name,
+            ]  # , stdout=FNULL, stderr=subprocess.STDOUT
+        )
 
 # api = "https://api.openstreetmap.org/"
 
@@ -91,6 +120,11 @@ if len(sys.argv) > 3:
 else:
     searchTerm = searchTerm.replace(' ', '')
 
+if len(sys.argv) > 4:
+    backgroundSize = int(sys.argv[4])
+else:
+    backgroundSize = .01
+
 polyResult = requests.get("http://polygons.openstreetmap.fr/get_poly.py", params={
     'id': id,
     'params': 0,
@@ -100,6 +134,7 @@ polyData = polyResult.text.replace('\t', '  ')
 vertices = list()
 
 polyLines = polyData.split("\n")[2:-2]
+
 for line in polyLines:
     values = line.strip().split("  ")
 
@@ -111,53 +146,70 @@ for line in polyLines:
 
     vertices.append(np.array([x, y]))
 
+min_x = min(vertices, key=lambda v: v[0])[0] - backgroundSize
+max_x = max(vertices, key=lambda v: v[0])[0] + backgroundSize
+min_y = min(vertices, key=lambda v: v[1])[1] - backgroundSize
+max_y = max(vertices, key=lambda v: v[1])[1] + backgroundSize
+
+scaled_poly = scale_polygon(.0001, vertices)
+create_poly(scaled_poly, '../Resources/Poly/%s.poly' % (searchTerm),
+            '../Resources/OSM/%s.osm.pbf' % (country),
+            '../Resources/OSM/%s.osm.pbf' % (searchTerm))
+
+background_poly = np.array([np.array([min_x, min_y]),
+                            np.array([min_x, max_y]),
+                            np.array([max_x, max_y]),
+                            np.array([max_x, min_y]),
+                            np.array([min_x, min_y])])
+
+create_poly(background_poly, '../Resources/Poly/Backgrounds/%s.poly' % (searchTerm),
+            '../Resources/OSM/%s.osm.pbf' % (country),
+            '../Resources/OSM/Backgrounds/%s.osm.pbf' % (searchTerm))
+
+
 ###
 
 # display_poly(vertices, 'r')
-# display_poly(scale_polygon(.0001, vertices), 'g')
+# # plt.show()
+# display_poly(background_poly, 'g')
 # plt.show()
 
 # exit(0)
 
 ###
 
-scaledPoly = scale_polygon(.0001, vertices)
-scaledPolyStr = 'polygon\n1\n'
+# scaledPolyStr = 'polygon\n1\n'
 
-for pt in scaledPoly:
-    scaledPolyStr += '  '
-    scaledPolyStr += str(pt[0])
-    scaledPolyStr += '  '
-    scaledPolyStr += str(pt[1])
-    scaledPolyStr += '\n'
+# for pt in scaledPoly:
+#     scaledPolyStr += '  '
+#     scaledPolyStr += str(pt[0])
+#     scaledPolyStr += '  '
+#     scaledPolyStr += str(pt[1])
+#     scaledPolyStr += '\n'
 
-scaledPolyStr += 'END\nEND\n'
-polyData = scaledPolyStr
+# scaledPolyStr += 'END\nEND\n'
+# polyData = scaledPolyStr
 
-polyFileName = '../Resources/Poly/' + searchTerm + '.poly'
-polyFile = open(polyFileName, 'w')
-polyFile.write(polyData)
-polyFile.close()
+# polyFileName = '../Resources/Poly/' + searchTerm + '.poly'
+# polyFile = open(polyFileName, 'w')
+# polyFile.write(polyData)
+# polyFile.close()
 
-# generate pbf file from polygon
-if not os.path.exists('../Resources/OSM/' + country):
-    os.mkdir('../Resources/OSM/' + country)
-
-pbfFileName = '../Resources/OSM/' + country + '/' + searchTerm + '.osm.pbf'
-if not os.path.isfile(pbfFileName):
-    FNULL = open(os.devnull, 'w')
-    subprocess.run(
-        [
-            'osmosis',
-            '--read-pbf', '../Resources/OSM/' + country + '.osm.pbf',
-            '--bounding-polygon', 'file=' + os.path.abspath(polyFileName) + '',
-            '--write-pbf', pbfFileName,
-        ]  # , stdout=FNULL, stderr=subprocess.STDOUT
-    )
+# # generate pbf file from polygon
+# pbfFileName = '../Resources/OSM/' + searchTerm + '.osm.pbf'
+# if not os.path.isfile(pbfFileName):
+#     FNULL = open(os.devnull, 'w')
+#     subprocess.run(
+#         [
+#             'osmosis',
+#             '--read-pbf', '../Resources/OSM/' + country + '.osm.pbf',
+#             '--bounding-polygon', 'file=' + os.path.abspath(polyFileName) + '',
+#             '--write-pbf', pbfFileName,
+#         ]  # , stdout=FNULL, stderr=subprocess.STDOUT
+#     )
 
 # output tblgen suggestion
-infoResult = requests.get(
-    'https://www.openstreetmap.org/api/0.6/relation/' + id)
+infoResult = requests.get('https://www.openstreetmap.org/api/0.6/relation/' + id)
 tree = ElementTree.fromstring(infoResult.content)
 
 admin_level = ''
@@ -168,7 +220,7 @@ for child in rel:
     if child.tag == 'tag':
         key = child.attrib['k']
         if key == 'admin_level':
-            admin_level = 'Tag<"admin_level", "{admin_level}>,"'.format(admin_level=child.attrib['v'])
+            admin_level = 'Tag<"admin_level", "{admin_level}">,'.format(admin_level=child.attrib['v'])
         elif key == 'boundary':
             boundary = child.attrib['v']
 

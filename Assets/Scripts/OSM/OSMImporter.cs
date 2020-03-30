@@ -64,10 +64,10 @@ namespace Transidious
         float cosCenterLat;
         private static readonly float earthRadius = 6371000f;
 
-        public void ImportArea(string areaName, string country)
+        public void ImportArea(string areaName)
         {
             {
-                var _ = new OSMImportHelper(this, areaName, country);
+                var _ = new OSMImportHelper(this, areaName);
             }
 
             FindMinLngAndLat();
@@ -457,7 +457,6 @@ namespace Transidious
         public float minY;
 
         public OSMImportHelper.Area area;
-        public string country;
         public bool loadTransitLines;
         public string[] linesToLoad;
         public bool done;
@@ -499,7 +498,7 @@ namespace Transidious
             Area area;
             if (!System.IO.File.Exists(fileName) || forceReload)
             {
-                proxy.ImportArea(areaName, country);
+                proxy.ImportArea(areaName);
                 area = proxy.Save(fileName);
             }
             else

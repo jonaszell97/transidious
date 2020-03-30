@@ -461,8 +461,8 @@ namespace Transidious
                 var obj = Instantiate(GameController.instance.lineRendererPrefab);
                 var line = obj.GetComponent<LineRenderer>();
                 line.transform.SetParent(map.transform);
-                line.startWidth = 1f;
-                line.endWidth = 1f;
+                line.startWidth = .5f;
+                line.endWidth = .5f;
                 line.loop = true;
 
                 lineRenderers.Add(line);
