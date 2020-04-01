@@ -12,6 +12,7 @@ import math
 from xml.etree import ElementTree
 
 import matplotlib.pyplot as plt
+from math import sin, cos, sqrt, atan2, radians
 
 def perpendicular(a):
     return np.array([a[1], -a[0]])
@@ -66,6 +67,12 @@ def create_poly(vertices, poly_file_name, in_pbf_file_name, out_pbf_file_name):
             ]  # , stdout=FNULL, stderr=subprocess.STDOUT
         )
 
+def to_meters(p, R, cos_center_lat):
+    x = R * radians(p[0]) * cos_center_lat
+    y = R * radians(p[1])
+
+    return np.array([x, y])
+    
 # api = "https://api.openstreetmap.org/"
 
 searchTerm = sys.argv[1]
@@ -120,11 +127,6 @@ if len(sys.argv) > 3:
 else:
     searchTerm = searchTerm.replace(' ', '')
 
-if len(sys.argv) > 4:
-    backgroundSize = int(sys.argv[4])
-else:
-    backgroundSize = .01
-
 polyResult = requests.get("http://polygons.openstreetmap.fr/get_poly.py", params={
     'id': id,
     'params': 0,
@@ -146,13 +148,35 @@ for line in polyLines:
 
     vertices.append(np.array([x, y]))
 
-min_x = min(vertices, key=lambda v: v[0])[0] - backgroundSize
-max_x = max(vertices, key=lambda v: v[0])[0] + backgroundSize
-min_y = min(vertices, key=lambda v: v[1])[1] - backgroundSize
-max_y = max(vertices, key=lambda v: v[1])[1] + backgroundSize
+# get maxima of map
+min_x = min(vertices, key=lambda v: v[0])[0]
+max_x = max(vertices, key=lambda v: v[0])[0]
+min_y = min(vertices, key=lambda v: v[1])[1]
+max_y = max(vertices, key=lambda v: v[1])[1]
 
-scaled_poly = scale_polygon(.0001, vertices)
-create_poly(scaled_poly, '../Resources/Poly/%s.poly' % (searchTerm),
+# approximate radius of earth in m
+R = 6371.0 * 1000
+cos_center_lat = cos(radians(min_y + (max_y - min_y) * 0.5))
+
+# get map width in meters
+width_meters = to_meters(np.array([max_x, 0]), R, cos_center_lat)[0] - to_meters(np.array([min_x, 0]), R, cos_center_lat)[0]
+height_meters = to_meters(np.array([0, max_y]), R, cos_center_lat)[1] - to_meters(np.array([0, min_y]), R, cos_center_lat)[1]
+one_meter_scale = (max_x - min_x) / width_meters
+
+print('width: %s, height: %s' % (width_meters, height_meters))
+
+x_scale = 1000 * (16 / 9)
+y_scale = 1000
+
+background_size_x = x_scale * one_meter_scale
+background_size_y = y_scale * one_meter_scale
+
+min_x -= background_size_x
+max_x += background_size_x
+min_y -= background_size_y
+max_y += background_size_y
+
+create_poly(vertices, '../Resources/Poly/%s.poly' % (searchTerm),
             '../Resources/OSM/%s.osm.pbf' % (country),
             '../Resources/OSM/%s.osm.pbf' % (searchTerm))
 
@@ -166,47 +190,16 @@ create_poly(background_poly, '../Resources/Poly/Backgrounds/%s.poly' % (searchTe
             '../Resources/OSM/%s.osm.pbf' % (country),
             '../Resources/OSM/Backgrounds/%s.osm.pbf' % (searchTerm))
 
-
 ###
 
-# display_poly(vertices, 'r')
-# # plt.show()
+# real_vertices = list(map(lambda v: np.array([v[0] * cos_center_lat, v[1]]), vertices))
+# display_poly(real_vertices, 'r')
 # display_poly(background_poly, 'g')
 # plt.show()
 
 # exit(0)
 
 ###
-
-# scaledPolyStr = 'polygon\n1\n'
-
-# for pt in scaledPoly:
-#     scaledPolyStr += '  '
-#     scaledPolyStr += str(pt[0])
-#     scaledPolyStr += '  '
-#     scaledPolyStr += str(pt[1])
-#     scaledPolyStr += '\n'
-
-# scaledPolyStr += 'END\nEND\n'
-# polyData = scaledPolyStr
-
-# polyFileName = '../Resources/Poly/' + searchTerm + '.poly'
-# polyFile = open(polyFileName, 'w')
-# polyFile.write(polyData)
-# polyFile.close()
-
-# # generate pbf file from polygon
-# pbfFileName = '../Resources/OSM/' + searchTerm + '.osm.pbf'
-# if not os.path.isfile(pbfFileName):
-#     FNULL = open(os.devnull, 'w')
-#     subprocess.run(
-#         [
-#             'osmosis',
-#             '--read-pbf', '../Resources/OSM/' + country + '.osm.pbf',
-#             '--bounding-polygon', 'file=' + os.path.abspath(polyFileName) + '',
-#             '--write-pbf', pbfFileName,
-#         ]  # , stdout=FNULL, stderr=subprocess.STDOUT
-#     )
 
 # output tblgen suggestion
 infoResult = requests.get('https://www.openstreetmap.org/api/0.6/relation/' + id)
@@ -276,13 +269,7 @@ outFile.close()
 # regenerate the files
 subprocess.run(['cmake', '.'])
 subprocess.run(['make'])
-
-if platform.system() == 'Darwin':
-    dylibExt = 'dylib'
-else:
-    dylibExt = 'so'
-
 subprocess.run([
     'tblgen', './Files/OSMImport.tg',
-    '-OSMImport', './libtransidious-tblgens.' + dylibExt,
+    '-t', './Backends/OSMImportHelper.template.cs',
 ], stdout=open('../Assets/Scripts/OSM/OSMImportHelper.cs', 'w'))

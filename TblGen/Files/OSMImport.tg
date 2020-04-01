@@ -361,16 +361,7 @@ def Berlin : DefaultArea {
     ]>
 }
 
-def Charlottenburg : DefaultArea {
-    country = "Deutschland"
-    boundary = BoundaryInfo<"Charlottenburg", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "10">,
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "10">,
-    ]>
-}
+
 
 def Mitte : DefaultArea {
     nodeFile = "Deutschland/Berlin"
@@ -600,5 +591,15 @@ def Fuerteventura : DefaultArea {
     ], [
         Tag<"boundary", "political">,
         
+    ]>
+}
+def Charlottenburg : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"Charlottenburg", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "10">,
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "10">,
     ]>
 }

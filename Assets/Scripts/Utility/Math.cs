@@ -960,5 +960,26 @@ namespace Transidious
 
             return result;
         }
+
+        public static PSLG PolygonDiff(PSLG poly, PSLG hole)
+        {
+            var clipper = new ClipperLib.Clipper();
+            clipper.AddPath(GetPath(poly), ClipperLib.PolyType.ptSubject, true);
+            clipper.AddPath(GetPath(hole), ClipperLib.PolyType.ptClip, true);
+
+            var solution = new ClipperLib.PolyTree();
+            if (!clipper.Execute(ClipperLib.ClipType.ctDifference, solution))
+            {
+                return null;
+            }
+
+            var result = new PSLG(poly.z);
+            foreach (var node in solution.Childs)
+            {
+                PopulateResultPSLG(result, node, false);
+            }
+
+            return result;
+        }
     }
 }

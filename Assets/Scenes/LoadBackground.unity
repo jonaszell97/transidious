@@ -1320,7 +1320,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: importType
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1375,7 +1375,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: resolution
-      value: 4096
+      value: 2048
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1385,12 +1385,12 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: mapTileSize
-      value: 2000
+      value: 5000
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: backgroundBlur
-      value: 0
+      value: 35
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 986eb10373372489eaa02d19d5030ae1, type: 3}

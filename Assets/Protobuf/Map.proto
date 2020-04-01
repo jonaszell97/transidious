@@ -20,7 +20,7 @@ message MapTile {
 message Map {
     VersionTriple triple = 1;
     repeated Vector2 boundaryPositions = 2;
-    
+
     float minX = 3;
     float maxX = 4;
     float minY = 5;
@@ -33,6 +33,11 @@ message Map {
     repeated NaturalFeature naturalFeatures = 10;
     repeated Street streets = 11;
     repeated StreetIntersection streetIntersections = 12;
+
+    float tileSize = 13;
+    float backgroundTileSize = 14;
+    Vector2 backgroundMin = 15;
+    Vector2 backgroundSize = 16;
 }
 
 message Expense {

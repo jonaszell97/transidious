@@ -195,7 +195,10 @@ namespace Transidious
 
         public bool Validate()
         {
-            this.Simplify();
+            if (!this.Simplify())
+            {
+                return false;
+            }
 
             foreach (var vert in vertices)
             {
@@ -280,11 +283,24 @@ namespace Transidious
 
         static readonly float SimplificationDistance = 0.001f;
 
-        void Simplify()
+        bool Simplify()
         {
             if (simplified)
             {
-                return;
+                return true;
+            }
+
+            if (vertices.Count < 3)
+            {
+                return false;
+            }
+
+            if (vertices.Count == 3)
+            {
+                if (vertices.Distinct().Count() != 3)
+                {
+                    return false;
+                }
             }
 
             var encounteredVerts = new HashSet<Vector3>();
@@ -311,10 +327,14 @@ namespace Transidious
 
             foreach (var hole in holes)
             {
-                hole.Simplify();
+                if (!hole.Simplify())
+                {
+                    return false;
+                }
             }
 
             simplified = true;
+            return true;
         }
 
         public int GetNumberOfSegments()
@@ -575,7 +595,6 @@ namespace Transidious
                 triangles = triangles.ToArray(),
             };
 
-            //MeshBuilder.FixWindingOrder(result);
             return result;
         }
 
@@ -588,46 +607,50 @@ namespace Transidious
 
                 return null;
             }
-            else
+
+            try
             {
-                try
+                if (!pslg.Validate())
                 {
-                    if (!pslg.Validate())
-                    {
-                        Debug.LogError("Invalid points in PSLG!");
-                        return null;
-                    }
-
-                    var polygon = new Polygon();
-
-                    var i = 0;
-                    foreach (var verts in pslg.Outlines)
-                    {
-                        polygon.Add(new Contour(verts.Select(v => new Vertex(v.x, v.y))), i >= pslg.boundaryMarkersForPolygons.Count);
-                        ++i;
-                    }
-
-                    //var polyFile = WritePolyFile(pslg);
-                    //var polygon = FileProcessor.Read(polyFile);
-
-                    var options = new TriangleNet.Meshing.ConstraintOptions() { ConformingDelaunay = true };
-                    var quality = new TriangleNet.Meshing.QualityOptions() { MinimumAngle = 0 };
-
-                    // Triangulate the polygon
-                    var mesh = (TriangleNet.Mesh)polygon.Triangulate(options, quality);
-                    if (mesh.Vertices.Count > 10000)
-                    {
-                        Debug.LogWarning("mesh has too many vertices (" + mesh.Vertices.Count + ")");
-                        return null;
-                    }
-                    
-                    return GetMesh(mesh);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning(e.GetType().AssemblyQualifiedName + " " + e.Message);
+                    Debug.LogError("Invalid points in PSLG!");
                     return null;
                 }
+
+                var polygon = new Polygon();
+
+                var i = 0;
+                var n = 0;
+                
+                foreach (var verts in pslg.Outlines)
+                {
+                    polygon.Add(new Contour(verts.Select(v => new Vertex(v.x, v.y))), i >= pslg.boundaryMarkersForPolygons.Count);
+                    n += verts.Length;
+                    ++i;
+                }
+
+                if (n >= 10000)
+                {
+                    Debug.LogWarning($"PSLG is too large ({n})");
+                    return null;
+                }
+
+                var options = new ConstraintOptions() { ConformingDelaunay = true };
+                var quality = new QualityOptions() { MinimumAngle = 0 };
+
+                // Triangulate the polygon
+                var mesh = (TriangleNet.Mesh)polygon.Triangulate(options, quality);
+                if (mesh.Vertices.Count > 10000)
+                {
+                    Debug.LogWarning("mesh has too many vertices (" + mesh.Vertices.Count + ")");
+                    return null;
+                }
+                    
+                return GetMesh(mesh);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e.GetType().AssemblyQualifiedName + " " + e.Message);
+                return null;
             }
         }
 
@@ -653,7 +676,6 @@ namespace Transidious
 
             if (mesh == null)
             {
-                Debug.LogWarning("creating simple mesh without holes");
                 return TriangulateSimple(pslg);
             }
 
@@ -670,7 +692,6 @@ namespace Transidious
             var polygon = Triangulate(pslg);
             if (polygon == null)
             {
-                Debug.LogWarning("creating simple mesh without holes");
                 return TriangulateSimple(pslg);
             }
 

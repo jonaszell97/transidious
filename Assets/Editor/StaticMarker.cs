@@ -82,9 +82,10 @@ public class StaticMarker : AssetPostprocessor
         if (importer == null)
             return;
 
-        if (importer.alphaSource == TextureImporterAlphaSource.None)
+        if (importer.mipmapEnabled)
             return;
 
+        var isBackground = path.Contains("Backgrounds");
         Debug.Log($"changing {path} import settings");
 
         importer.mipmapEnabled = true;
@@ -92,11 +93,10 @@ public class StaticMarker : AssetPostprocessor
         importer.textureType = TextureImporterType.Sprite;
         importer.spriteImportMode = SpriteImportMode.Single;
         importer.spritePixelsPerUnit = 100;
-        importer.alphaSource = TextureImporterAlphaSource.None;
         importer.filterMode = FilterMode.Trilinear;
-
         importer.textureCompression = TextureImporterCompression.Compressed;
         // importer.textureCompression = TextureImporterCompression.CompressedHQ;
+        importer.alphaSource = TextureImporterAlphaSource.None;
 
         importer.SaveAndReimport();
     }

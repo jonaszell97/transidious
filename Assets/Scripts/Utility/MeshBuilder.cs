@@ -188,7 +188,7 @@ namespace Transidious
                         realAngle = Math.ThreeHalvesPI - currentAngle - baseAngle;
                     }
 
-                    var nextPt = Math.GetPointOnCircleClockwiseRad(center, radius, realAngle);
+                    var nextPt = Math.GetPointOnCircleClockwiseRad(center, radius, realAngle).WithZ(useZ ? z : 0f);
                     nextIdx = vertices.Count;
                     vertices.Add(nextPt);
                 }
@@ -323,14 +323,6 @@ namespace Transidious
             Vector3 br = p1 + startWidth * normal02;
             Vector3 bl = p1 - startWidth * normal02;
 
-            //if (!offset.Equals(0f))
-            //{
-            //    tr += offset * normal12;
-            //    tl += offset * normal12;
-            //    br += offset * normal02;
-            //    bl += offset * normal02;
-            //}
-
             if (colliderPath != null)
             {
                 var angle = Math.DirectionalAngleDeg(Vector2.down, normal12);
@@ -373,102 +365,6 @@ namespace Transidious
             if (i == positions.Count - 1 && endCap)
             {
                 AddCirclePart(vertices, triangles, uv, p2, endWidth, line12, 10, z);
-            }
-        }
-
-        static void CreateSmoothLine_AddQuadNew(IReadOnlyList<Vector3> positions,
-                                                int i,
-                                                float startWidth,
-                                                float endWidth,
-                                                bool startCap,
-                                                bool endCap,
-                                                List<Vector3> vertices,
-                                                List<int> triangles,
-                                                List<Vector2> uv,
-                                                List<Vector3> normals,
-                                                int cornerVertices,
-                                                float z,
-                                                bool useZ,
-                                                PolygonCollider2D collider,
-                                                Vector2[] colliderPath,
-                                                float offset)
-        {
-            var p0 = positions[i - 1];
-            var p1 = positions[i];
-
-            if (p0.Equals(Vector3.positiveInfinity) || p1.Equals(Vector3.positiveInfinity))
-            {
-                return;
-            }
-
-            if (useZ)
-            {
-                p0 = new Vector3(p0.x, p0.y, z);
-                p1 = new Vector3(p1.x, p1.y, z);
-            }
-
-            var baseIndex = vertices.Count;
-            Vector3 line = p0 - p1;
-            Vector3 normal = new Vector3(-line.y, line.x, 0f).normalized;
-
-            Vector3 tr = p1 + endWidth * normal;
-            Vector3 tl = p1 - endWidth * normal;
-
-            Vector3 bl, br;
-            if (baseIndex == 0)
-            {
-                br = p0 + startWidth * normal;
-                bl = p0 - startWidth * normal;
-            }
-            else
-            {
-                br = vertices[baseIndex - 2];
-                bl = vertices[baseIndex - 3];
-            }
-
-            if (!offset.Equals(0f))
-            {
-                p0 += offset * normal;
-                p1 += offset * normal;
-
-                bl += offset * normal;
-                tl += offset * normal;
-                tr += offset * normal;
-                br += offset * normal;
-            }
-
-            if (colliderPath != null)
-            {
-                var angle = Math.DirectionalAngleDeg(Vector2.down, normal);
-                if (!angle.Equals(0f))
-                {
-                    // Add right side to forward path.
-                    colliderPath[i - 1] = br;
-
-                    // Add left side to backward path.
-                    colliderPath[colliderPath.Length - i] = bl;
-
-                    if (i == positions.Count - 1)
-                    {
-                        // Add right side to forward path.
-                        colliderPath[i] = tr;
-
-                        // Add left side to backward path.
-                        colliderPath[i + 1] = tl;
-                    }
-                }
-            }
-
-            if (i == 1 && startCap)
-            {
-                // AddCirclePart(vertices, triangles, uv, p0, startWidth, -line, 10, z);
-            }
-
-            AddQuad(vertices, triangles, normals, uv, bl, tr, br, tl);
-
-            if (i == positions.Count - 1 && endCap)
-            {
-                // AddCirclePart(vertices, triangles, uv, p1, endWidth, line, 10, z);
             }
         }
 

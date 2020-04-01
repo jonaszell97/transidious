@@ -72,9 +72,6 @@ namespace Transidious
         /// The object carrying the boundary mesh.
         public GameObject boundaryOutlineObj;
 
-        /// The object carrying the boundary mask.
-        public GameObject boundaryMaskObj;
-
         /// The map background LOD sprite (day).
         public GameObject backgroundSpriteDay;
 
@@ -145,25 +142,24 @@ namespace Transidious
         /// Prefab for creating text.
         public GameObject textPrefab;
 
-        /// Prefab for creating features.
-        public GameObject screenshotMakerPrefab;
-
-        /// The scale of one meter.
-        public static readonly float Meters = 1f;
+        /// The default map tile size.
+        public static readonly float defaultTileSize = 2000f;
 
         /// Dimensions of a tile on the map.
-        public static readonly float tileSize = 2000f * Meters;
+        public float tileSize;
 
-        public GameController Game
+        public GameController Game => GameController.instance;
+
+        public void Initialize(string name, InputController input, float tileSize = -1f, bool resetIDs = true)
         {
-            get
+            if (tileSize < 0f)
             {
-                return input?.controller;
+                tileSize = defaultTileSize;
             }
-        }
 
-        public void Initialize(bool resetIDs = true)
-        {
+            this.name = name;
+            this.input = input;
+
             this.boundaryPositions = null;
             this.mapObjectMap = new Dictionary<string, IMapObject>();
             this.mapObjectIDMap = new Dictionary<int, IMapObject>();
@@ -179,6 +175,7 @@ namespace Transidious
             this.buildings = new List<Building>();
             this.buildingsByType = new Dictionary<Building.Type, List<Building>>();
 
+            this.tileSize = tileSize;
             this.tilesToShow = new HashSet<MapTile>();
             mapObjectIDMap[0] = null;
 
@@ -445,21 +442,9 @@ namespace Transidious
             return new TileIterator(this, obj);
         }
 
-        public TileIterator AllTiles
-        {
-            get
-            {
-                return new TileIterator(this);
-            }
-        }
+        public TileIterator AllTiles => new TileIterator(this);
 
-        public TileIterator ActiveTiles
-        {
-            get
-            {
-                return new TileIterator(this, null, true);
-            }
-        }
+        public TileIterator ActiveTiles => new TileIterator(this, null, true);
 
         public static float Layer(MapLayer l, int orderInLayer = 0)
         {
@@ -484,61 +469,44 @@ namespace Transidious
                 input.maxY = maxY;
             }
 
-            var positions3d = positions.Select(v => (Vector3)v).ToArray();
-
-            var pslg = new PSLG(Map.Layer(MapLayer.Boundary));
-            pslg.AddOrderedVertices(positions3d);
-
-            var backgroundMesh = TriangleAPI.CreateMesh(pslg);
-            var positionList = positions3d.ToList();
-
-            var boundaryMesh = MeshBuilder.CreateSmoothLine(
-                positionList, 10, 10, Map.Layer(MapLayer.Foreground));
-
-            float halfWidth = (maxX - minX) / 2f;
-            float halfHeight = (maxY - minY);
-
-            pslg = new PSLG(Map.Layer(MapLayer.Boundary));
-            pslg.AddOrderedVertices(new Vector3[]
+            var pslg = new PSLG(Layer(MapLayer.Boundary));
+            pslg.AddOrderedVertices(new []
             {
-                new Vector3(minX - 1000f, minY - 1000f),
-                new Vector3(minX - 1000f, maxY + 1000f),
-                new Vector3(maxX + 1000f, maxY + 1000f),
-                new Vector3(maxX + 1000f, minY - 1000f)
+                new Vector3(minX, minY), 
+                new Vector3(minX, maxY),
+                new Vector3(maxX, maxY),
+                new Vector3(maxX, minY),
+                new Vector3(minX, minY),
             });
 
-            pslg.AddHole(positionList);
+            var backgroundMesh = TriangleAPI.CreateMesh(pslg);
 
-            var maskMesh = TriangleAPI.CreateMesh(pslg);
-            UpdateBoundary(backgroundMesh, boundaryMesh, maskMesh, this.minX, this.maxX,
+            var fgLayer = Layer(MapLayer.Foreground);
+            var positions3d = positions.Select(v => new Vector3(v.x, v.y, fgLayer)).ToArray();
+            var boundaryMesh = MeshBuilder.CreateBakedLineMesh(positions3d, 10, null, 10, 10);
+            // var boundaryMesh = MeshBuilder.CreateSmoothLine(positions3d, 10, 10, fgLayer);
+
+            UpdateBoundary(backgroundMesh, boundaryMesh, this.minX, this.maxX,
                            this.minY, this.maxY);
         }
 
-        public void UpdateBoundary(Mesh backgroundMesh, Mesh outlineMesh, Mesh maskMesh,
+        public void UpdateBoundary(Mesh backgroundMesh, Mesh outlineMesh,
                                    float minX, float maxX, float minY, float maxY)
         {
-#if DEBUG
-            Debug.Log("background verts: " + backgroundMesh.triangles.Length);
-            Debug.Log("outline verts: " + outlineMesh.triangles.Length);
-            Debug.Log("mask verts: " + maskMesh.triangles.Length);
-#endif
+            var cam = input.camera;
 
             startingCameraPos = new Vector3(minX + (maxX - minX) / 2f,
                                             minY + (maxY - minY) / 2f,
-                                            Camera.main.transform.position.z);
+                                            cam.transform.position.z);
 
             this.width = this.maxX - this.minX;
             this.height = this.maxY - this.minY;
 
-            Camera.main.transform.position = startingCameraPos;
+            cam.transform.position = startingCameraPos;
 
             if (input != null)
             {
-                input.minX = minX - 1000f;
-                input.maxX = maxX + 1000f;
-                input.minY = minY - 1000f;
-                input.maxY = maxY + 1000f;
-                input.UpdateZoomLevels();
+                input.UpdateZoomLevels(this);
             }
 
             var canvasTransform = canvas.GetComponent<RectTransform>();
@@ -577,20 +545,6 @@ namespace Transidious
                     Layer(MapLayer.Foreground, 1));
             }
 
-            // Create the "mask" to make sure only things inside the boundary are visible.
-            {
-                var filter = boundaryMaskObj.GetComponent<MeshFilter>();
-                var meshRenderer = boundaryMaskObj.GetComponent<MeshRenderer>();
-
-                filter.mesh = maskMesh;
-
-                ResetMaskColor();
-                boundaryMaskObj.transform.position = new Vector3(
-                    boundaryMaskObj.transform.position.x,
-                    boundaryMaskObj.transform.position.y,
-                    Layer(MapLayer.Foreground, 0));
-            }
-
             width = maxX - minX;
             height = maxY - minY;
 
@@ -611,11 +565,10 @@ namespace Transidious
             sharedTile.Initialize(this, -1, -1);
             sharedTile.Show(input.renderingDistance);
         }
-
+        
         public bool IsPointOnMap(Vector2 pt)
         {
-            return pt.x >= minX && pt.x <= maxX
-                && pt.y >= minY && pt.y <= maxY;
+            return pt.x >= minX && pt.x <= maxX && pt.y >= minY && pt.y <= maxY;
         }
 
         public void SetBackgroundColor(Color c)
@@ -628,14 +581,6 @@ namespace Transidious
         {
             var meshRenderer = boundaryOutlineObj.GetComponent<MeshRenderer>();
             meshRenderer.sharedMaterial = GameController.instance.GetUnlitMaterial(c);
-        }
-
-        public void SetMaskColor(Color c)
-        {
-            var meshRenderer = boundaryMaskObj.GetComponent<MeshRenderer>();
-            meshRenderer.sharedMaterial = GameController.instance.GetUnlitMaterial(c);
-
-            Camera.main.backgroundColor = c;
         }
 
         public void MakeBackgroundTransparent()
@@ -685,11 +630,6 @@ namespace Transidious
             case MapDisplayMode.Night:
                 return Colors.GetColor("map.voidNight");
             }
-        }
-
-        void ResetMaskColor()
-        {
-            SetMaskColor(GetDefaultMaskColor(Game.displayMode));
         }
 
         public MapTile GetTile(int x, int y)
@@ -2048,16 +1988,10 @@ namespace Transidious
                 tile.Reset();
             }
 
-            Initialize(false);
+            Initialize(name, input, tileSize, false);
 
             // Might be placebo, whatever
             GC.Collect();
-        }
-
-        // Use this for initialization
-        void Awake()
-        {
-            Initialize();
         }
 
         // Use this for initialization
@@ -2103,7 +2037,6 @@ namespace Transidious
                 }
 
                 ResetBackgroundColor();
-                ResetMaskColor();
                 ResetBorderColor();
 
                 if (Game.Loading)

@@ -55,6 +55,9 @@ namespace Transidious
 
         float aspectRatio = 0.0f;
 
+        public static readonly float panThresholdY = 1000f;
+        public static readonly float panThresholdX = panThresholdY * (16f / 9f);
+
         public float maxX = float.PositiveInfinity;
         public float maxY = float.PositiveInfinity;
 
@@ -62,8 +65,9 @@ namespace Transidious
         public float minY = float.NegativeInfinity;
 
         Dictionary<ControlType, Tuple<KeyCode, KeyCode>> keyBindings;
+
         public static float minZoom = 50f;
-        public static float maxZoom = 15000f;
+        public static float maxZoom;
         static float zoomSensitivityMouse = 25.0f;
         static float zoomSensitivityTrackpad = 5.0f;
         static float zoomSensitivityTouchscreen = 5.0f;
@@ -74,59 +78,17 @@ namespace Transidious
         static float panSensitivityY = 0.5f;
         static float panSensitivityYMobile = panSensitivityY / 20f;
 
-        public float lineWidth;
-        public float stopWidth;
-
         static readonly float farThreshold = 650f;
         static readonly float veryFarThreshold = 2000f;
         static readonly float farthestThreshold = 7000f;
-
-        public bool combineStreetMeshes = false;
-        public bool combineNatureMeshes = true;
-        public bool combineBuildingMeshes = true;
-
+        
         new public Camera camera;
 
-        public bool renderBackRoutes = false;
-
-        public Vector3 NativeCursorPosition
-        {
-            get
-            {
-                return Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            }
-        }
+        public Vector3 NativeCursorPosition => camera.ScreenToWorldPoint(Input.mousePosition);
 
         public Vector3 gameCursorPosition;
 
-        public Vector3 GameCursorPosition
-        {
-            get
-            {
-                if (Cursor.visible)
-                {
-                    return NativeCursorPosition;
-                }
-
-                return gameCursorPosition;
-            }
-        }
-
-        public Vector2 MaxCameraSizeWorld
-        {
-            get
-            {
-                var orthoSize = camera.orthographicSize;
-                camera.orthographicSize = maxZoom;
-
-                var max = camera.ViewportToWorldPoint(new Vector2(1f, 1f));
-                var min = camera.ViewportToWorldPoint(new Vector2(0f, 0f));
-
-                camera.orthographicSize = orthoSize;
-
-                return max - min;
-            }
-        }
+        public Vector3 GameCursorPosition => Cursor.visible ? NativeCursorPosition : gameCursorPosition;
 
         public bool IsPressed(ControlType type)
         {
@@ -397,11 +359,8 @@ namespace Transidious
             {
                 return;
             }
-
-            panSensitivityX = camera.orthographicSize * 0.1f;
-            panSensitivityY = camera.orthographicSize * 0.1f;
-            zoomSensitivity = camera.orthographicSize * 0.5f;
-
+            
+            UpdateCameraBoundaries(controller.loadedMap);
             controller.mainUI.UpdateScaleBar();
 
             FireEvent(InputEvent.Zoom);
@@ -612,10 +571,39 @@ namespace Transidious
             followObject = null;
         }
 
-        public void UpdateZoomLevels()
+        public void UpdateZoomLevels(Map map)
         {
-            maxZoom = (maxY - minY) / 2f;
+            var backgroundRect = new Rect(map.minX - panThresholdX, map.minY - panThresholdY,
+                                          map.width + 2 * panThresholdX, map.height + 2 * panThresholdY);
+
+            // Set max zoom so that the camera can't go past the background rect.
+            var aspect = camera.aspect;
+            if (aspect >= 1f)
+            {
+                maxZoom = (backgroundRect.width * .5f) / aspect;
+            }
+            else
+            {
+                maxZoom = backgroundRect.height * .5f * aspect;
+            }
+
             camera.orthographicSize = maxZoom;
+            UpdateCameraBoundaries(map);
+        }
+
+        public void UpdateCameraBoundaries(Map map)
+        {
+            var aspect = camera.aspect;
+            var orthoSize = camera.orthographicSize;
+
+            minX = map.minX - panThresholdX + orthoSize * aspect;
+            maxX = map.maxX + panThresholdX - orthoSize * aspect;
+            minY = map.minY - panThresholdY + orthoSize;
+            maxY = map.maxY + panThresholdY - orthoSize;
+
+            panSensitivityX = orthoSize * 0.1f;
+            panSensitivityY = orthoSize * 0.1f;
+            zoomSensitivity = orthoSize * 0.5f;
         }
 
         public Vector3 WorldToUISpace(Canvas parentCanvas, Vector3 worldPos)
@@ -657,7 +645,6 @@ namespace Transidious
 
             camera = Camera.main;
             aspectRatio = camera.aspect;
-            camera.orthographicSize = 5000f;
 
             UpdateRenderingDistance();
 
@@ -680,7 +667,7 @@ namespace Transidious
                 zoomSensitivity = zoomSensitivityMouse;
                 break;
             }
-            
+
 #if DEBUG
             RegisterKeyboardEventListener(
                 KeyCode.Alpha1, 
@@ -695,6 +682,10 @@ namespace Transidious
                 KeyCode.Alpha4, 
                 _ => controller.sim.SetSimulationSpeed(SimulationController.SimulationSpeed.Speed4));
 #endif
+
+#if UNITY_EDITOR
+            _screenRes = Screen.currentResolution;
+#endif
         }
 
 
@@ -706,11 +697,15 @@ namespace Transidious
 
 #if DEBUG
         public bool debugClickTest = false;
-        StreetSegment highlighted = null;
+        StreetSegment _highlighted = null;
 
         public bool debugRouteTest = false;
-        Vector3? fromPos;
-        MultiMesh routeMesh;
+        Vector3? _fromPos;
+        MultiMesh _routeMesh;
+#endif
+
+#if UNITY_EDITOR
+        private Resolution _screenRes;
 #endif
 
         void CheckKeyboardEvents()
@@ -734,6 +729,14 @@ namespace Transidious
 
         void Update()
         {
+#if UNITY_EDITOR
+            if (!_screenRes.Equals(Screen.currentResolution))
+            {
+                Debug.Log("changed screen resolution");
+                UpdateZoomLevels(controller.loadedMap);
+            }
+#endif
+
             if (controlListenersEnabled)
             {
                 UpdateZoom();
@@ -801,10 +804,10 @@ namespace Transidious
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F2))
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                if (fromPos == null)
+                if (_fromPos == null)
                 {
                     Debug.Log("first point set");
-                    fromPos = clickedPos;
+                    _fromPos = clickedPos;
                 }
                 else
                 {
@@ -815,10 +818,10 @@ namespace Transidious
 
                     var planner = new PathPlanning.PathPlanner(options);
                     var ppResult = planner.FindClosestPath(controller.loadedMap,
-                                                           fromPos.Value,
+                                                           _fromPos.Value,
                                                            clickedPos);
 
-                    fromPos = null;
+                    _fromPos = null;
                     if (ppResult == null)
                     {
                         Debug.Log("no result");
@@ -834,10 +837,10 @@ namespace Transidious
             if (controlListenersEnabled && (Input.GetKeyDown(KeyCode.F3) || Input.GetKeyDown(KeyCode.F4)))
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                if (fromPos == null)
+                if (_fromPos == null)
                 {
                     Debug.Log("first point set");
-                    fromPos = clickedPos;
+                    _fromPos = clickedPos;
                 }
                 else
                 {
@@ -845,7 +848,7 @@ namespace Transidious
 
                     var planner = new PathPlanning.PathPlanner(c.transitPreferences);
                     var map = controller.loadedMap;
-                    var from = fromPos.Value;
+                    var from = _fromPos.Value;
                     var to = clickedPos;
 
                     var transitResult = planner.FindFastestTransitRoute(map, from, to);
@@ -871,7 +874,7 @@ namespace Transidious
                         c.FollowPath(carResult);
                     }
 
-                    fromPos = null;
+                    _fromPos = null;
                 }
             }
 
@@ -912,12 +915,12 @@ namespace Transidious
 
                 if (posOnStreet != null)
                 {
-                    if (highlighted != null)
+                    if (_highlighted != null)
                     {
-                        highlighted.ResetColor();
+                        _highlighted.ResetColor();
                     }
 
-                    highlighted = posOnStreet.seg;
+                    _highlighted = posOnStreet.seg;
                     posOnStreet.seg.UpdateColor(Color.red);
 
                     this.gameObject.transform.position = posOnStreet.pos;
@@ -928,9 +931,9 @@ namespace Transidious
             if (debugRouteTest && Input.GetMouseButtonDown(0) && !IsPointerOverUIElement())
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                if (fromPos == null)
+                if (_fromPos == null)
                 {
-                    fromPos = clickedPos;
+                    _fromPos = clickedPos;
                 }
                 else
                 {
@@ -938,22 +941,22 @@ namespace Transidious
                     var planner = new PathPlanning.PathPlanner(options);
 
                     var ppResult = planner.FindClosestDrive(controller.loadedMap,
-                                                            fromPos.Value, clickedPos);
+                                                            _fromPos.Value, clickedPos);
 
-                    fromPos = null;
+                    _fromPos = null;
                     if (ppResult == null)
                     {
                         Debug.Log("no result");
                     }
                     else
                     {
-                        Destroy(routeMesh?.gameObject ?? null);
-                        routeMesh = controller.loadedMap.CreateMultiMesh();
+                        Destroy(_routeMesh?.gameObject ?? null);
+                        _routeMesh = controller.loadedMap.CreateMultiMesh();
 
                         var c = controller.sim.CreateCitizen(true);
                         c.FollowPath(ppResult);
                         
-                        routeMesh.CreateMeshes();
+                        _routeMesh.CreateMeshes();
                     }
 
                     debugRouteTest = false;

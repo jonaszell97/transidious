@@ -1673,7 +1673,7 @@ namespace Transidious
                         Vector3 pos = car.CurrentPosition;
                         pos.z = Map.Layer(MapLayer.Foreground);
 
-                        var txt = ((int)(car.distanceFromStart / Map.Meters)).ToString() + "m/" + car.lane.ToString() + "/" + i.ToString();
+                        var txt = ((int)car.distanceFromStart).ToString() + "m/" + car.lane.ToString() + "/" + i.ToString();
                         if (car.numberTxt == null)
                         {
                             car.numberTxt = sim.game.loadedMap.CreateText(pos, txt, Color.black, 11);

@@ -71,8 +71,8 @@ namespace Transidious
             else
             {
                 this.name = "Tile " + x + " " + y;
-                this.rect = new Rect(x * Map.tileSize, y * Map.tileSize,
-                                 Map.tileSize, Map.tileSize);
+                this.rect = new Rect(x * map.tileSize, y * map.tileSize,
+                                 map.tileSize, map.tileSize);
             }
 
             this.map = map;
@@ -107,13 +107,13 @@ namespace Transidious
             backgroundImage.transform.localScale = Vector3.one;
             backgroundImage.sprite = sprite;
             backgroundImage.transform.position = new Vector3(
-                x * Map.tileSize + Map.tileSize * .5f,
-                y * Map.tileSize + Map.tileSize * .5f,
+                x * map.tileSize + map.tileSize * .5f,
+                y * map.tileSize + map.tileSize * .5f,
                 Map.Layer(MapLayer.NatureBackground));
 
             float spriteSize = backgroundImage.bounds.size.x;
             backgroundImage.transform.localScale = new Vector3(
-                Map.tileSize / spriteSize, Map.tileSize / spriteSize, 1f);
+                map.tileSize / spriteSize, map.tileSize / spriteSize, 1f);
         }
 
         public void Reset()

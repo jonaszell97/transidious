@@ -501,76 +501,76 @@ namespace Transidious
                 return transform.position;
             }
 
-            Vector3 loc = transform.position;
-            float halfHeight = spriteRenderer.size.y * 0.5f;
-            float halfWidth = spriteRenderer.size.x * 0.5f;
-            bool vertical = false;
-
-            // Move to the correct side.
-            switch (slot.direction)
-            {
-            case CardinalDirection.North:
-                if (width == 1)
-                {
-                    return new Vector3(transform.position.x,
-                                       transform.position.y + halfHeight);
-                }
-
-                loc.y += halfHeight;
-                loc.x -= halfWidth;
-                break;
-            case CardinalDirection.South:
-                if (width == 1)
-                {
-                    return new Vector3(transform.position.x,
-                                       transform.position.y - halfHeight);
-                }
-
-                loc.y -= halfHeight;
-                loc.x -= halfWidth;
-                break;
-            case CardinalDirection.East:
-                if (height == 1)
-                {
-                    return new Vector3(transform.position.x + halfWidth,
-                                       transform.position.y);
-                }
-
-                loc.x += halfWidth;
-                loc.y -= halfHeight;
-                vertical = true;
-                break;
-            case CardinalDirection.West:
-                if (height == 1)
-                {
-                    return new Vector3(transform.position.x - halfWidth,
-                                       transform.position.y);
-                }
-
-                loc.x -= halfWidth;
-                loc.y -= halfHeight;
-                vertical = true;
-                break;
-            }
-
-            // Move up or down depending on the slot.
-            float halfStopWidth = map.input.stopWidth / 2f;
-            UpdateSlotSizes();
-
-            if (vertical)
-            {
-                loc.y += halfStopWidth + (spacePerSlotVertical - map.input.lineWidth * 2f) * 0.5f
-                        + (slot.number * (spacePerSlotVertical - map.input.lineWidth * 2f))
-                        + (slot.number * (map.input.lineWidth * 2f));
-            }
-            else
-            {
-                loc.x += halfStopWidth + (spacePerSlotHorizontal - map.input.lineWidth * 2f) * 0.5f
-                        + (slot.number * (spacePerSlotHorizontal - map.input.lineWidth * 2f))
-                        + (slot.number * (map.input.lineWidth * 2f));
-            }
-
-            return loc;
+            // Vector3 loc = transform.position;
+            // float halfHeight = spriteRenderer.size.y * 0.5f;
+            // float halfWidth = spriteRenderer.size.x * 0.5f;
+            // bool vertical = false;
+            //
+            // // Move to the correct side.
+            // switch (slot.direction)
+            // {
+            // case CardinalDirection.North:
+            //     if (width == 1)
+            //     {
+            //         return new Vector3(transform.position.x,
+            //                            transform.position.y + halfHeight);
+            //     }
+            //
+            //     loc.y += halfHeight;
+            //     loc.x -= halfWidth;
+            //     break;
+            // case CardinalDirection.South:
+            //     if (width == 1)
+            //     {
+            //         return new Vector3(transform.position.x,
+            //                            transform.position.y - halfHeight);
+            //     }
+            //
+            //     loc.y -= halfHeight;
+            //     loc.x -= halfWidth;
+            //     break;
+            // case CardinalDirection.East:
+            //     if (height == 1)
+            //     {
+            //         return new Vector3(transform.position.x + halfWidth,
+            //                            transform.position.y);
+            //     }
+            //
+            //     loc.x += halfWidth;
+            //     loc.y -= halfHeight;
+            //     vertical = true;
+            //     break;
+            // case CardinalDirection.West:
+            //     if (height == 1)
+            //     {
+            //         return new Vector3(transform.position.x - halfWidth,
+            //                            transform.position.y);
+            //     }
+            //
+            //     loc.x -= halfWidth;
+            //     loc.y -= halfHeight;
+            //     vertical = true;
+            //     break;
+            // }
+            //
+            // // Move up or down depending on the slot.
+            // float halfStopWidth = map.input.stopWidth / 2f;
+            // UpdateSlotSizes();
+            //
+            // if (vertical)
+            // {
+            //     loc.y += halfStopWidth + (spacePerSlotVertical - map.input.lineWidth * 2f) * 0.5f
+            //             + (slot.number * (spacePerSlotVertical - map.input.lineWidth * 2f))
+            //             + (slot.number * (map.input.lineWidth * 2f));
+            // }
+            // else
+            // {
+            //     loc.x += halfStopWidth + (spacePerSlotHorizontal - map.input.lineWidth * 2f) * 0.5f
+            //             + (slot.number * (spacePerSlotHorizontal - map.input.lineWidth * 2f))
+            //             + (slot.number * (map.input.lineWidth * 2f));
+            // }
+            //
+            // return loc;
         }
 
         void CreateCircleMesh()
@@ -609,12 +609,12 @@ namespace Transidious
 
             spriteRenderer.sprite = smallRectSprite;
             spriteRenderer.drawMode = SpriteDrawMode.Sliced;
-            spriteRenderer.size = new Vector2(map.input.lineWidth * 5f, map.input.lineWidth * 2f);
+            // spriteRenderer.size = new Vector2(line.lineWidth * 5f, map.input.lineWidth * 2f);
             spriteRenderer.color = color;
 
             var quat = Quaternion.FromToRotation(new Vector3(1f, 0f, 0f), direction);
 
-            this.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
+            // this.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
             this.transform.rotation = quat;
             this.transform.position = new Vector3(transform.position.x,
                                                           transform.position.y,
@@ -623,20 +623,11 @@ namespace Transidious
             appearance = Appearance.SmallRect;
         }
 
-        float GetSize(int stops)
-        {
-            switch (stops)
-            {
-            case 0: case 1: return .5f;
-            default: return map.input.stopWidth + stops * (map.input.stopWidth * 0.5f);
-            }
-        }
-
         void CreateLargeRectMesh()
         {
             spriteRenderer.sprite = largeRectSprite;
             spriteRenderer.drawMode = SpriteDrawMode.Sliced;
-            spriteRenderer.size = new Vector2(GetSize(width), GetSize(height));
+            // spriteRenderer.size = new Vector2(GetSize(width), GetSize(height));
             spriteRenderer.color = Color.white;
 
             this.transform.rotation = new Quaternion();
@@ -801,26 +792,26 @@ namespace Transidious
 
         void UpdateSlotSizes()
         {
-            float halfStopWidth = map.input.stopWidth / 2f;
-            if (height > 1)
-            {
-                float spaceForStopsY = spriteRenderer.size.y - map.input.stopWidth;
-                this.spacePerSlotVertical = spaceForStopsY / height;
-            }
-            else
-            {
-                this.spacePerSlotVertical = map.input.stopWidth;
-            }
-
-            if (width > 1)
-            {
-                float spaceForStopsX = spriteRenderer.size.x - map.input.stopWidth;
-                this.spacePerSlotHorizontal = spaceForStopsX / width;
-            }
-            else
-            {
-                this.spacePerSlotHorizontal = map.input.stopWidth;
-            }
+            // float halfStopWidth = map.input.stopWidth / 2f;
+            // if (height > 1)
+            // {
+            //     float spaceForStopsY = spriteRenderer.size.y - map.input.stopWidth;
+            //     this.spacePerSlotVertical = spaceForStopsY / height;
+            // }
+            // else
+            // {
+            //     this.spacePerSlotVertical = map.input.stopWidth;
+            // }
+            //
+            // if (width > 1)
+            // {
+            //     float spaceForStopsX = spriteRenderer.size.x - map.input.stopWidth;
+            //     this.spacePerSlotHorizontal = spaceForStopsX / width;
+            // }
+            // else
+            // {
+            //     this.spacePerSlotHorizontal = map.input.stopWidth;
+            // }
         }
 
         void FindParallelRoutes()
@@ -1496,20 +1487,6 @@ namespace Transidious
                 }
             }
             */
-        }
-
-        public void UpdateScale()
-        {
-            UpdateSlotSizes();
-
-            if (appearance == Appearance.SmallRect)
-            {
-                spriteRenderer.size = new Vector2(map.input.lineWidth * 5f, map.input.lineWidth * 2f);
-                this.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
-                this.transform.position = new Vector3(this.transform.position.x,
-                                                      this.transform.position.y,
-                                                      Map.Layer(MapLayer.TransitStops));
-            }
         }
 
         public new Serialization.Stop ToProtobuf()

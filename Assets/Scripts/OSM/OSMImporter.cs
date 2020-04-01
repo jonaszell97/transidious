@@ -64,13 +64,11 @@ namespace Transidious
         float cosCenterLat;
         private static readonly float earthRadius = 6371000f;
 
-        public void ImportArea(string areaName)
+        public void ImportArea(string areaName, string fileName, bool bg)
         {
             {
-                var _ = new OSMImportHelper(this, areaName);
+                var _ = new OSMImportHelper(this, areaName, fileName);
             }
-
-            FindMinLngAndLat();
 
             cosCenterLat = Mathf.Cos((float)(minLat + (maxLat - minLat) * 0.5f) * Mathf.Deg2Rad);
 
@@ -106,7 +104,7 @@ namespace Transidious
                 importer.relations.Add(rel.Geo.Id, rel);
             }
 
-            importer.boundary = importer.relations[area.Boundary];
+            importer.relations.TryGetValue(area.Boundary, out importer.boundary);
 
             foreach (var street in area.Streets)
             {
@@ -153,10 +151,8 @@ namespace Transidious
             {
                 return ways[id];
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         OsmSharp.Node FindNode(long id)
@@ -165,46 +161,8 @@ namespace Transidious
             {
                 return nodes[id];
             }
-            else
-            {
-                return null;
-            }
-        }
 
-        void FindMinLngAndLat()
-        {
-            if (boundary == null)
-            {
-                return;
-            }
-
-            minLng = double.PositiveInfinity;
-            minLat = double.PositiveInfinity;
-            maxLng = double.NegativeInfinity;
-            maxLat = double.NegativeInfinity;
-
-            foreach (var member in boundary.Members)
-            {
-                var way = FindWay(member.Id);
-                if (way == null)
-                {
-                    continue;
-                }
-
-                foreach (var nodeId in way.Nodes)
-                {
-                    if (!nodes.TryGetValue(nodeId, out OsmSharp.Node node))
-                    {
-                        continue;
-                    }
-
-                    minLng = System.Math.Min(minLng, node.Longitude.Value);
-                    minLat = System.Math.Min(minLat, node.Latitude.Value);
-
-                    maxLng = System.Math.Max(maxLng, node.Longitude.Value);
-                    maxLat = System.Math.Max(maxLat, node.Latitude.Value);
-                }
-            }
+            return null;
         }
 
         OsmGeo Serialize(OsmSharp.OsmGeo geo)
@@ -382,6 +340,7 @@ namespace Transidious
         {
             Fast,
             Complete,
+            Background,
         }
 
         public enum MapExportType
@@ -427,7 +386,10 @@ namespace Transidious
         public bool loadGame = true;
         public bool importOnly = false;
         public bool forceReload = false;
+
         public int resolution = 8192;
+        public float mapTileSize = Map.defaultTileSize;
+        public int backgroundBlur = 10;
 
         public Relation boundary = null;
         public Dictionary<ulong, Node> nodes = new Dictionary<ulong, Node>();
@@ -463,14 +425,13 @@ namespace Transidious
 
         public static readonly float maxTileSize = 999999f; // 6000f;
 
-        async void Start()
+        void Start()
         {
             var mapPrefab = Resources.Load("Prefabs/Map") as GameObject;
             var mapObj = Instantiate(mapPrefab);
 
             map = mapObj.GetComponent<Map>();
-            map.name = this.area.ToString();
-            map.input = GameController.instance.input;
+            map.Initialize(this.area.ToString(), GameController.instance.input, mapTileSize);
             SaveManager.loadedMap = map;
 
             this.exporter = new MapExporter(map, resolution);
@@ -482,12 +443,23 @@ namespace Transidious
                 return;
             }
 
-            StartCoroutine(LoadFeatures());
+            if (importType == ImportType.Background)
+            {
+                StartCoroutine(LoadBackground());
+            }
+            else
+            {
+                StartCoroutine(LoadFeatures());
+            }
         }
 
         void ImportArea()
         {
             var areaName = this.area.ToString();
+            if (importType == ImportType.Background)
+            {
+                areaName = $"Backgrounds/{areaName}";
+            }
 
             string fileName = "Resources/Areas/";
             fileName += areaName;
@@ -498,7 +470,7 @@ namespace Transidious
             Area area;
             if (!System.IO.File.Exists(fileName) || forceReload)
             {
-                proxy.ImportArea(areaName);
+                proxy.ImportArea(this.area.ToString(), areaName, importType == ImportType.Background);
                 area = proxy.Save(fileName);
             }
             else
@@ -591,7 +563,7 @@ namespace Transidious
 
             using (this.CreateTimer("Save Assets"))
             {
-                UnityEditor.AssetDatabase.SaveAssets();
+                AssetDatabase.SaveAssets();
             }
 
             exporter.PrintStats();
@@ -603,6 +575,55 @@ namespace Transidious
             {
                 UnityEngine.SceneManagement.SceneManager.LoadScene("MainGame");
             }
+        }
+
+        IEnumerator LoadBackground()
+        {
+            Vector2[] boundaryPositions;
+            using (this.CreateTimer("Boundary"))
+            {
+                boundaryPositions = LoadBoundary();
+            }
+
+            using (this.CreateTimer("Features"))
+            {
+                yield return LoadParks();
+            }
+
+            using (this.CreateTimer("Streets"))
+            {
+                yield return LoadStreets();
+            }
+
+            using (this.CreateTimer("Buildings"))
+            {
+                yield return LoadBuildings();
+            }
+
+            using (this.CreateTimer("Update Map File"))
+            {
+                yield return SaveManager.UpdateMapBackground(map);
+            }
+
+            using (this.CreateTimer("Screenshots"))
+            {
+                exporter.ExportMap(map.name, backgroundBlur);
+            }
+
+            using (this.CreateTimer("Save Assets"))
+            {
+                AssetDatabase.SaveAssets();
+            }
+
+            using (this.CreateTimer("Update Map Prefab"))
+            {
+                exporter.UpdatePrefabBackground();
+            }
+
+            exporter.PrintStats();
+            Debug.Log("Done!");
+
+            done = true;
         }
 
         Vector2 Project(Node node)
@@ -777,15 +798,15 @@ namespace Transidious
             }
         }
 
-        void LoadBoundary()
+        Vector2[] LoadBoundary()
         {
             map.minX = 0;
             map.minY = 0;
 
-            map.maxX = maxX;
-            map.maxY = maxY;
+            map.maxX = (maxX - minX);
+            map.maxY = (maxY - minY);
 
-            Vector2[] boundaryPositions;
+            Vector2[] boundaryPositions = null;
             if (boundary != null)
             {
                 var positions = GetWayPositions(boundary, "outer", 0f, false, true);
@@ -815,74 +836,24 @@ namespace Transidious
                 // Debug.Break();
 #endif
             }
+
+            if (boundaryPositions == null || importType == ImportType.Background)
+            {
+                map.UpdateBoundary(new Vector2[]
+                {
+                    new Vector2(minX, minY), // bottom left
+                    new Vector2(minX, maxY), // top left
+                    new Vector2(maxX, maxY), // top right
+                    new Vector2(maxX, minY), // bottom right
+                    new Vector2(minX, minY), // bottom left
+                });
+            }
             else
             {
-                boundaryPositions = new Vector2[]
-                {
-                    new Vector2(map.minX, map.minY), // bottom left
-                    new Vector2(map.minX, map.maxY), // top left
-                    new Vector2(map.maxX, map.maxY), // top right
-                    new Vector2(map.maxX, map.minY), // bottom right
-                    new Vector2(map.minX, map.minY), // bottom left
-                };
+                map.UpdateBoundary(boundaryPositions);
             }
 
-            map.UpdateBoundary(boundaryPositions);
-        }
-
-        void AddStopToLine(Map.LineBuilder l, Stop s, Stop previousStop, int i, List<List<Vector3>> wayPositions,
-                           bool setDepot = true)
-        {
-            if (s == previousStop)
-            {
-                return;
-            }
-
-            if (previousStop != null)
-            {
-                List<Vector3> positions = null;
-                List<TrafficSimulator.PathSegmentInfo> segmentInfo = null;
-
-                if (l.line.type == TransitType.Bus)
-                {
-                    var options = new PathPlanning.PathPlanningOptions { allowWalk = false };
-                    var planner = new PathPlanning.PathPlanner(options);
-                    var result = planner.FindClosestDrive(map, previousStop.transform.position,
-                                                          s.transform.position);
-
-                    if (result != null)
-                    {
-                        segmentInfo = new List<TrafficSimulator.PathSegmentInfo>();
-                        positions = GameController.instance.sim.trafficSim.GetCompletePath(
-                            result, segmentInfo);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("no path found from " + previousStop.name + " to " + s.name);
-                    }
-                }
-                else if (i <= wayPositions.Count && wayPositions[i - 1] != null)
-                {
-                    positions = wayPositions[i - 1];
-                }
-
-                l.AddStop(s, true, false, positions);
-                if (segmentInfo != null)
-                {
-                    // Note which streets this route passes over.
-                    var route = l.line.routes.Last();
-                    foreach (var segAndLane in segmentInfo)
-                    {
-                        var routesOnSegment = segAndLane.segment.GetTransitRoutes(segAndLane.lane);
-                        routesOnSegment.Add(route);
-                        route.AddStreetSegmentOffset(segAndLane);
-                    }
-                }
-            }
-            else if (setDepot)
-            {
-                l.line.depot = s;
-            }
+            return boundaryPositions;
         }
 
         Stop GetOrCreateStop(Node stopNode, bool projectOntoStreet = false)
@@ -1519,7 +1490,7 @@ namespace Transidious
                         visualOnly = true;
                     }
 
-                    if (visualOnly)
+                    if (visualOnly || importType == ImportType.Background)
                     {
                         var layer = NaturalFeature.GetLayer(feature.Item2);
                         var color = NaturalFeature.GetColor(feature.Item2);
@@ -2047,7 +2018,7 @@ namespace Transidious
                     visualOnly = true;
                 }
 
-                if (visualOnly)
+                if (visualOnly || importType == ImportType.Background)
                 {
                     var layer = Building.GetLayer(building.buildingData.Item2);
                     var color = Building.GetColor(building.buildingData.Item2);

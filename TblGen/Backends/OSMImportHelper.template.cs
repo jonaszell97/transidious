@@ -67,14 +67,14 @@ public class OSMImportHelper
        }
     }
 
-    public OSMImportHelper(OSMImporterProxy importer, string area)
+    public OSMImportHelper(OSMImporterProxy importer, string area, string file)
     {
          this.importer = importer;
          this.referencedGeos = new HashSet<long>();
 
          string fileName;
          fileName = "Resources/OSM/";
-         fileName += area;
+         fileName += file;
          fileName += ".osm.pbf";
 
         input = File.OpenRead(fileName);

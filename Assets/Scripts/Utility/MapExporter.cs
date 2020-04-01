@@ -7,7 +7,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
+using Color = UnityEngine.Color;
 
 namespace Transidious
 {
@@ -170,13 +172,22 @@ namespace Transidious
             return meshes;
         }
 
-        public void ExportMap(string fileName)
+        public void ExportMap(string fileName, int backgroundBlur = 0)
         {
+            bool isBackground = backgroundBlur != 0;
+
             // FIXME
             var prevStatus = GameController.instance.status;
             GameController.instance.status = GameController.GameStatus.Disabled;
 
-            System.IO.Directory.CreateDirectory($"Assets/Resources/Maps/{fileName}");
+            if (isBackground)
+            {
+                System.IO.Directory.CreateDirectory($"Assets/Resources/Maps/{fileName}/Backgrounds");
+            }
+            else
+            {
+                System.IO.Directory.CreateDirectory($"Assets/Resources/Maps/{fileName}");
+            }
 
             using (var drawing = new Bitmap(resolution, resolution))
             {
@@ -196,10 +207,22 @@ namespace Transidious
                                 new SolidBrush(backgroundColor),
                                 new Rectangle(0, 0, resolution, resolution));
 
-                            if (DrawTile(map.GetTile(x, y), graphics, false))
+                            var tile = map.GetTile(x, y);
+                            if (DrawTile(tile, graphics, false))
                             {
-                                var assetName = $"Assets/Resources/Maps/{fileName}/{x}_{y}.png";
-                                drawing.Save(assetName);
+                                if (isBackground)
+                                {
+                                    var assetName = $"Assets/Resources/Maps/{fileName}/Backgrounds/{x}_{y}.png";
+                                    using (var blurred = Blur(drawing, backgroundBlur))
+                                    {
+                                        blurred.Save(assetName);
+                                    }
+                                }
+                                else
+                                {
+                                    var assetName = $"Assets/Resources/Maps/{fileName}/{x}_{y}.png";
+                                    drawing.Save(assetName);
+                                }
                             }
                         }
                     }
@@ -277,26 +300,33 @@ namespace Transidious
 
         PointF GetCoordinate(MapTile tile, Vector2 pos)
         {
-            var baseX = tile.x * Map.tileSize;
-            var baseY = tile.y * Map.tileSize;
+            var baseX = tile.x * map.tileSize;
+            var baseY = tile.y * map.tileSize;
 
             return new PointF(
-                ((pos.x - baseX) / Map.tileSize) * resolution,
-                resolution - ((pos.y - baseY) / Map.tileSize) * resolution
+                ((pos.x - baseX) / map.tileSize) * resolution,
+                resolution - ((pos.y - baseY) / map.tileSize) * resolution
             );
         }
 
         static PointF GetGlobalCoordinate(Map map, Vector2 pos, int resolution,
                                           float padding = 0f)
         {
+            var aspect = map.width / map.height;
+            var resolutionX = aspect >= 1f ? resolution : resolution * aspect;
+            var resolutionY = aspect < 1f ? resolution : resolution / aspect;
+
+            var xdiff = resolution - resolutionX;
+            var ydiff = resolution - resolutionY;
+
             var baseX = map.minX - padding;
             var baseY = map.minY - padding;
             var width = map.width + 2 * padding;
             var height = map.height + 2 * padding;
 
             return new PointF(
-                ((pos.x - baseX) / width) * resolution,
-                resolution - ((pos.y - baseY) / height) * resolution
+                (xdiff * .5f) + ((pos.x - baseX) / width) * resolutionX,
+                (ydiff * .5f) + resolutionY - ((pos.y - baseY) / height) * resolutionY
             );
         }
 
@@ -460,6 +490,13 @@ namespace Transidious
             }
         }
 
+        void EraseBoundary(MapTile tile, Vector2[] boundaryPositions, System.Drawing.Graphics g)
+        {
+            var path = new GraphicsPath();
+            path.AddPolygon(boundaryPositions.Select(v => GetCoordinate(tile, v)).ToArray());
+            g.FillPath(new SolidBrush(System.Drawing.Color.Transparent), path);
+        }
+        
         bool DrawTile(MapTile tile, System.Drawing.Graphics g, bool global)
         {
             var objectsToDraw = new HashSet<IMapObject>();
@@ -502,12 +539,16 @@ namespace Transidious
                 }
             }
 
+            var drewSomething = objectsToDraw.Count > 0 || streetsToDraw.Count > 0;
+
             foreach (var info in otherMeshes)
             {
                 if (info.Item1 != tile && !info.Item1.IsSharedTile)
                 {
                     continue;
                 }
+
+                drewSomething = true;
                 
                 if (global)
                 {
@@ -517,11 +558,6 @@ namespace Transidious
                 {
                     DrawMesh(g, info.Item2.color, info.Item2, tile);
                 }
-            }
-
-            if (objectsToDraw.Count == 0)
-            {
-                return false;
             }
 
             foreach (var entry in SortedMeshes)
@@ -548,7 +584,7 @@ namespace Transidious
 
                 if (meshes.Item2 == null)
                     continue;
-
+                
                 if (global)
                 {
                     FillGlobalPoly(g, outlineColor, meshes.Item2, resolution);
@@ -558,12 +594,12 @@ namespace Transidious
                     FillPoly(g, outlineColor, meshes.Item2, tile);
                 }
             }
-            
+
             foreach (var seg in streetsToDraw)
             {
                 var meshes = GetStreetMesh(seg);
                 var streetColor = seg.GetStreetColor();
-                    
+                
                 if (global)
                 {
                     FillGlobalPoly(g, streetColor, meshes.Item1, resolution);
@@ -574,7 +610,7 @@ namespace Transidious
                 }
             }
 
-            return true;
+            return drewSomething;
         }
 
         void DrawMinimap(System.Drawing.Graphics g, int resolution)
@@ -636,48 +672,6 @@ namespace Transidious
             {
                 DrawGlobalMesh(g, info.Item2.color, info.Item2, resolution);
             }
-
-            /*foreach (var street in map.streets)
-            {
-                switch (street.type)
-                {
-                    case Street.Type.Highway:
-                    case Street.Type.Primary:
-                    case Street.Type.Secondary:
-                    case Street.Type.River:
-                        break;
-                    default:
-                        continue;
-                }
-
-                var rel = Mathf.Min(map.width, map.height);
-                var streetDrawCalls = new List<Action>();
-
-                foreach (var seg in street.segments)
-                {
-                    var width = seg.GetStreetWidth(RenderingDistance.Near);
-                    var borderWidth = width + seg.GetBorderWidth(RenderingDistance.Near);
-
-                    var relativeWidth = (width / rel) * resolution;
-                    var relativeBorderWidth = (borderWidth / rel) * resolution;
-
-                    var color = seg.GetStreetColor(RenderingDistance.Near);
-                    var borderColor = seg.GetBorderColor(RenderingDistance.Near);
-
-                    var points = seg.positions.Select(v => (Vector2)v).ToArray();
-
-                    DrawGobalLine(g, points, borderColor, relativeBorderWidth, resolution);
-                    streetDrawCalls.Add(() =>
-                    {
-                        DrawGobalLine(g, points, color, relativeWidth, resolution);
-                    });
-                }
-
-                foreach (var call in streetDrawCalls)
-                {
-                    call();
-                }
-            }*/
         }
 
         Mesh CreateMesh(MeshInfo info, bool fast)
@@ -797,8 +791,17 @@ namespace Transidious
 
         void SaveMesh(GameObject obj, string fileName)
         {
-            var meshFilter = obj.GetComponent<MeshFilter>();
-            AssetDatabase.CreateAsset(meshFilter.mesh, fileName);
+            SaveMesh(obj.GetComponent<MeshFilter>().sharedMesh, fileName);
+        }
+        
+        void SaveMesh(Mesh mesh, string fileName)
+        {
+            AssetDatabase.CreateAsset(mesh, fileName);
+        }
+
+        void SaveMaterial(Material mat, string name)
+        {
+            AssetDatabase.CreateAsset(mat, $"Assets/Resources/Materials/Textures/{name}");
         }
 
         public void ExportMapPrefab()
@@ -837,14 +840,119 @@ namespace Transidious
             // Save boundary outline.
             SaveMesh(map.boundaryOutlineObj, $"{meshPath}/BoundaryOutline.asset");
 
-            // Save boundary mask.
-            SaveMesh(map.boundaryMaskObj, $"{meshPath}/BoundaryMask.asset");
-
             // Save boundary background.
             SaveMesh(map.boundaryBackgroundObj, $"{meshPath}/BoundaryBackground.asset");
 
             PrefabUtility.SaveAsPrefabAsset(
                 map.gameObject, $"Assets/Resources/Maps/{map.name}/{map.name}.prefab");
+        }
+
+        public void InitializeBackground(Map prefabMap,
+                                         float backgroundTileSize,
+                                         Vector2 backgroundOffset,
+                                         Vector2 backgroundSize)
+        {
+            string meshPath = $"Assets/Resources/Maps/{map.name}/Meshes";
+            
+            var xpos = -(backgroundSize.x * backgroundTileSize * .5f) + (prefabMap.width * .5f) + (backgroundOffset.x * .5f);
+            var ypos = -(backgroundSize.y * backgroundTileSize * .5f) + (prefabMap.height * .5f) + (backgroundOffset.y * .5f);
+
+            var maxXpos = xpos + backgroundSize.x * backgroundTileSize - backgroundOffset.x;
+            var maxYpos = ypos + backgroundSize.y * backgroundTileSize - backgroundOffset.y;
+
+            var sh = Shader.Find("Unlit/Texture");
+
+            var boundaryPSLG = new PSLG(Map.Layer(MapLayer.Foreground));
+            boundaryPSLG.AddVertexLoop(prefabMap.boundaryPositions.Select(v => (Vector3)v).ToList());
+
+            var uv = new List<Vector2>();
+            for (var x = 0; x < backgroundSize.x; ++x)
+            {
+                for (var y = 0; y < backgroundSize.y; ++y)
+                {
+                    uv.Clear();
+
+                    var sprite = SpriteManager.GetSprite($"Maps/{map.name}/Backgrounds/{x}_{y}");
+                    var c = Color.white;
+
+                    if (sprite == null)
+                    {
+                        c = map.GetDefaultBackgroundColor(MapDisplayMode.Day);
+                        sprite = Resources.Load<Sprite>("Sprites/ui_square");
+                    }
+
+                    var min_x = xpos + x * backgroundTileSize;
+                    var max_x = Mathf.Min(maxXpos, min_x + backgroundTileSize);
+                    var min_y = ypos + y * backgroundTileSize;
+                    var max_y = Mathf.Min(maxYpos, min_y + backgroundTileSize);
+
+                    var basePSLG = new PSLG(Map.Layer(MapLayer.Foreground));
+                    basePSLG.AddOrderedVertices(new []
+                    {
+                        new Vector3(min_x, min_y),
+                        new Vector3(min_x, max_y),
+                        new Vector3(max_x, max_y),
+                        new Vector3(max_x, min_y),
+                    });
+
+                    var pslg = Math.PolygonDiff(basePSLG, boundaryPSLG);
+                    var mesh = TriangleAPI.CreateMesh(pslg, true);
+
+                    var verts = mesh.vertices;
+                    foreach (var v in verts)
+                    {
+                        uv.Add(new Vector2((v.x - min_x) / backgroundTileSize, (v.y - min_y) / backgroundTileSize));
+                    }
+
+                    mesh.uv = uv.ToArray();
+
+                    var name = $"Background {x} {y}";
+                    var tf = prefabMap.transform.Find(name);
+
+                    GameObject obj;
+                    if (tf == null)
+                    {
+                        obj = new GameObject();
+                        obj.name = $"Background {x} {y}";
+                        obj.AddComponent<MeshFilter>();
+                        obj.AddComponent<MeshRenderer>();
+
+                        tf = obj.transform;
+                    }
+                    else
+                    {
+                        obj = tf.gameObject;
+                    }
+
+                    tf.SetParent(prefabMap.transform);
+                    tf.SetLayer(MapLayer.Foreground);
+
+                    var mf = obj.GetComponent<MeshFilter>();
+                    mf.sharedMesh = mesh;
+
+                    var mr = obj.GetComponent<MeshRenderer>();
+                    mr.sharedMaterial = new Material(sh) {mainTexture = sprite.texture};
+
+                    SaveMesh(mf.sharedMesh, $"{meshPath}/BG_{x}_{y}.asset");
+                    SaveMaterial(mr.sharedMaterial, $"{map.name}_{x}_{y}.mat");
+                }
+            }
+        }
+
+        public void UpdatePrefabBackground()
+        {
+            var prefab = Resources.Load($"Maps/{map.name}/{map.name}") as GameObject;
+            var inst = GameObject.Instantiate(prefab);
+            var prefabMap = inst.GetComponent<Map>();
+
+            InitializeBackground(prefabMap, map.tileSize, 
+                new Vector2(map.tilesWidth * map.tileSize - map.width, map.tilesHeight * map.tileSize - map.height),
+                new Vector2(map.tilesWidth, map.tilesHeight));
+
+            PrefabUtility.SaveAsPrefabAsset(
+                inst, $"Assets/Resources/Maps/{map.name}/{map.name}.prefab");
+
+            GameObject.Destroy(inst);
         }
 
         public void PrintStats()
@@ -860,6 +968,201 @@ namespace Transidious
 
             statsStr.Append("\n");
             Debug.Log(statsStr.ToString());
+        }
+
+        private static float[][] GetGaussianKernel2D(Int32 kernelSize, float sigma = 1f)
+        {
+            var halfKernelSize = kernelSize / 2;
+            var sigmaSquared = Mathf.Pow(sigma, 2);
+            var twoSigmaSquared = 2f * sigmaSquared;
+            var oneOverSigmaSquaredTwoPi = 1f / (sigmaSquared * Math.TwoPI);
+            var kernel = new float[kernelSize][];
+
+            var sum = 0f;
+            for (var x = 0; x < kernelSize; ++x)
+            {
+                kernel[x] = new float[kernelSize];
+
+                for (var y = 0; y < kernelSize; ++y)
+                {
+                    var xSquared = Mathf.Pow(x - halfKernelSize, 2f);
+                    var ySquared = Mathf.Pow(y - halfKernelSize, 2f);
+
+                    kernel[x][y] = oneOverSigmaSquaredTwoPi * Mathf.Pow(
+                        (float)System.Math.E, 
+                        -((xSquared + ySquared) / twoSigmaSquared));
+
+                    sum += kernel[x][y];
+                }
+            }
+
+            var missing = 1f - sum;
+            for (var x = 0; x < kernelSize; ++x)
+            {
+                for (var y = 0; y < kernelSize; ++y)
+                {
+                    kernel[x][y] += (kernel[x][y] / sum) * missing;
+                }
+            }
+
+            return kernel;
+        }
+        
+        private static float[][] GetGaussianKernel1D(Int32 kernelSize, float sigma = 1f)
+        {
+            var halfKernelSize = kernelSize / 2;
+            var sigmaSquared = Mathf.Pow(sigma, 2);
+            var twoSigmaSquared = 2f * sigmaSquared;
+            var oneOverSigmaSquaredTwoPi = 1f / (sigmaSquared * Math.TwoPI);
+            var kernel = new float[kernelSize][];
+
+            var sum = 0f;
+            for (var x = 0; x < kernelSize; ++x)
+            {
+                kernel[x] = new float[1];
+
+                var xSquared = Mathf.Pow(x - halfKernelSize, 2f);
+                kernel[x][0] = oneOverSigmaSquaredTwoPi * Mathf.Pow(
+                                   (float)System.Math.E, 
+                                   -(xSquared / twoSigmaSquared));
+
+                sum += kernel[x][0];
+            }
+
+            var missing = 1f - sum;
+            for (var x = 0; x < kernelSize; ++x)
+            {
+                kernel[x][0] += (kernel[x][0] / sum) * missing;
+            }
+            
+            return kernel;
+        }
+
+        private static float[][] FlipKernel(float[][] kernel)
+        {
+            var xsize = kernel.Length;
+            var ysize = kernel[0].Length;
+
+            var result = new float[ysize][];
+            for (var y = 0; y < ysize; ++y)
+            {
+                result[y] = new float[xsize];
+
+                for (var x = 0; x < xsize; ++x)
+                {
+                    result[y][x] = kernel[x][y];
+                }
+            }
+
+            return result;
+        }
+        
+        private static float[][] GetBoxKernel(Int32 kernelSize)
+        {
+            var k = 1f / (kernelSize * kernelSize);
+            var kernel = new float[kernelSize][];
+
+            for (var x = 0; x < kernelSize; ++x)
+            {
+                kernel[x] = new float[kernelSize];
+
+                for (var y = 0; y < kernelSize; ++y)
+                {
+                    kernel[x][y] = k;
+                }
+            }
+
+            return kernel;
+        }
+
+        static float getSigmaForKernelSize(Int32 kSize)
+        {
+            return ((float)kSize - 1f) / 3f;
+        }
+
+        private static Bitmap Blur(Bitmap image, Int32 blurSize)
+        {
+            var kernel = GetGaussianKernel1D(blurSize, getSigmaForKernelSize(blurSize));
+            var rect = new Rectangle(0, 0, image.Width, image.Height);
+
+            return Blur(Blur(image, rect, kernel), rect, FlipKernel(kernel));
+        }
+
+        private static unsafe Bitmap Blur(Bitmap image, Rectangle rectangle, float[][] kernel)
+        {
+            int blurSizeX = kernel.Length / 2;
+            int blurSizeY = kernel[0].Length / 2;
+            int width = image.Width;
+            int height = image.Height;
+
+            Bitmap blurred = new Bitmap(image.Width, image.Height);
+
+            // make an exact copy of the bitmap provided
+            using (var graphics = System.Drawing.Graphics.FromImage(blurred))
+                graphics.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height),
+                    new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
+
+            // Lock the bitmap's bits
+            BitmapData blurredData = blurred.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadWrite, blurred.PixelFormat);
+            BitmapData origData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadWrite, blurred.PixelFormat);
+
+            // Get bits per pixel for current PixelFormat
+            int bitsPerPixel = Image.GetPixelFormatSize(blurred.PixelFormat);
+            int bitsPerPixel_orig = Image.GetPixelFormatSize(image.PixelFormat);
+
+            // Get pointer to first line
+            byte* scan0 = (byte*)blurredData.Scan0.ToPointer();
+            byte* scan0_orig = (byte*)origData.Scan0.ToPointer();
+
+            // look at every pixel in the blur rectangle
+            for (int xx = rectangle.X; xx < rectangle.X + rectangle.Width; xx++)
+            {
+                for (int yy = rectangle.Y; yy < rectangle.Y + rectangle.Height; yy++)
+                {
+                    float avgR = 0, avgG = 0, avgB = 0;
+
+                    // average the color of the red, green and blue for each pixel in the
+                    // blur size while making sure you don't go outside the image bounds
+                    for (int x = xx - blurSizeX, kx = 0; x <= xx + blurSizeX; x++, kx++)
+                    {
+                        for (int y = yy - blurSizeY, ky = 0; y <= yy + blurSizeY; y++, ky++)
+                        {
+                            var safeX = x;
+                            var safeY = y;
+                            
+                            if (x < 0)
+                                safeX = 0;
+                            else if (x >= width)
+                                safeX = width - 1;
+
+                            if (safeY < 0)
+                                safeY = 0;
+                            else if (y >= height)
+                                safeY = height - 1;
+    
+                            // Get pointer to RGB
+                            byte* data = scan0_orig + safeY * origData.Stride + safeX * bitsPerPixel_orig / 8;
+
+                            avgB += data[0] * kernel[kx][ky]; // Blue
+                            avgG += data[1] * kernel[kx][ky]; // Green
+                            avgR += data[2] * kernel[kx][ky]; // Red
+                        }
+                    }
+
+                    {
+                        byte* data = scan0 + yy * blurredData.Stride + xx * bitsPerPixel / 8;
+                        data[0] = (byte) avgB;
+                        data[1] = (byte) avgG;
+                        data[2] = (byte) avgR;
+                    }
+                }
+            }
+
+            // Unlock the bits
+            blurred.UnlockBits(blurredData);
+            image.UnlockBits(origData);
+
+            return blurred;
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using UnityEditor;
 using UnityEngine;
 using ICSharpCode.SharpZipLib.GZip;
+using Transidious.Serialization;
 
 namespace Transidious
 {
@@ -87,6 +88,7 @@ namespace Transidious
                 MinY = map.minY,
                 MaxY = map.maxY,
                 StartingCameraPos = map.startingCameraPos.ToProtobuf(),
+                TileSize = map.tileSize,
             };
 
             result.Buildings.AddRange(map.buildings.Select(b => b.ToProtobuf()));
@@ -95,9 +97,8 @@ namespace Transidious
             result.NaturalFeatures.AddRange(map.naturalFeatures.Select(b => b.ToProtobuf()));
 
             result.BoundaryPositions.AddRange(map.boundaryPositions?.Select(v => v.ToProtobuf()));
-            result.BoundaryMeshes.Add(map.boundaryBackgroundObj?.GetComponent<MeshFilter>().mesh.ToProtobuf2D());
-            result.BoundaryMeshes.Add(map.boundaryOutlineObj?.GetComponent<MeshFilter>().mesh.ToProtobuf2D());
-            result.BoundaryMeshes.Add(map.boundaryMaskObj?.GetComponent<MeshFilter>().mesh.ToProtobuf2D());
+            result.BoundaryMeshes.Add(map.boundaryBackgroundObj.GetComponent<MeshFilter>().mesh.ToProtobuf2D());
+            result.BoundaryMeshes.Add(map.boundaryOutlineObj.GetComponent<MeshFilter>().mesh.ToProtobuf2D());
 
             return result;
         }
@@ -232,6 +233,45 @@ namespace Transidious
             }
         }
 
+        public static IEnumerator UpdateMapBackground(Map map)
+        {
+            var resourceName = $"Maps/{map.name}/MapData";
+            var asyncResource = Resources.LoadAsync(resourceName);
+
+            yield return asyncResource;
+
+            if (asyncResource.asset == null)
+            {
+                yield break;
+            }
+
+            var fileResource = (TextAsset)asyncResource.asset;
+            var serializedMap = Decompress(fileResource, Serialization.Map.Parser);
+            if (serializedMap.Triple.Deserialize() != SaveFormatVersion)
+            {
+                Debug.LogError("Incompatible save format version!");
+                yield break;
+            }
+
+            serializedMap.BackgroundTileSize = map.tileSize;
+            serializedMap.BackgroundMin = new Serialization.Vector2
+            {
+                X = (map.tilesWidth * map.tileSize) - map.width,
+                Y = (map.tilesHeight * map.tileSize) - map.height,
+            };
+            serializedMap.BackgroundSize = new Serialization.Vector2
+            {
+                X = map.tilesWidth,
+                Y = map.tilesHeight,
+            };
+
+            var fileName = $"Assets/Resources/Maps/{map.name}/MapData.bytes";
+            using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
+            {
+                CompressGZip(stream, serializedMap);
+            }
+        }
+
         public static void SaveMapData(Map map, string saveFile = null)
         {
             var fileName = "Assets/Resources/Saves";
@@ -301,8 +341,8 @@ namespace Transidious
             //    serializedMap.MinX, serializedMap.MaxX,
             //    serializedMap.MinY, serializedMap.MaxY);
 
-            //map.boundaryPositions = serializedMap.BoundaryPositions.Select(
-            //    p => p.Deserialize()).ToArray();
+            map.boundaryPositions = serializedMap.BoundaryPositions.Select(
+                p => p.Deserialize()).ToArray();
 
             //for (var x = 0; x < map.tilesWidth; ++x)
             //{
@@ -323,20 +363,8 @@ namespace Transidious
 
             map.sharedTile.Initialize(map, -1, -1);
 
-            Camera.main.transform.position = map.startingCameraPos;
-            map.input.minX = map.minX - 1000f;
-            map.input.maxX = map.maxX + 1000f;
-            map.input.minY = map.minY - 1000f;
-            map.input.maxY = map.maxY + 1000f;
-            map.input.UpdateZoomLevels();
-
-            //Camera.main.transform.position = new Vector3(
-            //    serializedMap.MinX + (serializedMap.MaxX - serializedMap.MinX) / 2f,
-            //    serializedMap.MinY + (serializedMap.MaxY - serializedMap.MinY) / 2f,
-            //    Camera.main.transform.position.z);
-
-            // map.input.UpdateZoomLevels();
-            //map.startingCameraPos = Camera.main.transform.position;
+            map.input.camera.transform.position = map.startingCameraPos;
+            map.input.UpdateZoomLevels(map);
 
             yield return DeserializeGameObjects(map, serializedMap);
             yield return InitializeGameObjects(map, serializedMap);
@@ -620,9 +648,9 @@ namespace Transidious
             }
 
             // Initialize the map tiles.
-            for (int x = 0; x < saveFile.Tiles.Count; ++x)
+            for (var x = 0; x < saveFile.Tiles.Count; ++x)
             {
-                for (int y = 0; y < saveFile.Tiles[x].Tiles.Count; ++y)
+                for (var y = 0; y < saveFile.Tiles[x].Tiles.Count; ++y)
                 {
                     var tile = saveFile.Tiles[x].Tiles[y];
                     map.GetTile((int)tile.X, (int)tile.Y).Deserialize(tile);
@@ -634,8 +662,6 @@ namespace Transidious
             {
                 GameController.instance.sim.citizens[citizen.Id].Finalize(citizen);
             }
-
-            yield break;
         }
 
         public static Map CreateMap(GameController game, string saveName)
@@ -644,8 +670,7 @@ namespace Transidious
             var mapObj = GameObject.Instantiate(mapPrefab);
 
             var map = mapObj.GetComponent<Map>();
-            map.name = saveName;
-            map.input = game.input;
+            map.Initialize(saveName, game.input);
             map.isLoadedFromSaveFile = true;
             loadedMap = map;
 
