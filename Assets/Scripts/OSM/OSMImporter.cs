@@ -70,6 +70,9 @@ namespace Transidious
                 var _ = new OSMImportHelper(this, areaName, fileName);
             }
 
+            if (!bg)
+                FindMinLngAndLat();
+
             cosCenterLat = Mathf.Cos((float)(minLat + (maxLat - minLat) * 0.5f) * Mathf.Deg2Rad);
 
             minX = earthRadius * ((float)minLng * Mathf.Deg2Rad) * cosCenterLat;
@@ -129,6 +132,42 @@ namespace Transidious
                     inbound = line.InboundId != 0 ? importer.relations[line.InboundId] : null,
                     outbound = line.OutboundId != 0 ? importer.relations[line.OutboundId] : null,
                 });
+            }
+        }
+
+        void FindMinLngAndLat()
+        {
+            if (boundary == null)
+            {
+                return;
+            }
+
+            minLng = double.PositiveInfinity;
+            minLat = double.PositiveInfinity;
+            maxLng = double.NegativeInfinity;
+            maxLat = double.NegativeInfinity;
+
+            foreach (var member in boundary.Members)
+            {
+                var way = FindWay(member.Id);
+                if (way == null)
+                {
+                    continue;
+                }
+
+                foreach (var nodeId in way.Nodes)
+                {
+                    if (!nodes.TryGetValue(nodeId, out OsmSharp.Node node))
+                    {
+                        continue;
+                    }
+
+                    minLng = System.Math.Min(minLng, node.Longitude.Value);
+                    minLat = System.Math.Min(minLat, node.Latitude.Value);
+
+                    maxLng = System.Math.Max(maxLng, node.Longitude.Value);
+                    maxLat = System.Math.Max(maxLat, node.Latitude.Value);
+                }
             }
         }
 
@@ -431,8 +470,9 @@ namespace Transidious
             var mapObj = Instantiate(mapPrefab);
 
             map = mapObj.GetComponent<Map>();
-            map.Initialize(this.area.ToString(), GameController.instance.input, mapTileSize);
             SaveManager.loadedMap = map;
+            
+            map.Initialize(this.area.ToString(), GameController.instance.input, mapTileSize);
 
             this.exporter = new MapExporter(map, resolution);
             this.ImportArea();
@@ -905,7 +945,9 @@ namespace Transidious
         {
             foreach (var linePair in lines)
             {
-                if (linesToLoad.Length > 0 && !linesToLoad.Contains(linePair.Value.inbound.Geo.Tags["ref"]))
+                if (linesToLoad.Length > 0
+                    && (!linePair.Value.inbound.Geo.Tags.ContainsKey("ref")
+                    || !linesToLoad.Contains(linePair.Value.inbound.Geo.Tags.GetValue("ref"))))
                 {
                     continue;
                 }
@@ -1660,6 +1702,11 @@ namespace Transidious
 
             foreach (var building in partialBuildings)
             {
+                if (building.buildingData.Item2 == Building.Type.Other)
+                {
+                    continue;
+                }
+
                 foreach (var unorderedEdge in building.pslg.Edges)
                 {
                     var edge = new Edge(unorderedEdge);
@@ -1691,6 +1738,13 @@ namespace Transidious
 
             foreach (var building in partialBuildings)
             {
+                if (building.buildingData.Item2 == Building.Type.Other)
+                {
+                    mergedBuildings.Add(building);
+                    visitedBuildings.Add(building.centroid);
+                    continue;
+                }
+
                 var equivalenceClass = -1;
                 foreach (var unorderedEdge in building.pslg.Edges)
                 {
@@ -1820,6 +1874,11 @@ namespace Transidious
             if (tags.ContainsKey("name"))
             {
                 return tags.GetValue("name");
+            }
+
+            if (building.buildingData.Item2 == Building.Type.Other)
+            {
+                return $"Unclassified building: {tags.GetValue("building")}";
             }
 
             //var capacity = Building.GetDefaultCapacity(building.buildingData.Item2, area);

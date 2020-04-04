@@ -73,24 +73,34 @@ namespace Transidious
         {
             private readonly long _startTime;
             private readonly string _description;
+            private readonly int _iterations;
 
-            public Timer(string description)
+            public Timer(string description, int iterations)
             {
                 _description = description;
                 _startTime = DateTime.Now.Ticks;
+                _iterations = iterations;
 
                 Debug.Log($"Starting '{description}' at {DateTime.Now.ToShortTimeString()}");
             }
 
             public void Dispose()
             {
-                Debug.Log($"[{_description}] {TimeSpan.FromTicks(DateTime.Now.Ticks - _startTime).TotalMilliseconds:n0}ms");
+                var t = TimeSpan.FromTicks(DateTime.Now.Ticks - _startTime).TotalMilliseconds;
+                var msg = $"[{_description}] {t:n0}ms";
+
+                if (_iterations > 1)
+                {
+                    msg += $" (avg {t / _iterations:n2}ms)";
+                }
+                
+                Debug.Log(msg);
             }
         }
 
-        public static Timer CreateTimer(this MonoBehaviour obj, string description = null)
+        public static Timer CreateTimer(this System.Object obj, string description = null, int iterations = 1) 
         {
-            return new Timer(description ?? obj.name);
+            return new Timer(description ?? "<Unnamed>", iterations);
         }
 
         public static void DisableImmediateChildren(this GameObject obj)
@@ -188,6 +198,31 @@ namespace Transidious
                                             Color c)
         {
             return Utility.DrawCircle(container.transform.position, radius, lineWidth, c);
+        }
+
+        public static float NextFloat(this System.Random rng)
+        {
+            return (float) rng.NextDouble();
+        }
+
+        public static float NextFloat(this System.Random rng, float min, float max)
+        {
+            return min + rng.NextFloat() * (max - min);
+        }
+
+        public static Vector2 Vector2(this System.Random rng,
+                                      float minX, float maxX,
+                                      float minY, float maxY)
+        {
+            return new Vector2(rng.NextFloat(minX, maxX), rng.NextFloat(minY, maxY));
+        }
+
+        public static Vector3 Vector3(this System.Random rng,
+                                      float minX, float maxX,
+                                      float minY, float maxY,
+                                      float z = 0f)
+        {
+            return new Vector3(rng.NextFloat(minX, maxX), rng.NextFloat(minY, maxY), z);
         }
     }
 }

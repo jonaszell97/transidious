@@ -10,7 +10,7 @@
         },
         {
             "key": "map.boundaryDay",
-            "value": "#000"
+            "value": "#555"
         },
         {
             "key": "map.boundaryNight",
@@ -118,6 +118,10 @@
         {
             "key": "feature.Residential",
             "value": "#F5F5F5"
+        },
+        {
+            "key": "feature.Railway",
+            "value": "#ECE5D6"
         },
         {
             "key": "feature.Zoo",

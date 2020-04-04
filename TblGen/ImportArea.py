@@ -154,6 +154,15 @@ max_x = max(vertices, key=lambda v: v[0])[0]
 min_y = min(vertices, key=lambda v: v[1])[1]
 max_y = max(vertices, key=lambda v: v[1])[1]
 
+# fg_min = [min_x - 100, min_y - 100]
+# fg_max = [max_x + 100, max_y + 100]
+
+# foreground_poly = np.array([np.array([fg_min[0], fg_min[1]]),
+#                             np.array([fg_min[0], fg_max[1]]),
+#                             np.array([fg_max[0], fg_max[1]]),
+#                             np.array([fg_max[0], fg_min[1]]),
+#                             np.array([fg_min[0], fg_min[1]])])
+
 # approximate radius of earth in m
 R = 6371.0 * 1000
 cos_center_lat = cos(radians(min_y + (max_y - min_y) * 0.5))
@@ -163,7 +172,10 @@ width_meters = to_meters(np.array([max_x, 0]), R, cos_center_lat)[0] - to_meters
 height_meters = to_meters(np.array([0, max_y]), R, cos_center_lat)[1] - to_meters(np.array([0, min_y]), R, cos_center_lat)[1]
 one_meter_scale = (max_x - min_x) / width_meters
 
-print('width: %s, height: %s' % (width_meters, height_meters))
+scaled_verts = scale_polygon(100 * one_meter_scale, vertices)
+create_poly(scaled_verts, '../Resources/Poly/%s.poly' % (searchTerm),
+            '../Resources/OSM/%s.osm.pbf' % (country),
+            '../Resources/OSM/%s.osm.pbf' % (searchTerm))
 
 x_scale = 1000 * (16 / 9)
 y_scale = 1000
@@ -175,10 +187,6 @@ min_x -= background_size_x
 max_x += background_size_x
 min_y -= background_size_y
 max_y += background_size_y
-
-create_poly(vertices, '../Resources/Poly/%s.poly' % (searchTerm),
-            '../Resources/OSM/%s.osm.pbf' % (country),
-            '../Resources/OSM/%s.osm.pbf' % (searchTerm))
 
 background_poly = np.array([np.array([min_x, min_y]),
                             np.array([min_x, max_y]),
@@ -192,9 +200,10 @@ create_poly(background_poly, '../Resources/Poly/Backgrounds/%s.poly' % (searchTe
 
 ###
 
-# real_vertices = list(map(lambda v: np.array([v[0] * cos_center_lat, v[1]]), vertices))
-# display_poly(real_vertices, 'r')
-# display_poly(background_poly, 'g')
+# scaled_verts = scale_polygon(300 * one_meter_scale, vertices)
+# display_poly(vertices, 'r')
+# display_poly(scaled_verts, 'g')
+# display_poly(background_poly, 'b')
 # plt.show()
 
 # exit(0)

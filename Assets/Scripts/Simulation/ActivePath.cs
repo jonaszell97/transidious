@@ -115,7 +115,7 @@ namespace Transidious
             this._currentStep = path.steps.Count;
 
             this.transform.SetLayer(MapLayer.Cars);
-            this.transform.SetParent(GameController.instance.loadedMap.sharedTile.transform);
+            this.transform.SetParent(GameController.instance.sim.transform);
 
             c.activePath = this;
         }

@@ -21,43 +21,21 @@ namespace Transidious
         public HashSet<IMapObject> mapObjects;
         public Rect rect;
         RenderingDistance? currentRenderingDist;
-        public HashSet<IMapObject> orphanedObjects;
 
         public Canvas canvas;
+        public GameObject meshes;
+
         [SerializeField] SpriteRenderer backgroundImage;
         [SerializeField] BoxCollider2D boxCollider;
-
-        public Dictionary<Tuple<string, RenderingDistance>, MultiMesh> meshes;
-        public GameObject[] meshGroups;
 
         BoxCollider2D[] boxColliders;
         List<ColliderInfo> colliderInfo;
 
         static List<LineRenderer> lineRenderers;
 
-        public IEnumerable<StreetSegment> streetSegments
-        {
-            get
-            {
-                return mapObjects.OfType<StreetSegment>();
-            }
-        }
+        public IEnumerable<StreetSegment> streetSegments => mapObjects.OfType<StreetSegment>();
 
-        public IEnumerable<Stop> transitStops
-        {
-            get
-            {
-                return mapObjects.OfType<Stop>();
-            }
-        }
-
-        public bool IsSharedTile
-        {
-            get
-            {
-                return x == -1;
-            }
-        }
+        public IEnumerable<Stop> transitStops => mapObjects.OfType<Stop>();
 
         public void Initialize(Map map, int x, int y)
         {
@@ -80,7 +58,6 @@ namespace Transidious
             this.y = y;
             this.mapObjects = new HashSet<IMapObject>();
             this.colliderInfo = new List<ColliderInfo>();
-            this.meshes = new Dictionary<Tuple<string, RenderingDistance>, MultiMesh>();
 
             if (backgroundImage.sprite == null && x != -1)
             {
@@ -120,16 +97,6 @@ namespace Transidious
         {
             this.mapObjects.Clear();
             this.colliderInfo.Clear();
-        }
-
-        public void AddOrphanedObject(IMapObject obj)
-        {
-            if (orphanedObjects == null)
-            {
-                orphanedObjects = new HashSet<IMapObject>();
-            }
-
-            orphanedObjects.Add(obj);
         }
 
         public void AddCollider(StaticMapObject obj,
@@ -192,47 +159,14 @@ namespace Transidious
             return rect.Contains(pt);
         }
 
-        public MultiMesh GetMesh(string category,
-                                 RenderingDistance dist = RenderingDistance.Near)
-        {
-            var key = Tuple.Create(category, dist);
-            if (meshes.TryGetValue(key, out MultiMesh mesh))
-            {
-                return mesh;
-            }
-
-            mesh = MultiMesh.Create(map, category, meshGroups[(int)dist].transform);
-            meshes.Add(key, mesh);
-
-            return mesh;
-        }
-
-        public void AddMesh(string category, Mesh mesh, Color c,
-                            float z = 0f,
-                            RenderingDistance dist = RenderingDistance.Near)
-        {
-            var multiMesh = GetMesh(category, dist);
-            multiMesh.AddMesh(c, mesh, z);
-        }
-
         public void FinalizeTile()
         {
             CreateColliders();
             currentRenderingDist = null;
-
-            foreach (var mesh in meshes)
-            {
-                mesh.Value.CreateMeshes();
-            }
         }
 
-        public void CreateColliders()
+        void CreateColliders()
         {
-            if (IsSharedTile)
-            {
-                return;
-            }
-
             boxCollider.offset = rect.center;
             boxCollider.size = rect.size;
         }
@@ -320,40 +254,28 @@ namespace Transidious
             switch (dist)
             {
                 case RenderingDistance.Near:
-                    meshGroups[0].gameObject.SetActive(true);
-                    meshGroups[1].gameObject.SetActive(true);
-                    meshGroups[2].gameObject.SetActive(true);
-                    meshGroups[3].gameObject.SetActive(true);
+                    meshes.SetActive(true);
                     backgroundImage.gameObject.SetActive(false);
                     canvas.gameObject.SetActive(true);
-                    boxCollider.enabled = !IsSharedTile;
+                    boxCollider.enabled = true;
 
                     break;
                 case RenderingDistance.Far:
-                    meshGroups[0].gameObject.SetActive(false);
-                    meshGroups[1].gameObject.SetActive(true);
-                    meshGroups[2].gameObject.SetActive(true);
-                    meshGroups[3].gameObject.SetActive(true);
+                    meshes.SetActive(false);
                     backgroundImage.gameObject.SetActive(true);
                     canvas.gameObject.SetActive(false);
                     boxCollider.enabled = false;
 
                     break;
                 case RenderingDistance.VeryFar:
-                    meshGroups[0].gameObject.SetActive(false);
-                    meshGroups[1].gameObject.SetActive(false);
-                    meshGroups[2].gameObject.SetActive(true);
-                    meshGroups[3].gameObject.SetActive(true);
+                    meshes.SetActive(false);
                     backgroundImage.gameObject.SetActive(true);
                     canvas.gameObject.SetActive(false);
                     boxCollider.enabled = false;
 
                     break;
                 case RenderingDistance.Farthest:
-                    meshGroups[0].gameObject.SetActive(false);
-                    meshGroups[1].gameObject.SetActive(false);
-                    meshGroups[2].gameObject.SetActive(false);
-                    meshGroups[3].gameObject.SetActive(true);
+                    meshes.SetActive(false);
                     backgroundImage.gameObject.SetActive(true);
                     canvas.gameObject.SetActive(false);
                     boxCollider.enabled = false;
@@ -368,30 +290,6 @@ namespace Transidious
             {
                 gameObject.SetActive(false);
             }
-
-            //if (orphanedObjects != null)
-            //{
-            //    foreach (var obj in orphanedObjects)
-            //    {
-            //        obj.Hide();
-            //    }
-            //}
-        }
-
-        public void HideMeshes()
-        {
-            foreach (var mesh in meshes)
-            {
-                mesh.Value.gameObject.SetActive(false);
-            }
-        }
-
-        public void ShowMeshes()
-        {
-            foreach (var mesh in meshes)
-            {
-                mesh.Value.gameObject.SetActive(true);
-            }
         }
 
         ColliderInfo enteredMapObject = null;
@@ -399,11 +297,6 @@ namespace Transidious
 
         void OnMouseDown()
         {
-            if (!IsSharedTile)
-            {
-                map.sharedTile.OnMouseDown();
-            }
-
             if (enteredMapObject == null)
             {
                 return;
@@ -518,16 +411,6 @@ namespace Transidious
 
         void OnMouseOver()
         {
-            if (!IsSharedTile)
-            {
-                map.sharedTile.OnMouseOver();
-
-                if (map.sharedTile.enteredMapObject != null)
-                {
-                    return;
-                }
-            }
-
             var mousePosWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if (mousePosition.HasValue && mousePosWorld == mousePosition.Value && !checkMouseOver)
             {
@@ -585,11 +468,6 @@ namespace Transidious
 
         void OnMouseExit()
         {
-            if (!IsSharedTile)
-            {
-                map.sharedTile.OnMouseExit();
-            }
-
             if (enteredMapObject == null)
             {
                 return;
@@ -611,10 +489,6 @@ namespace Transidious
             };
 
             tile.MapObjectIDs.AddRange(mapObjects.Select(obj => (uint)obj.Id));
-
-            if (orphanedObjects != null)
-                tile.OrphanedObjectIDs.AddRange(orphanedObjects.Select(obj => (uint)obj.Id));
-
             return tile;
         }
 
@@ -630,23 +504,6 @@ namespace Transidious
                 }
 
                 this.mapObjects.Add(obj);
-            }
-
-            if (tile.OrphanedObjectIDs != null)
-            {
-                this.orphanedObjects = new HashSet<IMapObject>();
-
-                foreach (var id in tile.OrphanedObjectIDs)
-                {
-                    var obj = map.GetMapObject((int)id);
-                    if (obj == null)
-                    {
-                        Debug.LogWarning("missing map object with ID " + id);
-                        continue;
-                    }
-
-                    this.orphanedObjects.Add(obj);
-                }
             }
         }
     }
@@ -665,18 +522,23 @@ namespace Transidious
             this.x = 0;
             this.y = 0;
             this.activeOnly = activeOnly;
-        }
 
-        MapTile Current
-        {
-            get
+            if (obj?.UniqueTile != null)
             {
-                return map.GetTile(x, y);
+                this.x = obj.UniqueTile.x;
+                this.y = obj.UniqueTile.y;
             }
         }
 
+        MapTile Current => map.GetTile(x, y);
+
         bool MoveNext()
         {
+            if (obj?.UniqueTile != null)
+            {
+                return false;
+            }
+            
             var foundNext = false;
             if (y < map.tilesHeight - 1)
             {

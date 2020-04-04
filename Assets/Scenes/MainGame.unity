@@ -10092,7 +10092,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1182088429, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 1433246244, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_AnchorMin.y
@@ -10116,7 +10116,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1433246244, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 1485392716, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_AnchorMin.y
@@ -10140,7 +10140,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1485392716, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 1584138955, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_AnchorMin.y
@@ -10164,7 +10164,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1584138955, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 1591282243, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: game
@@ -10224,7 +10224,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1915103502, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 260320590645969361, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
         type: 3}
@@ -10729,7 +10729,7 @@ PrefabInstance:
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
       propertyPath: areaToLoad
-      value: 23
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}

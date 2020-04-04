@@ -51,6 +51,7 @@ enum NatureType {
     Parking,
     Residential,
     Zoo,
+    Railway,
 }
 
 class NaturalFeatureInfo<let type: NatureType,
@@ -68,8 +69,13 @@ enum BuildingType {
     Hospital,
     Stadium,
     Airport,
-
     GroceryStore,
+    Leisure,
+    Industrial,
+    Church,
+    Sight,
+    Hotel,
+    Other,
 }
 
 class BuildingInfo<let type: BuildingType,
@@ -216,22 +222,19 @@ class DefaultArea : Area
 
         NaturalFeatureInfo<.Green, [
             Tag<"landuse", "village_green">
-        ], [.Way, .Relation]>,
+        ], [.Way, .Relation], true>,
         NaturalFeatureInfo<.Green, [
             Tag<"landuse", "grass">
-        ], [.Way, .Relation]>,
-        NaturalFeatureInfo<.Green, [
-            Tag<"leisure", "sports_centre">
-        ], [.Way, .Relation]>,
+        ], [.Way, .Relation], true>,
         NaturalFeatureInfo<.Green, [
             Tag<"landuse", "recreation_ground">
         ], [.Way, .Relation]>,
         NaturalFeatureInfo<.Green, [
             Tag<"natural", "heath">
-        ], [.Way, .Relation]>,
+        ], [.Way, .Relation], true>,
         NaturalFeatureInfo<.Green, [
             Tag<"natural", "grassland">
-        ], [.Way, .Relation]>,
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.Zoo, [
             Tag<"leisure", "zoo">
@@ -300,9 +303,14 @@ class DefaultArea : Area
         NaturalFeatureInfo<.Residential, [
             Tag<"landuse", "residential">,
         ], [.Way, .Relation], true>,
+
+        NaturalFeatureInfo<.Railway, [
+            Tag<"landuse", "railway">,
+        ], [.Way, .Relation], true>,
     ]
 
     override buildings = [
+        // Residential
         BuildingInfo<.Residential, [
             Tag<"building", "residential">
         ], [.Way, .Relation]>,
@@ -312,6 +320,21 @@ class DefaultArea : Area
         BuildingInfo<.Residential, [
             Tag<"building", "yes">
         ], [.Way, .Relation]>,
+        BuildingInfo<.Residential, [
+            Tag<"building", "apartments">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Residential, [
+            Tag<"building", "garage">
+        ], [.Way, .Relation], true>,
+        BuildingInfo<.Residential, [
+            Tag<"building", "construction">
+        ], [.Way, .Relation], true>,
+
+        // Commercial
+        BuildingInfo<.GroceryStore, [
+            Tag<"building", "retail">,
+            Tag<"shop", "supermarket">
+        ], [.Way, .Relation]>,
 
         BuildingInfo<.Shop, [
             Tag<"building", "retail">
@@ -319,33 +342,87 @@ class DefaultArea : Area
         BuildingInfo<.Shop, [
             Tag<"building", "commercial">
         ], [.Way, .Relation]>,
+        BuildingInfo<.Shop, [
+            Tag<"building", "mall">
+        ], [.Way, .Relation]>,
 
+        // Leisure
+        BuildingInfo<.Leisure, [
+            Tag<"building", "public">,
+            Tag<"leisure", "sports_centre">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Leisure, [
+            Tag<"building", "concert_hall">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Leisure, [
+            Tag<"building", "exhibition_hall">
+        ], [.Way, .Relation]>,
+
+        // Offices
         BuildingInfo<.Office, [
             Tag<"building", "industrial">
         ], [.Way, .Relation]>,
         BuildingInfo<.Office, [
             Tag<"building", "office">
         ], [.Way, .Relation]>,
+        BuildingInfo<.Office, [
+            Tag<"building", "public">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Office, [
+            Tag<"building", "government">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Office, [
+            Tag<"building", "embassy">
+        ], [.Way, .Relation]>,
 
+        // Industrial
+        BuildingInfo<.Industrial, [
+            Tag<"building", "manufacture">
+        ], [.Way, .Relation]>,
+        BuildingInfo<.Industrial, [
+            Tag<"building", "warehouse">
+        ], [.Way, .Relation]>,
+
+        // Education
         BuildingInfo<.University, [
             Tag<"building", "university">
         ], [.Way, .Relation]>,
-
-        BuildingInfo<.Hospital, [
-            Tag<"building", "hospital">
-        ], [.Way, .Relation]>,
-
         BuildingInfo<.HighSchool, [
             Tag<"building", "school">
         ], [.Way, .Relation]>,
 
+        // Medical
+        BuildingInfo<.Hospital, [
+            Tag<"building", "hospital">
+        ], [.Way, .Relation]>,
+
+        // Unique
         BuildingInfo<.Stadium, [
             Tag<"building", "stadium">
         ], [.Way, .Relation]>,
-
         BuildingInfo<.Airport, [
             Tag<"building", "airport">
-        ], [.Way, .Relation]>
+        ], [.Way, .Relation]>,
+
+        // Religion
+        BuildingInfo<.Church, [
+            Tag<"building", "church">
+        ], [.Way, .Relation]>,
+        
+        // Sights / Attractions
+        BuildingInfo<.Sight, [
+            Tag<"building", "castle">
+        ], [.Way, .Relation]>,
+
+        // Hotel
+        BuildingInfo<.Hotel, [
+            Tag<"building", "hotel">
+        ], [.Way, .Relation]>,
+
+        // Unclassified
+        BuildingInfo<.Other, [
+            Tag<"building", "">
+        ], [.Way, .Relation]>,
     ]
 }
 
@@ -593,6 +670,7 @@ def Fuerteventura : DefaultArea {
         
     ]>
 }
+
 def Charlottenburg : DefaultArea {
     country = "Deutschland"
     boundary = BoundaryInfo<"Charlottenburg", [

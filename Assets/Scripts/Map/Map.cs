@@ -48,9 +48,6 @@ namespace Transidious
         /// The map tiles.
         public MapTile[] tiles;
         public int tilesHeight, tilesWidth;
-
-        public MapTile sharedTile;
-
         public bool isLoadedFromSaveFile;
 
         /// The width of the map (in meters).
@@ -242,11 +239,10 @@ namespace Transidious
                 {
                     foreach (var tile in tiles)
                     {
-                        tile.AddOrphanedObject(obj);
+                        tile.mapObjects.Add(obj);
                     }
 
-                    obj.transform?.SetParent(sharedTile.transform);
-                    obj.UniqueTile = sharedTile;
+                    obj.transform?.SetParent(this.transform);
                 }
             }
 
@@ -281,11 +277,10 @@ namespace Transidious
                 {
                     foreach (var tile in tiles)
                     {
-                        tile.AddOrphanedObject(obj);
+                        tile.mapObjects.Add(obj);
                     }
 
-                    obj.transform?.SetParent(sharedTile.transform);
-                    obj.UniqueTile = sharedTile;
+                    obj.transform?.SetParent(this.transform);
                 }
             }
 
@@ -320,11 +315,10 @@ namespace Transidious
                 {
                     foreach (var tile in tiles)
                     {
-                        tile.AddOrphanedObject(obj);
+                        tile.mapObjects.Add(obj);
                     }
 
-                    obj.transform?.SetParent(sharedTile.transform);
-                    obj.UniqueTile = sharedTile;
+                    obj.transform?.SetParent(this.transform);
                 }
             }
 
@@ -335,8 +329,7 @@ namespace Transidious
         {
             if (obj.UniqueTile == null)
             {
-                obj.transform?.SetParent(sharedTile.transform);
-                obj.UniqueTile = sharedTile;
+                obj.transform?.SetParent(this.transform);
             }
 
             if (id == -1)
@@ -455,20 +448,7 @@ namespace Transidious
         public void UpdateBoundary(Vector2[] positions)
         {
             this.boundaryPositions = positions;
-
-            var minX = this.minX - 1000f;
-            var maxX = this.maxX + 1000f;
-            var minY = this.minY - 1000f;
-            var maxY = this.maxY + 1000f;
-
-            if (input != null)
-            {
-                input.minX = minX;
-                input.maxX = maxX;
-                input.minY = minY;
-                input.maxY = maxY;
-            }
-
+            
             var pslg = new PSLG(Layer(MapLayer.Boundary));
             pslg.AddOrderedVertices(new []
             {
@@ -484,14 +464,13 @@ namespace Transidious
             var fgLayer = Layer(MapLayer.Foreground);
             var positions3d = positions.Select(v => new Vector3(v.x, v.y, fgLayer)).ToArray();
             var boundaryMesh = MeshBuilder.CreateBakedLineMesh(positions3d, 10, null, 10, 10);
-            // var boundaryMesh = MeshBuilder.CreateSmoothLine(positions3d, 10, 10, fgLayer);
 
             UpdateBoundary(backgroundMesh, boundaryMesh, this.minX, this.maxX,
                            this.minY, this.maxY);
         }
 
-        public void UpdateBoundary(Mesh backgroundMesh, Mesh outlineMesh,
-                                   float minX, float maxX, float minY, float maxY)
+        void UpdateBoundary(Mesh backgroundMesh, Mesh outlineMesh,
+                            float minX, float maxX, float minY, float maxY)
         {
             var cam = input.camera;
 
@@ -552,18 +531,15 @@ namespace Transidious
             tilesHeight = (int)Mathf.Ceil(height / tileSize);
             tiles = new MapTile[tilesWidth * tilesHeight];
 
-            for (int x = 0; x < tilesWidth; ++x)
+            for (var x = 0; x < tilesWidth; ++x)
             {
-                for (int y = 0; y < tilesHeight; ++y)
+                for (var y = 0; y < tilesHeight; ++y)
                 {
                     tiles[(x * tilesHeight) + y] = Instantiate(mapTilePrefab).GetComponent<MapTile>();
                     tiles[(x * tilesHeight) + y].transform.SetParent(this.transform, false);
                     tiles[(x * tilesHeight) + y].Initialize(this, x, y);
                 }
             }
-
-            sharedTile.Initialize(this, -1, -1);
-            sharedTile.Show(input.renderingDistance);
         }
         
         public bool IsPointOnMap(Vector2 pt)
@@ -581,12 +557,6 @@ namespace Transidious
         {
             var meshRenderer = boundaryOutlineObj.GetComponent<MeshRenderer>();
             meshRenderer.sharedMaterial = GameController.instance.GetUnlitMaterial(c);
-        }
-
-        public void MakeBackgroundTransparent()
-        {
-            var meshRenderer = boundaryBackgroundObj.GetComponent<MeshRenderer>();
-            meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Transparent"));
         }
 
         public Color GetDefaultBackgroundColor(MapDisplayMode mode)
@@ -634,12 +604,7 @@ namespace Transidious
 
         public MapTile GetTile(int x, int y)
         {
-            if (x == -1)
-            {
-                Debug.Assert(y == -1);
-                return sharedTile;
-            }
-
+            Debug.Assert(x >= 0 && y >= 0 && x < tilesWidth && y < tilesHeight);
             return tiles[x * tilesHeight + y];
         }
 
@@ -893,23 +858,6 @@ namespace Transidious
                 }
             }
 
-            foreach (var obj in sharedTile.mapObjects.OfType<T>())
-            {
-                var dst = (obj.Centroid - position).sqrMagnitude;
-                if (dst <= sqrDist)
-                {
-                    if (filter != null)
-                    {
-                        if (!filter(obj))
-                        {
-                            continue;
-                        }
-                    }
-
-                    results.Add(Tuple.Create(dst, obj));
-                }
-            }
-
             if (sortByDistance)
             {
                 results.Sort((t1, t2) => t1.Item1.CompareTo(t2.Item1));
@@ -982,9 +930,6 @@ namespace Transidious
 
             var found = false;
             var minDistance = float.PositiveInfinity;
-
-            // Look in the shared tile first.
-            FindInTile(ref result, ref found, ref minDistance, sharedTile, position, filter);
 
             // We can't just look on the current tile since something on another tile may be closer.
             var searchRadius = 1;
@@ -1581,8 +1526,10 @@ namespace Transidious
                                Color c = default, float fontSize = 10f)
         {
             var obj = Instantiate(textPrefab);
-            obj.transform.position = position;
-            obj.transform.SetParent(canvas.transform);
+
+            var tf = obj.transform;
+            tf.position = new Vector3(position.x, position.y, Layer(MapLayer.Foreground));
+            tf.SetParent(canvas.transform);
 
             var t = obj.GetComponent<Text>();
             t.SetText(txt);
@@ -1776,8 +1723,6 @@ namespace Transidious
                 }
             }
 
-            //var x = 0;
-            //var y = 0;
             tilesToShow.Clear();
 
             var renderingDistance = input?.renderingDistance ?? RenderingDistance.Near;
@@ -1819,60 +1764,6 @@ namespace Transidious
                 }
             }
 
-            //foreach (var tileArr in tiles)
-            //{
-            //    var endX = (x + 1) * tileSize;
-            //    if (cameraRect.x > endX)
-            //    {
-            //        foreach (var tile in tileArr)
-            //        {
-            //            tile.Hide();
-            //        }
-
-            //        ++x;
-            //        continue;
-            //    }
-
-            //    foreach (var tile in tileArr)
-            //    {
-            //        var endY = (y + 1) * tileSize;
-            //        if (cameraRect.y > endY)
-            //        {
-            //            ++y;
-            //            tile.Hide();
-            //            continue;
-            //        }
-
-            //        var tileRect = tile.rect;
-            //        if (cameraRect.Overlaps(tileRect))
-            //        {
-            //            tile.Show(renderingDistance);
-            //            tilesToShow.Add(tile);
-            //        }
-            //        else
-            //        {
-            //            tile.Hide();
-            //        }
-
-            //        ++y;
-            //    }
-
-            //    ++x;
-            //}
-
-            foreach (var tile in tilesToShow)
-            {
-                if (tile.orphanedObjects == null)
-                {
-                    continue;
-                }
-
-                foreach (var obj in tile.orphanedObjects)
-                {
-                    obj.Show(renderingDistance);
-                }
-            }
-
             prevCameraRect = cameraRect;
         }
 
@@ -1881,16 +1772,6 @@ namespace Transidious
             foreach (var tile in AllTiles)
             {
                 tile.Show(RenderingDistance.Near);
-
-                if (tile.orphanedObjects == null)
-                {
-                    continue;
-                }
-
-                foreach (var obj in tile.orphanedObjects)
-                {
-                    obj.Show(RenderingDistance.Near);
-                }
             }
         }
 
@@ -1949,8 +1830,6 @@ namespace Transidious
             {
                 tile.Show(input.renderingDistance);
             }
-
-            sharedTile.Show(input.renderingDistance);
         }
 
         public void Reset()
@@ -2089,8 +1968,6 @@ namespace Transidious
             {
                 tile.FinalizeTile();
             }
-
-            sharedTile.FinalizeTile();
 
             UpdateScale();
             UpdateTextScale();

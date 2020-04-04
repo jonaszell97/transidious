@@ -89,14 +89,15 @@ public class StaticMarker : AssetPostprocessor
         Debug.Log($"changing {path} import settings");
 
         importer.mipmapEnabled = true;
-        importer.maxTextureSize = 4096;
+        importer.maxTextureSize = 2048;
+        importer.alphaSource = TextureImporterAlphaSource.None;
         importer.textureType = TextureImporterType.Sprite;
         importer.spriteImportMode = SpriteImportMode.Single;
         importer.spritePixelsPerUnit = 100;
         importer.filterMode = FilterMode.Trilinear;
-        importer.textureCompression = TextureImporterCompression.Compressed;
-        // importer.textureCompression = TextureImporterCompression.CompressedHQ;
-        importer.alphaSource = TextureImporterAlphaSource.None;
+        importer.textureCompression = isBackground
+            ? TextureImporterCompression.CompressedHQ
+            : TextureImporterCompression.Compressed;
 
         importer.SaveAndReimport();
     }

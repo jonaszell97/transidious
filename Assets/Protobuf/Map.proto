@@ -14,7 +14,6 @@ message MapTile {
     uint32 x = 1;
     uint32 y = 2;
     repeated uint32 mapObjectIDs = 3;
-    repeated uint32 orphanedObjectIDs = 4;
 }
 
 message Map {

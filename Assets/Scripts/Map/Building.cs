@@ -17,8 +17,13 @@ namespace Transidious
             Hospital,
             Stadium,
             Airport,
-
             GroceryStore,
+            Leisure,
+            Industrial,
+            Church,
+            Sight,
+            Hotel,
+            Other,
         }
 
         public Mesh mesh;
@@ -119,6 +124,21 @@ namespace Transidious
             case Type.Airport:
                 // Calculate with an average of 1 floors and 1 visitor per m^2.
                 return (int)Mathf.Ceil(area);
+            case Type.Church:
+                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
+                return (int)Mathf.Ceil(1 * (area / 200f));
+            case Type.Leisure:
+                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
+                return (int)Mathf.Ceil(1 * (area / 200f));
+            case Type.Sight:
+                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
+                return (int)Mathf.Ceil(1 * (area / 500f));
+            case Type.Industrial:
+                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
+                return (int)Mathf.Ceil(1 * (area / 700f));
+            case Type.Hotel:
+                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
+                return (int)Mathf.Ceil(1 * (area / 700f));
             default:
                 return 0;
             }
@@ -131,6 +151,11 @@ namespace Transidious
 
         public static Color GetColor(Type type, MapDisplayMode mode = MapDisplayMode.Day)
         {
+            // if (type == Type.Other)
+            // {
+            //     return Color.red;
+            // }
+
             switch (mode)
             {
             default:
@@ -158,7 +183,17 @@ namespace Transidious
             }
 
             collisionRect = MeshBuilder.GetCollisionRect(outlinePositions);
-            uniqueTile.AddCollider(this, outlinePositions, collisionRect, true);
+            
+            if (uniqueTile != null)
+            {
+                uniqueTile.AddCollider(this, outlinePositions, collisionRect, true);
+                return;
+            }
+
+            foreach (var tile in map.GetTilesForObject(this))
+            {
+                tile.AddCollider(this, outlinePositions, collisionRect, true);
+            }
         }
 
         public void UpdateColor(MapDisplayMode mode)
@@ -174,11 +209,11 @@ namespace Transidious
 
         public void DeleteMesh()
         {
-            var map = GameController.instance.loadedMap;
-            foreach (var tile in map.GetTilesForObject(this))
-            {
-                tile.GetMesh("Buildings").RemoveMesh(mesh);
-            }
+            // var map = GameController.instance.loadedMap;
+            // foreach (var tile in map.GetTilesForObject(this))
+            // {
+            //     tile.GetMesh("Buildings").RemoveMesh(mesh);
+            // }
         }
 
         public new Serialization.Building ToProtobuf()

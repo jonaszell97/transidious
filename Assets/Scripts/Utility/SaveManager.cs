@@ -327,30 +327,8 @@ namespace Transidious
                 yield break;
             }
 
-            //map.minX = serializedMap.MinX;
-            //map.maxX = serializedMap.MaxX;
-            //map.minY = serializedMap.MinY;
-            //map.maxY = serializedMap.MaxY;
-            //map.width = map.maxX - map.minX;
-            //map.height = map.maxY - map.minY;
-
-            //map.UpdateBoundary(
-            //    serializedMap.BoundaryMeshes[0].Deserialize(Map.Layer(MapLayer.Boundary)),
-            //    serializedMap.BoundaryMeshes[1].Deserialize(Map.Layer(MapLayer.Foreground)),
-            //    serializedMap.BoundaryMeshes[2].Deserialize(Map.Layer(MapLayer.Boundary)),
-            //    serializedMap.MinX, serializedMap.MaxX,
-            //    serializedMap.MinY, serializedMap.MaxY);
-
             map.boundaryPositions = serializedMap.BoundaryPositions.Select(
                 p => p.Deserialize()).ToArray();
-
-            //for (var x = 0; x < map.tilesWidth; ++x)
-            //{
-            //    for (var y = 0; y < map.tilesHeight; ++y)
-            //    {
-
-            //    }
-            //}
 
             // Initialize the map tiles.
             for (int x = 0; x < map.tilesWidth; ++x)
@@ -361,15 +339,12 @@ namespace Transidious
                 }
             }
 
-            map.sharedTile.Initialize(map, -1, -1);
-
             map.input.camera.transform.position = map.startingCameraPos;
             map.input.UpdateZoomLevels(map);
 
             yield return DeserializeGameObjects(map, serializedMap);
             yield return InitializeGameObjects(map, serializedMap);
 
-            // LoadBackgroundSprite(map, ref map.backgroundSpriteDay);
             LoadMiniMapSprite(map);
         }
 
@@ -424,95 +399,6 @@ namespace Transidious
             var sprite = SpriteManager.GetSprite($"Maps/{map.name}/minimap");
             UIMiniMap.mapSprite = sprite;
         }
-
-#if false
-        static void LoadBackgroundSprite(Map map, ref GameObject gameObject)
-        {
-            var sprite = SpriteManager.GetSprite($"Maps/{map.name}/LOD");
-
-            gameObject.GetComponent<SpriteRenderer>().sprite = sprite;
-            gameObject.name = "LOD Background";
-
-            var transform = gameObject.transform;
-            var spriteBounds = sprite.bounds;
-            var desiredWidth = map.width;
-            var desiredHeight = map.height;
-
-            transform.position = new Vector3(map.minX + map.width * .5f,
-                                             map.minY + map.height * .5f,
-                                             Map.Layer(MapLayer.Parks));
-
-            transform.localScale = new Vector3(desiredWidth / spriteBounds.size.x,
-                                               desiredHeight / spriteBounds.size.y,
-                                               1f);
-
-            gameObject.SetActive(false);
-        }
-
-        static void LoadBackgroundSprite(Map map, byte[] bytes,
-                                         MapDisplayMode mode,
-                                         ref GameObject gameObject)
-        {
-            var tex = new Texture2D(0, 0, TextureFormat.RGB24, false);
-            if (!tex.LoadImage(bytes))
-            {
-                Debug.LogError("corrupted PNG file!");
-                return;
-            }
-
-            var buildingColor = Building.GetColor(Building.Type.Residential, mode);
-            var bgColor = map.GetDefaultBackgroundColor(mode);
-            var streetColor = StreetSegment.GetStreetColor(Street.Type.Primary,
-                RenderingDistance.Near, mode);
-            var streetOutlineColor = StreetSegment.GetBorderColor(Street.Type.Primary,
-                RenderingDistance.Near, mode);
-
-            for (var x = 0; x < tex.width; ++x)
-            {
-                for (var y = 0; y < tex.height; ++y)
-                {
-                    var pixel = tex.GetPixel(x, y);
-                    if (pixel.Equals(Color.white))
-                    {
-                        tex.SetPixel(x, y, bgColor);
-                    }
-                    else if (pixel.Equals(Color.black))
-                    {
-                        tex.SetPixel(x, y, buildingColor);
-                    }
-                    else if (pixel.Equals(Color.blue))
-                    {
-                        tex.SetPixel(x, y, streetColor);
-                    }
-                    else if (pixel.Equals(Color.red))
-                    {
-                        tex.SetPixel(x, y, streetOutlineColor);
-                    }
-                }
-            }
-
-            tex.Apply();
-
-            int minX = 0, minY = 0;
-            var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height),
-                                       new Vector2(0, 0), 100f);
-
-            gameObject.GetComponent<SpriteRenderer>().sprite = sprite;
-            gameObject.name = "LOD Background (" + mode.ToString() + ")";
-
-            var transform = gameObject.transform;
-            var spriteBounds = sprite.bounds;
-            var desiredWidth = map.width;
-            var desiredHeight = map.height;
-
-            transform.position = new Vector3(map.minX + minX, map.minY + minY, Map.Layer(MapLayer.Parks));
-            transform.localScale = new Vector3(desiredWidth / spriteBounds.size.x,
-                                               desiredHeight / spriteBounds.size.y,
-                                               1f);
-
-            gameObject.SetActive(false);
-        }
-#endif
 
         public static IEnumerator LoadSave(Map map, string mapName, bool pauseAfterLoad = false)
         {

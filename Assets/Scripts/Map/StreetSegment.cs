@@ -89,6 +89,8 @@ namespace Transidious
                     return cpy;
                 }
             }
+            
+            public MapObjectKind Kind => segment.kind;
 
             public IStop Begin => startIntersection;
 
@@ -1403,9 +1405,26 @@ namespace Transidious
             }
         }
 
+        private Text _debugText;
+        
         public override void OnMouseDown()
         {
             base.OnMouseDown();
+            if (_debugText == null)
+            {
+                var startPos = positions.Count / 2;
+                var endPos = startPos < positions.Count - 1 ? startPos + 1 : startPos - 1;
+                var dir = (positions[endPos] - positions[startPos]);
+                var middlePos = positions[startPos] + dir * .5f;
+
+                _debugText = Game.loadedMap.CreateText(middlePos, name, Color.black, 3f);
+                
+                if (dir.x < 0f)
+                    dir = new Vector3(-dir.x, -dir.y, dir.z);
+
+                _debugText.transform.rotation = Quaternion.FromToRotation(Vector3.right, dir);
+            }
+
             Debug.Log($"free parking spots: {occupiedParkingSpots} / {totalParkingSpots}");
         }
 

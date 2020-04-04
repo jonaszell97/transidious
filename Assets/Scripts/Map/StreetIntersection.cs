@@ -195,13 +195,7 @@ namespace Transidious
             intersectingStreets.Remove(seg);
         }
 
-        public Vector3 Location
-        {
-            get
-            {
-                return position;
-            }
-        }
+        public Vector3 Location => position;
 
         public IEnumerable<IRoute> Routes
         {
@@ -213,30 +207,18 @@ namespace Transidious
 
         public bool IsGoalReached(IStop goal)
         {
-            if (goal is StreetIntersection)
+            switch (goal)
             {
-                return goal as StreetIntersection == this;
-            }
-            if (goal is PointOnStreet)
-            {
-                var pos = goal as PointOnStreet;
-                foreach (var s in intersectingStreets)
-                {
-                    if (s == pos.street)
-                        return true;
-                }
+                case StreetIntersection intersection:
+                    return intersection == this;
+                case PointOnStreet pos:
+                    return intersectingStreets.Contains(pos.street);
             }
 
             return false;
         }
 
-        public bool uTurnAllowed
-        {
-            get
-            {
-                return intersectingStreets.Count == 1;
-            }
-        }
+        public bool uTurnAllowed => intersectingStreets.Count == 1;
 
         public IEnumerable<StreetSegment> IncomingStreets
         {

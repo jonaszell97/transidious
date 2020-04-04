@@ -1227,6 +1227,100 @@ namespace Transidious
             return mesh;
         }
 
+        // public static Mesh CutMesh(Mesh baseMesh, Rect mask)
+        // {
+        //     var verts = baseMesh.vertices;
+        //     var tris = baseMesh.triangles;
+        //     var tcount = tris.Length;
+        //     
+        //     // Eliminate triangles that are just a straight line.
+        //     var newTris = new List<int>();
+        //     var newVerts = new List<Vector3>();
+        //     var vertIndices = new Dictionary<Vector3, int>();
+        //
+        //     System.Action<Vector3, Vector3, Vector3> addTri = (p0, p1, p2) =>
+        //     {
+        //         if (!vertIndices.TryGetValue(p0, out int t0))
+        //         {
+        //             t0 = newVerts.Count;
+        //             newVerts.Add(p0);
+        //             vertIndices.Add(p0, t0);
+        //         }
+        //         if (!vertIndices.TryGetValue(p1, out int t1))
+        //         {
+        //             t1 = newVerts.Count;
+        //             newVerts.Add(p1);
+        //             vertIndices.Add(p1, t1);
+        //         }
+        //         if (!vertIndices.TryGetValue(p2, out int t2))
+        //         {
+        //             t2 = newVerts.Count;
+        //             newVerts.Add(p2);
+        //             vertIndices.Add(p2, t2);
+        //         }
+        //         
+        //         newTris.Add(t0);
+        //         newTris.Add(t1);
+        //         newTris.Add(t2);
+        //     };
+        //     
+        //     for (var i = 0; i < tcount; i += 3)
+        //     {
+        //         var p0 = verts[tris[i]];
+        //         var p1 = verts[tris[i + 1]];
+        //         var p2 = verts[tris[i + 2]];
+        //
+        //         var p0_in = mask.Contains(p0);
+        //         var p1_in = mask.Contains(p1);
+        //         var p2_in = mask.Contains(p2);
+        //
+        //         var inbounds = (p0_in ? 1 : 0) + (p1_in ? 1 : 0) + (p2_in ? 1 : 0);
+        //         if (inbounds == 0)
+        //         {
+        //             continue;
+        //         }
+        //
+        //         if (inbounds == 3)
+        //         {
+        //             addTri(p0, p1, p2);
+        //             continue;
+        //         }
+        //
+        //         // We need to create two tris instead of just the one.
+        //
+        //         if (!p0_in)
+        //         {
+        //             if (p1_in)
+        //             {
+        //                 var dir = p1 - p0;
+        //             }
+        //         }
+        //
+        //         var l1 = p1 - p0;
+        //         var l2 = p2 - p1;
+        //         var l3 = p0 - p2;
+        //         
+        //         var angle = Math.DirectionalAngleRad(l1, l2);
+        //         if (angle.Equals(0f) || angle.Equals(Mathf.PI))
+        //         {
+        //             continue;
+        //         }
+        //
+        //         if (p0.Equals(p1) || p1.Equals(p2) || p0.Equals(p2))
+        //         {
+        //             continue;
+        //         }
+        //
+        //         addTri(p0, p1, p2);
+        //     }
+        //
+        //     return new Mesh
+        //     {
+        //         vertices = newVerts.ToArray(),
+        //         triangles = newTris.ToArray(),
+        //     };
+        // }
+
         public static Rect GetCollisionRect(Mesh mesh)
         {
             var bounds = mesh.bounds;

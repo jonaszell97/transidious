@@ -21,6 +21,7 @@ namespace Transidious
             Footpath,
             Residential,
             Zoo,
+            Railway,
         }
 
         public Type type;
@@ -44,7 +45,16 @@ namespace Transidious
             }
 
             var collisionRect = MeshBuilder.GetCollisionRect(outlinePositions);
-            uniqueTile.AddCollider(this, outlinePositions, collisionRect, true);
+            if (uniqueTile != null)
+            {
+                uniqueTile.AddCollider(this, outlinePositions, collisionRect, true);
+                return;
+            }
+
+            foreach (var tile in map.GetTilesForObject(this))
+            {
+                tile.AddCollider(this, outlinePositions, collisionRect, true);
+            }
         }
 
         public void Initialize(Map map, string name, Type type,

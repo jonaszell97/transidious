@@ -280,19 +280,24 @@ namespace Transidious
 
         void ZoomOrthoCamera(Vector3 zoomTowards, float amount)
         {
-            // Calculate how much we will have to move towards the zoomTowards position
-            float multiplier = (1.0f / camera.orthographicSize * amount);
-
-            // Move camera
-            camera.transform.position += (zoomTowards - camera.transform.position) * multiplier;
+            var currentSize = camera.orthographicSize;
 
             // Zoom camera
-            camera.orthographicSize -= amount;
+            var newSize = currentSize - amount;
+            camera.orthographicSize = Mathf.Clamp(newSize, minZoom, maxZoom);
 
-            // Limit zoom
-            camera.orthographicSize = Mathf.Clamp(camera.orthographicSize, minZoom, maxZoom);
+            // Update min / max positions based on new zoom.
+            UpdateCameraBoundaries(controller.loadedMap);
 
-            UpdateRenderingDistance();
+            // Calculate how much we will have to move towards the zoomTowards position
+            float multiplier = (1.0f / currentSize * amount);
+
+            // Move camera
+            var tf = camera.transform;
+            var pos = tf.position;
+            pos += (zoomTowards - pos) * multiplier;
+            tf.SetPositionInLayer(Mathf.Clamp(pos.x, minX, maxX), Mathf.Clamp(pos.y, minY, maxY));
+
         }
 
         float GetMouseZoom()
@@ -349,45 +354,35 @@ namespace Transidious
             {
                 return;
             }
-
-            var currRenderingDist = renderingDistance;
+            
             var prevSize = camera.orthographicSize;
-
             ZoomOrthoCamera(camera.ScreenToWorldPoint(Input.mousePosition), input * zoomSensitivity);
 
             if (prevSize.Equals(camera.orthographicSize))
             {
                 return;
             }
-            
-            UpdateCameraBoundaries(controller.loadedMap);
-            controller.mainUI.UpdateScaleBar();
 
-            FireEvent(InputEvent.Zoom);
-
-            if (currRenderingDist == renderingDistance)
-                return;
-
-            FireEvent(InputEvent.ScaleChange);
+            ZoomLevelChanged();
         }
 
         public void SetZoomLevel(float zoom)
         {
             zoom = Mathf.Clamp(zoom, minZoom, maxZoom);
-
+            
             if (zoom.Equals(camera.orthographicSize))
             {
                 return;
             }
 
-            var currRenderingDist = renderingDistance;
             camera.orthographicSize = zoom;
+            ZoomLevelChanged();
+        }
+
+        void ZoomLevelChanged()
+        {
+            var currRenderingDist = renderingDistance;
             UpdateRenderingDistance();
-
-            panSensitivityX = camera.orthographicSize * 0.1f;
-            panSensitivityY = camera.orthographicSize * 0.1f;
-            zoomSensitivity = camera.orthographicSize * 0.5f;
-
             controller.mainUI.UpdateScaleBar();
 
             FireEvent(InputEvent.Zoom);
@@ -589,6 +584,10 @@ namespace Transidious
 
             camera.orthographicSize = maxZoom;
             UpdateCameraBoundaries(map);
+
+#if UNITY_EDITOR
+            _screenRes = Screen.currentResolution;
+#endif
         }
 
         public void UpdateCameraBoundaries(Map map)

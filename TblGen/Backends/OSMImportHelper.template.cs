@@ -69,32 +69,19 @@ public class OSMImportHelper
 
     public OSMImportHelper(OSMImporterProxy importer, string area, string file)
     {
-         this.importer = importer;
-         this.referencedGeos = new HashSet<long>();
-
-         string fileName;
-         fileName = "Resources/OSM/";
-         fileName += file;
-         fileName += ".osm.pbf";
-
-        input = File.OpenRead(fileName);
-        if (input == null)
-        {
-            Debug.LogError("opening stream failed");
-            return;
-        }
-
-        this.sourceStream = new PBFOsmStreamSource(input);
+        this.importer = importer;
+        this.referencedGeos = new HashSet<long>();
         Enum.TryParse(area, true, out this.area);
 
-        PBFOsmStreamSource allNodes = null;
+        PBFOsmStreamSource allNodes;
         switch (this.area)
         {
+        default:
         <% for_each_record | "Area" as AREA %>
         case Area.<%% $(AREA).name %%> :
         {
         <% if | !empty($(AREA).nodeFile) %>
-            allNodes = this.sourceStream;
+            allNodes = null;
         <% else %>
             string allNodesFileName = "Resources/OSM/";
             allNodesFileName += <%% str | $(AREA).nodeFile %%>;
@@ -114,7 +101,228 @@ public class OSMImportHelper
         <% end %>
         }
 
+        string fileName;
+        fileName = "Resources/OSM/";
+        fileName += file;
+        fileName += ".osm.pbf";
+
+        if (!File.Exists(fileName))
+        {
+            Debug.Assert(allNodes != null, "no source file!");
+
+            using (this.CreateTimer("Create Area"))
+            {
+                CreateAreaFile(allNodes, file);
+            }
+        }
+
+        this.input = File.OpenRead(fileName);
+        this.sourceStream = new PBFOsmStreamSource(input);
+
+        if (allNodes == null)
+        {
+            allNodes = this.sourceStream;
+        }
+
         this.ImportArea(allNodes);
+    }
+
+    bool CheckGeo(OsmGeo geo, Rect rect, Dictionary<long, OsmGeo> geos)
+    {
+        switch (geo.Type)
+        {
+            default:
+            case OsmGeoType.Node:
+                return CheckNode(geo as Node, rect, geos);
+            case OsmGeoType.Way:
+                return CheckWay(geo as Way, rect, geos);
+            case OsmGeoType.Relation:
+                return CheckRelation(geo as Relation, rect, geos);
+        }
+    }
+
+    bool CheckNode(Node node, Rect rect, Dictionary<long, OsmGeo> geos)
+    {
+        var pos = new Vector2((float)node.Longitude.Value, (float)node.Latitude.Value);
+        if (rect.Contains(pos))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool CheckWay(Way way, Rect rect, Dictionary<long, OsmGeo> geos)
+    {
+        foreach (var nodeId in way.Nodes)
+        {
+            if (!geos.TryGetValue(nodeId, out OsmGeo node))
+            {
+                continue;
+            }
+
+            if (CheckGeo(node, rect, geos))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool CheckRelation(Relation rel, Rect rect, Dictionary<long, OsmGeo> geos)
+    {
+        foreach (var member in rel.Members)
+        {
+            if (!geos.TryGetValue(member.Id, out OsmGeo node))
+            {
+                continue;
+            }
+
+            if (CheckGeo(node, rect, geos))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void AddGeo(OsmGeo geo, Dictionary<long, OsmGeo> geos, HashSet<OsmGeo> target)
+    {
+        switch (geo.Type)
+        {
+            default:
+            case OsmGeoType.Node:
+                AddNode(geo as Node, geos, target);
+                break;
+            case OsmGeoType.Way:
+                AddWay(geo as Way, geos, target);
+                break;
+            case OsmGeoType.Relation:
+                AddRelation(geo as Relation, geos, target);
+                break;
+        }
+    }
+
+    void AddNode(Node node, Dictionary<long, OsmGeo> geos, HashSet<OsmGeo> target)
+    {
+        target.Add(node);
+    }
+
+    void AddWay(Way way, Dictionary<long, OsmGeo> geos, HashSet<OsmGeo> target)
+    {
+        foreach (var nodeId in way.Nodes)
+        {
+            if (!geos.TryGetValue(nodeId, out OsmGeo node))
+            {
+                continue;
+            }
+
+            AddGeo(node, geos, target);
+        }
+
+        target.Add(way);
+    }
+
+    void AddRelation(Relation rel, Dictionary<long, OsmGeo> geos, HashSet<OsmGeo> target)
+    {
+        foreach (var member in rel.Members)
+        {
+            if (!geos.TryGetValue(member.Id, out OsmGeo node))
+            {
+                continue;
+            }
+
+            AddGeo(node, geos, target);
+        }
+
+        target.Add(rel);
+    }
+
+    void CreateAreaFile(PBFOsmStreamSource allNodes, string file)
+    {
+        var polyfileName = $"Resources/Poly/{file}.poly";
+        var lines = File.ReadAllLines(polyfileName);
+
+        var boundaryCoords = new List<Vector2>();
+        var minX = float.PositiveInfinity;
+        var minY = float.PositiveInfinity;
+        var maxX = float.NegativeInfinity;
+        var maxY = float.NegativeInfinity;
+
+        for (var i = 2; i < lines.Length - 2; ++i)
+        {
+            var line = lines[i];
+            var xy = line.Trim().Split(' ');
+
+            if (!float.TryParse(xy[0], out float lng))
+            {
+                Debug.LogError($"invalid float {xy[0]}");
+                continue;
+            }
+            if (!float.TryParse(xy[2], out float lat))
+            {
+                Debug.LogError($"invalid float {xy[2]}");
+                continue;
+            }
+
+            minX = Mathf.Min(minX, lng);
+            minY = Mathf.Min(minY, lat);
+            maxX = Mathf.Max(maxX, lng);
+            maxY = Mathf.Max(maxY, lat);
+
+            boundaryCoords.Add(new Vector2(lng, lat));
+        }
+        
+        var outfileName = $"Resources/OSM/{file}.osm.pbf";
+        using (var output = File.OpenWrite(outfileName))
+        {
+            var target = new PBFOsmStreamTarget(output);
+            target.Initialize();
+
+            var rect = new Rect(minX, minY, maxX - minX, maxY - minY);
+
+            var geos = new Dictionary<long, OsmGeo>();
+            using (this.CreateTimer("ToDict"))
+            {
+                foreach (var geo in allNodes.ToArray())
+                {
+                    if (geos.ContainsKey(geo.Id.Value))
+                        continue;
+
+                    geos.Add(geo.Id.Value, geo);
+                }
+            }
+
+            var referenced = new HashSet<OsmGeo>();
+            foreach (var geo in geos)
+            {
+                if (CheckGeo(geo.Value, rect, geos))
+                {
+                    AddGeo(geo.Value, geos, referenced);
+                }
+            }
+
+            foreach (var geo in referenced)
+            {
+                switch (geo.Type)
+                {
+                    case OsmGeoType.Node:
+                        target.AddNode(geo as Node);
+                        break;
+                    case OsmGeoType.Way:
+                        target.AddWay(geo as Way);
+                        break;
+                    case OsmGeoType.Relation:
+                        target.AddRelation(geo as Relation);
+                        break;
+                }
+            }
+
+            target.Flush();
+            target.Close();
+        }
     }
 
     void ImportArea(PBFOsmStreamSource allNodes)
@@ -138,7 +346,7 @@ public class OSMImportHelper
                 <% if | !ne($(AREA).boundary.relationName, "") %>
                     string boundaryName = <%% str | $(AREA).boundary.relationName %%>;
                 <% else %>
-                    string boundaryName = <%% str | $(AREA).name %%>;
+                    string boundaryName = <%% str | $(AREA).boundary.name %%>;
                 <% end %>
                     if (tags.Contains("name", boundaryName))
                     {
@@ -150,7 +358,8 @@ public class OSMImportHelper
                 // Check parks.
                 if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
                 {
-                <% for_each | $(AREA).nature as PARK %>
+                <% for_each | $(AREA).nature as PARK, i %>
+                    <% if | !gt($(i), 0) %> else <% end %>
                     <% invoke if_tags_match($(PARK).tags) %>
                     {
                         <% if | $(PARK).visualOnly %>
@@ -165,7 +374,8 @@ public class OSMImportHelper
                 // Check buildings.
                 if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
                 {
-                <% for_each | $(AREA).buildings as BUILDING %>
+                <% for_each | $(AREA).buildings as BUILDING, i %>
+                    <% if | !gt($(i), 0) %> else <% end %>
                     <% invoke if_tags_match($(BUILDING).tags) %>
                     {
                         <% if | $(BUILDING).visualOnly %>
@@ -263,10 +473,10 @@ public class OSMImportHelper
         }
 
         OsmGeo[] nodes = null;
-        GameController.instance.RunTimer("ToArray", () =>
+        using (this.CreateTimer("ToArray"))
         {
             nodes = allNodes.ToArray();
-        });
+        }
 
         foreach (var way in nodes.OfType<Way>())
         {
@@ -277,7 +487,7 @@ public class OSMImportHelper
 
             foreach (var nodeId in way.Nodes)
             {
-            referencedGeos.Add(nodeId);
+                referencedGeos.Add(nodeId);
             }
         }
 

@@ -271,7 +271,7 @@ namespace Transidious
                     new Color(0.9f, 0.9f, 0.9f, 1f);
             }
 
-            seg.directionArrow.transform.SetParent(seg.uniqueTile?.canvas.transform ?? map.sharedTile.canvas.transform);
+            seg.directionArrow.transform.SetParent(seg.uniqueTile?.canvas.transform ?? map.canvas.transform);
             seg.directionArrow.transform.position = new Vector3(posOnStreet.pos.x, posOnStreet.pos.y,
                                                                 Map.Layer(MapLayer.StreetMarkings));
 
@@ -350,7 +350,7 @@ namespace Transidious
                 }
                 else
                 {
-                    txt.transform.SetParent(map.sharedTile.canvas.transform);
+                    txt.transform.SetParent(map.canvas.transform);
                 }
 
                 txt.transform.position = new Vector3(posAndAngle.pos.x,

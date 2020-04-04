@@ -7,6 +7,8 @@ namespace Transidious.PathPlanning
 {
     public interface IStop
     {
+        MapObjectKind Kind { get; }
+        
         IEnumerable<IRoute> Routes { get; }
         Vector3 Location { get; }
         bool uTurnAllowed { get; }
@@ -16,30 +18,17 @@ namespace Transidious.PathPlanning
 
     public static class IStopExtensions
     {
-        public static float EstimatedDistance(this IStop start, IStop goal, IRoute route = null)
+        public static float EstimatedDistance(this IStop start, IStop goal)
         {
-            float x1 = start.Location.x;
-            float y1 = start.Location.y;
-
-            float x2 = goal.Location.x;
-            float y2 = goal.Location.y;
-
-            Velocity speed;
-            if (route != null)
-            {
-                speed = route.AverageSpeed;
-            }
-            else
-            {
-                speed = Velocity.FromRealTimeKPH(50);
-            }
-
+            var speed = Velocity.FromRealTimeKPH(30);
             return (float)(Distance.Between(start.Location, goal.Location) / speed).TotalSeconds;
         }
     }
 
     public interface IRoute
     {
+        MapObjectKind Kind { get; }
+
         IStop Begin { get; }
         IStop End { get; }
         bool OneWay { get; }
@@ -364,7 +353,7 @@ namespace Transidious.PathPlanning
                     }
                 }
 
-                Debug.LogError("total length < 0");
+                Debug.LogWarning("total length < 0");
                 totalLength = seg.length;
             }
 
@@ -425,6 +414,7 @@ namespace Transidious.PathPlanning
 
     public class PointOnStreet : IStop
     {
+        public MapObjectKind Kind => MapObjectKind.StreetSegment;
         public StreetSegment street;
         public Vector3 pos;
 
@@ -668,13 +658,11 @@ namespace Transidious.PathPlanning
             {
                 foreach (var step in steps)
                 {
-                    if (step is DriveStep
-                    && !(step as DriveStep).driveSegment.segment.hasTramTracks)
+                    if (step is DriveStep && !(step as DriveStep).driveSegment.segment.hasTramTracks)
                     {
                         return false;
                     }
-                    else if (step is PartialDriveStep
-                    && !(step as PartialDriveStep).driveSegment.segment.hasTramTracks)
+                    if (step is PartialDriveStep && !(step as PartialDriveStep).driveSegment.segment.hasTramTracks)
                     {
                         return false;
                     }
@@ -1015,11 +1003,12 @@ namespace Transidious.PathPlanning
             return result;
         }
 
+        // Based on heuristic A* (https://en.wikipedia.org/wiki/A*_search_algorithm)
         public PathPlanningResult GetPath()
         {
             Reset();
             openSet.Add(start);
-            
+
             // The cost of going from start to start is zero.
             gScore[start] = 0.0f;
             durationMap[start] = 0.0f;
@@ -1060,46 +1049,43 @@ namespace Transidious.PathPlanning
                     {
                         continue;
                     }
-                    if (closedSet.Contains(neighbor))
+
+                    var tentative_gScore = GetScore(gScore, current)
+                                           + (float)route.TravelTime.TotalMinutes * options.travelTimeFactor;
+
+                    var durationUntilNow = GetScore(durationMap, current);
+                    var duration = durationUntilNow + (float)route.TravelTime.TotalMinutes;
+
+                    var waitingTime = 0f;
+                    if (current.Kind == MapObjectKind.Stop)
+                    {
+                        waitingTime = GetScore(waitingTimeMap, current);
+
+                        // If we need to change, calculate a penalty.
+                        if (cameFromRoute.TryGetValue(current, out IRoute prevRoute))
+                        {
+                            if (route.AssociatedID != prevRoute.AssociatedID)
+                            {
+                                tentative_gScore += options.changingPenalty;
+                            }
+                        }
+
+                        // Find the next departure of this line at the station.
+                        if ((prevRoute == null || route.AssociatedID != prevRoute.AssociatedID))
+                        {
+                            var arrival = this.time.AddMinutes(durationUntilNow);
+                            var nextDep = route.NextDeparture(arrival);
+                            var wait = (nextDep - arrival).Minutes;
+
+                            tentative_gScore += wait * options.waitingTimeFactor;
+                            duration += wait;
+                            waitingTime += wait;
+                        }
+                    }
+
+                    if (tentative_gScore >= GetScore(gScore, neighbor))
                     {
                         continue;
-                    }
-
-                    float tentative_gScore = GetScore(gScore, current)
-                       + (float)route.TravelTime.TotalMinutes * options.travelTimeFactor;
-
-                    float durationUntilNow = GetScore(durationMap, current);
-                    float duration = durationUntilNow + (float)route.TravelTime.TotalMinutes;
-
-                    float waitingTime = GetScore(waitingTimeMap, current);
-
-                    // If we need to change, calculate a penalty.
-                    if (cameFromRoute.TryGetValue(current, out IRoute prevRoute))
-                    {
-                        if (route.AssociatedID != prevRoute.AssociatedID)
-                        {
-                            tentative_gScore += options.changingPenalty;
-                        }
-                    }
-
-                    // Find the next departure of this line at the station.
-                    if ((prevRoute == null || route.AssociatedID != prevRoute.AssociatedID))
-                    {
-                        var arrival = this.time.AddMinutes(durationUntilNow);
-                        var nextDep = route.NextDeparture(arrival);
-                        var wait = (nextDep - arrival).Minutes;
-
-                        tentative_gScore += wait * options.waitingTimeFactor;
-                        duration += wait;
-                        waitingTime += wait;
-                    }
-
-                    if (!openSet.Add(neighbor))
-                    {
-                        if (tentative_gScore >= GetScore(gScore, neighbor))
-                        {
-                            continue;
-                        }
                     }
 
                     // This path is the best until now. Record it!
@@ -1110,8 +1096,12 @@ namespace Transidious.PathPlanning
                     durationMap[neighbor] = duration;
                     waitingTimeMap[neighbor] = waitingTime;
 
-                    fScore[neighbor] = gScore[neighbor]
-                       + neighbor.EstimatedDistance(goal, route);
+                    fScore[neighbor] = tentative_gScore + neighbor.EstimatedDistance(goal);
+
+                    if (!closedSet.Contains(neighbor))
+                    {
+                        openSet.Add(neighbor);
+                    }
                 }
             }
 

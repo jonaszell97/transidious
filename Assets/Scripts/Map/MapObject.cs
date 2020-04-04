@@ -131,8 +131,8 @@ namespace Transidious
             {
                 Id = (uint)id,
                 Name = name,
-                UniqueTileX = uniqueTile.x,
-                UniqueTileY = uniqueTile.y,
+                UniqueTileX = uniqueTile?.x ?? -1,
+                UniqueTileY = uniqueTile?.y ?? -1,
                 Area = area,
                 Centroid = centroid.ToProtobuf(),
             };
@@ -161,8 +161,11 @@ namespace Transidious
             this.area = obj.Area;
             this.centroid = obj.Centroid.Deserialize();
 
-            var tile = GameController.instance.loadedMap.GetTile(obj.UniqueTileX, obj.UniqueTileY);
-            this.uniqueTile = tile;
+            if (obj.UniqueTileX != -1)
+            {
+                var tile = GameController.instance.loadedMap.GetTile(obj.UniqueTileX, obj.UniqueTileY);
+                this.uniqueTile = tile;
+            }
 
             if (obj.OutlinePositions != null)
             {
@@ -352,8 +355,8 @@ namespace Transidious
             {
                 Id = (uint)id,
                 Name = name,
-                UniqueTileX = uniqueTile.x,
-                UniqueTileY = uniqueTile.y,
+                UniqueTileX = uniqueTile?.x ?? -1,
+                UniqueTileY = uniqueTile?.y ?? -1,
             };
 
             if (outlinePositions != null)
@@ -378,8 +381,11 @@ namespace Transidious
             this.id = (int)obj.Id;
             this.name = obj.Name;
 
-            var tile = GameController.instance.loadedMap.GetTile(obj.UniqueTileX, obj.UniqueTileY);
-            this.uniqueTile = tile;
+            if (obj.UniqueTileX != -1)
+            {
+                var tile = GameController.instance.loadedMap.GetTile(obj.UniqueTileX, obj.UniqueTileY);
+                this.uniqueTile = tile;
+            }
         }
 
         public virtual void Destroy()

@@ -961,19 +961,29 @@ namespace Transidious
             return result;
         }
 
-        public static PSLG PolygonDiff(PSLG poly, PSLG hole)
+        public static PSLG PolygonDiff(PSLG subject, PSLG clip)
         {
             var clipper = new ClipperLib.Clipper();
-            clipper.AddPath(GetPath(poly), ClipperLib.PolyType.ptSubject, true);
-            clipper.AddPath(GetPath(hole), ClipperLib.PolyType.ptClip, true);
 
+            clipper.AddPath(GetPath(subject), ClipperLib.PolyType.ptSubject, true);
+            foreach (var hole in subject.holes)
+            {
+                clipper.AddPath(GetPath(hole), ClipperLib.PolyType.ptSubject, true);
+            }
+
+            clipper.AddPath(GetPath(clip), ClipperLib.PolyType.ptClip, true);
+            foreach (var hole in clip.holes)
+            {
+                clipper.AddPath(GetPath(hole), ClipperLib.PolyType.ptClip, true);
+            }
+            
             var solution = new ClipperLib.PolyTree();
             if (!clipper.Execute(ClipperLib.ClipType.ctDifference, solution))
             {
                 return null;
             }
 
-            var result = new PSLG(poly.z);
+            var result = new PSLG(subject.z);
             foreach (var node in solution.Childs)
             {
                 PopulateResultPSLG(result, node, false);
