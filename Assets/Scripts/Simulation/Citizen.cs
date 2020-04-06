@@ -3,277 +3,20 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Transidious.PathPlanning;
+using Transidious.Simulation;
 using Random = UnityEngine.Random;
 
 namespace Transidious
 {
     public class Citizen
     {
-        public class AbstractSchedule
-        {
-            public struct Event
-            {
-                public PointOfInterest place;
-                public int startTime;
-                public int duration;
-                public float probability;
-                public bool flexible;
-            }
-
-            public uint id;
-            public Event[] events;
-
-            static AbstractSchedule[] workSchedules;
-            static AbstractSchedule[] elementarySchoolSchedules;
-            static AbstractSchedule[] highSchoolSchedules;
-            static AbstractSchedule[] universitySchedules;
-
-            static uint lastAssignedID = 0;
-            static Dictionary<uint, AbstractSchedule> schedules;
-
-            AbstractSchedule()
-            {
-                this.id = ++lastAssignedID;
-                schedules.Add(id, this);
-            }
-
-            public static void Initialize()
-            {
-                if (workSchedules != null)
-                {
-                    return;
-                }
-
-                schedules = new Dictionary<uint, AbstractSchedule>();
-
-                workSchedules = new AbstractSchedule[] {
-                    new AbstractSchedule() {
-                        events = new Event[] {
-                            // Work 8:00 AM to 4:00 PM
-                            new Event {
-                                place = PointOfInterest.Work,
-                                startTime = 480,
-                                duration = 480,
-                                probability = 1f,
-                                flexible = true,
-                            },
-                            // Groceries 4:00 PM to 4:30 PM
-                            new Event {
-                                place = PointOfInterest.GroceryStore,
-                                startTime = -1,
-                                duration = 30,
-                                probability = 0.3f,
-                                flexible = true,
-                            },
-                            // Home 4:30 PM to end of day
-                            new Event {
-                                place = PointOfInterest.Home,
-                                startTime = -1,
-                                duration = -1,
-                                probability = 1f,
-                                flexible = true,
-                            }
-                        }
-                    },
-                    new AbstractSchedule() {
-                        events = new Event[] {
-                            // Work 9:00 AM to 5:00 PM
-                            new Event {
-                                place = PointOfInterest.Work,
-                                startTime = 540,
-                                duration = 480,
-                                probability = 1f,
-                                flexible = true,
-                            },
-                            // Groceries 5:00 PM to 5:30 PM
-                            new Event {
-                                place = PointOfInterest.GroceryStore,
-                                startTime = -1,
-                                duration = 30,
-                                probability = 0.45f,
-                                flexible = true,
-                            },
-                            // Home 5:30 PM to end of day
-                            new Event {
-                                place = PointOfInterest.Home,
-                                startTime = -1,
-                                duration = -1,
-                                probability = 1f,
-                                flexible = true,
-                            }
-                        }
-                    },
-                };
-
-                elementarySchoolSchedules = new AbstractSchedule[] {
-                    new AbstractSchedule() {
-                        events = new Event[] {
-                            // School 8:00 AM to 1:00 PM
-                            new Event {
-                                place = PointOfInterest.School,
-                                startTime = 480,
-                                duration = 300,
-                                probability = 1f,
-                                flexible = true,
-                            },
-                            // Home to end of day
-                            new Event {
-                                place = PointOfInterest.Home,
-                                startTime = -1,
-                                duration = -1,
-                                probability = 1f,
-                                flexible = true,
-                            }
-                        }
-                    }
-                };
-
-                highSchoolSchedules = new AbstractSchedule[] {
-                    new AbstractSchedule() {
-                        events = new Event[] {
-                            // School 8:00 AM to 3:00 PM
-                            new Event {
-                                place = PointOfInterest.School,
-                                startTime = 480,
-                                duration = 420,
-                                probability = 1f,
-                                flexible = true,
-                            },
-                            // Home to end of day
-                            new Event {
-                                place = PointOfInterest.Home,
-                                startTime = -1,
-                                duration = -1,
-                                probability = 1f,
-                                flexible = true,
-                            }
-                        }
-                    }
-                };
-
-                universitySchedules = new AbstractSchedule[] {
-                    new AbstractSchedule() {
-                        events = new Event[] {
-                            // School 10:00 AM to 6:00 PM
-                            new Event {
-                                place = PointOfInterest.School,
-                                startTime = 480,
-                                duration = 480,
-                                probability = 1f,
-                                flexible = true,
-                            },
-                            // Home to end of day
-                            new Event {
-                                place = PointOfInterest.Home,
-                                startTime = -1,
-                                duration = -1,
-                                probability = 1f,
-                                flexible = true,
-                            }
-                        }
-                    }
-                };
-            }
-
-            public static AbstractSchedule WorkSchedule
-            {
-                get
-                {
-                    Initialize();
-                    return Utility.RandomElement(workSchedules);
-                }
-            }
-
-            public static AbstractSchedule ElementarySchoolSchedule
-            {
-                get
-                {
-                    Initialize();
-                    return Utility.RandomElement(elementarySchoolSchedules);
-                }
-            }
-
-            public static AbstractSchedule HighSchoolSchedule
-            {
-                get
-                {
-                    Initialize();
-                    return Utility.RandomElement(highSchoolSchedules);
-                }
-            }
-
-            public static AbstractSchedule UniversitySchedule
-            {
-                get
-                {
-                    Initialize();
-                    return Utility.RandomElement(universitySchedules);
-                }
-            }
-
-            public static AbstractSchedule Get(uint id)
-            {
-                return schedules[id];
-            }
-        }
-
-        public class ScheduledEvent
-        {
-            public int startsAt;
-            public PathPlanningResult path;
-            public ScheduledEvent nextEvent;
-            public ScheduledEvent prevEvent;
-            public PointOfInterest place;
-
-#if DEBUG
-            public override string ToString()
-            {
-                var s = new System.Text.StringBuilder();
-                var curr = this;
-
-                var i = 0;
-                while (curr != null)
-                {
-                    if (i++ != 0)
-                        s.Append('\n');
-
-                    var time = new System.DateTime(1, 1, 1, 0, 0, 0);
-                    var startTime = time.AddMinutes(curr.startsAt);
-
-                    s.Append("[");
-                    s.Append(startTime.ToShortTimeString());
-                    s.Append("] leave for ");
-                    s.Append(GetDestinationName(curr.place));
-
-                    if (curr.path != null)
-                    {
-                        s.Append('\n');
-
-                        var arriveTime = startTime.AddMinutes(curr.path.duration * 60);
-                        s.Append("[");
-                        s.Append(arriveTime.ToShortTimeString());
-                        s.Append("] arrive at ");
-                        s.Append(GetDestinationName(curr.place));
-                    }
-
-                    curr = curr.nextEvent;
-                }
-
-                return s.ToString();
-            }
-#endif
-        }
-
         public struct HappinessInfluence
         {
-            /// The key for the description of this influence.
-            public string descriptionKey;
-
-            /// The total impact of this item.
+            /// The impact of this item per second.
             public float influence;
 
-            /// The number of ticks this item is spread over.
-            public int ticks;
+            /// The amount of time this influence lasts.
+            public TimeSpan? duration;
 
             /// The relative cap of this item (i.e. it is not applied if the
             /// happiness is below / above this cap).
@@ -283,14 +26,13 @@ namespace Transidious
             public float absoluteCapLo;
             public float absoluteCapHi;
 
-            public HappinessInfluence(string key, float influence, int ticks,
+            public HappinessInfluence(float influence, TimeSpan? duration,
                                       float relativeCap = -1f,
                                       float absoluteCapLo = 0f,
                                       float absoluteCapHi = 100f)
             {
-                this.descriptionKey = key;
                 this.influence = influence;
-                this.ticks = ticks;
+                this.duration = duration;
 
                 if (relativeCap < 0f || relativeCap > 100f)
                 {
@@ -307,11 +49,12 @@ namespace Transidious
         {
             Worker,
             Retired,
-            Kindergarden,
+            Kindergardener,
             ElementarySchoolStudent,
             HighSchoolStudent,
             UniversityStudent,
             Trainee,
+            Unemployed,
         }
 
         public enum PointOfInterest
@@ -320,6 +63,7 @@ namespace Transidious
             Work,
             School,
             GroceryStore,
+            Gym,
         }
 
         public enum Relationship
@@ -327,35 +71,82 @@ namespace Transidious
             SignificantOther,
         }
 
-        static uint lastAssignedID = 0;
+        /// The last assigned citizen ID.
+        private static uint _lastAssignedId = 0;
 
-        public SimulationController sim;
+        /// Reference to the simulation controller.
+        public readonly SimulationController sim;
+        
+        /// The unique ID of this citizen.
+        public readonly uint id;
+        
+        /// The citizen's first name.
+        public string firstName { get; private set; }
+        
+        /// The citizen's last name.
+        public string lastName { get; private set; }
+        
+        /// The citizen's age in years.
+        public short age { get; private set; }
 
-        public uint id;
-        public string firstName;
-        public string lastName;
-        public short age;
-        public short birthday;
-        public bool female;
-        public Occupation occupation;
-        public decimal money;
+        /// The citizen's birthday in range [0..365].
+        public short birthday { get; private set; }
+        
+        /// True iff this citizen is a woman.
+        public bool female { get; private set; }
+        
+        /// The citizen's occupation.
+        public Occupation occupation { get; private set; }
+        
+        /// The citizen's current money.
+        public decimal money { get; private set; }
+
+        /// The citizen's car (can be null).
         public Car car;
-        public bool educated;
-        public float happiness;
-        public Color preferredColor;
-        public AbstractSchedule[] schedules;
-        public Dictionary<Relationship, Citizen> relationships;
-        public Dictionary<PointOfInterest, Building> pointsOfInterest;
 
-        public PathPlanning.PathPlanningOptions transitPreferences;
+        /// True iff this citizen has an education.
+        public bool educated { get; private set; }
+
+        /// The citizen's current happiness [0..100].
+        public float happiness { get; private set; }
+
+        /// The citizen's current energy level [0..100].
+        public float energy { get; private set; }
+
+        /// The amount of work this citizen has to perform [0..100].
+        public float remainingWork { get; private set; }
+
+        /// The color to use for rendering this citizen.
+        public readonly Color preferredColor;
+
+        /// Map of the citizen's relationships.
+        public readonly Dictionary<Relationship, Citizen> relationships;
+        
+        /// Map of the citizen's points of interest.
+        public readonly Dictionary<PointOfInterest, IMapObject> pointsOfInterest;
+
+        /// Options to use for path planning.
+        public PathPlanningOptions transitPreferences;
+
+        /// Current position on the map.
         public Vector2 currentPosition;
 
-        int scheduleIdx = 0;
-        public ScheduledEvent dailySchedule;
-        public ActivePath activePath = null;
+        /// The citizen's schedule.
+        public Simulation.Schedule schedule;
+        
+        /// The citizen's next scheduled event.
+        public Simulation.Schedule.EventInfo currentEvent;
 
-        public List<HappinessInfluence> happinessInfluences;
+        /// The path that the citizen is currently following (can be null).
+        public ActivePath activePath;
 
+        /// Regular influences on the citizen's happiness.
+        public readonly Dictionary<string, HappinessInfluence> happinessInfluences;
+
+        /// The last happiness level where an animation was displayed.
+        private float _lastHappinessAnimation = -1f; 
+
+        /// Probability of a citizen going to university vs becoming a trainee.
         public static readonly float UniversityProbability = 0.7f;
 
         public Citizen(SimulationController sim, Car car = null, uint id = 0)
@@ -365,12 +156,12 @@ namespace Transidious
 
             if (id == 0)
             {
-                this.id = ++lastAssignedID;
+                this.id = ++_lastAssignedId;
             }
             else
             {
                 this.id = id;
-                lastAssignedID = System.Math.Max(id, lastAssignedID);
+                _lastAssignedId = System.Math.Max(id, _lastAssignedId);
             }
 
             this.sim.citizens.Add(this.id, this);
@@ -378,9 +169,9 @@ namespace Transidious
             this.car = car;
             this.preferredColor = Utility.RandomColor;
 
-            this.pointsOfInterest = new Dictionary<PointOfInterest, Building>();
+            this.pointsOfInterest = new Dictionary<PointOfInterest, IMapObject>();
             this.relationships = new Dictionary<Relationship, Citizen>();
-            this.happinessInfluences = new List<HappinessInfluence>();
+            this.happinessInfluences = new Dictionary<string, HappinessInfluence>();
         }
 
         public Citizen(SimulationController sim, Serialization.Citizen c)
@@ -402,9 +193,9 @@ namespace Transidious
             this.happiness = (float)c.Happiness;
             this.educated = c.Educated;
 
-            this.pointsOfInterest = new Dictionary<PointOfInterest, Building>();
+            this.pointsOfInterest = new Dictionary<PointOfInterest, IMapObject>();
             this.relationships = new Dictionary<Relationship, Citizen>();
-            this.happinessInfluences = new List<HappinessInfluence>();
+            this.happinessInfluences = new Dictionary<string, HappinessInfluence>();
             this.currentPosition = c.CurrentPosition.Deserialize();
 
             var map = GameController.instance.loadedMap;
@@ -428,14 +219,13 @@ namespace Transidious
 
             foreach (var inf in c.HappinessInfluences)
             {
-                happinessInfluences.Add(new HappinessInfluence
+                happinessInfluences.Add(inf.DescriptionKey, new HappinessInfluence
                 {
-                    descriptionKey = inf.DescriptionKey,
                     absoluteCapHi = inf.AbsoluteCapHi,
                     absoluteCapLo = inf.AbsoluteCapLo,
                     influence = inf.Influence,
                     relativeCap = inf.RelativeCap,
-                    ticks = inf.Ticks,
+                    duration = TimeSpan.FromTicks(inf.Ticks),
                 });
             }
 
@@ -523,23 +313,84 @@ namespace Transidious
             {
                 this.relationships.Add((Relationship)rel.Kind, sim.citizens[rel.CitizenId]);
             }
-
-            if (c.ScheduleIdx != -1)
-            {
-                for  (var i = 0; i < c.ScheduleIdx; ++i)
-                {
-                    dailySchedule = dailySchedule.nextEvent;
-                }
-            }
         }
 
-        public void AddHappinessInfluence(string key, float influence, int ticks,
+        public void AddHappinessInfluence(string key, float influence,
+                                          TimeSpan? duration = null,
                                           float relativeCap = -1f,
                                           float absoluteCapLo = 0f,
                                           float absoluteCapHi = 100f)
         {
-            this.happinessInfluences.Add(new HappinessInfluence(key, influence,
-                ticks, relativeCap, absoluteCapLo, absoluteCapHi));
+            this.happinessInfluences.Add(key, new HappinessInfluence(influence,
+                duration, relativeCap, absoluteCapLo, absoluteCapHi));
+        }
+
+        public void SetHappiness(float newHappiness)
+        {
+            happiness = Mathf.Clamp(newHappiness, 0f, 100f);
+
+            if (_lastHappinessAnimation < 0f)
+            {
+                _lastHappinessAnimation = happiness;
+                return;
+            }
+
+            var diff = happiness - _lastHappinessAnimation;
+            if (Mathf.Abs(diff) >= 1f)
+            {
+                DisplayHappinessChangeAnimation(diff);
+                _lastHappinessAnimation = happiness;
+            }
+        }
+
+        public void SetEnergy(float newEnergy)
+        {
+            this.energy = Mathf.Clamp(newEnergy, 0f, 100f);
+
+            var tired = happinessInfluences.ContainsKey("Tired");
+            if (energy < 0f && !tired)
+            {
+                // .5% per hour
+                AddHappinessInfluence("Tired", -(.5f / (24f * 60f)), null, 
+                                      -1f, 0f, 70f);
+            }
+            else if (energy > 0f && tired)
+            {
+                happinessInfluences.Remove("Tired");
+            }
+        }
+
+        public void SetRemainingWork(float newRemainingWork)
+        {
+            if (occupation == Occupation.Unemployed || occupation == Occupation.Retired)
+                return;
+
+            this.remainingWork = Mathf.Clamp(newRemainingWork, 0f, 100f);
+        }
+
+        void DisplayHappinessChangeAnimation(float diff)
+        {
+            var sprite = ResourceManager.instance.GetTemporarySprite();
+            if (sprite == null)
+            {
+                return;
+            }
+
+            Debug.Log("starting animation!");
+
+            var sr = sprite.GetComponent<SpriteRenderer>();
+            sr.sprite = SpriteManager.GetSprite("Sprites/arrow");
+            sr.color = Colors.GetColor(diff < 0f ? "ui.happinessLow" : "ui.happinessHigh");
+            sr.transform.localScale = new Vector3(.3f, .3f, 1f);
+
+            var pos = currentPosition.WithZ(Map.Layer(MapLayer.Foreground));
+            var anim = sr.gameObject.GetComponent<TransformAnimator>();
+            anim.Initialize();
+            anim.SetAnimationType(TransformAnimator.AnimationType.Loop, TransformAnimator.ExecutionMode.Manual);
+            anim.SetTargetPosition(pos + (Vector3.up * 3f), pos);
+            anim.onFinish = () => ResourceManager.instance.Reclaim(sr);
+            
+            anim.StartAnimation(.7f);
         }
 
         public void AssignRandomValues(string firstName = null,
@@ -603,11 +454,36 @@ namespace Transidious
 
             if (!happiness.HasValue)
             {
-                this.happiness = 100;
+                this.happiness = Random.Range(70f, 100f);
             }
             else
             {
                 this.happiness = happiness.Value;
+            }
+
+            var currentHour = sim.GameTime.Hour;
+            if (occupation != Occupation.Retired && occupation != Occupation.Unemployed)
+            {
+                if (currentHour < 8)
+                {
+                    remainingWork = 100f;
+                    energy = 100f - currentHour * (100f / 16f);
+                }
+                else if (currentHour < 16)
+                {
+                    remainingWork = (100f / 8f) * (16 - currentHour);
+                    energy = 100f - ((currentHour - 8) * (30f / 8f));
+                }
+                else
+                {
+                    remainingWork = 0f;
+                    energy = 100f - (30f / 8f);
+                }
+            }
+            else
+            {
+                remainingWork = 0f;
+                energy = 100f;
             }
 
             if (!money.HasValue)
@@ -621,11 +497,33 @@ namespace Transidious
 
             if (this.money < 200m)
             {
-                AddHappinessInfluence("Poorness", -40f, 100_000, -1f, 0f, 70f);
+                // 1% per day
+                AddHappinessInfluence("Poorness", -(1f / (24f * 60f * 60f)), null, 
+                                      -1f, 0f, 70f);
             }
 
             transitPreferences = CreateRandomPreferences();
             AssignOccupation(occupation);
+
+            this.schedule = new Simulation.Schedule(this, null);
+            // if (this.occupation == Occupation.Kindergardener || this.occupation == Occupation.Retired)
+            // {
+            //     this.schedule = new Simulation.Schedule(this, new Simulation.Schedule.FixedEvent[] {});
+            // }
+            // else
+            // {
+            //     this.schedule = new Simulation.Schedule(this, new[]
+            //     {
+            //         new Simulation.Schedule.FixedEvent
+            //         {
+            //             startingTime = 8 * 60,
+            //             duration = 8 * 60,
+            //             mustBePerformedFully = true,
+            //             type = Simulation.Schedule.EventType.Work,
+            //             weekdays = Weekday.Weekdays,
+            //         },
+            //     });
+            // }
         }
 
         public void AssignRandomHome()
@@ -637,29 +535,22 @@ namespace Transidious
                 return;
             }
 
-            ++home.occupants;
+            home.AddInhabitant(this);
             this.pointsOfInterest.Add(PointOfInterest.Home, home);
+            
+            currentPosition = home.Centroid;
         }
 
         public void Initialize(uint scheduleID = 0)
         {
-            if (scheduleID == 0)
-            {
-                CreateSchedules();
-            }
-            else
-            {
-                CreateSchedules(scheduleID);
-            }
-
-            var groceryStore = sim.RandomUnoccupiedBuilding(Building.Type.GroceryStore);
+            var groceryStore = sim.ClosestUnoccupiedBuilding(Building.Type.GroceryStore, Home.Centroid);
             if (groceryStore != null)
             {
                 pointsOfInterest.Add(PointOfInterest.GroceryStore, groceryStore);
             }
 
             this.currentPosition = Home.centroid;
-            UpdateDailySchedule(sim.MinuteOfDay);
+            UpdateDailySchedule(sim.GameTime, false);
 
             sim.game.financeController.taxes.amount += GetTaxes();
         }
@@ -687,7 +578,7 @@ namespace Transidious
             }
             else if (age < 7)
             {
-                this.occupation = Occupation.Kindergarden;
+                this.occupation = Occupation.Kindergardener;
             }
             else if (age < 11)
             {
@@ -727,12 +618,13 @@ namespace Transidious
 
             switch (occupation)
             {
-            case Occupation.Kindergarden:
+            case Occupation.Kindergardener:
             case Occupation.Retired:
             default:
                 return;
             case Occupation.ElementarySchoolStudent:
-                buildingType = Building.Type.ElementarySchool;
+                // FIXME
+                buildingType = Building.Type.HighSchool;
                 poiType = PointOfInterest.School;
                 break;
             case Occupation.HighSchoolStudent:
@@ -758,68 +650,31 @@ namespace Transidious
             }
         }
 
-        void CreateSchedules(uint id)
+        public IMapObject GetPointOfInterest(params Citizen.PointOfInterest[] options)
         {
-            this.schedules = new AbstractSchedule[7];
+            foreach (var poi in pointsOfInterest)
+            {
+                if (options.Contains(poi.Key))
+                {
+                    return poi.Value;
+                }
+            }
 
-            AbstractSchedule.Initialize();
-
-            var schedule = AbstractSchedule.Get(id);
-            schedules[0] = schedule;
-            schedules[1] = schedule;
-            schedules[2] = schedule;
-            schedules[3] = schedule;
-            schedules[4] = schedule;
+            return null;
         }
 
-        void CreateSchedules()
+        public IMapObject GetRandomPointOfInterest(params Citizen.PointOfInterest[] options)
         {
-            this.schedules = new AbstractSchedule[7];
-            switch (this.occupation)
+            var possibilities = new List<IMapObject>();
+            foreach (var poi in pointsOfInterest)
             {
-            default:
-                break;
-            case Occupation.Worker:
+                if (options.Contains(poi.Key))
                 {
-                    var workSchedule = AbstractSchedule.WorkSchedule;
-                    schedules[0] = workSchedule;
-                    schedules[1] = workSchedule;
-                    schedules[2] = workSchedule;
-                    schedules[3] = workSchedule;
-                    schedules[4] = workSchedule;
+                    possibilities.Add(poi.Value);
                 }
-                break;
-            case Occupation.ElementarySchoolStudent:
-                {
-                    var schedule = AbstractSchedule.ElementarySchoolSchedule;
-                    schedules[0] = schedule;
-                    schedules[1] = schedule;
-                    schedules[2] = schedule;
-                    schedules[3] = schedule;
-                    schedules[4] = schedule;
-                }
-                break;
-            case Occupation.HighSchoolStudent:
-                {
-                    var schedule = AbstractSchedule.HighSchoolSchedule;
-                    schedules[0] = schedule;
-                    schedules[1] = schedule;
-                    schedules[2] = schedule;
-                    schedules[3] = schedule;
-                    schedules[4] = schedule;
-                }
-                break;
-            case Occupation.UniversityStudent:
-                {
-                    var schedule = AbstractSchedule.UniversitySchedule;
-                    schedules[0] = schedule;
-                    schedules[1] = schedule;
-                    schedules[2] = schedule;
-                    schedules[3] = schedule;
-                    schedules[4] = schedule;
-                }
-                break;
             }
+
+            return Utility.RandomElement(possibilities);
         }
 
         public void UpdateAge()
@@ -834,7 +689,7 @@ namespace Transidious
             if (IsThresholdAge(age))
             {
                 AssignOccupation();
-                CreateSchedules();
+                UpdateDailySchedule(sim.GameTime, true);
             }
         }
         
@@ -848,7 +703,7 @@ namespace Transidious
                 case Citizen.Occupation.Trainee:
                     return 1m;
                 case Citizen.Occupation.Retired:
-                case Citizen.Occupation.Kindergarden:
+                case Citizen.Occupation.Kindergardener:
                 case Citizen.Occupation.ElementarySchoolStudent:
                 case Citizen.Occupation.HighSchoolStudent:
                 default:
@@ -856,119 +711,42 @@ namespace Transidious
             }
         }
 
-        bool ScheduleEvent(ref ScheduledEvent prevEvent,
-                           AbstractSchedule.Event e,
-                           PathPlanning.PathPlanningResult path,
-                           int startTime, int duration,
-                           ref int earliestStartTime)
+        public void UpdateDailySchedule(DateTime currentTime, bool newDay)
         {
-            var nextEvent = new ScheduledEvent
+            if (currentEvent.location != null)
             {
-                startsAt = startTime,
-                path = path,
-                place = e.place,
-            };
-
-            if (prevEvent == null)
-            {
-                prevEvent = nextEvent;
-                dailySchedule = nextEvent;
-            }
-            else
-            {
-                prevEvent.nextEvent = nextEvent;
-                nextEvent.prevEvent = prevEvent;
+                --currentEvent.location.Visitors;
             }
 
-            prevEvent = nextEvent;
+            currentEvent = schedule.GetNextEvent(currentTime, newDay);
+            Debug.Log($"[{Name}] {currentEvent.DebugDescription}");
 
-            if (duration == -1)
+            if (currentEvent.path != null)
             {
-                return false;
-            }
-
-            earliestStartTime = startTime + duration;
-            return true;
-        }
-
-        public void UpdateDailySchedule(int minuteOfDay)
-        {
-            var schedule = schedules[sim.GameTime.Day];
-            if (schedule == null)
-            {
-                return;
-            }
-
-            ScheduledEvent prevEvent = null;
-            var earliestStartTime = minuteOfDay;
-
-            foreach (var e in schedule.events)
-            {
-                // Check if this event happens today.
-                if (!e.probability.Equals(1f) && Random.value > e.probability)
+                var activePath = FollowPath(currentEvent.path);
+                if (currentEvent.location != null)
                 {
-                    continue;
-                }
-
-                // FIXME this should not really ever happen
-                if (!pointsOfInterest.TryGetValue(e.place, out Building poi))
-                {
-                    continue;
-                }
-
-                var planner = new PathPlanner(transitPreferences, sim.GameTime.Date.AddMinutes(earliestStartTime));
-                var path = planner.FindClosestPath(sim.game.loadedMap, currentPosition, poi.centroid);
-                var pathDuration = (int)Mathf.Ceil(path.duration * 60);
-
-                // Schedule immediately after preceding event.
-                if (e.startTime == -1)
-                {
-                    if (ScheduleEvent(ref prevEvent, e, path, earliestStartTime,
-                                      e.duration + pathDuration, ref earliestStartTime))
+                    activePath.onDone = () =>
                     {
-                        continue;
-                    }
+                        ++currentEvent.location.Visitors;
 
-                    break;
+                        if (sim.citizenModal.citizen == this)
+                        {
+                            sim.citizenModal.UpdateAll();
+                        }
+                    };
                 }
-
-                // Check if we can still get to the event location in time.
-                if (earliestStartTime + pathDuration <= e.startTime)
-                {
-                    if (ScheduleEvent(ref prevEvent, e, path, e.startTime - pathDuration,
-                                      e.duration + pathDuration,
-                                      ref earliestStartTime))
-                    {
-                        continue;
-                    }
-
-                    break;
-                }
-
-                // Don't schedule non-flexible events we can't get to in time.
-                if (!e.flexible)
-                {
-                    continue;
-                }
-
-                // Schedule immediately.
-                if (ScheduleEvent(ref prevEvent, e, path, earliestStartTime,
-                                  e.duration + pathDuration, ref earliestStartTime))
-                {
-                    continue;
-                }
-
-                break;
             }
         }
 
-        public void UpdateHappiness(int ticks)
+        public void UpdateHappiness(TimeSpan timeSinceLastUpdate, float bonus)
         {
             var totalCapLo = 0f;
             var totalCapHi = 100f;
             var newHappiness = happiness;
+            var passedSeconds = (float) timeSinceLastUpdate.TotalSeconds;
 
-            foreach (var item in happinessInfluences)
+            foreach (var (key, item) in happinessInfluences)
             {
                 if (item.influence < 0f && newHappiness <= item.relativeCap)
                 {
@@ -979,68 +757,88 @@ namespace Transidious
                     continue;
                 }
 
-                newHappiness += (item.influence / item.ticks) * ticks;
+                newHappiness += item.influence * passedSeconds;
                 totalCapLo = Mathf.Max(totalCapLo, item.absoluteCapLo);
                 totalCapHi = Mathf.Min(totalCapHi, item.absoluteCapHi);
             }
 
-            happiness = Mathf.Clamp(newHappiness, totalCapLo, totalCapHi);
+            newHappiness += (passedSeconds / 60f) * bonus;
+            SetHappiness(Mathf.Clamp(newHappiness, totalCapLo, totalCapHi));
         }
 
-        public ActivePath FollowPath(PathPlanningResult path)
+        public void Update(DateTime currentTime, bool newDay, TimeSpan timeSinceLastUpdate)
         {
-            var activePath = ResourceManager.instance.GetActivePath();
-            if (activePath == null)
+            if (newDay)
             {
-                return null;
+                UpdateAge();
             }
 
-            activePath.Initialize(path, this);
+            var happinessBonus = 0f;
+            var passedHours = (float) timeSinceLastUpdate.TotalHours;
+
+            if (activePath == null)
+            {
+                happinessBonus = currentEvent.HappinessBonusPerHour;
+            }
+
+            if (happinessInfluences.Count > 0)
+            {
+                UpdateHappiness(timeSinceLastUpdate, happinessBonus);
+            }
+            else if (happinessBonus > 0f)
+            {
+                SetHappiness(happiness + passedHours * happinessBonus);
+            }
+
+            float energyBonus;
+            float remainingWorkBonus;
+
+            if (activePath == null)
+            {
+                energyBonus = currentEvent.EnergyBonusPerHour;
+                remainingWorkBonus = currentEvent.RemainingWorkBonusPerHour;
+            }
+            else
+            {
+                energyBonus = activePath.EnergyBonusPerHour;
+                remainingWorkBonus = activePath.RemainingWorkBonusPerHour;
+            }
+
+            SetEnergy(energy + energyBonus * passedHours);
+            SetRemainingWork(remainingWork + remainingWorkBonus * passedHours);
+
+            if (currentTime >= currentEvent.endTime)
+            {
+                if (activePath != null)
+                {
+                    // We completely missed the previous event, apply a penalty.
+                    SetHappiness(happiness - currentEvent.PenaltyForMissing);
+                }
+
+                UpdateDailySchedule(currentTime, newDay);
+            }
+            else if (sim.citizenModal.citizen == this)
+            {
+                sim.citizenModal.UpdateFrequentChanges();
+            }
+        }
+
+        public ActivePath FollowPath(PathPlanningResult path, System.Action callback = null)
+        {
+            if (activePath == null)
+            {
+                activePath = ResourceManager.instance.GetActivePath();
+                if (activePath == null)
+                {
+                    return null;
+                }
+            }
+
+            activePath.Initialize(path, this, callback);
             activePath.gameObject.SetActive(true);
             activePath.StartPath();
 
             return activePath;
-        }
-
-        public void Update(int minuteOfDay, int ticks)
-        {
-            if (happinessInfluences.Count > 0)
-            {
-                UpdateHappiness(ticks);
-            }
-
-            if (dailySchedule == null)
-            {
-                return;
-            }
-
-            if (minuteOfDay < dailySchedule.startsAt)
-            {
-                return;
-            }
-
-            if (activePath != null)
-            {
-                Debug.LogWarning("next event started before current path is done!");
-                return;
-            }
-
-#if DEBUG
-            Debug.Log("[" + Name + "] " + GetDestinationString(dailySchedule.place));
-#endif
-
-            if (dailySchedule.path != null)
-            {
-                if (dailySchedule.path.steps.Any(step => step is PublicTransitStep))
-                {
-                    Debug.Log($"{Name} is using transit!!!");
-                }
-                
-                this.FollowPath(dailySchedule.path);
-            }
-
-            dailySchedule = dailySchedule.nextEvent;
-            ++scheduleIdx;
         }
 
         public Building Home
@@ -1048,13 +846,13 @@ namespace Transidious
             get
             {
                 Debug.Assert(pointsOfInterest.ContainsKey(PointOfInterest.Home), "citizen has no home!");
-                return pointsOfInterest[PointOfInterest.Home];
+                return pointsOfInterest[PointOfInterest.Home] as Building;
             }
         }
 
         public string Name => $"{firstName} {lastName}";
 
-        public PointOfInterest? CurrentDestination => dailySchedule?.prevEvent?.place ?? null;
+        public IMapObject CurrentDestination => currentEvent.location;
 
         public Velocity WalkingSpeed
         {
@@ -1135,6 +933,15 @@ namespace Transidious
         }
 #endif
 
+        public void ActivateModal()
+        {
+            var modal = GameController.instance.sim.citizenModal;
+            modal.SetCitizen(this);
+
+            modal.modal.PositionAt(currentPosition);
+            modal.modal.Enable();
+        }
+
         public Serialization.Citizen ToProtobuf()
         {
             var c = new Serialization.Citizen
@@ -1152,8 +959,6 @@ namespace Transidious
                 CarID = car?.id ?? 0,
 
                 CurrentPosition = currentPosition.ToProtobuf(),
-                ScheduleIdx = scheduleIdx,
-                ScheduleID = schedules[0]?.id ?? 0,
                 
                 PreferredColor = preferredColor.ToProtobuf(),
                 TransitPreferences = transitPreferences.ToProtobuf(),
@@ -1168,17 +973,17 @@ namespace Transidious
             c.PointsOfInterest.AddRange(pointsOfInterest.Select(r => new Serialization.Citizen.Types.PointOfInterest
             {
                 Kind = (Serialization.Citizen.Types.PointOfInterestKind)r.Key,
-                BuildingId = (uint)r.Value.id,
+                BuildingId = (uint)r.Value.Id,
             }));
 
             c.HappinessInfluences.AddRange(happinessInfluences.Select(inf => new Serialization.Citizen.Types.HappinessInfluence
             {
-                AbsoluteCapHi = inf.absoluteCapHi,
-                AbsoluteCapLo = inf.absoluteCapLo,
-                DescriptionKey = inf.descriptionKey,
-                Influence = inf.influence,
-                RelativeCap = inf.relativeCap,
-                Ticks = inf.ticks,
+                AbsoluteCapHi = inf.Value.absoluteCapHi,
+                AbsoluteCapLo = inf.Value.absoluteCapLo,
+                DescriptionKey = inf.Key,
+                Influence = inf.Value.influence,
+                RelativeCap = inf.Value.relativeCap,
+                Ticks = (int)(inf.Value.duration?.Ticks ?? 0),
             }));
 
             return c;

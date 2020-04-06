@@ -46,12 +46,14 @@ namespace Transidious
         Vector2[][] outlinePositions { get; }
 
         int Capacity { get; }
-        int Occupants { get; set; }
+        int Visitors { get; set; }
 
         void Hide();
         void Show(RenderingDistance renderingDistance);
         void Destroy();
 
+        void ActivateModal();
+        
         void OnMouseOver();
         void OnMouseEnter();
         void OnMouseExit();
@@ -100,10 +102,10 @@ namespace Transidious
 
         public virtual int Capacity => 0;
 
-        public virtual int Occupants
+        public virtual int Visitors
         {
             get => 0;
-            set => Debug.Assert(false, "map object does not have occupants");
+            set { }
         }
 
         protected void Initialize(MapObjectKind kind, int id,
@@ -171,6 +173,10 @@ namespace Transidious
             {
                 this.outlinePositions = obj.OutlinePositions.Select(arr => arr.OutlinePositions.Select(v => v.Deserialize()).ToArray()).ToArray();
             }
+        }
+
+        public virtual void ActivateModal()
+        {
         }
 
         public virtual void OnMouseOver()
@@ -255,10 +261,10 @@ namespace Transidious
         
         public virtual int Capacity => 0;
 
-        public virtual int Occupants
+        public virtual int Visitors
         {
             get => 0;
-            set => Debug.Assert(false, "map object does not have occupants");
+            set {}
         }
 
         public void Hide()
@@ -386,6 +392,10 @@ namespace Transidious
                 var tile = GameController.instance.loadedMap.GetTile(obj.UniqueTileX, obj.UniqueTileY);
                 this.uniqueTile = tile;
             }
+        }
+
+        public virtual void ActivateModal()
+        {
         }
 
         public virtual void Destroy()

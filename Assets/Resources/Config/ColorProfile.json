@@ -1,8 +1,12 @@
 {
     "colors": [
         {
-            "key": "map.backgroundDay",
+            "key": "map.backgroundDay_",
             "value": "#F9F5ED"
+        },
+        {
+            "key": "map.backgroundDay",
+            "value": "#F5F5F5"
         },
         {
             "key": "map.backgroundNight",
@@ -175,6 +179,19 @@
         {
             "key": "street.pathBorderNight",
             "value": "#E8DCC0"
+        },
+
+        {
+            "key": "ui.happinessHigh",
+            "value": "#006400"
+        },
+        {
+            "key": "ui.happinessMedium",
+            "value": "#F6CF00"
+        },
+        {
+            "key": "ui.happinessLow",
+            "value": "#B22222"
         }
     ]
 }

@@ -49,20 +49,30 @@ namespace Transidious
                     Utility.Dump(item);
                 }
             });
+            
+            panel.AddClickableItem("Start Animation", "Start Animation", Color.blue, () =>
+            {
+                var sim = GameController.instance.sim;
+                var c = citizen;
+                sim.ScheduleEvent(sim.GameTime.AddMinutes(5), () => { c.SetHappiness(c.happiness + 2f); });
+            });
+            
+            panel.AddClickableItem("Current Path", "Current Path", Color.blue, () =>
+            {
+                Debug.Log(citizen.activePath?.path?.ToString() ?? "no active path");
+            });
 #endif
         }
 
-        public void SetCitizen(Citizen citizen)
+        public void UpdateAll()
         {
-            this.citizen = citizen;
-            this.modal.SetTitle(citizen.Name);
+            UpdateFrequentChanges();
 
             this.panel.SetValue("Age", citizen.age.ToString());
             this.panel.SetValue("Occupation", Translator.Get($"ui:citizen:occupation:{citizen.occupation.ToString()}"));
-            this.panel.SetValue("Happiness", this.citizen.happiness + " %");
-            this.panel.SetValue("Money", Translator.GetCurrency(this.citizen.money));
 
-            if ((citizen.activePath?.IsDriving ?? false) && citizen.CurrentDestination.HasValue)
+            var dst = citizen.CurrentDestination;
+            if (citizen.activePath != null && dst != null)
             {
                 carSprite.color = citizen.car.color;
                 carSprite.gameObject.SetActive(true);
@@ -70,28 +80,48 @@ namespace Transidious
                 this.panel.ShowItem("Destination");
 
                 var value = this.panel.GetValue("Destination");
-                value.text = Translator.Get("ui:citizen:destination:" + citizen.CurrentDestination.Value.ToString());
+                value.text = dst.Name;
+                // value.text = Translator.Get("ui:citizen:destination:" + citizen.CurrentDestination.Value.ToString());
 
                 var link = value.GetComponent<UILocationLink>();
-                var building = citizen.pointsOfInterest[citizen.CurrentDestination.Value];
+                // var building = citizen.pointsOfInterest[citizen.CurrentDestination.Value];
 
-                link.SetLocation(building.centroid);
-                link.postMoveListener = () =>
+                link.SetLocation(dst.Centroid);
+
+                if (dst is Building b)
                 {
-                    building.ActivateModal();
-                };
+                    link.postMoveListener = () =>
+                    {
+                        b.ActivateModal();
+                    };
+                }
+                else if (dst is NaturalFeature nf)
+                {
+                    link.postMoveListener = () =>
+                    {
+                        nf.ActivateModal();
+                    };
+                }
             }
             else
             {
                 this.panel.HideItem("Destination");
                 carSprite.gameObject.SetActive(false);
             }
+        }
+
+        public void UpdateFrequentChanges()
+        {
+            this.panel.SetValue("Happiness", $"{citizen.happiness:n2}%");
+            this.panel.SetValue("Energy", $"{citizen.energy:n2}%");
+            this.panel.SetValue("RemainingWork", $"{citizen.remainingWork:n2}%");
+            this.panel.SetValue("Money", Translator.GetCurrency(citizen.money, true));
 
             if (citizen.happiness < 50)
             {
                 happinessSprite.sprite = SpriteManager.instance.happinessSprites[0];
             }
-            else if (citizen.happiness < 80)
+            else if (citizen.happiness < 75)
             {
                 happinessSprite.sprite = SpriteManager.instance.happinessSprites[1];
             }
@@ -99,6 +129,14 @@ namespace Transidious
             {
                 happinessSprite.sprite = SpriteManager.instance.happinessSprites[2];
             }
+        }
+
+        public void SetCitizen(Citizen citizen)
+        {
+            this.citizen = citizen;
+            this.modal.SetTitle(citizen.Name);
+
+            UpdateAll();
 
             if (citizen.activePath?.IsDriving ?? false)
             {

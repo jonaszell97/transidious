@@ -103,6 +103,50 @@ namespace Transidious
             return new Timer(description ?? "<Unnamed>", iterations);
         }
 
+        public static int MinuteOfDay(this DateTime dt)
+        {
+            return dt.Hour * 60 + dt.Minute;
+        }
+
+        public static Weekday GetWeekday(this DateTime dt)
+        {
+            var dayOfWeek = dt.DayOfWeek;
+            switch (dayOfWeek)
+            {
+                case DayOfWeek.Monday:
+                    return Weekday.Monday;
+                case DayOfWeek.Tuesday:
+                    return Weekday.Tuesday;
+                case DayOfWeek.Wednesday:
+                    return Weekday.Wednesday;
+                case DayOfWeek.Thursday:
+                    return Weekday.Thursday;
+                case DayOfWeek.Friday:
+                    return Weekday.Friday;
+                case DayOfWeek.Saturday:
+                    return Weekday.Saturday;
+                case DayOfWeek.Sunday:
+                    return Weekday.Sunday;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public static Weekday AddDays(this Weekday wd, int days)
+        {
+            days %= 7;
+
+            var mask = 0b1111111;
+            var result = (int)wd << days;
+
+            if ((result & mask) == 0)
+            {
+                return (Weekday) ((int) wd >> (7 - days));
+            }
+
+            return (Weekday) result;
+        }
+
         public static void DisableImmediateChildren(this GameObject obj)
         {
             for (int i = obj.transform.childCount - 1; i >= 0; --i)

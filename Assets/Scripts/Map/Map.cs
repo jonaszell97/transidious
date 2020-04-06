@@ -544,7 +544,8 @@ namespace Transidious
         
         public bool IsPointOnMap(Vector2 pt)
         {
-            return pt.x >= minX && pt.x <= maxX && pt.y >= minY && pt.y <= maxY;
+            return Math.IsPointInPolygon(pt, boundaryPositions);
+            // return pt.x >= minX && pt.x <= maxX && pt.y >= minY && pt.y <= maxY;
         }
 
         public void SetBackgroundColor(Color c)
@@ -826,7 +827,7 @@ namespace Transidious
             }
 
             var minPos = new Vector2(Mathf.Max(position.x - radius, minX), Mathf.Max(position.y - radius, minY));
-            var maxPos = new Vector2(Mathf.Min(position.x + radius, maxX), Mathf.Min(position.y + radius, maxY));
+            var maxPos = new Vector2(Mathf.Min(position.x + radius, maxX - 1f), Mathf.Min(position.y + radius, maxY - 1f));
 
             var minTile = GetTile(minPos);
             var maxTile = GetTile(maxPos);
@@ -1892,46 +1893,46 @@ namespace Transidious
                 this.UpdateScale();
             });
 
-            input.RegisterEventListener(InputEvent.DisplayModeChange, _ =>
-            {
-                var mode = Game.displayMode;
-                switch (mode)
-                {
-                case MapDisplayMode.Day:
-                    if (backgroundSpriteNight?.activeSelf ?? false)
-                    {
-                        backgroundSpriteNight.SetActive(false);
-                        backgroundSpriteDay.SetActive(true);
-                    }
-
-                    break;
-                case MapDisplayMode.Night:
-                    if (backgroundSpriteDay?.activeSelf ?? false)
-                    {
-                        backgroundSpriteDay.SetActive(false);
-                        backgroundSpriteNight.SetActive(true);
-                    }
-
-                    break;
-                }
-
-                ResetBackgroundColor();
-                ResetBorderColor();
-
-                if (Game.Loading)
-                {
-                    return;
-                }
-
-                foreach (var building in buildings)
-                {
-                    building.UpdateColor(mode);
-                }
-                foreach (var seg in streetSegments)
-                {
-                    seg.UpdateColor(mode);
-                }
-            });
+            // input.RegisterEventListener(InputEvent.DisplayModeChange, _ =>
+            // {
+            //     var mode = Game.displayMode;
+            //     switch (mode)
+            //     {
+            //     case MapDisplayMode.Day:
+            //         if (backgroundSpriteNight?.activeSelf ?? false)
+            //         {
+            //             backgroundSpriteNight.SetActive(false);
+            //             backgroundSpriteDay.SetActive(true);
+            //         }
+            //
+            //         break;
+            //     case MapDisplayMode.Night:
+            //         if (backgroundSpriteDay?.activeSelf ?? false)
+            //         {
+            //             backgroundSpriteDay.SetActive(false);
+            //             backgroundSpriteNight.SetActive(true);
+            //         }
+            //
+            //         break;
+            //     }
+            //
+            //     ResetBackgroundColor();
+            //     ResetBorderColor();
+            //
+            //     if (Game.Loading)
+            //     {
+            //         return;
+            //     }
+            //
+            //     foreach (var building in buildings)
+            //     {
+            //         building.UpdateColor(mode);
+            //     }
+            //     foreach (var seg in streetSegments)
+            //     {
+            //         seg.UpdateColor(mode);
+            //     }
+            // });
         }
 
         public IEnumerator FinalizeStreetMeshes(float thresholdTime = 50)

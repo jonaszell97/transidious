@@ -534,7 +534,7 @@ namespace Transidious.PathPlanning
         public readonly List<PathStep> steps;
 
         /// The total duration of the path in minutes.
-        public float duration => (float)(arriveAt - leaveBy).TotalMinutes;
+        public TimeSpan duration => arriveAt - leaveBy;
         
         public PathPlanningResult(PathPlanningOptions options,
                                   float cost, DateTime leaveBy,
@@ -674,7 +674,7 @@ namespace Transidious.PathPlanning
 
         public override string ToString()
         {
-            string s = "Cost: " + cost + ", duration: " + duration + "min\n";
+            string s = $"Cost: {cost}, duration: {duration.TotalMinutes:n2}min\n";
             s += "[" + leaveBy.ToLongTimeString() + "] leave\n";
 
             var i = 0;
@@ -831,7 +831,7 @@ namespace Transidious.PathPlanning
         // by passing by that node. That value is partly known, partly heuristic.
         Dictionary<IStop, float> fScore;
 
-        public PathPlanner(PathPlanningOptions options, DateTime? time = null)
+        public PathPlanner(PathPlanningOptions options = null, DateTime? time = null)
         {
             this.options = options;
             this.closedSet = new HashSet<IStop>();
@@ -845,7 +845,7 @@ namespace Transidious.PathPlanning
             this.time = time ?? GameController.instance.sim.GameTime;
         }
 
-        void Reset()
+        public void Reset(DateTime? time = null)
         {
             closedSet.Clear();
             openSet.Clear();
@@ -855,6 +855,8 @@ namespace Transidious.PathPlanning
             waitingTimeMap.Clear();
             gScore.Clear();
             fScore.Clear();
+
+            this.time = time ?? this.time;
         }
 
         static float GetScore(Dictionary<IStop, float> map, IStop stop)
@@ -1004,7 +1006,7 @@ namespace Transidious.PathPlanning
         }
 
         // Based on heuristic A* (https://en.wikipedia.org/wiki/A*_search_algorithm)
-        public PathPlanningResult GetPath()
+        PathPlanningResult GetPath()
         {
             Reset();
             openSet.Add(start);
@@ -1326,7 +1328,7 @@ namespace Transidious.PathPlanning
                 return transitResult;
             }
 
-            var carResult = FindClosestDrive(map, from, to);
+            var carResult = FindClosestDrive(map, from, to, true);
             if (carResult == null)
             {
                 return transitResult;

@@ -1586,7 +1586,7 @@ namespace Transidious
 
             //var mesh = MeshBuilder.CreateBakedLineMesh(newPositions, newWidths, collider);
             var mesh = MeshBuilder.CreateSmoothLine(
-                newPositions, newWidths, 20, float.NaN, collider);
+                newPositions, newWidths, 20, 0f, collider);
 
             route.UpdateMesh(mesh, newPositions, newWidths);
             route.line.wasModified = false;

@@ -7,7 +7,9 @@ namespace Transidious
     public enum Weekday
     {
         None = 0x0,
-        All = ~0x0,
+        All = ~None,
+        Weekends = Saturday | Sunday,
+        Weekdays = ~Weekends,
 
         Sunday = 0x1,
         Monday = 0x2,

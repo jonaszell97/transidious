@@ -31,7 +31,7 @@ namespace Transidious
 
         public override int Capacity => capacity;
 
-        public override int Occupants
+        public override int Visitors
         {
             get => visitors;
             set => visitors = value;
@@ -195,6 +195,15 @@ namespace Transidious
             return newFeature;
         }
 
+        public override void ActivateModal()
+        {
+            var modal = GameController.instance.sim.featureModal;
+            modal.SetFeature(this);
+
+            var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            modal.modal.EnableAt(pos);
+        }
+
         public override void OnMouseDown()
         {
             base.OnMouseDown();
@@ -209,11 +218,7 @@ namespace Transidious
                 return;
             }
 
-            var modal = GameController.instance.sim.featureModal;
-            modal.SetFeature(this);
-
-            var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            modal.modal.EnableAt(pos);
+            ActivateModal();
         }
     }
 }

@@ -19,6 +19,7 @@ namespace Transidious
         public Map map;
         public int x, y;
         public HashSet<IMapObject> mapObjects;
+        public HashSet<ActivePath> activePaths;
         public Rect rect;
         RenderingDistance? currentRenderingDist;
 
@@ -57,6 +58,7 @@ namespace Transidious
             this.x = x;
             this.y = y;
             this.mapObjects = new HashSet<IMapObject>();
+            this.activePaths = new HashSet<ActivePath>();
             this.colliderInfo = new List<ColliderInfo>();
 
             if (backgroundImage.sprite == null && x != -1)
@@ -64,7 +66,6 @@ namespace Transidious
                 UpdateSprite();
             }
 
-            this.gameObject.SetActive(false);
             this.checkMouseOver = false;
         }
 
@@ -267,20 +268,6 @@ namespace Transidious
                     boxCollider.enabled = false;
 
                     break;
-                case RenderingDistance.VeryFar:
-                    meshes.SetActive(false);
-                    backgroundImage.gameObject.SetActive(true);
-                    canvas.gameObject.SetActive(false);
-                    boxCollider.enabled = false;
-
-                    break;
-                case RenderingDistance.Farthest:
-                    meshes.SetActive(false);
-                    backgroundImage.gameObject.SetActive(true);
-                    canvas.gameObject.SetActive(false);
-                    boxCollider.enabled = false;
-
-                    break;
             }
         }
 
@@ -297,49 +284,25 @@ namespace Transidious
 
         void OnMouseDown()
         {
-            if (enteredMapObject == null)
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             {
                 return;
             }
-
-            enteredMapObject.obj.OnMouseDown();
-
-            var checkCars = false;
-            switch (enteredMapObject.obj.Kind)
-            {
-                case MapObjectKind.StreetSegment:
-                case MapObjectKind.StreetIntersection:
-                    checkCars = true;
-                    break;
-            }
-
-#if DEBUG
-            checkCars = true;
-#endif
             
             var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            if (checkCars)
+            
+            // Check if a car was clicked.
+            foreach (var car in activePaths)
             {
-                // Check if a car was clicked.
-                foreach (var car in mapObjects.OfType<ActivePath>())
+                var bounds = car.Bounds;
+                if (bounds.Contains2D(clickedPos))
                 {
-                    if (!car.IsDriving)
-                        continue;
-
-                    Vector2 pos = car.transform.position;
-                    if (!IsPointInTile(pos))
-                    {
-                        continue;
-                    }
-
-                    var bounds = car.Bounds;
-                    if (bounds.Contains2D(clickedPos))
-                    {
-                        car.OnMouseDown();
-                        break;
-                    }
+                    car.OnMouseDown();
+                    return;
                 }
             }
+
+            enteredMapObject?.obj.OnMouseDown();
         }
 
         LineRenderer GetLineRenderer(int i)
@@ -411,6 +374,11 @@ namespace Transidious
 
         void OnMouseOver()
         {
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+            
             var mousePosWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if (mousePosition.HasValue && mousePosWorld == mousePosition.Value && !checkMouseOver)
             {

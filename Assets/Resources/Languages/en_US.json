@@ -93,6 +93,14 @@
             "text": "Money"
         },
         {
+            "key": "ui:citizien:energy",
+            "text": "Energy"
+        },
+        {
+            "key": "ui:citizien:remaining_work",
+            "text": "Remaining Work"
+        },
+        {
             "key": "ui:citizien:occupation",
             "text": "Occupation"
         },

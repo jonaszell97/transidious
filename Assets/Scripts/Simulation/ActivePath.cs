@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using TMPro;
 using Transidious.PathPlanning;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Transidious
 {
@@ -28,6 +29,9 @@ namespace Transidious
 
         /// The citizen that is following the path.
         public Citizen citizen;
+
+        /// The completion callback.
+        public System.Action onDone;
 
         /// The current step on the path.
         [CanBeNull]
@@ -58,7 +62,7 @@ namespace Transidious
         /// The renderer for the car / citizen sprites.
         private SpriteRenderer _spriteRenderer;
 
-        private BoxCollider2D _boxCollider2D;
+        [FormerlySerializedAs("_boxCollider2D")] public BoxCollider2D boxCollider2D;
 
         private SpriteRenderer spriteRenderer
         {
@@ -67,8 +71,8 @@ namespace Transidious
                 if (_spriteRenderer == null)
                 {
                     _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
-                    // _boxCollider2D = gameObject.AddComponent<BoxCollider2D>();
-                    // _boxCollider2D.enabled = false;
+                    boxCollider2D = gameObject.AddComponent<BoxCollider2D>();
+                    boxCollider2D.enabled = false;
                 }
 
                 return _spriteRenderer;
@@ -106,12 +110,22 @@ namespace Transidious
 
         public Velocity CurrentVelocity => _currentVelocity;
 
+        /// The map tile this path is currently on.
+        public MapTile currentTile;
+        
+        /// Interval for tile updates.
+        private static readonly float _tileUpdateInterval = 0.5f;
+
+        /// Time since last tile update.
+        private float _timeSinceLastTileUpdate = 0f;
+        
         /// Initialize a path for a citizen.
-        public void Initialize(PathPlanningResult path, Citizen c)
+        public void Initialize(PathPlanningResult path, Citizen c, System.Action onDone = null)
         {
             this.path = path;
             this.citizen = c;
             this.trafficSim = GameController.instance.sim.trafficSim;
+            this.onDone = onDone;
             this._currentStep = path.steps.Count;
 
             this.transform.SetLayer(MapLayer.Cars);
@@ -128,6 +142,7 @@ namespace Transidious
         {
             _currentStep = 0;
             ContinuePath();
+            UpdateTile();
 
 #if DEBUG
             if (trafficSim.displayPathMetrics)
@@ -143,11 +158,18 @@ namespace Transidious
 #endif
         }
 
-        private void FixedUpdate()
+        private void Update()
         {
             if (GameController.instance.Paused)
             {
                 return;
+            }
+
+            _timeSinceLastTileUpdate += Time.deltaTime;
+
+            if (_timeSinceLastTileUpdate >= _tileUpdateInterval)
+            {
+                UpdateTile();
             }
 
             // Check if we're still waiting for something.
@@ -170,8 +192,10 @@ namespace Transidious
             }
             else
             {
-                _pathFollowingHelper?.Update(Time.fixedDeltaTime * trafficSim.sim.SpeedMultiplier);
+                _pathFollowingHelper?.Update(Time.deltaTime * trafficSim.sim.SpeedMultiplier);
             }
+
+            citizen.currentPosition = transform.position;
 
             if (_currentStep >= path.steps.Count)
             {
@@ -190,6 +214,19 @@ namespace Transidious
 #endif
         }
 
+        void UpdateTile()
+        {
+            var tile = SaveManager.loadedMap.GetTile(transform.position);
+            if (tile != null)
+            {
+                currentTile?.activePaths.Remove(this);
+                tile.activePaths.Add(this);
+                currentTile = tile;
+            }
+
+            _timeSinceLastTileUpdate = 0f;
+        }
+        
         void UpdateProgress()
         {
             switch (currentStep.type)
@@ -246,6 +283,7 @@ namespace Transidious
 
         void PathDone()
         {
+            this.onDone?.Invoke();
             citizen.activePath = null;
             ResourceManager.instance.Reclaim(this);
 
@@ -310,7 +348,7 @@ namespace Transidious
             sr.sprite = SpriteManager.GetSprite(spriteName);
             sr.enabled = true;
 
-            // _boxCollider2D.size = sr.bounds.size;
+            boxCollider2D.size = sr.bounds.size;
             // _boxCollider2D.enabled = true;
         }
 
@@ -362,7 +400,7 @@ namespace Transidious
             // Leave the parking lot (if necessary).
             if (_drivingState == null && car.parkingLot != null)
             {
-                --car.parkingLot.Occupants;
+                --car.parkingLot.Visitors;
             }
 
             // Initialize car sprite.
@@ -388,7 +426,7 @@ namespace Transidious
                 {
                     if (dstParkingLot != null)
                     {
-                        ++dstParkingLot.Occupants;
+                        ++dstParkingLot.Visitors;
                         car.parkingLot = dstParkingLot;
                     }
 
@@ -430,7 +468,7 @@ namespace Transidious
             var drivingCar = _drivingState.drivingCar;
             var sim = trafficSim.sim;
 
-            var elapsedTime = Time.fixedDeltaTime * sim.SpeedMultiplier;
+            var elapsedTime = Time.deltaTime * sim.SpeedMultiplier;
             _drivingState.timeSinceLastUpdate += elapsedTime;
 
             if (_drivingState.timeSinceLastUpdate >= TrafficSimulator.VelocityUpdateInterval)
@@ -458,13 +496,6 @@ namespace Transidious
                 drivingCar.segment,
                 drivingCar.CurrentPosition,
                 drivingCar.lane);
-
-            citizen.currentPosition = drivingCar.CurrentPosition;
-
-            /*if (isFocused)
-            {
-                UpdateUIPosition();
-            }*/
         }
 
         /**
@@ -475,6 +506,40 @@ namespace Transidious
         {
             var firstStop = step.routes.First().beginStop;
             firstStop.AddWaitingCitizen(this, step);
+        }
+        
+        /**
+         * Simulation
+         */
+
+        /// The work bonus per hour of the trip.
+        public float RemainingWorkBonusPerHour => +(100f / 16f);
+
+        /// The energy bonus per hour of the trip.
+        public float EnergyBonusPerHour
+        {
+            get
+            {
+                if (currentStep == null)
+                {
+                    return 0f;
+                }
+
+                switch (currentStep.type)
+                {
+                    default:
+                    case PathStep.Type.Drive:
+                    case PathStep.Type.PartialDrive:
+                    case PathStep.Type.Turn:
+                        return -7f;
+                    case PathStep.Type.Walk:
+                        return -5f;
+                    case PathStep.Type.Wait:
+                        return -1f;
+                    case PathStep.Type.PublicTransit:
+                        return +1f;
+                }
+            }
         }
 
         /**
@@ -520,11 +585,7 @@ namespace Transidious
                 return;
             }
 
-            var modal = GameController.instance.sim.citizenModal;
-            modal.SetCitizen(citizen);
-
-            modal.modal.PositionAt(transform.position);
-            modal.modal.Enable();
+            citizen.ActivateModal();
         }
 
         public Serialization.ActivePath Serialize()

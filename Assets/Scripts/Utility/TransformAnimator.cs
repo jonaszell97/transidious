@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -101,7 +102,7 @@ namespace Transidious
             this.type |= TransformType.Position;
             this.type &= ~TransformType.AnchoredPosition;
             this.targetPosition = targetPosition;
-            this.originalPosition = originalPosition.HasValue ? originalPosition.Value : transform.position;
+            this.originalPosition = originalPosition ?? transform.position;
             this.movementMultipliers[0] = (this.targetPosition - this.originalPosition).magnitude;
         }
 
@@ -110,7 +111,7 @@ namespace Transidious
             this.type |= TransformType.AnchoredPosition;
             this.type &= ~TransformType.Position;
             this.targetPosition = targetPosition;
-            this.originalPosition = originalPosition.HasValue ? originalPosition.Value : rectTransform.anchoredPosition;
+            this.originalPosition = originalPosition ?? rectTransform.anchoredPosition;
             this.movementMultipliers[0] = (this.targetPosition - this.originalPosition).magnitude;
         }
 
@@ -118,7 +119,7 @@ namespace Transidious
         {
             this.type |= TransformType.Rotation;
             this.targetRotation = targetRotation;
-            this.originalRotation = originalRotation.HasValue ? originalRotation.Value : transform.rotation;
+            this.originalRotation = originalRotation ?? transform.rotation;
             //this.movementMultipliers[1] = (this.targetRotation - this.originalRotation).magnitude;
         }
 
@@ -127,7 +128,7 @@ namespace Transidious
             this.type |= TransformType.Scale;
             this.type &= ~TransformType.SizeDelta;
             this.targetScale = targetScale;
-            this.originalScale = originalScale.HasValue ? originalScale.Value : transform.localScale;
+            this.originalScale = originalScale ?? transform.localScale;
             this.movementMultipliers[2] = (this.targetScale - this.originalScale).magnitude;
         }
         public void SetTargetSizeDelta(Vector2 targetDelta, Vector2? originalDelta = null)
@@ -135,7 +136,7 @@ namespace Transidious
             this.type |= TransformType.SizeDelta;
             this.type &= ~TransformType.Scale;
             this.targetScale = targetDelta;
-            this.originalScale = originalDelta.HasValue ? originalDelta.Value : rectTransform.sizeDelta;
+            this.originalScale = originalDelta ?? rectTransform.sizeDelta;
             this.movementMultipliers[2] = (this.targetScale - this.originalScale).magnitude;
         }
 
@@ -148,6 +149,12 @@ namespace Transidious
         public void StartAnimation(float duration)
         {
             this.active = true;
+            
+            transform.position = originalPosition;
+            transform.rotation = originalRotation;
+            transform.localScale = originalScale;
+            
+            gameObject.SetActive(true);
 
             if (!duration.Equals(this.duration))
             {
@@ -159,13 +166,7 @@ namespace Transidious
             }
         }
 
-        RectTransform rectTransform
-        {
-            get
-            {
-                return (RectTransform)transform;
-            }
-        }
+        RectTransform rectTransform => (RectTransform)transform;
 
         void Swap<T>(ref T t1, ref T t2)
         {
@@ -207,13 +208,29 @@ namespace Transidious
             {
                 rectTransform.sizeDelta = originalScale;
             }
+
+            onFinish = null;
         }
 
-        void Awake()
+        public void Initialize()
         {
             this.duration = 1f;
-            this.movementMultipliers = new float[] { 1f, 1f, 1f };
+            this.movementMultipliers = new [] { 1f, 1f, 1f };
             this.executionMode = ExecutionMode.Manual;
+
+            var tf = transform;
+            this.originalPosition = tf.position;
+            this.originalRotation = tf.rotation;
+            this.originalScale = tf.localScale;
+
+        }
+
+        private void Awake()
+        {
+            if (movementMultipliers == null)
+            {
+                Initialize();
+            }
         }
 
         void Update()

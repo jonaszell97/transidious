@@ -178,7 +178,7 @@ namespace Transidious
 
         public override int Capacity => totalParkingSpots;
 
-        public override int Occupants
+        public override int Visitors
         {
             get => occupiedParkingSpots;
             set => occupiedParkingSpots = value;
@@ -618,8 +618,6 @@ namespace Transidious
                 case RenderingDistance.Near:
                     return lanes * laneWidth + 3f;
                 case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
                     return lanes * laneWidth;
                 }
 
@@ -630,10 +628,7 @@ namespace Transidious
                 case RenderingDistance.Near:
                     return lanes * laneWidth + 2f;
                 case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
                     return lanes * laneWidth;
-                case RenderingDistance.Farthest:
-                    return 0f;
                 }
 
                 break;
@@ -644,10 +639,7 @@ namespace Transidious
                 case RenderingDistance.Near:
                     return lanes * laneWidth + 1f;
                 case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
                     return lanes * laneWidth;
-                case RenderingDistance.Farthest:
-                    return 0f;
                 }
 
                 break;
@@ -658,9 +650,6 @@ namespace Transidious
                     return lanes * laneWidth;
                 case RenderingDistance.Far:
                     return lanes * laneWidth - 1f;
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
-                    return 0f;
                 }
 
                 break;
@@ -670,8 +659,6 @@ namespace Transidious
                 case RenderingDistance.Near:
                     return lanes * laneWidth * 0.3f;
                 case RenderingDistance.Far:
-                case RenderingDistance.VeryFar:
-                case RenderingDistance.Farthest:
                     return 0f;
                 }
 
@@ -683,14 +670,8 @@ namespace Transidious
                     return laneWidth * 2.2f;
                 case RenderingDistance.Far:
                     return laneWidth * 2f;
-                case RenderingDistance.VeryFar:
-                    return laneWidth * 1.8f;
-                case RenderingDistance.Farthest:
-                    return 0f;
                 }
 
-                break;
-            default:
                 break;
             }
 
@@ -746,64 +727,23 @@ namespace Transidious
             }
         }
 
-        public static RenderingDistance GetMaxVisibleRenderingDistance(Street.Type type)
-        {
-            switch (type)
-            {
-                case Street.Type.Highway:
-                case Street.Type.Primary:
-                case Street.Type.River:
-                    return RenderingDistance.Farthest;
-                case Street.Type.Secondary:
-                case Street.Type.Tertiary:
-                    return RenderingDistance.VeryFar;
-                case Street.Type.Residential:
-                    return RenderingDistance.Far;
-                default:
-                    return RenderingDistance.Near;
-
-            }
-
-            throw new ArgumentException($"Illegal enum value {type}");
-        }
-
-        public RenderingDistance GetMaxVisibleRenderingDistance()
-        {
-            return GetMaxVisibleRenderingDistance(street.type);
-        }
-
-        public static int totalVerts = 0;
-        public static LineRenderer tmpRenderer;
+#if UNITY_EDITOR
+        static LineRenderer _tmpRenderer;
 
         public Tuple<Mesh, Mesh> CreateMeshes()
         {
-            float lineLayer;
-            float lineOutlineLayer;
-
-            if (street.type == Street.Type.River)
-            {
-                lineLayer = Map.Layer(MapLayer.Rivers);
-                lineOutlineLayer = Map.Layer(MapLayer.RiverOutlines);
-            }
-            else
-            {
-                lineLayer = Map.Layer(MapLayer.Streets);
-                lineOutlineLayer = Map.Layer(MapLayer.StreetOutlines);
-            }
-
-            if (tmpRenderer == null)
+            if (_tmpRenderer == null)
             {
                 var tmpObj = new GameObject();
-                tmpRenderer = tmpObj.AddComponent<LineRenderer>();
-                tmpRenderer.enabled = false;
+                _tmpRenderer = tmpObj.AddComponent<LineRenderer>();
+                _tmpRenderer.enabled = false;
             }
 
-            tmpRenderer.positionCount = positions.Count;
-            tmpRenderer.SetPositions(
-                positions.Select(v => new Vector3(v.x, v.y, lineLayer)).ToArray());
+            _tmpRenderer.positionCount = positions.Count;
+            _tmpRenderer.SetPositions(positions.Select(v => new Vector3(v.x, v.y)).ToArray());
 
-            tmpRenderer.numCornerVertices = Settings.Current.qualitySettings.StreetCornerVerts;
-            tmpRenderer.numCapVertices = Settings.Current.qualitySettings.StreetCapVerts;
+            _tmpRenderer.numCornerVertices = Settings.Current.qualitySettings.StreetCornerVerts;
+            _tmpRenderer.numCapVertices = Settings.Current.qualitySettings.StreetCapVerts;
 
             // if (startIntersection.RelativePosition(this) == 0
             // || endIntersection.RelativePosition(this) == 0)
@@ -816,28 +756,28 @@ namespace Transidious
             // }
 
             var streetWidth = 2f * GetStreetWidth(RenderingDistance.Near);
-            tmpRenderer.startWidth = streetWidth;
-            tmpRenderer.endWidth = tmpRenderer.startWidth;
+            _tmpRenderer.startWidth = streetWidth;
+            _tmpRenderer.endWidth = _tmpRenderer.startWidth;
 
             var streetMesh = new Mesh();
-            tmpRenderer.BakeMesh(streetMesh);
+            _tmpRenderer.BakeMesh(streetMesh);
 
             Mesh outlineMesh = null;
             if (street.type != Street.Type.River)
             {
-                tmpRenderer.SetPositions(
-                    positions.Select(v => new Vector3(v.x, v.y, lineOutlineLayer)).ToArray());
+                _tmpRenderer.SetPositions(positions.Select(v => new Vector3(v.x, v.y)).ToArray());
 
                 var borderWidth = streetWidth + GetBorderWidth(RenderingDistance.Near);
-                tmpRenderer.startWidth = borderWidth;
-                tmpRenderer.endWidth = tmpRenderer.startWidth;
+                _tmpRenderer.startWidth = borderWidth;
+                _tmpRenderer.endWidth = _tmpRenderer.startWidth;
 
                 outlineMesh = new Mesh();
-                tmpRenderer.BakeMesh(outlineMesh);
+                _tmpRenderer.BakeMesh(outlineMesh);
             }
 
             return Tuple.Create(streetMesh, outlineMesh);
         }
+#endif
 
         public void UpdateMesh()
         {
@@ -862,156 +802,6 @@ namespace Transidious
                 tile.AddCollider(this, colliderPath, collisionRect, false);
             }
         }
-
-#if false
-        public void UpdateMeshOld()
-        {
-#if DEBUG
-            if (GameController.instance.ImportingMap)
-            {
-                return;
-            }
-#endif
-
-            float lineLayer;
-            float lineOutlineLayer;
-
-            if (street.type == Street.Type.River)
-            {
-                lineLayer = Map.Layer(MapLayer.Rivers);
-                lineOutlineLayer = Map.Layer(MapLayer.RiverOutlines);
-            }
-            else
-            {
-                lineLayer = Map.Layer(MapLayer.Streets);
-                lineOutlineLayer = Map.Layer(MapLayer.StreetOutlines);
-            }
-
-            streetMeshObj = new GameObject();
-            outlineMeshObj = new GameObject();
-
-            var streetTransform = streetMeshObj.transform;
-            streetTransform.SetParent(this.transform);
-
-            var outlineTransform = outlineMeshObj.transform;
-            outlineTransform.SetParent(this.transform);
-
-            var streetLine = streetMeshObj.AddComponent<LineRenderer>();
-            streetLine.positionCount = positions.Count;
-            streetLine.SetPositions(
-                positions.Select(v => new Vector3(v.x, v.y, lineLayer)).ToArray());
-
-            var streetWidth = 2f * GetStreetWidth(RenderingDistance.Near);
-            streetLine.startWidth = streetWidth;
-            streetLine.endWidth = streetLine.startWidth;
-
-            var outlineLine = outlineMeshObj.AddComponent<LineRenderer>();
-            outlineLine.positionCount = positions.Count;
-            outlineLine.SetPositions(
-                positions.Select(v => new Vector3(v.x, v.y, lineOutlineLayer)).ToArray());
-
-            var borderWidth = streetWidth + 2f * GetBorderWidth(RenderingDistance.Near);
-            outlineLine.startWidth = borderWidth;
-            outlineLine.endWidth = outlineLine.startWidth;
-
-            streetLine.numCornerVertices = 5;
-            outlineLine.numCornerVertices = 5;
-
-            if (startIntersection.RelativePosition(this) == 0
-            || endIntersection.RelativePosition(this) == 0)
-            {
-                streetLine.numCapVertices = 10;
-                outlineLine.numCapVertices = 10;
-            }
-
-#if DEBUG
-            if (GameController.instance.ImportingMap)
-            {
-                streetLine.sharedMaterial = GameController.instance.GetUnlitMaterial(
-                    Color.blue);
-                outlineLine.sharedMaterial = GameController.instance.GetUnlitMaterial(
-                    Color.red);
-
-                return;
-            }
-#endif
-
-            var collider = GetComponent<PolygonCollider2D>();
-            collider.pathCount = 0;
-
-            MeshBuilder.CreateLineCollider(positions, borderWidth * .5f, collider);
-            UpdateColor(GameController.instance.displayMode);
-
-            /*
-            var startCap = false; // startIntersection.intersectingStreets.Count == 1;
-            var endCap = false; // endIntersection.intersectingStreets.Count == 1;
-
-            foreach (var distVal in Enum.GetValues(typeof(RenderingDistance)))
-            {
-                var dist = (RenderingDistance)distVal;
-                if (!meshes.TryGetValue(dist, out StreetSegmentMeshInfo meshInfo))
-                {
-                    meshInfo = new StreetSegmentMeshInfo();
-                    meshes.Add(dist, meshInfo);
-                }
-
-                var width = GetStreetWidth(dist);
-                if (!width.Equals(0f))
-                {
-                    meshInfo.streetMesh = MeshBuilder.CreateSmoothLine(
-                        positions, width, 5, 0f, null, startCap, endCap);
-
-#if DEBUG
-                    if (dist == RenderingDistance.Near)
-                        totalVerts += meshInfo.streetMesh.triangles.Length;
-#endif
-                }
-
-                var borderWidth = GetBorderWidth(dist);
-                if (!borderWidth.Equals(0f))
-                {
-                    PolygonCollider2D collider = null;
-                    if (dist == RenderingDistance.Near)
-                    {
-                        collider = GetComponent<PolygonCollider2D>();
-                    }
-
-                    meshInfo.outlineMesh = MeshBuilder.CreateSmoothLine(
-                        positions, width + borderWidth, 5,
-                        0f, collider, startCap, endCap);
-
-#if DEBUG
-                    if (dist == RenderingDistance.Near)
-                        totalVerts += meshInfo.outlineMesh.triangles.Length;
-#endif
-                }
-
-                // foreach (var tile in street.map.GetTilesForObject(this))
-                // {
-                //     if (meshInfo.streetMesh != null)
-                //     {
-                //         if (dist == RenderingDistance.Near)
-                //             totalVerts += meshInfo.streetMesh.triangles.Length;
-
-                //         tile.mesh.AddMesh(GetStreetColor(dist),
-                //             meshInfo.streetMesh, dist, lineLayer);
-                //     }
-                //     if (meshInfo.outlineMesh != null)
-                //     {
-                //         if (dist == RenderingDistance.Near)
-                //             totalVerts += meshInfo.outlineMesh.triangles.Length;
-
-                //         tile.mesh.AddMesh(GetBorderColor(dist),
-                //             meshInfo.outlineMesh, dist, lineOutlineLayer);
-                //     }
-                // }
-            }
-
-            UpdateScale(street.map.input?.renderingDistance ?? RenderingDistance.Near);
-            */
-        }
-
-#endif
 
         public void UpdateColor(MapDisplayMode mode)
         {
@@ -1149,126 +939,6 @@ namespace Transidious
             this.CreateTramTrackMesh();
         }
 
-#if DEBUG
-        Mesh[] _laneMeshes = null;
-        List<Mesh> _startIntersectionMeshes = null;
-        List<Mesh> _endIntersectionMeshes = null;
-#endif
-
-        private void OnDrawGizmosSelected()
-        {
-            Gizmos.color = Color.red;
-            foreach (var pos in positions)
-            {
-                Gizmos.DrawSphere(pos, 3f);
-            }
-
-            Gizmos.color = Color.green;
-            Gizmos.DrawSphere(GetStartStopLinePosition(), 3f);
-
-            Gizmos.color = Color.black;
-            Gizmos.DrawSphere(GetEndStopLinePosition(), 3f);
-
-            // #if DRAW_STREETS
-            //             var trafficSim = street.map.Game.sim.trafficSim;
-            //             if (_laneMeshes == null)
-            //             {
-            //                 _laneMeshes = new Mesh[street.lanes];
-            //                 for (int lane = 0; lane < street.lanes; ++lane)
-            //                 {
-            //                     var path = trafficSim.GetPath(this, lane);
-            //                     _laneMeshes[lane] = MeshBuilder.CreateSmoothLine(new List<Vector3>(path), 1f);
-            //                 }
-            //             }
-            //             if (!street.isOneWay && startIntersection != null && _startIntersectionMeshes == null)
-            //             {
-            //                 _startIntersectionMeshes = new List<Mesh>();
-
-            //                 for (int lane = street.lanes / 2; lane < street.lanes; ++lane)
-            //                 {
-            //                     foreach (var outgoing in startIntersection.OutgoingStreets)
-            //                     {
-            //                         var path = trafficSim.GetPath(startIntersection, this, outgoing, lane);
-            //                         if (path == null)
-            //                         {
-            //                             continue;
-            //                         }
-
-            //                         _startIntersectionMeshes.Add(MeshBuilder.CreateSmoothLine(new List<Vector3>(path), .75f));
-            //                     }
-            //                 }
-            //             }
-            //             if (endIntersection != null && _endIntersectionMeshes == null)
-            //             {
-            //                 _endIntersectionMeshes = new List<Mesh>();
-
-            //                 for (int lane = 0; lane < street.lanes / 2; ++lane)
-            //                 {
-            //                     foreach (var outgoing in endIntersection.IncomingStreets)
-            //                     {
-            //                         var path = trafficSim.GetPath(endIntersection, outgoing, this, lane);
-            //                         if (path == null)
-            //                         {
-            //                             continue;
-            //                         }
-
-            //                         _endIntersectionMeshes.Add(MeshBuilder.CreateSmoothLine(new List<Vector3>(path), .75f));
-            //                     }
-            //                 }
-            //             }
-
-            //             for (int lane = 0; lane < street.lanes; ++lane)
-            //             {
-            //                 if (lane == 0)
-            //                 {
-            //                     Gizmos.color = Color.blue;
-            //                 }
-            //                 else
-            //                 {
-            //                     Gizmos.color = new Color(252f / 255f, 169f / 255f, 4f / 255f);
-            //                 }
-
-            //                 var mesh = _laneMeshes[lane];
-            //                 Gizmos.DrawMesh(mesh);
-            //             }
-
-            //             if (_startIntersectionMeshes != null)
-            //             {
-            //                 foreach (var mesh in _startIntersectionMeshes)
-            //                 {
-            //                     Gizmos.color = Color.green;
-            //                     Gizmos.DrawMesh(mesh);
-            //                 }
-            //             }
-
-            //             if (_endIntersectionMeshes != null)
-            //             {
-            //                 foreach (var mesh in _endIntersectionMeshes)
-            //                 {
-            //                     Gizmos.color = Color.yellow;
-            //                     Gizmos.DrawMesh(mesh);
-            //                 }
-            //             }
-            // #endif
-        }
-
-        void UpdateDirectionalArrows(RenderingDistance dist)
-        {
-            if (directionArrow == null)
-            {
-                return;
-            }
-
-            if (dist == RenderingDistance.Near)
-            {
-                directionArrow.SetActive(true);
-            }
-            else
-            {
-                directionArrow.SetActive(false);
-            }
-        }
-
         public float GetFontSize(float orthographicSize)
         {
             float min;
@@ -1297,8 +967,6 @@ namespace Transidious
 
         public void UpdateTextScale(RenderingDistance dist)
         {
-            UpdateDirectionalArrows(dist);
-
             if (streetName == null)
             {
                 return;
@@ -1313,13 +981,8 @@ namespace Transidious
                 case Street.Type.Primary:
                     setTextActive = true;
                     break;
-                default:
-                    break;
                 }
 
-                break;
-            case RenderingDistance.VeryFar:
-            case RenderingDistance.Farthest:
                 break;
             default:
                 setTextActive = true;
@@ -1333,7 +996,6 @@ namespace Transidious
                 var newFontSize = GetFontSize(Camera.main.orthographicSize);
                 var scale = newFontSize / streetName.textMesh.fontSize;
                 streetName.transform.localScale = new Vector3(scale, scale, 1f);
-                // streetName.textMesh.fontSize = GetFontSize(Camera.main.orthographicSize);
             }
             else
             {
@@ -1405,32 +1067,34 @@ namespace Transidious
             }
         }
 
-        private Text _debugText;
-        
-        public override void OnMouseDown()
-        {
-            base.OnMouseDown();
-            if (_debugText == null)
-            {
-                var startPos = positions.Count / 2;
-                var endPos = startPos < positions.Count - 1 ? startPos + 1 : startPos - 1;
-                var dir = (positions[endPos] - positions[startPos]);
-                var middlePos = positions[startPos] + dir * .5f;
-
-                _debugText = Game.loadedMap.CreateText(middlePos, name, Color.black, 3f);
-                
-                if (dir.x < 0f)
-                    dir = new Vector3(-dir.x, -dir.y, dir.z);
-
-                _debugText.transform.rotation = Quaternion.FromToRotation(Vector3.right, dir);
-            }
-
-            Debug.Log($"free parking spots: {occupiedParkingSpots} / {totalParkingSpots}");
-        }
+#if DEBUG
+        // private Text _debugText;
+        //
+        // public override void OnMouseDown()
+        // {
+        //     base.OnMouseDown();
+        //     if (_debugText == null)
+        //     {
+        //         var startPos = positions.Count / 2;
+        //         var endPos = startPos < positions.Count - 1 ? startPos + 1 : startPos - 1;
+        //         var dir = (positions[endPos] - positions[startPos]);
+        //         var middlePos = positions[startPos] + dir * .5f;
+        //
+        //         _debugText = Game.loadedMap.CreateText(middlePos, name, Color.black, 3f);
+        //
+        //         if (dir.x < 0f)
+        //             dir = new Vector3(-dir.x, -dir.y, dir.z);
+        //
+        //         _debugText.transform.rotation = Quaternion.FromToRotation(Vector3.right, dir);
+        //     }
+        //
+        //     Debug.Log($"free parking spots: {occupiedParkingSpots} / {totalParkingSpots}");
+        // }
 
         public override bool ShouldCheckMouseOver()
         {
             return true;
         }
+#endif
     }
 }

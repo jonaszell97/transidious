@@ -300,9 +300,9 @@ class DefaultArea : Area
             Tag<"amenity", "parking">,
         ], [.Way, .Relation]>,
 
-        NaturalFeatureInfo<.Residential, [
-            Tag<"landuse", "residential">,
-        ], [.Way, .Relation], true>,
+        // NaturalFeatureInfo<.Residential, [
+        //     Tag<"landuse", "residential">,
+        // ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.Railway, [
             Tag<"landuse", "railway">,
@@ -679,16 +679,5 @@ def Charlottenburg : DefaultArea {
     ], [
         Tag<"boundary", "administrative">,
         Tag<"admin_level", "10">,
-    ]>
-}
-
-def CharlottenburgWilmersdorf : DefaultArea {
-    country = "Deutschland"
-    boundary = BoundaryInfo<"Charlottenburg-Wilmersdorf", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "9">,
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "9">,
     ]>
 }

@@ -611,7 +611,11 @@ namespace Transidious
 
             done = true;
 
-            if (loadGame)
+            if (!AssetDatabase.IsValidFolder($"Assets/Resources/Maps/{map.name}/Backgrounds"))
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("LoadBackground");
+            }
+            else if (loadGame)
             {
                 UnityEngine.SceneManagement.SceneManager.LoadScene("MainGame");
             }

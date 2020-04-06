@@ -35,45 +35,15 @@ namespace Transidious
             this.AddVertexLoop(vertices);
         }
 
-        public bool Empty
-        {
-            get
-            {
-                return vertices.Count == 0;
-            }
-        }
+        public bool Empty => vertices.Count == 0;
 
-        public IEnumerable<Vector2[]> VertexLoops
-        {
-            get
-            {
-                return Outlines.Take(boundaryMarkersForPolygons.Count);
-            }
-        }
+        public IEnumerable<Vector2[]> VertexLoops => Outlines.Take(boundaryMarkersForPolygons.Count);
 
-        public IEnumerable<Vector2[]> Holes
-        {
-            get
-            {
-                return Outlines.Skip(boundaryMarkersForPolygons.Count);
-            }
-        }
+        public IEnumerable<Vector2[]> Holes => Outlines.Skip(boundaryMarkersForPolygons.Count);
 
-        public bool HasHoles
-        {
-            get
-            {
-                return holes.Count != 0;
-            }
-        }
+        public bool HasHoles => holes.Count != 0;
 
-        public bool Simple
-        {
-            get
-            {
-                return holes.Count == 0 && boundaryMarkersForPolygons.Count <= 1;
-            }
-        }
+        public bool Simple => holes.Count == 0 && boundaryMarkersForPolygons.Count <= 1;
 
         public Vector2[][] Outlines
         {

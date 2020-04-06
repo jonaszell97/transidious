@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Transidious
@@ -35,10 +35,11 @@ namespace Transidious
         public int capacity;
         public int occupants;
         public Rect collisionRect;
+        public List<Citizen> inhabitants;
 
         public override int Capacity => capacity;
 
-        public override int Occupants
+        public override int Visitors
         {
             get => occupants;
             set => occupants = value;
@@ -81,6 +82,19 @@ namespace Transidious
         {
             return GetDefaultCapacity(type, area);
         }
+
+        public void AddInhabitant(Citizen c)
+        {
+            if (inhabitants == null)
+            {
+                inhabitants = new List<Citizen>();
+            }
+
+            inhabitants.Add(c);
+            Debug.Assert(inhabitants.Count < capacity);
+        }
+
+        public int NumInhabitants => inhabitants?.Count ?? 0;
 
         public static int GetDefaultCapacity(Type type, float area)
         {
@@ -255,7 +269,7 @@ namespace Transidious
             return name;
         }
 
-        public void ActivateModal()
+        public override void ActivateModal()
         {
             var modal = GameController.instance.sim.buildingInfoModal;
             modal.SetBuilding(this);

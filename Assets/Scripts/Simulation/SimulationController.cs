@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Transidious.Simulation;
 
 namespace Transidious
 {
@@ -29,7 +30,7 @@ namespace Transidious
         /// The citizens.
         public Dictionary<uint, Citizen> citizens;
         public List<Citizen> citizenList;
-
+        
         /// List of cars.
         public Dictionary<uint, Car> cars;
 
@@ -75,8 +76,12 @@ namespace Transidious
         /// The simulation settings.
         public SimulationSettings settings;
         int citizenUpdateCnt = 0;
-        int ticksSinceLastCompleteUpdate = 0;
+        TimeSpan timeSinceLastCompleteUpdate = TimeSpan.Zero;
         bool newDay = false;
+
+#if UNITY_EDITOR
+        [SerializeField] private string _gameTime = "01/01/2000"; 
+#endif
 
         public delegate void TimedEvent();
 
@@ -94,10 +99,7 @@ namespace Transidious
 
         public DateTime GameTime
         {
-            get
-            {
-                return gameTime;
-            }
+            get => gameTime;
 
             set
             {
@@ -107,17 +109,16 @@ namespace Transidious
             }
         }
 
-        public int MinuteOfDay
-        {
-            get
-            {
-                return gameTime.Hour * 60 + gameTime.Minute;
-            }
-        }
+        public int MinuteOfDay => gameTime.MinuteOfDay();
 
         void Awake()
         {
+#if UNITY_EDITOR
+            this.gameTime = DateTime.Parse(_gameTime);
+#else
             this.gameTime = new DateTime(2000, 1, 1, 7, 0, 0);
+#endif
+
             this.simulationSpeed = 0;
             this.citizens = new Dictionary<uint, Citizen>();
             this.citizenList = new List<Citizen>();
@@ -125,7 +126,6 @@ namespace Transidious
             this.timeStringBuffer = new char[Translator.MaxTimeStringLength];
             this.scheduledEvents = new Dictionary<int, TimedEventInfo>();
             this.timedEvents = new List<Tuple<DateTime, TimedEvent>>();
-
             this.settings = new SimulationSettings();
 
             UpdateGameTimeString();
@@ -135,86 +135,37 @@ namespace Transidious
         {
             EventManager.current.RegisterEventListener(this);
             UpdateCitizenUI();
-            
-            /*var p0 = new Vector2(0,0);
-            var p1 = new Vector2(0, 1);
-            var p2 = new Vector2(1, 1);
-            
-            var angleDeg = Math.DirectionalAngleDeg(p1 - p0, p1 - p2);
-            Debug.Log($"angle: {angleDeg}");
-            
-            p0 = new Vector2(0,0);
-            p1 = new Vector2(0, 1);
-            p2 = new Vector2(0, 2);
-            
-            angleDeg = Math.DirectionalAngleDeg(p1 - p0, p1 - p2);
-            Debug.Log($"angle: {angleDeg}");
-            
-            p0 = new Vector2(0,0);
-            p1 = new Vector2(0, 1);
-            p2 = new Vector2(-1, 1);
-            
-            angleDeg = Math.DirectionalAngleDeg(p1 - p0, p1 - p2);
-            Debug.Log($"angle: {angleDeg}");*/
-
-            // var positions = new Vector2[]
-            // {
-            //     new Vector2(0f, 0f), 
-            //     new Vector2(0f, 20f),
-            //     new Vector2(15f, 40f),
-            //     new Vector2(15f, 60f),
-            //     new Vector2(0f, 80f),
-            //     new Vector2(15f, 100f),
-            // };
-            //
-            // var mesh = MeshBuilder.CreateSmoothLine(positions.Select(v => new Vector3(v.x - 1500f, v.y - 1500f, 0f)).ToArray(),
-            //     5f, 20, 0f);
-            //
-            // var obj = new GameObject();
-            // var r = obj.AddComponent<MeshRenderer>();
-            // var f = obj.AddComponent<MeshFilter>();
-            //
-            // f.mesh = mesh;
-            // r.material = GameController.instance.GetUnlitMaterial(Color.red);
         }
 
-        void FixedUpdate()
+        void Update()
         {
             if (!game.Playing)
             {
                 return;
             }
 
-            var minuteOfDay = this.MinuteOfDay;
-            bool isNewDay = UpdateGameTime();
+            var prevTime = gameTime;
 
+            bool isNewDay = UpdateGameTime();
             if (isNewDay)
             {
                 newDay = true;
                 game.mainUI.UpdateDate(gameTime);
             }
 
-            var threshold = System.Math.Min(citizenUpdateCnt + settings.maxCitizenUpdates,
-                                            citizenList.Count);
-
-            ++ticksSinceLastCompleteUpdate;
+            var threshold = System.Math.Min(citizenUpdateCnt + settings.maxCitizenUpdates, citizenList.Count);
+            timeSinceLastCompleteUpdate += gameTime - prevTime;
 
             for (; citizenUpdateCnt < threshold; ++citizenUpdateCnt)
             {
                 var citizen = citizenList[citizenUpdateCnt];
-                if (newDay)
-                {
-                    citizen.UpdateAge();
-                    citizen.UpdateDailySchedule(minuteOfDay);
-                }
-
-                citizen.Update(minuteOfDay, ticksSinceLastCompleteUpdate);
+                citizen.Update(gameTime, newDay, timeSinceLastCompleteUpdate);
             }
 
             if (citizenUpdateCnt == citizenList.Count)
             {
                 citizenUpdateCnt = 0;
-                ticksSinceLastCompleteUpdate = 0;
+                timeSinceLastCompleteUpdate = TimeSpan.Zero;
                 newDay = false;
             }
         }
@@ -523,29 +474,17 @@ namespace Transidious
 
         public Building RandomUnoccupiedBuilding(Building.Type type)
         {
-            if (!game.loadedMap.buildingsByType.TryGetValue(type, out List<Building> buildings))
+            var map = SaveManager.loadedMap;
+            var pos = new Vector2(UnityEngine.Random.Range(map.minX, map.maxX), 
+                                  UnityEngine.Random.Range(map.minY, map.maxY));
+
+            while (!map.IsPointOnMap(pos))
             {
-                return null;
+                pos = new Vector2(UnityEngine.Random.Range(map.minX, map.maxX), 
+                    UnityEngine.Random.Range(map.minY, map.maxY));
             }
-
-            var idx = UnityEngine.Random.Range(0, buildings.Count);
-            var building = buildings[idx];
-            var tries = 0;
-
-            while (building.capacity - building.occupants == 0)
-            {
-                idx = UnityEngine.Random.Range(0, buildings.Count);
-                building = buildings[idx];
-
-                // FIXME this might be a slight hack
-                if (tries++ == 100)
-                {
-                    ++building.capacity;
-                    break;
-                }
-            }
-
-            return building;
+            
+            return ClosestUnoccupiedBuilding(type, pos);
         }
 
         public Building ClosestUnoccupiedBuilding(Building.Type type, Vector2 pos)
@@ -561,7 +500,7 @@ namespace Transidious
             foreach (var building in buildings)
             {
                 var distance = (building.centroid - pos).sqrMagnitude;
-                if (distance < minDistance)
+                if (distance < minDistance && building.occupants < building.capacity)
                 {
                     minDistance = distance;
                     closestBuilding = building;
@@ -629,7 +568,7 @@ namespace Transidious
             for (int i = 0; i < amount; ++i)
             {
                 var citizen = CreateCitizen(false);
-                if (citizen.age >= 20 && UnityEngine.Random.value >= .3f)
+                if (citizen.age >= 18 && UnityEngine.Random.value >= .1f)
                 {
                     citizen.car = CreateCar(citizen, Vector3.zero, Utility.RandomColor);
                 }

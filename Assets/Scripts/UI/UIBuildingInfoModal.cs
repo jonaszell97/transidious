@@ -98,7 +98,7 @@ namespace Transidious
 
             var occupantsItem = panel.GetItem("Occupants");
             occupantsItem.Item1.SetKey(occupantsKey);
-            occupantsItem.Item2.text = building.occupants + " / " + building.capacity;
+            occupantsItem.Item2.text = building.NumInhabitants + " / " + building.capacity;
 
             this.panel.SetValue("Type", Translator.Get("ui:building:type:" + building.type.ToString()));
 

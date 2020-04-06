@@ -172,7 +172,7 @@ width_meters = to_meters(np.array([max_x, 0]), R, cos_center_lat)[0] - to_meters
 height_meters = to_meters(np.array([0, max_y]), R, cos_center_lat)[1] - to_meters(np.array([0, min_y]), R, cos_center_lat)[1]
 one_meter_scale = (max_x - min_x) / width_meters
 
-scaled_verts = scale_polygon(100 * one_meter_scale, vertices)
+scaled_verts = scale_polygon(10 * one_meter_scale, vertices)
 create_poly(scaled_verts, '../Resources/Poly/%s.poly' % (searchTerm),
             '../Resources/OSM/%s.osm.pbf' % (country),
             '../Resources/OSM/%s.osm.pbf' % (searchTerm))
@@ -200,13 +200,13 @@ create_poly(background_poly, '../Resources/Poly/Backgrounds/%s.poly' % (searchTe
 
 ###
 
-# scaled_verts = scale_polygon(300 * one_meter_scale, vertices)
-# display_poly(vertices, 'r')
-# display_poly(scaled_verts, 'g')
-# display_poly(background_poly, 'b')
-# plt.show()
+scaled_verts = scale_polygon(10 * one_meter_scale, vertices)
+display_poly(vertices, 'r')
+display_poly(scaled_verts, 'g')
+display_poly(background_poly, 'b')
+plt.show()
 
-# exit(0)
+exit(0)
 
 ###
 

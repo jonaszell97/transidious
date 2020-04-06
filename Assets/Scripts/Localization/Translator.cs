@@ -303,9 +303,16 @@ namespace Transidious
 
             var dateFormat = current.loadedLanguage.dateFormat;
             var hour = time.Hour;
-            var isAM = hour <= 12;
+            var isAM = hour <= 11;
 
-            hour %= dateFormat.hours;
+            if (hour == 0)
+            {
+                hour = 12;
+            }
+            else
+            {
+                hour %= dateFormat.hours;
+            }
 
             if (hour >= 10)
             {

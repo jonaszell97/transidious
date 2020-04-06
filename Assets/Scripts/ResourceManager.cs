@@ -9,6 +9,9 @@ namespace Transidious
         {
             /// Maximum number of active paths.
             public int maxActivePaths;
+
+            /// Maximum number of happiness change sprites.
+            public int maxTemporarySprites;
         }
 
         /// Static reference to the singleton instance.
@@ -26,14 +29,23 @@ namespace Transidious
         /// Number of total ActivePath instances.
         private int _activePaths;
 
+        /// Set of unused happiness sprites.
+        private Stack<SpriteRenderer> _unusedSprites;
+
+        /// Number of total ActivePath instances.
+        private int _temporarySprites;
+
         private void Awake()
         {
             resourceLimits = new ResourceLimits
             {
                 maxActivePaths = 10_000,
+                maxTemporarySprites = 10,
             };
 
             _unusedActivePaths = new Stack<ActivePath>();
+            _unusedSprites = new Stack<SpriteRenderer>();
+            
             instance = this;
         }
 
@@ -63,6 +75,35 @@ namespace Transidious
         {
             path.gameObject.SetActive(false);
             _unusedActivePaths.Push(path);
+        }
+        
+        /// Get an available ActivePath or instantiate one if none are available.
+        public SpriteRenderer GetTemporarySprite(bool force = false)
+        {
+            if (_unusedSprites.Count > 0)
+            {
+                return _unusedSprites.Pop();
+            }
+
+            if (!force && _temporarySprites >= resourceLimits.maxTemporarySprites)
+            {
+                return null;
+            }
+
+            ++_temporarySprites;
+
+            var obj = new GameObject();
+            obj.SetActive(false);
+
+            obj.AddComponent<TransformAnimator>();
+            return obj.AddComponent<SpriteRenderer>();
+        }
+
+        /// Reclaim an active path.
+        public void Reclaim(SpriteRenderer sr)
+        {
+            sr.gameObject.SetActive(false);
+            _unusedSprites.Push(sr);
         }
     }
 }

@@ -11,8 +11,6 @@ namespace Transidious
     {
         Near,
         Far,
-        VeryFar,
-        Farthest,
     }
 
     public enum InputEvent
@@ -78,9 +76,7 @@ namespace Transidious
         static float panSensitivityY = 0.5f;
         static float panSensitivityYMobile = panSensitivityY / 20f;
 
-        static readonly float farThreshold = 650f;
-        static readonly float veryFarThreshold = 2000f;
-        static readonly float farthestThreshold = 7000f;
+        static readonly float farRenderingThreshold = 650f;
         
         new public Camera camera;
 
@@ -300,9 +296,11 @@ namespace Transidious
 
         }
 
+        private static readonly string MouseAxisName = "Mouse ScrollWheel";
+        
         float GetMouseZoom()
         {
-            return Input.GetAxis("Mouse ScrollWheel");
+            return Input.GetAxis(MouseAxisName);
         }
 
         float GetPinchZoom()
@@ -358,12 +356,13 @@ namespace Transidious
             var prevSize = camera.orthographicSize;
             ZoomOrthoCamera(camera.ScreenToWorldPoint(Input.mousePosition), input * zoomSensitivity);
 
-            if (prevSize.Equals(camera.orthographicSize))
+            var newSize = camera.orthographicSize;
+            if (prevSize.Equals(newSize))
             {
                 return;
             }
 
-            ZoomLevelChanged();
+            ZoomLevelChanged(newSize);
         }
 
         public void SetZoomLevel(float zoom)
@@ -376,13 +375,16 @@ namespace Transidious
             }
 
             camera.orthographicSize = zoom;
-            ZoomLevelChanged();
+            
+            // Update min / max positions based on new zoom.
+            UpdateCameraBoundaries(controller.loadedMap);
+            ZoomLevelChanged(zoom);
         }
 
-        void ZoomLevelChanged()
+        void ZoomLevelChanged(float orthographicSize)
         {
             var currRenderingDist = renderingDistance;
-            UpdateRenderingDistance();
+            UpdateRenderingDistance(orthographicSize);
             controller.mainUI.UpdateScaleBar();
 
             FireEvent(InputEvent.Zoom);
@@ -404,7 +406,7 @@ namespace Transidious
             }
         }
 
-        public void UpdateRenderingDistance()
+        public void UpdateRenderingDistance(float orthographicSize)
         {
             if (controller.ImportingMap)
             {
@@ -412,23 +414,8 @@ namespace Transidious
                 return;
             }
 
-            float orthoSize = camera.orthographicSize;
-            if (orthoSize <= farThreshold)
-            {
-                renderingDistance = RenderingDistance.Near;
-            }
-            else if (orthoSize <= veryFarThreshold)
-            {
-                renderingDistance = RenderingDistance.Far;
-            }
-            else if (orthoSize <= farthestThreshold)
-            {
-                renderingDistance = RenderingDistance.VeryFar;
-            }
-            else
-            {
-                renderingDistance = RenderingDistance.Farthest;
-            }
+            renderingDistance = orthographicSize <= farRenderingThreshold
+                ? RenderingDistance.Near : RenderingDistance.Far;
         }
 
         private Vector3 mouseOrigin;
@@ -448,7 +435,7 @@ namespace Transidious
 
             if (isPanning)
             {
-                Vector3 diff = Camera.main.ScreenToViewportPoint(Input.mousePosition - mouseOrigin);
+                Vector3 diff = camera.ScreenToViewportPoint(Input.mousePosition - mouseOrigin);
 
                 position.x -= diff.x * panSensitivityX;
                 position.y -= diff.y * panSensitivityY;
@@ -496,37 +483,41 @@ namespace Transidious
         // Update the camera position.
         void UpdatePosition()
         {
-            Vector2 position = Camera.main.transform.position;
+            Vector2 position = camera.transform.position;
+            Vector2 newPosition;
+            
             switch (Application.platform)
             {
             case RuntimePlatform.IPhonePlayer:
             case RuntimePlatform.Android:
-                position = GetNewMobilePosition(position);
+                newPosition = GetNewMobilePosition(position);
                 break;
             default:
-                position = GetNewDesktopPosition(position);
+                newPosition = GetNewDesktopPosition(position);
                 break;
             }
 
-            SetCameraPosition(position);
-        }
-
-        public void SetCameraPosition(Vector2 position)
-        {
-            if (position == (Vector2)camera.transform.position)
+            if (newPosition.Equals(position))
             {
                 return;
             }
 
-            if (controller != null)
+            followObject = null;
+            moving = false;
+            
+            SetCameraPosition(newPosition);
+        }
+
+        public void SetCameraPosition(Vector2 position, bool clampToMapBounds = true)
+        {
+            var tf = camera.transform;
+            if (clampToMapBounds)
             {
                 position.x = Mathf.Clamp(position.x, minX, maxX);
                 position.y = Mathf.Clamp(position.y, minY, maxY);
             }
 
-            camera.transform.position = new Vector3(position.x, position.y,
-                                                    camera.transform.position.z);
-
+            tf.position = new Vector3(position.x, position.y, tf.position.z);
             FireEvent(InputEvent.Pan);
         }
 
@@ -645,7 +636,7 @@ namespace Transidious
             camera = Camera.main;
             aspectRatio = camera.aspect;
 
-            UpdateRenderingDistance();
+            UpdateRenderingDistance(camera.orthographicSize);
 
             if (aspectRatio > 1.0f)
             {
@@ -726,13 +717,23 @@ namespace Transidious
             }
         }
 
+#if UNITY_EDITOR
+        private static readonly float _resolutionCheckInterval = 1000f;
+        private float _timeSinceLastResolutionCheck = 0f;
+        
+#endif
+
         void Update()
         {
 #if UNITY_EDITOR
-            if (!_screenRes.Equals(Screen.currentResolution))
+            _timeSinceLastResolutionCheck += Time.deltaTime;
+            if (_timeSinceLastResolutionCheck >= _resolutionCheckInterval)
             {
-                Debug.Log("changed screen resolution");
-                UpdateZoomLevels(controller.loadedMap);
+                _timeSinceLastResolutionCheck = 0f;
+                if (!_screenRes.Equals(Screen.currentResolution))
+                {
+                    UpdateZoomLevels(controller.loadedMap);
+                }
             }
 #endif
 
@@ -759,18 +760,21 @@ namespace Transidious
 
             if (moving)
             {
-                var newPos = Vector2.MoveTowards(camera.transform.position, movingTowards, movementSpeed * Time.deltaTime);
+                var currentPos = camera.transform.position;
+                var delta = movementSpeed * Time.deltaTime;
+                
+                var newPos = Vector2.MoveTowards(currentPos, movingTowards, delta);
                 if (newPos.Equals(movingTowards))
                 {
                     moving = false;
                 }
 
-                SetCameraPosition(newPos);
+                SetCameraPosition(newPos, false);
             }
             else if (followObject != null)
             {
                 Vector2 pos = followObject.transform.position;
-
+            
                 if (followingMode == FollowingMode.Center)
                 {
                     SetCameraPosition(pos);

@@ -257,8 +257,8 @@ namespace Transidious
 
             if (amount == 1)
             {
-                game.input.SetZoomLevel(50f);
-                game.input.MoveTowards(citizens.First().currentPosition);
+                game.input.SetZoomLevel(InputController.minZoom);
+                game.input.MoveTowards(citizens.First().Home.centroid);
             }
         }
 
@@ -363,17 +363,30 @@ namespace Transidious
 
         public void HandleLocateCommand(string name)
         {
-            var citizens = game.sim.citizens.Where(c => c.Value.Name == name);
-            if (citizens.Count() == 0)
+            var citizen = game.sim.citizens.FirstOrDefault(c => c.Value.Name == name).Value;
+            if (citizen == null)
             {
-                Log($"citizen '{name}' not found");
+                var obj = SaveManager.loadedMap.GetMapObject(name);
+                if (obj == null)
+                {
+                    Log($"'{name}' not found");
+                    return;
+                }
+                
+                Log($"located '{name}'");
+
+                game.input.SetZoomLevel(50f);
+                game.input.MoveTowards(obj.Centroid);
+                obj.ActivateModal();
+
                 return;
             }
 
             Log($"located '{name}'");
 
             game.input.SetZoomLevel(50f);
-            game.input.MoveTowards(citizens.First().Value.currentPosition);
+            game.input.MoveTowards(citizen.currentPosition);
+            citizen.ActivateModal();
         }
 
         public static void Log(string msg)

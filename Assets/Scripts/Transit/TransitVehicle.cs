@@ -156,17 +156,17 @@ namespace Transidious
                   {
                       nextStopTime = nextDep.Add(line.stopDuration);
 
-                      var diff = sim.GameTime - nextDep;
-                      if (System.Math.Abs(diff.TotalSeconds) >= 100)
-                      {
-                          // GameController.instance.EnterPause();
-                          GameController.instance.input.MoveTowards(transform.position, 100f);
-                          Debug.LogError($"Diff: {diff.TotalSeconds:n2}sec, next dep {nextDep.ToLongTimeString()} <-> actual {sim.GameTime.ToLongTimeString()}");
-                      }
-                      else
-                      {
-                          Debug.Log($"Diff: {diff.TotalSeconds:n2}sec");
-                      }
+                      // var diff = sim.GameTime - nextDep;
+                      // if (System.Math.Abs(diff.TotalSeconds) >= 100)
+                      // {
+                      //     // GameController.instance.EnterPause();
+                      //     GameController.instance.input.MoveTowards(transform.position, 100f);
+                      //     Debug.LogError($"Diff: {diff.TotalSeconds:n2}sec, next dep {nextDep.ToLongTimeString()} <-> actual {sim.GameTime.ToLongTimeString()}");
+                      // }
+                      // else
+                      // {
+                      //     Debug.Log($"Diff: {diff.TotalSeconds:n2}sec");
+                      // }
                   }
                   else
                   {
@@ -192,15 +192,15 @@ namespace Transidious
                   var key = Tuple.Create(line, stop);
                   if (lastStopAtStation.ContainsKey(key))
                   {
-                      var diff = (nextDep - lastStopAtStation[key]).TotalMinutes;
-                      if ((diff - line.schedule.dayInterval) >= .5)
-                      {
-                          Debug.LogError($"diff: {(diff - line.schedule.dayInterval):n2}min, time between stops: {(sim.GameTime - lastStopAtStation[key]).TotalMinutes}m");
-                      }
-                      else
-                      {
-                          Debug.Log($"time between stops: {(sim.GameTime - lastStopAtStation[key]).TotalMinutes}m");
-                      }
+                      // var diff = (nextDep - lastStopAtStation[key]).TotalMinutes;
+                      // if ((diff - line.schedule.dayInterval) >= .5)
+                      // {
+                      //     Debug.LogError($"diff: {(diff - line.schedule.dayInterval):n2}min, time between stops: {(sim.GameTime - lastStopAtStation[key]).TotalMinutes}m");
+                      // }
+                      // else
+                      // {
+                      //     Debug.Log($"time between stops: {(sim.GameTime - lastStopAtStation[key]).TotalMinutes}m");
+                      // }
 
                       lastStopAtStation[key] = sim.GameTime;
                   }
@@ -249,7 +249,7 @@ namespace Transidious
             if (nextStopTime.HasValue && sim.GameTime >= nextStopTime.Value)
             {
                 var diff = SimulationController.GameTimeToRealTime(sim.GameTime - nextStopTime.Value);
-                Debug.Log($"diff: {diff}");
+                // Debug.Log($"diff: {diff}");
 
                 nextStopTime = null;
 

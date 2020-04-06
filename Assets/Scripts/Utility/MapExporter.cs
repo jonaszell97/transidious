@@ -668,6 +668,10 @@ namespace Transidious
 
         Mesh GetCutoutMesh(MapTile tile, PSLG pslg, bool fast)
         {
+            // Cutouts don't work well for polygons with holes.
+            if (!pslg.Simple)
+                return CreateMesh(pslg, fast);
+
             if (!_tileCutouts.TryGetValue(tile, out PSLG cutout))
             {
                 cutout = new PSLG();
@@ -848,10 +852,10 @@ namespace Transidious
                     {
                         name = $"{key.Item1} {ColorUtility.ToHtmlStringRGB(key.Item2)} {key.Item3:n0}"
                     };
-                    
+
                     obj.transform.SetParent(tile.meshes.transform);
                     obj.transform.position = new Vector3(0f, 0f, key.Item3);
-                    
+
                     var mr = obj.AddComponent<MeshRenderer>();
                     mr.material = GameController.instance.GetUnlitMaterial(key.Item2);
                     
@@ -901,6 +905,8 @@ namespace Transidious
                 {
                     SaveMesh(mesh.sharedMesh, $"{meshPath}/{tile.x}_{tile.y}_{mesh.name}.asset");
                 }
+
+                tile.gameObject.SetActive(false);
             }
 
             // Save boundary outline.
