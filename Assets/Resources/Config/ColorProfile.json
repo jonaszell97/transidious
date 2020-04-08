@@ -55,7 +55,7 @@
         },
         {
             "key": "transit.defaultIntercityRail",
-            "value": "#F00"
+            "value": "#25660A"
         },
         {
             "key": "transit.defaultFerry",

@@ -168,21 +168,10 @@ namespace Transidious
         /// Distance of the stop line from the middle of the intersection.
         public float EndStopLineDistance = 10f;
 
-        /// The number of available parking spots on this street.
-        public int totalParkingSpots;
-
         /// The number of used parking spots on this street.
         public int occupiedParkingSpots;
         
         public Distance distance => Distance.FromMeters(length);
-
-        public override int Capacity => totalParkingSpots;
-
-        public override int Visitors
-        {
-            get => occupiedParkingSpots;
-            set => occupiedParkingSpots = value;
-        }
 
         public void Initialize(Street street, int position, List<Vector3> positions,
                                StreetIntersection startIntersection,
@@ -257,7 +246,7 @@ namespace Transidious
             }
 
             UpdateDrivablePositions();
-            totalParkingSpots = (int)Mathf.Floor(length / 15f) * 2;
+            Capacity = (int)Mathf.Floor(length / 15f) * 2;
         }
 
         void UpdateDrivablePositions()

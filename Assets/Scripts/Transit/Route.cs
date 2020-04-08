@@ -358,12 +358,14 @@ namespace Transidious
             }
         }
 
-        private static Line selectedLine => GameController.instance.transitEditor.lineInfoModal.selectedLine;
+        private static Line selectedLine => MainUI.instance.lineModal.selectedLine;
 
         public static void DeactivateGradient()
         {
             if (_lineGradient != null)
+            {
                 _lineGradient.gameObject.SetActive(false);
+            }
         }
 
         public override void OnMouseDown()
@@ -380,7 +382,7 @@ namespace Transidious
                 return;
             }
 
-            var modal = GameController.instance.transitEditor.lineInfoModal;
+            var modal = MainUI.instance.lineModal;
             if (modal.selectedLine != null && modal.selectedLine != this.line)
             {
                 DeactivateGradient();
@@ -390,7 +392,7 @@ namespace Transidious
             modal.SetLine(line, this);
 
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            modal.modal.EnableAt(pos);
+            modal.modal.Enable();
         }
     }
 }

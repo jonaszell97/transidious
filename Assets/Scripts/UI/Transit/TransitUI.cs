@@ -149,6 +149,7 @@ namespace Transidious
         void HandleNoLineDataAvailable()
         {
             this.noLineDataText.enabled = true;
+            this.miniMap.gameObject.SetActive(false);
             this.editLineButton.interactable = false;
             this.deleteLineButton.interactable = false;
         }
@@ -156,16 +157,19 @@ namespace Transidious
         void HandleLineDataAvailable()
         {
             this.noLineDataText.enabled = false;
+            this.miniMap.gameObject.SetActive(true);
             this.editLineButton.interactable = true;
             this.deleteLineButton.interactable = true;
         }
 
         public void ShowTransitSystemOverviewPanel(TransitType type)
         {
+            miniMap.Initialize();
+            
             if (transitSystemEntries == null)
             {
                 transitSystemEntries = new Dictionary<Line, UILineListEntry>();
-                lineSearchField.onValueChanged.AddListener((string value) =>
+                lineSearchField.onValueChanged.AddListener(value =>
                 {
                     var searchResults = 0;
                     UILineListEntry firstResult = null;
@@ -256,12 +260,12 @@ namespace Transidious
                     continue;
                 }
 
-                var obj = Instantiate(transitLineEntryPrefab);
-                obj.transform.SetParent(this.lineOverviewList.transform, false);
-
+                var obj = Instantiate(transitLineEntryPrefab, this.lineOverviewList.transform, false);
+                
                 entry = obj.GetComponent<UILineListEntry>();
                 transitSystemEntries.Add(line, entry);
 
+                entry.Initialize();
                 entry.SetLine(line);
                 entry.onSelect.AddListener(() => this.DrawLine(entry));
 

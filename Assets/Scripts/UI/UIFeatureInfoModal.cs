@@ -14,8 +14,15 @@ namespace Transidious
         /// The info panel.
         public UIInfoPanel panel;
 
-        void Start()
+#if DEBUG
+        private UIInfoPanel debugPanel;
+#endif
+
+        public void Initialize()
         {
+            modal.Initialize();
+            panel.Initialize();
+            
             var maxCharacters = 100;
             modal.titleInput.interactable = true;
 
@@ -45,9 +52,17 @@ namespace Transidious
                 this.feature = null;
             });
 
+            panel.AddItem("Type", "ui:feature:type");
+            panel.AddItem("Occupants", "ui:building:visitors");
+
 #if DEBUG
-            panel.AddItem("Area", "ui:feature:area");
-            panel.AddItem("Triangles", "Triangles");
+            debugPanel = Instantiate(ResourceManager.instance.infoPanelCardPrefab, panel.transform.parent)
+                .GetComponent<UIInfoPanel>();
+            
+            debugPanel.Initialize();
+            
+            debugPanel.AddItem("Area", "ui:feature:area");
+            debugPanel.AddItem("Triangles", "Triangles");
 #endif
         }
 
@@ -56,12 +71,12 @@ namespace Transidious
             this.feature = feature;
             this.modal.SetTitle(feature.name);
 
-            this.panel.SetValue("Occupants", feature.visitors + " / " + feature.capacity);
+            this.panel.SetValue("Occupants", feature.Visitors + " / " + feature.Capacity);
             this.panel.SetValue("Type", Translator.Get("ui:feature:type:" + feature.type.ToString()));
 
 #if DEBUG
-            this.panel.SetValue("Area", feature.area.ToString() + " m²");
-            this.panel.SetValue("Triangles", (feature.mesh?.triangles.Length ?? 0).ToString());
+            this.debugPanel.SetValue("Area", feature.area.ToString() + " m²");
+            this.debugPanel.SetValue("Triangles", (feature.mesh?.triangles.Length ?? 0).ToString());
 #endif
         }
     }

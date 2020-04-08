@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -46,7 +48,14 @@ namespace Transidious
         Vector2[][] outlinePositions { get; }
 
         int Capacity { get; }
-        int Visitors { get; set; }
+        int ResidentCount { get; }
+        int VisitorCount { get; }
+        SortedSet<Citizen> Residents { get; }
+        SortedSet<Citizen> Visitors { get; }
+        void AddResident(Citizen c);
+        void RemoveResident(Citizen c);
+        void AddVisitor(Citizen c);
+        void RemoveVisitor(Citizen c);
 
         void Hide();
         void Show(RenderingDistance renderingDistance);
@@ -71,6 +80,9 @@ namespace Transidious
         public Vector2[][] outlinePositions { get; set; }
         public float area;
         public Vector2 centroid;
+
+        public SortedSet<Citizen> Residents { get; private set; }
+        public SortedSet<Citizen> Visitors { get; private set; }
 
         public int Id
         {
@@ -100,13 +112,10 @@ namespace Transidious
 
         public Vector2 Centroid => centroid;
 
-        public virtual int Capacity => 0;
+        public int Capacity { get; protected set; }
+        public int VisitorCount => Visitors?.Count ?? 0;
+        public int ResidentCount => Residents?.Count ?? 0;
 
-        public virtual int Visitors
-        {
-            get => 0;
-            set { }
-        }
 
         protected void Initialize(MapObjectKind kind, int id,
                                   float area = 0f,
@@ -125,6 +134,37 @@ namespace Transidious
         public virtual Color GetColor()
         {
             return Color.clear;
+        }
+
+        public void AddResident(Citizen c)
+        {
+            if (Residents == null)
+            {
+                Residents = new SortedSet<Citizen>();
+            }
+
+            Residents.Add(c);
+            Debug.Assert(Residents.Count <= Capacity);
+        }
+
+        public void RemoveResident(Citizen c)
+        {
+            Residents.Remove(c);
+        }
+
+        public void AddVisitor(Citizen c)
+        {
+            if (Visitors == null)
+            {
+                Visitors = new SortedSet<Citizen>();
+            }
+
+            Visitors.Add(c);
+        }
+
+        public void RemoveVisitor(Citizen c)
+        {
+            Visitors.Remove(c);
         }
 
         public Serialization.MapObject ToProtobuf()
@@ -217,6 +257,9 @@ namespace Transidious
         public new Collider2D collider;
         public Vector2 centroid;
         public Vector2[][] outlinePositions { get; }
+        
+        public SortedSet<Citizen> Residents { get; private set; }
+        public SortedSet<Citizen> Visitors { get; private set; }
 
         protected void Initialize(MapObjectKind kind, int id, Vector2 centroid)
         {
@@ -259,12 +302,39 @@ namespace Transidious
 
         public Vector2 Centroid => centroid;
         
-        public virtual int Capacity => 0;
-
-        public virtual int Visitors
+        public int Capacity { get; protected set; }
+        public int VisitorCount => Visitors?.Count ?? 0;
+        public int ResidentCount => Residents?.Count ?? 0;
+        
+        public void AddResident(Citizen c)
         {
-            get => 0;
-            set {}
+            if (Residents == null)
+            {
+                Residents = new SortedSet<Citizen>();
+            }
+
+            Residents.Add(c);
+            Debug.Assert(Residents.Count <= Capacity);
+        }
+
+        public void RemoveResident(Citizen c)
+        {
+            Residents.Remove(c);
+        }
+
+        public void AddVisitor(Citizen c)
+        {
+            if (Visitors == null)
+            {
+                Visitors = new SortedSet<Citizen>();
+            }
+
+            Visitors.Add(c);
+        }
+
+        public void RemoveVisitor(Citizen c)
+        {
+            Visitors.Remove(c);
         }
 
         public void Hide()

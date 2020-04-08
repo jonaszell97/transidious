@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using Transidious.UI;
 
 namespace Transidious
 {
@@ -14,8 +16,24 @@ namespace Transidious
         /// The info panel.
         public UIInfoPanel panel;
 
-        void Start()
+        /// The resident list.
+        public UICitizenList residentList;
+
+        /// The current visitor list.
+        public UICitizenList visitorList;
+
+#if DEBUG
+        private UIInfoPanel debugPanel;
+#endif
+
+        public void Initialize()
         {
+            modal.Initialize();
+            panel.Initialize();
+
+            residentList.Initialize("ui:building:residents");
+            visitorList.Initialize("ui:building:visitors");
+
             var maxCharacters = 100;
             modal.titleInput.interactable = true;
 
@@ -45,17 +63,25 @@ namespace Transidious
                 this.building = null;
             });
 
-#if DEBUG
-            panel.AddItem("Area", "ui:building:area");
-            panel.AddItem("Triangles", "Triangles");
-            panel.AddItem("Vertices", "Vertices");
+            panel.AddItem("Type", "ui:building:type");
+            panel.AddItem("Occupants", "ui:building:occupants");
 
-            panel.AddClickableItem("Delete", "Delete", Color.red, () =>
+#if DEBUG
+            debugPanel = Instantiate(ResourceManager.instance.infoPanelCardPrefab, panel.transform.parent)
+                .GetComponent<UIInfoPanel>();
+            
+            debugPanel.Initialize();
+            
+            debugPanel.AddItem("Area", "ui:building:area");
+            debugPanel.AddItem("Triangles", "Triangles");
+            debugPanel.AddItem("Vertices", "Vertices");
+
+            debugPanel.AddClickableItem("Delete", "Delete", Color.red, () =>
             {
                 this.building.DeleteMesh();
             });
 
-            panel.AddClickableItem("Simplify", "Simplify", Color.green, () =>
+            debugPanel.AddClickableItem("Simplify", "Simplify", Color.green, () =>
             {
                 this.building.DeleteMesh();
 
@@ -96,16 +122,41 @@ namespace Transidious
                 break;
             }
 
+            residentList.title.SetKey(occupantsKey);
+
             var occupantsItem = panel.GetItem("Occupants");
-            occupantsItem.Item1.SetKey(occupantsKey);
-            occupantsItem.Item2.text = building.NumInhabitants + " / " + building.capacity;
+            occupantsItem.Item3.SetKey(occupantsKey);
+            occupantsItem.Item4.text = $"{building.ResidentCount} / {building.Capacity}";
 
             this.panel.SetValue("Type", Translator.Get("ui:building:type:" + building.type.ToString()));
 
+            var residents = building.Residents;
+            var visitors = building.Visitors;
+
+            if (residents == null && visitors == null)
+            {
+                residentList.gameObject.SetActive(false);
+                visitorList.gameObject.SetActive(false);
+            }
+            else
+            {
+                if (residents != null)
+                {
+                    residentList.gameObject.SetActive(true);
+                    residentList.SetCitizens(residents);
+                }
+                else if (visitors != null)
+                {
+                    visitorList.gameObject.SetActive(true);
+                    visitorList.SetCitizens(visitors);
+                }
+            }
+
+
 #if DEBUG
-            this.panel.SetValue("Area", building.area.ToString() + " m²");
-            this.panel.SetValue("Triangles", (building.mesh?.triangles.Length ?? 0).ToString());
-            this.panel.SetValue("Vertices", (building.mesh?.vertexCount ?? 0).ToString());
+            this.debugPanel.SetValue("Area", building.area.ToString() + " m²");
+            this.debugPanel.SetValue("Triangles", (building.mesh?.triangles.Length ?? 0).ToString());
+            this.debugPanel.SetValue("Vertices", (building.mesh?.vertexCount ?? 0).ToString());
 #endif
         }
     }

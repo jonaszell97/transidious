@@ -300,10 +300,8 @@ namespace Transidious
                 return;
             }
 
-            var modal = GameController.instance.sim.transitVehicleModal;
+            var modal = MainUI.instance.transitVehicleModal;
             modal.SetVehicle(this);
-
-            modal.modal.PositionAt(transform.position);
             modal.modal.Enable();
         }
     }

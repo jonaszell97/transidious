@@ -1530,11 +1530,9 @@ namespace Transidious
 
         public void ActivateModal()
         {
-            var modal = GameController.instance.transitEditor.stopInfoModal;
+            var modal = MainUI.instance.stopModal;
             modal.SetStop(this);
-
-            var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            modal.modal.EnableAt(pos);
+            modal.modal.Enable();
         }
 
         public override void OnMouseDown()

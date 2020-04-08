@@ -1,4 +1,5 @@
-using System.Collections;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -10,21 +11,6 @@ namespace Transidious
         /// The modal component.
         public UIModal modal;
 
-        /// The line logo.
-        public UILineLogo logo;
-
-        /// The text components.
-        public TMP_Text[] textComponents;
-
-        /// The line color button.
-        public Toggle lineColorToggle;
-
-        /// The line color button image.
-        public Image lineColorButtonImg;
-
-        /// The line view component.
-        public UILineView lineView;
-
         /// The color picker component.
         public ColorPicker colorPicker;
 
@@ -34,12 +20,29 @@ namespace Transidious
         /// The info panel.
         public UIInfoPanel infoPanel;
 
-        void Start()
+        /// The line view card.
+        public Transform lineViewCard;
+        
+        /// The line view stops that we have already created.
+        private List<Tuple<GameObject, Image, Image, UILocationLink, Image, Transform>> lineViewStops;
+
+        /// Prefab for line view stops.
+        [SerializeField] private GameObject lineViewStopPrefab;
+        
+        /// Prefab for line view crossing lines.
+        [SerializeField] private GameObject lineViewCrossingLinesPrefab;
+
+        public void Initialize()
         {
-            // FIXME remove once root order bug is fixed
-            infoPanel.transform.SetSiblingIndex(0);
-            lineView.transform.SetSiblingIndex(1);
-            colorPicker.transform.SetSiblingIndex(2);
+            lineViewStops = new List<Tuple<GameObject, Image, Image, UILocationLink, Image, Transform>>();
+            
+            modal.Initialize();
+            infoPanel.Initialize();
+
+            infoPanel.AddItem("WeeklyPassengers", "ui:transit:weekly_passengers", 
+                              "", "Sprites/ui_citizen_head");
+
+            infoPanel.AddItem("TripsSaved", "ui:transit:trips_saved");
 
             var maxCharacters = 32;
             modal.titleInput.interactable = true;
@@ -67,39 +70,26 @@ namespace Transidious
             modal.onClose.AddListener(() =>
             {
                 Route.DeactivateGradient();
+                
                 selectedLine.material.color = selectedLine.color;
                 selectedLine = null;
             });
 
-            colorPicker.onChange.AddListener((Color c) =>
+            modal.onTabChange = tab =>
+            {
+                if (tab == 1)
+                {
+                    colorPicker.SetColor(selectedLine.color);
+                }
+            };
+
+            colorPicker.Initialize();
+            colorPicker.onChange.AddListener(c =>
             {
                 Route.DeactivateGradient();
                 
                 selectedLine.SetColor(c);
-                logo.SetColor(c);
-                lineColorButtonImg.color = c;
-
-                var textColor = Math.ContrastColor(c);
-                var textComponent = logo.GetComponentInChildren<TMPro.TMP_Text>();
-                textComponent.color = textColor;
-                textComponent.outlineColor = textColor;
-            });
-
-            lineColorToggle.onValueChanged.AddListener((bool active) =>
-            {
-                if (active)
-                {
-                    lineView.gameObject.SetActive(false);
-                    colorPicker.gameObject.SetActive(true);
-
-                    // We need to this next frame, otherwise the position of the color picker won't be up-to-date. 
-                    UpdateColorPickerNextFrame(colorPicker);
-                }
-                else
-                {
-                    lineView.gameObject.SetActive(true);
-                    colorPicker.gameObject.SetActive(false);
-                }
+                UpdateColor();
             });
 
 #if DEBUG
@@ -107,9 +97,127 @@ namespace Transidious
 #endif
         }
 
+        void UpdateColor()
+        {
+            modal.headerImage.color = selectedLine.color;
+            modal.titleInput.textComponent.color = Math.ContrastColor(selectedLine.color);
+        }
+
+        void UpdateLineView()
+        {
+            var stops = selectedLine.stops;
+            while (lineViewStops.Count < stops.Count)
+            {
+                var inst = Instantiate(lineViewStopPrefab, lineViewCard);
+                var tf = inst.transform;
+
+                var data = Tuple.Create(
+                    inst,
+                    tf.GetChild(0).GetComponent<Image>(),
+                    tf.GetChild(1).GetComponent<Image>(),
+                    tf.GetChild(2).GetComponent<UILocationLink>(),
+                    tf.GetChild(3).GetComponent<Image>(),
+                    tf.GetChild(4).transform);
+
+                data.Item5.GetComponent<Button>().onClick.AddListener(() =>
+                {
+                    data.Item4.buttonComponent.onClick.Invoke();
+                });
+                
+                lineViewStops.Add(data);
+            }
+
+            var crossingLines = new List<Line>();
+            for (var i = 0; i < lineViewStops.Count; ++i)
+            {
+                var data = lineViewStops[i];
+                if (i >= stops.Count)
+                {
+                    data.Item1.SetActive(false);
+                    continue;
+                }
+
+                var stop = stops[i];
+                data.Item2.color = selectedLine.color;
+                data.Item3.color = selectedLine.color;
+                
+                if (i == 0)
+                {
+                    data.Item2.enabled = false;
+                    data.Item3.enabled = true;
+                }
+                else if (i == stops.Count - 1)
+                {
+                    data.Item2.enabled = true;
+                    data.Item3.enabled = false;
+                }
+                else
+                {
+                    data.Item2.enabled = true;
+                    data.Item3.enabled = true;
+                }
+
+                data.Item4.textComponent.text = stop.name;
+                data.Item4.SetLocation(stop.location);
+
+                foreach (var (line, _) in stop.lineData)
+                {
+                    if (line == selectedLine)
+                        continue;
+                    
+                    crossingLines.Add(line);
+                }
+    
+                if (crossingLines.Count == 0 && i > 0 && i < stops.Count - 1)
+                {
+                    data.Item5.sprite = SpriteManager.GetSprite("Sprites/stop_small_rect");
+                    data.Item5.color = selectedLine.color;
+                    data.Item6.gameObject.SetActive(false);
+
+                    var rt = data.Item5.rectTransform;
+                    rt.localScale = new Vector3(1f, 1.5f, 1f);
+                }
+                else
+                {
+                    data.Item5.sprite = SpriteManager.GetSprite("Sprites/stop_ring");
+                    data.Item5.color = Color.white;
+                    
+                    var rt = data.Item5.rectTransform;
+                    rt.localScale = Vector3.one;
+
+                    var crossingLineObjects = data.Item6.childCount;
+                    for (var j = 0; j < crossingLines.Count - crossingLineObjects; ++j)
+                    {
+                        Instantiate(lineViewCrossingLinesPrefab, data.Item6);
+                    }
+
+                    for (var j = 0; j < data.Item6.childCount; ++j)
+                    {
+                        var obj = data.Item6.GetChild(j);
+                        if (j >= crossingLines.Count)
+                        {
+                            obj.gameObject.SetActive(false);
+                            continue;
+                        }
+
+                        obj.gameObject.SetActive(true);
+                        obj.GetComponent<UILineLogo>().SetLine(crossingLines[j]);
+                    }
+                }
+                
+                data.Item1.SetActive(true);
+                crossingLines.Clear();
+            }
+            
+            
+        }
+
         public void SetLine(Line line, Route route = null)
         {
             this.selectedLine = line;
+            modal.titleInput.text = line.name;
+            
+            UpdateColor();
 
             Stop closestStop;
             if (route)
@@ -132,25 +240,14 @@ namespace Transidious
                 closestStop = line.stops[line.stops.Count / 2];
             }
 
-            lineView.UpdateLayout(line, closestStop, 5);
-            lineView.gameObject.SetActive(true);
-            colorPicker.gameObject.SetActive(false);
+            UpdateLineView();
 
-            lineColorButtonImg.color = line.color;
-            logo.SetLine(line);
-            
             infoPanel.SetValue("WeeklyPassengers", line.weeklyPassengers.ToString());
             infoPanel.SetValue("TripsSaved", "0%");
 
 #if DEBUG
             infoPanel.SetValue("NumVehicles", line.vehicles.Count.ToString());
 #endif
-        }
-
-        void UpdateColorPickerNextFrame(ColorPicker colorPicker)
-        {
-            colorPicker.UpdateBoundingBoxes(true);
-            colorPicker.SetColor(selectedLine.color);
         }
     }
 }

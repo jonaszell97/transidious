@@ -400,7 +400,7 @@ namespace Transidious
             // Leave the parking lot (if necessary).
             if (_drivingState == null && car.parkingLot != null)
             {
-                --car.parkingLot.Visitors;
+                car.parkingLot.RemoveResident(citizen);
             }
 
             // Initialize car sprite.
@@ -426,7 +426,7 @@ namespace Transidious
                 {
                     if (dstParkingLot != null)
                     {
-                        ++dstParkingLot.Visitors;
+                        dstParkingLot.AddResident(citizen);
                         car.parkingLot = dstParkingLot;
                     }
 
@@ -545,38 +545,6 @@ namespace Transidious
         /**
          * UI Callbacks
          */
-
-        public void Highlight()
-        {
-            if (IsDriving)
-            {
-                //spriteRenderer.sprite = SpriteManager.GetSprite($"Sprites/car{citizen.car.model}");
-            }
-        }
-
-        public void Unhighlight()
-        {
-            if (IsDriving)
-            {
-                //spriteRenderer.sprite = SpriteManager.GetSprite($"Sprites/car{citizen.car.model}_no_outline");
-            }
-        }
-
-        void UpdateUIPosition()
-        {
-            var modal = GameController.instance.sim.citizenModal;
-            modal.modal.PositionAt(transform.position);
-        }
-
-        void OnMouseEnter()
-        {
-            this.Highlight();
-        }
-
-        void OnMouseExit()
-        {
-            this.Unhighlight();
-        }
 
         public void OnMouseDown()
         {

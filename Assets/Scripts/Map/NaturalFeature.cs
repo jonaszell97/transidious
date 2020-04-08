@@ -26,16 +26,6 @@ namespace Transidious
 
         public Type type;
         public Mesh mesh;
-        public int visitors;
-        public int capacity;
-
-        public override int Capacity => capacity;
-
-        public override int Visitors
-        {
-            get => visitors;
-            set => visitors = value;
-        }
 
         public void UpdateMesh(Map map)
         {
@@ -74,9 +64,7 @@ namespace Transidious
             this.name = name;
             this.type = type;
             this.mesh = mesh;
-
-            this.visitors = 0;
-            this.capacity = GetDefaultCapacity();
+            this.Capacity = GetDefaultCapacity();
         }
 
         public override Color GetColor()
@@ -178,7 +166,6 @@ namespace Transidious
                 MapObject = base.ToProtobuf(),
                 // Mesh = mesh?.ToProtobuf2D() ?? new Serialization.Mesh2D(),
                 Type = (Serialization.NaturalFeature.Types.Type)type,
-                Visitors = visitors,
             };
         }
 
@@ -190,18 +177,17 @@ namespace Transidious
                 feature.MapObject.Area, feature.MapObject.Centroid.Deserialize(),
                 (int)feature.MapObject.Id);
 
-            newFeature.visitors = feature.Visitors;
             newFeature.Deserialize(feature.MapObject);
             return newFeature;
         }
 
         public override void ActivateModal()
         {
-            var modal = GameController.instance.sim.featureModal;
+            var modal = MainUI.instance.featureModal;
             modal.SetFeature(this);
 
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            modal.modal.EnableAt(pos);
+            modal.modal.Enable();
         }
 
         public override void OnMouseDown()

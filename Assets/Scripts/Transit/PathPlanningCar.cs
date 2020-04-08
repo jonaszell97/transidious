@@ -1153,10 +1153,7 @@ namespace Transidious.PathPlanning
                 if (f.type != NaturalFeature.Type.Parking)
                     return false;
 
-                if (f.visitors == f.capacity)
-                    return false;
-
-                return true;
+                return f.ResidentCount < f.Capacity;
             });
 
             Debug.Assert(found, "no parking lot found");

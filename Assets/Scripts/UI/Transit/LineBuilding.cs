@@ -308,29 +308,21 @@ namespace Transidious
                 game.mainUI.transitUI.confirmLineCreationInfo.AddItem("num_stops", "ui:line:num_stops", "", new UIInfoPanel.IconSettings
                 {
                     icon = SpriteManager.GetSprite("Sprites/stop_ring"),
-                    scale = .5f,
-                    margin = 7.5f,
                 });
 
                 game.mainUI.transitUI.confirmLineCreationInfo.AddItem("total_length", "ui:line:total_length", "", new UIInfoPanel.IconSettings
                 {
                     icon = SpriteManager.GetSprite("Sprites/ui_length"),
-                    scale = .5f,
-                    margin = 7.5f,
                 });
 
                 game.mainUI.transitUI.confirmLineCreationInfo.AddItem("construction_cost", "ui:construction_cost", "", new UIInfoPanel.IconSettings
                 {
                     icon = SpriteManager.GetSprite("Sprites/bulldozer"),
-                    scale = .5f,
-                    margin = 7.5f,
                 });
 
                 game.mainUI.transitUI.confirmLineCreationInfo.AddItem("monthly_cost", "ui:monthly_cost", "", new UIInfoPanel.IconSettings
                 {
                     icon = SpriteManager.GetSprite("Sprites/money"),
-                    scale = .5f,
-                    margin = 7.5f,
                 });
 
                 confirmationPanelInitialized = true;
@@ -536,9 +528,9 @@ namespace Transidious
             // game.transitEditor.InitOverlappingRoutes();
             game.transitEditor.CheckOverlappingRoutes(crossedStreets);
 
-            var modal = GameController.instance.transitEditor.lineInfoModal;
+            var modal = MainUI.instance.lineModal;
             modal.SetLine(newLine, newLine.routes.First());
-            modal.modal.EnableAt(newLine.stops.First().location);
+            modal.modal.Enable();
         }
 
         protected void DrawExistingPath()

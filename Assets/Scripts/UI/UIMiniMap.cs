@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.UI.Extensions;
+using UnityEngine.UIElements;
+using Image = UnityEngine.UI.Image;
 
 namespace Transidious
 {
@@ -10,12 +11,11 @@ namespace Transidious
         public static Sprite mapSprite;
         [SerializeField] UILineRenderer lineRenderer;
 
-        void Start()
+        public void Initialize()
         {
             if (mapSprite == null)
             {
-                Debug.LogWarning("no mini map texture loaded");
-                return;
+                mapSprite = SpriteManager.GetSprite($"Maps/{SaveManager.loadedMap.name}/minimap");
             }
 
             var img = GetComponent<Image>();
@@ -24,28 +24,58 @@ namespace Transidious
             lineRenderer.gameObject.SetActive(false);
         }
 
+        Vector3 GetCoordinate(Map map, float resolutionX, float resolutionY, float xOffset, float yOffset, Vector2 worldPos)
+        {
+            var baseX = map.minX;
+            var baseY = map.minY;
+            var width = map.width;
+            var height = map.height;
+
+            return new Vector2(
+                xOffset + ((worldPos.x - baseX) / width) * resolutionX,
+                yOffset + ((worldPos.y - baseY) / height) * resolutionY
+            );
+        }
+
         public void DrawLine(IReadOnlyList<Vector3> worldPath, Color c, float lineWidth = .4f)
         {
-            var rt = GetComponent<RectTransform>();
-            var rect = rt.rect;
+            var rect = GetComponent<RectTransform>().rect;
             var map = GameController.instance.loadedMap;
 
             var width = rect.width;
             var height = rect.height;
 
-            var minX = 0f;
-            var minY = (height - width) * .5f;
+            var xOffset = 0f;
+            var yOffset = 0f;
 
-            height -= (height - width);
+            // Account for gap caused by map aspect ratio.
+            if (map.width >= map.height)
+            {
+                yOffset += ((map.width - map.height) / map.width) * height * .5f;
+            }
+            else
+            {
+                xOffset += ((map.height - map.width) / map.height) * width * .5f;
+            }
+
+            // Account for gap caused by the rect transform aspect ratio.
+            if (rect.width >= rect.height)
+            {
+                xOffset += (rect.width - rect.height) * .5f;
+            }
+            else
+            {
+                yOffset += (rect.height - rect.width) * .5f;
+            }
+
+            var resolutionX = width - xOffset * 2f;
+            var resolutionY = height - yOffset * 2f;
 
             var screenPositions = new Vector2[worldPath.Count];
             for (var i = 0; i < worldPath.Count; ++i)
             {
                 var pt = worldPath[i];
-                screenPositions[i] = new Vector3(
-                    minX + (map.minX + pt.x / map.width) * width,
-                    minY + (map.minY + pt.y / map.height) * height
-                );
+                screenPositions[i] = GetCoordinate(map, resolutionX, resolutionY, xOffset, yOffset, pt);
             }
 
             lineRenderer.color = c;

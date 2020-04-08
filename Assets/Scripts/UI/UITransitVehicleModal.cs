@@ -15,14 +15,23 @@ namespace Transidious
         /// The info panel.
         public UIInfoPanel panel;
 
-        void Start()
+        public void Initialize()
         {
+            modal.Initialize();
+            panel.Initialize();
+            
             modal.titleInput.interactable = false;
             modal.onClose.AddListener(() =>
             {
                 this.vehicle = null;
                 GameController.instance.input.StopFollowing();
             });
+
+            panel.AddItem("Passengers", "ui:transit:passengers", "", "Sprites/ui_citizen_head");
+            
+            var ns = panel.AddItem("NextStop", "ui:transit:next_stop", 
+                                                            "", "Sprites/stop_ring");
+            ns.Item4.gameObject.AddComponent<UILocationLink>();
         }
 
         public void SetVehicle(TransitVehicle vehicle)

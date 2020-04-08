@@ -131,6 +131,7 @@ namespace Transidious
             this.originalScale = originalScale ?? transform.localScale;
             this.movementMultipliers[2] = (this.targetScale - this.originalScale).magnitude;
         }
+
         public void SetTargetSizeDelta(Vector2 targetDelta, Vector2? originalDelta = null)
         {
             this.type |= TransformType.SizeDelta;
@@ -149,11 +150,6 @@ namespace Transidious
         public void StartAnimation(float duration)
         {
             this.active = true;
-            
-            transform.position = originalPosition;
-            transform.rotation = originalRotation;
-            transform.localScale = originalScale;
-            
             gameObject.SetActive(true);
 
             if (!duration.Equals(this.duration))
@@ -203,8 +199,7 @@ namespace Transidious
             {
                 transform.localScale = originalScale;
             }
-
-            if (type.HasFlag(TransformType.Scale))
+            else if (type.HasFlag(TransformType.SizeDelta))
             {
                 rectTransform.sizeDelta = originalScale;
             }
@@ -217,20 +212,6 @@ namespace Transidious
             this.duration = 1f;
             this.movementMultipliers = new [] { 1f, 1f, 1f };
             this.executionMode = ExecutionMode.Manual;
-
-            var tf = transform;
-            this.originalPosition = tf.position;
-            this.originalRotation = tf.rotation;
-            this.originalScale = tf.localScale;
-
-        }
-
-        private void Awake()
-        {
-            if (movementMultipliers == null)
-            {
-                Initialize();
-            }
         }
 
         void Update()

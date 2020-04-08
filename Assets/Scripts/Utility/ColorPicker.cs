@@ -92,7 +92,7 @@ namespace Transidious
                 return;
             }
 
-            selectedColorText.SetTextWithoutNotify("#" + ColorUtility.ToHtmlStringRGB(SelectedColor));
+            selectedColorText.SetTextWithoutNotify(text);
         }
 
         Texture2D CreateHueTexture()
@@ -233,7 +233,7 @@ namespace Transidious
             this.pos = screenPos;
         }
 
-        void Awake()
+        public void Initialize()
         {
             this.canvas = GetComponentInParent<Canvas>();
             this.onChange = new ChangeEvent();
@@ -250,17 +250,14 @@ namespace Transidious
             {
                 this.newlySelected = true;
             });
-        }
-
-        void Start()
-        {
+            
             satValMask.GetComponent<Draggable>().dragHandler = this.OnSatValCursorDrag;
             hueMask.GetComponent<Draggable>().dragHandler = this.OnHueCursorDrag;
 
             satValMask.GetComponent<Clickable>().mouseDown = this.OnSatValCursorDrag;
             hueMask.GetComponent<Clickable>().mouseDown = this.OnHueCursorDrag;
 
-            UpdateBoundingBoxes();
+            UpdateBoundingBoxes(true);
             UpdateHue(0f);
             UpdateSaturationAndBrightness(0f, 0f);
         }

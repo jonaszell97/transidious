@@ -343,7 +343,7 @@ namespace Transidious.Simulation
             }
 
             var location = GetDestination(citizen, type);
-
+            
             _pathPlanner.Reset(currentTime);
             var path = _pathPlanner.FindClosestPath(
                 SaveManager.loadedMap, 

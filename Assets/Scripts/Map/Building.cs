@@ -32,18 +32,9 @@ namespace Transidious
         public string number;
 
         public Type type;
-        public int capacity;
         public int occupants;
         public Rect collisionRect;
         public List<Citizen> inhabitants;
-
-        public override int Capacity => capacity;
-
-        public override int Visitors
-        {
-            get => occupants;
-            set => occupants = value;
-        }
 
         public void Initialize(Map map, Type type,
                                StreetSegment street, string numberStr,
@@ -63,7 +54,7 @@ namespace Transidious
             this.street = street;
             this.number = numberStr;
             this.occupants = 0;
-            this.capacity = GetDefaultCapacity(type, area);
+            this.Capacity = GetDefaultCapacity(type, area);
             this.number = numberStr;
             this.mesh = mesh;
             this.name = name;
@@ -82,19 +73,6 @@ namespace Transidious
         {
             return GetDefaultCapacity(type, area);
         }
-
-        public void AddInhabitant(Citizen c)
-        {
-            if (inhabitants == null)
-            {
-                inhabitants = new List<Citizen>();
-            }
-
-            inhabitants.Add(c);
-            Debug.Assert(inhabitants.Count < capacity);
-        }
-
-        public int NumInhabitants => inhabitants?.Count ?? 0;
 
         public static int GetDefaultCapacity(Type type, float area)
         {
@@ -271,11 +249,11 @@ namespace Transidious
 
         public override void ActivateModal()
         {
-            var modal = GameController.instance.sim.buildingInfoModal;
+            var modal = MainUI.instance.buildingModal;
             modal.SetBuilding(this);
 
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            modal.modal.EnableAt(pos);
+            modal.modal.Enable();
         }
 
         public override void OnMouseDown()

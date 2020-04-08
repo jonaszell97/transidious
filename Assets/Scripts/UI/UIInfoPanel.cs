@@ -9,16 +9,8 @@ namespace Transidious
 {
     public class UIInfoPanel : MonoBehaviour
     {
-        public TextAlignmentOptions labelAlignment = TextAlignmentOptions.Left;
-        public TextAlignmentOptions valueAlignment = TextAlignmentOptions.Right;
-        public int fontSize = -1;
-
-        Dictionary<string, UIText> titles;
-        Dictionary<string, TMP_Text> values;
-
-        [SerializeField] GameObject titlePrefab;
-        [SerializeField] GameObject valuePrefab;
-        [SerializeField] GameObject iconPrefab;
+        Dictionary<string, Tuple<GameObject, Image, UIText, TMP_Text>> items;
+        [SerializeField] private GameObject itemPrefab;
 
         private void Awake()
         {
@@ -27,77 +19,54 @@ namespace Transidious
 
         public void Initialize()
         {
-            if (titles != null)
+            if (items != null)
             {
                 return;
             }
 
-            titles = new Dictionary<string, UIText>();
-            values = new Dictionary<string, TMP_Text>();
+            items = new Dictionary<string, Tuple<GameObject, Image, UIText, TMP_Text>>();
 
-            foreach (var txt in GetComponentsInChildren<UIText>(true))
+            var tf = transform;
+            var childCount = tf.childCount;
+
+            for (var i = 0; i < childCount; ++i)
             {
-                if (fontSize != -1)
-                {
-                    txt.textMesh.fontSizeMax = fontSize;
-                    txt.textMesh.fontSizeMin = System.Math.Min(fontSize, txt.textMesh.fontSizeMin);
-                }
-
-                txt.textMesh.alignment = labelAlignment;
-                titles.Add(txt.name, txt);
-            }
-
-            foreach (var txt in GetComponentsInChildren<TMP_Text>(true))
-            {
-                if (txt.name.Contains("Value"))
-                {
-                    if (fontSize != -1)
-                    {
-                        txt.fontSizeMax = fontSize;
-                        txt.fontSizeMin = System.Math.Min(fontSize, txt.fontSizeMin);
-                    }
-
-                    txt.alignment = valueAlignment;
-                    values.Add(txt.name.Replace("Value", ""), txt);
-                }
+                var item = tf.GetChild(i);
+                var icon = item.GetChild(0).GetComponent<Image>();
+                var key = item.GetChild(1).GetComponent<UIText>();
+                var value = item.GetChild(2).GetComponent<TMP_Text>();
+                
+                items.Add(item.name, Tuple.Create(item.gameObject, icon, key, value));
             }
         }
 
         public void HideItem(string name)
         {
             var item = GetItem(name);
-            if (item.Item1 != null)
-            {
-                item.Item1.gameObject.SetActive(false);
-                item.Item2.gameObject.SetActive(false);
-            }
+            item.Item1.SetActive(false);
         }
 
         public void ShowItem(string name)
         {
             var item = GetItem(name);
-            if (item.Item1 != null)
-            {
-                item.Item1.gameObject.SetActive(true);
-                item.Item2.gameObject.SetActive(true);
-            }
+            item.Item1.SetActive(true);
         }
 
-        public Tuple<UIText, TMP_Text> GetItem(string name)
+        public Tuple<GameObject, Image, UIText, TMP_Text> GetItem(string name)
         {
-            return Tuple.Create(GetTitle(name), GetValue(name));
+            return items[name];
         }
 
         public bool HasItem(string name)
         {
-            return titles.ContainsKey(name);
+            return items.ContainsKey(name);
         }
 
         public UIText GetTitle(string name)
         {
-            if (titles.TryGetValue(name, out UIText txt))
+            if (items.TryGetValue(name, out var item))
             {
-                return txt;
+                return item.Item3;
             }
 
             return null;
@@ -105,9 +74,9 @@ namespace Transidious
 
         public TMP_Text GetValue(string name)
         {
-            if (values.TryGetValue(name, out TMP_Text txt))
+            if (items.TryGetValue(name, out var item))
             {
-                return txt;
+                return item.Item4;
             }
 
             return null;
@@ -134,8 +103,6 @@ namespace Transidious
         public class IconSettings
         {
             public Sprite icon;
-            public float scale = .75f;
-            public float margin = 5;
             public Color color = Color.white;
         }
 
@@ -150,63 +117,40 @@ namespace Transidious
             btn.onClick.AddListener(callback);
         }
 
-        public void AddItem(string name, string titleKey, string valueText = "", IconSettings icon = null)
+        public Tuple<GameObject, Image, UIText, TMP_Text> AddItem(string name, string titleKey, string valueText, string iconName)
         {
-            var titleObj = this.InstantiateInactive(titlePrefab);
-            var uiTitle = titleObj.GetComponent<UIText>();
-            uiTitle.SetKey(titleKey);
-
-            uiTitle.transform.SetParent(this.transform);
-            uiTitle.transform.localScale = new Vector3(1f, 1f, 1f);
-            uiTitle.transform.position = new Vector3(uiTitle.transform.position.x,
-                                                     uiTitle.transform.position.y,
-                                                     this.transform.position.z);
-
-            uiTitle.gameObject.SetActive(true);
-
-            if (icon != null)
+            return AddItem(name, titleKey, valueText, new IconSettings
             {
-                var iconObj = Instantiate(iconPrefab);
-                var img = iconObj.GetComponent<Image>();
-                img.sprite = icon.icon;
-                img.preserveAspect = true;
-                img.color = icon.color;
-                img.transform.SetParent(uiTitle.transform, false);
+                icon = SpriteManager.GetSprite(iconName),
+            });
+        }
 
-                var height = GetComponent<GridLayoutGroup>().cellSize.y * icon.scale;
-                
-                var rc = img.GetComponent<RectTransform>();
-                rc.sizeDelta = new Vector2(height, height);
-                rc.anchoredPosition = new Vector2(height / 2f + icon.margin, rc.anchoredPosition.y);
+        public Tuple<GameObject, Image, UIText, TMP_Text> AddItem(string name, string titleKey, string valueText = "", IconSettings iconInfo = null)
+        {
+            var item = Instantiate(itemPrefab, this.transform, false).transform;
+            var icon = item.GetChild(0).GetComponent<Image>();
+            var key = item.GetChild(1).GetComponent<UIText>();
+            var value = item.GetChild(2).GetComponent<TMP_Text>();
 
-                uiTitle.textMesh.margin = new Vector4(height + icon.margin * 2, 0f, 0f, 0f);
+            key.SetKey(titleKey);
+            
+            if (iconInfo != null)
+            {
+                icon.sprite = iconInfo.icon;
+                icon.preserveAspect = true;
+                icon.color = iconInfo.color;
             }
-
-            var valueObj = Instantiate(valuePrefab);
-            var value = valueObj.GetComponent<TMP_Text>();
-
-            value.transform.SetParent(this.transform);
-            value.transform.localScale = new Vector3(1f, 1f, 1f);
-            value.transform.position = new Vector3(uiTitle.transform.position.x,
-                                                   uiTitle.transform.position.y,
-                                                   this.transform.position.z);
+            else
+            {
+                icon.enabled = false;
+            }
 
             value.text = valueText;
 
-            if (fontSize != -1)
-            {
-                uiTitle.textMesh.fontSizeMax = fontSize;
-                uiTitle.textMesh.fontSizeMin = System.Math.Min(fontSize, uiTitle.textMesh.fontSizeMin);
+            var result = Tuple.Create(item.gameObject, icon, key, value);
+            items.Add(name, result);
 
-                value.fontSizeMax = fontSize;
-                value.fontSizeMin = System.Math.Min(fontSize, value.fontSizeMin);
-            }
-
-            uiTitle.textMesh.alignment = labelAlignment;
-            value.alignment = valueAlignment;
-
-            titles.Add(name, uiTitle);
-            values.Add(name, value);
+            return result;
         }
     }
 }

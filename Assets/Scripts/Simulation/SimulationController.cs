@@ -52,18 +52,6 @@ namespace Transidious
         /// The traffic simulator.
         public TrafficSimulator trafficSim;
 
-        /// The building modal.
-        public UIBuildingInfoModal buildingInfoModal;
-
-        /// The natural feature modal.
-        public UIFeatureInfoModal featureModal;
-
-        /// The citizen modal.
-        public UICitizenInfoModal citizenModal;
-
-        /// The transit vehicle modal.
-        public UITransitVehicleModal transitVehicleModal;
-
         /// Scratch buffer used for time string building.
         char[] timeStringBuffer;
 
@@ -500,7 +488,7 @@ namespace Transidious
             foreach (var building in buildings)
             {
                 var distance = (building.centroid - pos).sqrMagnitude;
-                if (distance < minDistance && building.occupants < building.capacity)
+                if (distance < minDistance && building.occupants < building.Capacity)
                 {
                     minDistance = distance;
                     closestBuilding = building;

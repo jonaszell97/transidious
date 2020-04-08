@@ -344,8 +344,6 @@ namespace Transidious
 
             yield return DeserializeGameObjects(map, serializedMap);
             yield return InitializeGameObjects(map, serializedMap);
-
-            LoadMiniMapSprite(map);
         }
 
         static IEnumerator DeserializeGameObjects(Map map, Serialization.Map serializedMap)
@@ -392,12 +390,6 @@ namespace Transidious
             {
                 building.street = map.GetMapObject<StreetSegment>(building.streetID);
             }
-        }
-
-        static void LoadMiniMapSprite(Map map)
-        {
-            var sprite = SpriteManager.GetSprite($"Maps/{map.name}/minimap");
-            UIMiniMap.mapSprite = sprite;
         }
 
         public static IEnumerator LoadSave(Map map, string mapName, bool pauseAfterLoad = false)

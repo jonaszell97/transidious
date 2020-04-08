@@ -11,11 +11,14 @@ namespace Transidious
         /// The linked location.
         [SerializeField] Vector2 linkedLocation;
 
+        /// The linked citizen.
+        private Citizen linkedCitizen;
+
         /// The button component.
         public Button buttonComponent;
 
         /// The text mesh component.
-        [SerializeField] TMP_Text textComponent;
+        public TMP_Text textComponent;
 
         /// The movement speed.
         [SerializeField] float movementSpeed = 5f;
@@ -46,7 +49,8 @@ namespace Transidious
                 GameController.instance.input.StopFollowing();
                 moving = true;
 
-                var distance = ((Vector2)linkedLocation - (Vector2)Camera.main.transform.position).magnitude;
+                var loc = linkedCitizen?.currentPosition ?? linkedLocation;
+                var distance = (loc - (Vector2)Camera.main.transform.position).magnitude;
                 UpdateSpeed(distance);
             });
         }
@@ -54,6 +58,11 @@ namespace Transidious
         public void SetLocation(Vector3 linkedLocation)
         {
             this.linkedLocation = linkedLocation;
+        }
+        
+        public void SetLocation(Citizen c)
+        {
+            this.linkedCitizen = c;
         }
 
         public void Disable()
@@ -81,7 +90,8 @@ namespace Transidious
                 return;
             }
 
-            var newPos = Vector2.MoveTowards(Camera.main.transform.position, linkedLocation, movementSpeed * Time.deltaTime);
+            var loc = linkedCitizen?.currentPosition ?? linkedLocation;
+            var newPos = Vector2.MoveTowards(Camera.main.transform.position, loc, movementSpeed * Time.deltaTime);
             if (newPos.Equals(linkedLocation))
             {
                 moving = false;

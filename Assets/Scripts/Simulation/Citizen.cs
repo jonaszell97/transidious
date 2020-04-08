@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace Transidious
 {
-    public class Citizen
+    public class Citizen : IComparable
     {
         public struct HappinessInfluence
         {
@@ -461,8 +461,27 @@ namespace Transidious
                 this.happiness = happiness.Value;
             }
 
+            if (!money.HasValue)
+            {
+                this.money = (decimal)Random.Range(0f, 1000f);
+            }
+            else
+            {
+                this.money = money.Value;
+            }
+
+            if (this.money < 200m)
+            {
+                // 1% per day
+                AddHappinessInfluence("Poorness", -(1f / (24f * 60f * 60f)), null, 
+                                      -1f, 0f, 70f);
+            }
+
+            transitPreferences = CreateRandomPreferences();
+            AssignOccupation(occupation);
+
             var currentHour = sim.GameTime.Hour;
-            if (occupation != Occupation.Retired && occupation != Occupation.Unemployed)
+            if (this.occupation != Occupation.Retired && this.occupation != Occupation.Unemployed)
             {
                 if (currentHour < 8)
                 {
@@ -485,26 +504,7 @@ namespace Transidious
                 remainingWork = 0f;
                 energy = 100f;
             }
-
-            if (!money.HasValue)
-            {
-                this.money = (decimal)Random.Range(0f, 1000f);
-            }
-            else
-            {
-                this.money = money.Value;
-            }
-
-            if (this.money < 200m)
-            {
-                // 1% per day
-                AddHappinessInfluence("Poorness", -(1f / (24f * 60f * 60f)), null, 
-                                      -1f, 0f, 70f);
-            }
-
-            transitPreferences = CreateRandomPreferences();
-            AssignOccupation(occupation);
-
+            
             this.schedule = new Simulation.Schedule(this, null);
             // if (this.occupation == Occupation.Kindergardener || this.occupation == Occupation.Retired)
             // {
@@ -535,7 +535,7 @@ namespace Transidious
                 return;
             }
 
-            home.AddInhabitant(this);
+            home.AddResident(this);
             this.pointsOfInterest.Add(PointOfInterest.Home, home);
             
             currentPosition = home.Centroid;
@@ -618,10 +618,10 @@ namespace Transidious
 
             switch (occupation)
             {
-            case Occupation.Kindergardener:
             case Occupation.Retired:
             default:
                 return;
+            case Occupation.Kindergardener:
             case Occupation.ElementarySchoolStudent:
                 // FIXME
                 buildingType = Building.Type.HighSchool;
@@ -713,10 +713,7 @@ namespace Transidious
 
         public void UpdateDailySchedule(DateTime currentTime, bool newDay)
         {
-            if (currentEvent.location != null)
-            {
-                --currentEvent.location.Visitors;
-            }
+            currentEvent.location?.RemoveVisitor(this);
 
             currentEvent = schedule.GetNextEvent(currentTime, newDay);
             Debug.Log($"[{Name}] {currentEvent.DebugDescription}");
@@ -728,11 +725,12 @@ namespace Transidious
                 {
                     activePath.onDone = () =>
                     {
-                        ++currentEvent.location.Visitors;
+                        currentEvent.location.AddVisitor(this);
 
-                        if (sim.citizenModal.citizen == this)
+                        var modal = MainUI.instance.citizenModal;
+                        if (modal.citizen == this)
                         {
-                            sim.citizenModal.UpdateAll();
+                            modal.UpdateAll();
                         }
                     };
                 }
@@ -817,9 +815,9 @@ namespace Transidious
 
                 UpdateDailySchedule(currentTime, newDay);
             }
-            else if (sim.citizenModal.citizen == this)
+            else if (MainUI.instance.citizenModal.citizen == this)
             {
-                sim.citizenModal.UpdateFrequentChanges();
+                MainUI.instance.citizenModal.UpdateFrequentChanges();
             }
         }
 
@@ -935,10 +933,8 @@ namespace Transidious
 
         public void ActivateModal()
         {
-            var modal = GameController.instance.sim.citizenModal;
+            var modal = MainUI.instance.citizenModal;
             modal.SetCitizen(this);
-
-            modal.modal.PositionAt(currentPosition);
             modal.modal.Enable();
         }
 
@@ -987,6 +983,16 @@ namespace Transidious
             }));
 
             return c;
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is Citizen c)
+            {
+                return id.CompareTo(c.id);
+            }
+
+            return 0;
         }
     }
 }

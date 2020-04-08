@@ -21,28 +21,46 @@ namespace Transidious
         /// The car sprite.
         [SerializeField] Image carSprite;
 
-        bool isFollowing;
-
-        void Start()
+        public void Initialize()
         {
+            modal.Initialize();
+            panel.Initialize();
+            
             modal.titleInput.interactable = false;
             modal.onClose.AddListener(() =>
             {
                 this.citizen = null;
-                
-                if (isFollowing)
-                {
-                    GameController.instance.input.StopFollowing();
-                }
+                GameController.instance.input.StopFollowing();
             });
 
+            panel.AddItem("Age", "ui:citizen:age", "", "Sprites/WIP");
+            panel.AddItem("Occupation", "ui:citizen:occupation", "", "Sprites/WIP");
+            
+            var dest = panel.AddItem("Destination", "ui:citizen:destination", 
+                                                             "", "Sprites/ui_car");
+            carSprite = dest.Item2;
+            
+            panel.AddItem("Money", "ui:citizen:money", "", "Sprites/money");
+            
+            var hp = panel.AddItem("Happiness", "ui:citizen:happiness", 
+                                                           "", "Sprites/ui_happy");
+            happinessSprite = hp.Item2;
+            
+            panel.AddItem("Energy", "ui:citizen:energy", "", "Sprites/WIP");
+            panel.AddItem("RemainingWork", "ui:citizen:remaining_work", "", "Sprites/WIP");
+
 #if DEBUG
-            panel.AddClickableItem("Preferences", "Preferences", Color.gray, () =>
+            var debugPanel = Instantiate(ResourceManager.instance.infoPanelCardPrefab, panel.transform.parent)
+                .GetComponent<UIInfoPanel>();
+            
+            debugPanel.Initialize();
+
+            debugPanel.AddClickableItem("Preferences", "Preferences", Color.gray, () =>
             {
                 Utility.Dump(citizen.transitPreferences);
             });
 
-            panel.AddClickableItem("HappinessInfluences", "Happiness Influences", Color.gray, () =>
+            debugPanel.AddClickableItem("HappinessInfluences", "Happiness Influences", Color.gray, () =>
             {
                 foreach (var item in citizen.happinessInfluences)
                 {
@@ -50,14 +68,14 @@ namespace Transidious
                 }
             });
             
-            panel.AddClickableItem("Start Animation", "Start Animation", Color.blue, () =>
+            debugPanel.AddClickableItem("Start Animation", "Start Animation", Color.blue, () =>
             {
                 var sim = GameController.instance.sim;
                 var c = citizen;
                 sim.ScheduleEvent(sim.GameTime.AddMinutes(5), () => { c.SetHappiness(c.happiness + 2f); });
             });
             
-            panel.AddClickableItem("Current Path", "Current Path", Color.blue, () =>
+            debugPanel.AddClickableItem("Current Path", "Current Path", Color.blue, () =>
             {
                 Debug.Log(citizen.activePath?.path?.ToString() ?? "no active path");
             });
@@ -84,7 +102,10 @@ namespace Transidious
                 // value.text = Translator.Get("ui:citizen:destination:" + citizen.CurrentDestination.Value.ToString());
 
                 var link = value.GetComponent<UILocationLink>();
-                // var building = citizen.pointsOfInterest[citizen.CurrentDestination.Value];
+                if (link == null)
+                {
+                    link = value.gameObject.AddComponent<UILocationLink>();
+                }
 
                 link.SetLocation(dst.Centroid);
 
@@ -138,9 +159,8 @@ namespace Transidious
 
             UpdateAll();
 
-            if (citizen.activePath?.IsDriving ?? false)
+            if (citizen.activePath != null)
             {
-                isFollowing = true;
                 GameController.instance.input.FollowObject(
                     citizen.activePath.gameObject, InputController.FollowingMode.Center);
             }

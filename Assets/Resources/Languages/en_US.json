@@ -73,85 +73,89 @@
         },
 
         {
-            "key": "ui:citizien:happiness",
+            "key": "ui:citizen:happiness",
             "text": "Happiness"
         },
         {
-            "key": "ui:citizien:happiness_happy",
+            "key": "ui:citizen:happiness_happy",
             "text": "Happy"
         },
         {
-            "key": "ui:citizien:happiness_med_happy",
+            "key": "ui:citizen:happiness_med_happy",
             "text": "Content"
         },
         {
-            "key": "ui:citizien:happiness_unhappy",
+            "key": "ui:citizen:happiness_unhappy",
             "text": "Unhappy"
         },
         {
-            "key": "ui:citizien:money",
+            "key": "ui:citizen:money",
             "text": "Money"
         },
         {
-            "key": "ui:citizien:energy",
+            "key": "ui:citizen:energy",
             "text": "Energy"
         },
         {
-            "key": "ui:citizien:remaining_work",
+            "key": "ui:citizen:remaining_work",
             "text": "Remaining Work"
         },
         {
-            "key": "ui:citizien:occupation",
+            "key": "ui:citizen:occupation",
             "text": "Occupation"
         },
         {
-            "key": "ui:citizien:occupation:Worker",
+            "key": "ui:citizen:occupation:Worker",
             "text": "Worker"
         },
         {
-            "key": "ui:citizien:occupation:Retired",
+            "key": "ui:citizen:occupation:Retired",
             "text": "Retired"
         },
         {
-            "key": "ui:citizien:occupation:Kindergarden",
+            "key": "ui:citizen:occupation:Kindergarden",
             "text": "Kindergardener"
         },
         {
-            "key": "ui:citizien:occupation:ElementarySchoolStudent",
+            "key": "ui:citizen:occupation:ElementarySchoolStudent",
             "text": "Elementaryschool Student"
         },
         {
-            "key": "ui:citizien:occupation:HighSchoolStudent",
+            "key": "ui:citizen:occupation:HighSchoolStudent",
             "text": "Highschool Student"
         },
         {
-            "key": "ui:citizien:occupation:UniversityStudent",
+            "key": "ui:citizen:occupation:UniversityStudent",
             "text": "University Student"
         },
         {
-            "key": "ui:citizien:occupation:Trainee",
+            "key": "ui:citizen:occupation:Trainee",
             "text": "Trainee"
         },
 
         {
-            "key": "ui:citizien:destination",
+            "key": "ui:citizen:destination",
             "text": "Destination"
         },
         {
-            "key": "ui:citizien:destination:Home",
+            "key": "ui:citizen:destination:Home",
             "text": "Home"
         },
         {
-            "key": "ui:citizien:destination:Work",
+            "key": "ui:citizen:destination:Work",
             "text": "Work"
         },
         {
-            "key": "ui:citizien:destination:School",
+            "key": "ui:citizen:destination:School",
             "text": "School"
         },
         {
-            "key": "ui:citizien:destination:GroceryStore",
+            "key": "ui:citizen:destination:GroceryStore",
             "text": "GroceryStore"
+        },
+        {
+            "key": "ui:no_data_available",
+            "text": "No Data Available"
         },
 
         {
@@ -230,7 +234,7 @@
             "text": "Weekly Passengers"
         },
         {
-            "key": "ui:transit:waiting_citiziens",
+            "key": "ui:transit:waiting_citizens",
             "text": "Waiting Citiziens"
         },
         {

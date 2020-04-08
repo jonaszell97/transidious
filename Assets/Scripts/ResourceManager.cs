@@ -35,6 +35,12 @@ namespace Transidious
         /// Number of total ActivePath instances.
         private int _temporarySprites;
 
+        /// The info panel card prefab.
+        public GameObject infoPanelCardPrefab;
+        
+        /// The line logo prefab.
+        public GameObject lineLogoPrefab;
+
         private void Awake()
         {
             resourceLimits = new ResourceLimits

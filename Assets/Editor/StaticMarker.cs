@@ -33,7 +33,7 @@ public class StaticMarker : AssetPostprocessor
                 | StaticEditorFlags.ReflectionProbeStatic;
 
             var done = false;
-            foreach (var mesh in prefab.GetComponentsInChildren<MeshFilter>())
+            foreach (var mesh in prefab.GetComponentsInChildren<MeshFilter>(true))
             {
                 if (GameObjectUtility.GetStaticEditorFlags(mesh.gameObject).HasFlag(StaticEditorFlags.BatchingStatic))
                 {
@@ -51,7 +51,7 @@ public class StaticMarker : AssetPostprocessor
 
             Debug.Log($"marking {assetName} as static...");
 
-            foreach (var sprite in prefab.GetComponentsInChildren<SpriteRenderer>())
+            foreach (var sprite in prefab.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 if (GameObjectUtility.GetStaticEditorFlags(sprite.gameObject).HasFlag(StaticEditorFlags.BatchingStatic))
                 {
@@ -62,13 +62,17 @@ public class StaticMarker : AssetPostprocessor
                 GameObjectUtility.SetStaticEditorFlags(sprite.gameObject, staticFlags);
             }
 
-            foreach (var route in prefab.GetComponentsInChildren<Route>())
+            foreach (var route in prefab.GetComponentsInChildren<Route>(true))
             {
                 route.gameObject.transform.SetParent(null);
             }
-            foreach (var stop in prefab.GetComponentsInChildren<Stop>())
+            foreach (var stop in prefab.GetComponentsInChildren<Stop>(true))
             {
                 stop.gameObject.transform.SetParent(null);
+            }
+            foreach (var lr in prefab.GetComponentsInChildren<LineRenderer>(true))
+            {
+                lr.gameObject.transform.SetParent(null);
             }
 
             PrefabUtility.SaveAsPrefabAsset(prefab, assetName);

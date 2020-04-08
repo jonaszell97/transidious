@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -9,9 +8,6 @@ namespace Transidious
 {
     public class UIModal : MonoBehaviour
     {
-        /// The background color of the modal.
-        public Color backgroundColor = Color.gray;
-
         /// Event listener for the close event.
         public UnityEvent onClose;
 
@@ -21,295 +17,99 @@ namespace Transidious
         /// The close button.
         [SerializeField] Button closeButton;
 
-        /// The canvas that contains the modal's content.
-        [SerializeField] Canvas contentCanvas;
+        /// The content scroll view.
+        public ScrollRect scrollView;
 
-        /// The modal header.
-        [SerializeField] Image headerImg;
+        /// The tab bar background.
+        public Image tabBarImage;
+        
+        /// The header background.
+        public Image headerImage;
+        
+        /// The 'no data available' text.
+        public TMP_Text noDataAvailableMsg;
 
-        /// The modal body.
-        [SerializeField] Image bodyImg;
+        /// The tab bar buttons.
+        private Button[] _tabBarButtons;
 
-        /// The modal arrow image.
-        [SerializeField] Image arrowImg;
+        /// The tab content transforms.
+        private RectTransform[] _tabs;
 
-        /// The arrow at the bottom of the modal.
-        [SerializeField] GameObject arrow;
+        /// All existing modals.
+        private static List<UIModal> _modals;
 
-        /// If true, the modal is resized to always occupy the same size on the screen.
-        [SerializeField] bool ResizeWithZoom = true;
+        /// Callback that is invoked when the tab is changed.
+        public UnityAction<int> onTabChange;
 
-        /// If true, this modal can be dragged around by the header.
-        [SerializeField] bool draggable = true;
+        /// The currently selected tab.
+        public int SelectedTab { get; private set; }
 
-        /// If true, stick to the original position when zooming or moving.
-        [SerializeField] bool stickToPosition = true;
-
-        /// For clients of this modal that want to perform additional initialization.
-        public bool initialized = false;
-
-        /// If true, this modal is visible by default.
-        public bool visibleByDefault = false;
-
-        /// Static list of all modals. Used to ensure only one is active at a time.
-        static List<UIModal> modals;
-
-        [SerializeField] Vector3 baseScale = Vector3.zero;
-        [SerializeField] float baseOrthoSize = -1f;
-
-        float orthoSize = -1f;
-        Vector3? position;
-
-        bool active = false;
-        int zoomListenerID = -1;
-        int panListenerID = -1;
-
-        void Awake()
+        public void Initialize()
         {
-            if (modals == null)
+            if (_modals == null)
             {
-                modals = new List<UIModal>();
+                _modals = new List<UIModal>();
             }
 
-            modals.Add(this);
+            SelectedTab = -1;
+            _modals.Add(this);
+            
             onClose = new UnityEvent();
             closeButton.onClick.AddListener(this.Disable);
 
-            /*if (baseOrthoSize.Equals(-1f))
-            {
-                baseOrthoSize = Camera.main.orthographicSize;
-            }
-            if (baseScale.Equals(Vector3.zero))
-            {
-                baseScale = transform.localScale;
-            }*/
+            var tabBar = tabBarImage.transform.GetChild(0);
+            _tabBarButtons = new Button[tabBar.childCount - 1];
 
-            if (draggable)
+            var i = 0;
+            for (; i < _tabBarButtons.Length; ++i)
             {
-                headerImg.gameObject.GetComponent<Draggable>().dragHandler = (Vector2 screenPos) =>
+                var btn = tabBar.GetChild(i).GetComponent<Button>();
+                if (!btn.gameObject.activeSelf)
                 {
-                    arrow.SetActive(false);
-                    MoveTo(Camera.main.ScreenToWorldPoint(screenPos));
-                };
-            }
-
-            SetColor(backgroundColor);
-        }
-
-        void Start()
-        {
-            active = true;
-
-            if (!visibleByDefault)
-            {
-                Disable();
-            }
-        }
-
-        public void SetColor(Color color)
-        {
-            this.backgroundColor = color;
-            this.headerImg.color = color;
-            this.bodyImg.color = color;
-            this.arrowImg.color = Math.ApplyTransparency(new Color(color.r, color.g, color.b), color.a);
-        }
-
-        enum ArrowPosition
-        {
-            BottomLeft,
-            TopLeft,
-            TopRight,
-            BottomRight,
-        }
-
-        ArrowPosition GetBestArrowPosition(Vector3 worldPos, float width, float height)
-        {
-            var rectTransform = GetComponent<RectTransform>();
-
-            var screenMax = Camera.main.ViewportToWorldPoint(new Vector2(1, 1));
-            var screenMin = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
-
-            if (worldPos.y + height <= screenMax.y)
-            {
-                if (worldPos.x + width <= screenMax.x)
-                {
-                    return ArrowPosition.BottomLeft;
+                    break;
                 }
 
-                return ArrowPosition.BottomRight;
+                var tab = i;
+                _tabBarButtons[i] = btn;
+                _tabBarButtons[i].onClick.AddListener(() => this.LoadTab(tab));
             }
 
-            if (worldPos.x + width <= screenMax.x)
+            _tabs = new RectTransform[i];
+
+            var viewport = scrollView.viewport;
+            Debug.Assert(viewport.childCount - 1 == _tabs.Length);
+
+            for (i = 0; i < _tabs.Length; ++i)
             {
-                return ArrowPosition.TopLeft;
+                _tabs[i] = (RectTransform)viewport.GetChild(i);
             }
-
-            return ArrowPosition.TopRight;
-        }
-
-        public void PositionAt(Vector3 pos, bool stick = true)
-        {
-            var corners = new Vector3[4];
-            GetComponent<RectTransform>().GetWorldCorners(corners);
-
-            var width = corners[3].x - corners[0].x;
-            var height = corners[2].y - corners[0].y;
-
-            arrow.SetActive(true);
-            arrow.GetComponent<RectTransform>().GetWorldCorners(corners);
-
-            var arrowOffset = .1f;
-            var arrowWidth = corners[3].x - corners[0].x;
-            var arrowHeight = corners[2].y - corners[0].y;
-            var arrowPos = GetBestArrowPosition(pos, width, height);
-
-            bool flip;
-            float arrowX, arrowY, x, y;
-            switch (arrowPos)
-            {
-            case ArrowPosition.BottomLeft:
-                flip = false;
-                arrowX = width * arrowOffset;
-                arrowY = 0;//-arrowHeight; // * .5f;
-                x = pos.x - (width * arrowOffset) + (width * .5f) - (arrowWidth * .5f);
-                y = pos.y + (height * .5f) + arrowHeight;
-                break;
-            case ArrowPosition.TopLeft:
-                flip = true;
-                arrowX = width * arrowOffset;
-                arrowY = height;
-                x = pos.x - (width * arrowOffset) + (width * .5f) - (arrowWidth * .5f);
-                y = pos.y - (height * .5f) + arrowHeight;
-                break;
-            case ArrowPosition.BottomRight:
-                flip = false;
-                arrowX = width * (1f - arrowOffset);
-                arrowY = 0;//-arrowHeight; // * .5f;
-                x = pos.x + (width * arrowOffset) - (width * .5f) - (arrowWidth * .5f);
-                y = pos.y + (height * .5f) + arrowHeight;
-                break;
-            case ArrowPosition.TopRight:
-                flip = true;
-                arrowX = width * (1f - arrowOffset);
-                arrowY = height;
-                x = pos.x + (width * arrowOffset) - (width * .5f) - (arrowWidth * .5f);
-                y = pos.y - (height * .5f) + arrowHeight;
-                break;
-            default:
-                Debug.Assert(false, "invalid arrow position");
-                return;
-            }
-
-            if (flip)
-            {
-                arrow.transform.rotation = Quaternion.Euler(180f, 0f, 0f);
-            }
-            else
-            {
-                arrow.transform.rotation = new Quaternion();
-            }
-
-            this.position = pos;
-            this.stickToPosition = stick;
-
-            this.transform.position = new Vector3(x, y, this.transform.position.z);
-            arrow.transform.position = new Vector3(this.transform.position.x - (width * 0.5f) + arrowX,
-                                                   this.transform.position.y - (height * 0.5f) + arrowY,
-                                                   arrow.transform.position.z);
-        }
-
-        void MoveTo(Vector3 pos)
-        {
-            var corners = new Vector3[4];
-            GetComponent<RectTransform>().GetWorldCorners(corners);
-
-            var height = corners[2].y - corners[0].y;
-            this.transform.position = new Vector3(pos.x,
-                                                  pos.y - (height * .5f),
-                                                  transform.position.z);
-
-            stickToPosition = false;
-        }
-
-        public void EnableAt(Vector3 pos)
-        {
-            PositionAt(pos);
-            Enable();
         }
 
         public void Enable()
         {
-            if (active)
+            if (gameObject.activeSelf && SelectedTab == 0)
             {
                 return;
             }
 
-            // Close other modals.
-            foreach (var modal in modals)
+            foreach (var modal in _modals)
             {
-                if (modal == this)
-                {
-                    continue;
-                }
-
                 modal.Disable();
             }
 
-            if (zoomListenerID == -1)
-            {
-                zoomListenerID = GameController.instance?.input?.RegisterEventListener(
-                    InputEvent.Zoom, (IMapObject _) =>
-                {
-                    if (!gameObject.activeSelf)
-                    {
-                        return;
-                    }
-
-                    AdjustSize();
-                    AdjustPosition();
-                }) ?? -1;
-                panListenerID = GameController.instance?.input?.RegisterEventListener(
-                    InputEvent.Pan, (IMapObject _) =>
-                {
-                    if (!gameObject.activeSelf)
-                    {
-                        return;
-                    }
-
-                    AdjustPosition();
-                }) ?? -1;
-            }
-
-            AdjustSize();
-
-            var cg = GetComponent<CanvasGroup>();
-            cg.alpha = 1f;
-            cg.interactable = true;
-            cg.blocksRaycasts = true;
-
-            //this.gameObject.SetActive(true);
-
-            GameController.instance?.input?.EnableEventListener(zoomListenerID);
-            active = true;
+            LoadTab(0);
+            gameObject.SetActive(true);
         }
 
         public void Disable()
         {
-            if (!active)
+            if (!gameObject.activeSelf)
             {
                 return;
             }
 
-            //this.gameObject.SetActive(false);
-
-            var cg = GetComponent<CanvasGroup>();
-            cg.alpha = 0f;
-            cg.interactable = false;
-            cg.blocksRaycasts = false;
-
-            GameController.instance?.input?.DisableEventListener(zoomListenerID);
+            gameObject.SetActive(false);
             this.onClose.Invoke();
-            active = false;
         }
 
         public void SetTitle(string title, bool editable = false)
@@ -318,25 +118,43 @@ namespace Transidious
             this.titleInput.interactable = editable;
         }
 
-        void AdjustSize()
+        void LoadTab(int tab)
         {
-            /*if (!ResizeWithZoom || orthoSize == Camera.main.orthographicSize)
+            if (SelectedTab == tab)
             {
                 return;
             }
 
-            orthoSize = Camera.main.orthographicSize;
-
-            var scale = orthoSize / baseOrthoSize;
-            transform.localScale = new Vector3(baseScale.x * scale, baseScale.y * scale, baseScale.z);*/
-        }
-
-        void AdjustPosition()
-        {
-            if (stickToPosition && position.HasValue)
+            var foundActive = false;
+            for (var i = 0; i < _tabs.Length; ++i)
             {
-                PositionAt(position.Value);
+                var c = _tabs[i];
+                if (i == tab)
+                {
+                    c.gameObject.SetActive(true);
+                    scrollView.content = c;
+                    _tabBarButtons[i].GetComponent<Image>().color = Color.white;
+
+                    for (var j = 0; j < c.childCount; ++j)
+                    {
+                        if (c.GetChild(j).gameObject.activeSelf)
+                        {
+                            foundActive = true;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    c.gameObject.SetActive(false);
+                    _tabBarButtons[i].GetComponent<Image>().color = new Color(1f, 1f, 1f, 100f / 255f);
+                }
             }
+            
+            noDataAvailableMsg.gameObject.SetActive(!foundActive);
+
+            SelectedTab = tab;
+            onTabChange?.Invoke(tab);
         }
     }
 }

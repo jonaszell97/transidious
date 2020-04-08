@@ -19,11 +19,17 @@ namespace Transidious
             Settings,
         }
 
+        /// The main UI instance.
+        public static MainUI instance;
+
         /// Reference to the game controller.
         public GameController game;
 
         /// The state of the UI.
         public State state;
+
+        /// The modal instance.
+        public UIModal modal;
 
         /// Array containing all of the ui elements from left to right.
         public RectTransform[] panels;
@@ -152,16 +158,47 @@ namespace Transidious
         ///  Time after which the scale bar should fade.
         /// </summary>
         public float fadeScaleBarTime = 0f;
+        
+        /**
+         * Tooltip
+         */
 
         /// <summary>
         /// Reference to the tooltip instance.
         /// </summary>
         public UITooltip tooltipInstance;
 
+        /**
+         * Modals
+         */
+
+        /// The citizen info modal.
+        public UICitizenInfoModal citizenModal;
+        
+        /// The building info modal.
+        public UIBuildingInfoModal buildingModal;
+        
+        /// The feature info modal.
+        public UIFeatureInfoModal featureModal;
+        
+        /// The stop info modal.
+        public UIStopModal stopModal;
+        
+        /// The line info modal.
+        public UILineModal lineModal;
+        
+        /// The transit vehicle info modal.
+        public UITransitVehicleModal transitVehicleModal;
+        
         void RegisterUICallbacks()
         {
             this.playPauseButton.onClick.AddListener(OnPlayPauseClick);
             this.simSpeedButton.onClick.AddListener(OnSimSpeedClick);
+
+            // Finance panel
+            financesPanel.AddItem("Earnings", "ui:finances:earnings", "0");
+            financesPanel.AddItem("Expenses", "ui:finances:expenses", "0");
+            financesPanel.AddItem("Income", "ui:finances:income", "0");
 
             // Transit panel
             this.settingsIcons[0].onClick.AddListener(() =>
@@ -230,10 +267,19 @@ namespace Transidious
                     ShowPopulationHeatmap();
                 }
             });
+
+            // Modals
+            citizenModal.Initialize();
+            buildingModal.Initialize();
+            featureModal.Initialize();
+            stopModal.Initialize();
+            lineModal.Initialize();
+            transitVehicleModal.Initialize();
         }
 
         void Awake()
         {
+            instance = this;
             state = State.Default;
             UITooltip.instance = tooltipInstance;
             UIInstruction.instance = instructionPanel;
@@ -330,6 +376,7 @@ namespace Transidious
             if (timePanelAnimator == null)
             {
                 timePanelAnimator = panels[0].gameObject.AddComponent<TransformAnimator>();
+                timePanelAnimator.Initialize();
                 timePanelAnimator.SetTargetSizeDelta(
                     new Vector2(gameTimeText.GetComponent<RectTransform>().rect.width + 20, panels[0].sizeDelta.y));
 
@@ -340,6 +387,7 @@ namespace Transidious
             if (gameTimeTextAnimator == null)
             {
                 gameTimeTextAnimator = gameTimeText.gameObject.AddComponent<TransformAnimator>();
+                gameTimeTextAnimator.Initialize();
                 gameTimeTextAnimator.SetTargetAnchoredPosition(new Vector2(10f, gameTimeText.GetComponent<RectTransform>().anchoredPosition.y));
                 gameTimeTextAnimator.SetAnimationType(TransformAnimator.AnimationType.Circular, TransformAnimator.ExecutionMode.Manual);
             }
@@ -353,6 +401,7 @@ namespace Transidious
             if (financePanelAnimator == null)
             {
                 financePanelAnimator = panels[1].gameObject.AddComponent<TransformAnimator>();
+                financePanelAnimator.Initialize();
                 financePanelAnimator.SetTargetSizeDelta(new Vector2(0f, panels[1].sizeDelta.y));
 
                 var posDiff = timePanelAnimator.originalScale.x - timePanelAnimator.targetScale.x;
@@ -370,6 +419,7 @@ namespace Transidious
             if (populationPanelAnimator == null)
             {
                 populationPanelAnimator = panels[2].gameObject.AddComponent<TransformAnimator>();
+                populationPanelAnimator.Initialize();
                 populationPanelAnimator.SetTargetSizeDelta(new Vector2(0f, panels[2].sizeDelta.y));
 
                 var posDiff = timePanelAnimator.originalScale.x - timePanelAnimator.targetScale.x;
@@ -387,6 +437,7 @@ namespace Transidious
             if (detailsPanelAnimator == null)
             {
                 detailsPanelAnimator = panels[3].gameObject.AddComponent<TransformAnimator>();
+                detailsPanelAnimator.Initialize();
                 detailsPanelAnimator.SetTargetSizeDelta(new Vector2(40f, panels[3].sizeDelta.y));
 
                 var posDiff = timePanelAnimator.originalScale.x - timePanelAnimator.targetScale.x;
@@ -408,6 +459,7 @@ namespace Transidious
                     {
                         var rc = icon.GetComponent<RectTransform>();
                         iconAnimator = icon.gameObject.AddComponent<TransformAnimator>();
+                        iconAnimator.Initialize();
 
                         iconAnimator.SetTargetAnchoredPosition(
                             new Vector2(-detailsPanelAnimator.targetScale.x + (rc.rect.width / 2f) + 7.5f, rc.anchoredPosition.y));
@@ -426,6 +478,7 @@ namespace Transidious
             if (multiPanelAnimator == null)
             {
                 multiPanelAnimator = panels[4].gameObject.AddComponent<TransformAnimator>();
+                multiPanelAnimator.Initialize();
 
                 multiPanelAnimator.SetTargetSizeDelta(
                     new Vector2(panels[4].transform.parent.GetComponent<RectTransform>().rect.width - timePanelAnimator.targetScale.x - detailsPanelAnimator.targetScale.x,

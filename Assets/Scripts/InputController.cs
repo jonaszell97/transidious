@@ -77,7 +77,8 @@ namespace Transidious
         static float panSensitivityYMobile = panSensitivityY / 20f;
 
         static readonly float farRenderingThreshold = 650f;
-        
+
+        public EventSystem eventSystem;
         new public Camera camera;
 
         public Vector3 NativeCursorPosition => camera.ScreenToWorldPoint(Input.mousePosition);
@@ -165,30 +166,7 @@ namespace Transidious
 
         public bool IsPointerOverUIElement()
         {
-            if (EventSystem.current?.IsPointerOverGameObject() ?? false)
-            {
-                // Debug.Log(EventSystem.current.currentSelectedGameObject);
-                // if (EventSystem.current.currentSelectedGameObject != null)
-                // {
-                //     if (EventSystem.current.currentSelectedGameObject.GetComponent<CanvasRenderer>() != null)
-                //     {
-                //         return true;
-                //     }
-                //     else
-                //     {
-                //         return false;
-                //     }
-                // }
-                // else
-                // {
-                //     return false;
-                // }
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return eventSystem.IsPointerOverGameObject();
         }
 
         public void MouseOverMapObject(IMapObject obj)
@@ -329,6 +307,11 @@ namespace Transidious
         // Update the zoom based on mouse wheel input.
         void UpdateZoom()
         {
+            if (IsPointerOverUIElement())
+            {
+                return;
+            }
+            
             float input;
             switch (Application.platform)
             {
@@ -352,7 +335,7 @@ namespace Transidious
             {
                 return;
             }
-            
+
             var prevSize = camera.orthographicSize;
             ZoomOrthoCamera(camera.ScreenToWorldPoint(Input.mousePosition), input * zoomSensitivity);
 
@@ -633,6 +616,7 @@ namespace Transidious
                 this.inputEventListeners[i] = new Dictionary<int, InputEventListener>();
             }
 
+            eventSystem = EventSystem.current;
             camera = Camera.main;
             aspectRatio = camera.aspect;
 

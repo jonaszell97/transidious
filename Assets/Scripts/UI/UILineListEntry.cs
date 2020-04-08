@@ -16,20 +16,16 @@ namespace Transidious
         public TMP_Text lineEfficiency;
         public Image imgComponent;
         public UnityEvent onSelect;
-        public static UILineListEntry selectedEntry;
+        private static UILineListEntry _selectedEntry;
 
-        private void Awake()
+        public void Initialize()
         {
             this.onSelect = new UnityEvent();
-
-            var rc = GetComponent<RectTransform>();
-            rc.localScale = new Vector3(1f, 1f, 1f);
-            rc.localPosition = new Vector3(rc.localPosition.x, rc.localPosition.y, 0f);
             
             var btn = this.GetComponent<Button>();
             btn.onClick.AddListener(() =>
             {
-                if (selectedEntry == this)
+                if (_selectedEntry == this)
                 {
                     return;
                 }
@@ -40,8 +36,8 @@ namespace Transidious
 
         public void Select()
         {
-            selectedEntry?.Deselect();
-            selectedEntry = this;
+            _selectedEntry?.Deselect();
+            _selectedEntry = this;
 
             this.imgComponent.enabled = true;
             onSelect.Invoke();

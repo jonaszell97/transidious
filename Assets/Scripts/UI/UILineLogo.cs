@@ -17,6 +17,9 @@ namespace Transidious
 
         /// The input text field.
         [SerializeField] TMP_InputField inputField;
+        
+        /// The button component.
+        [SerializeField] private Button link;
 
         void Awake()
         {
@@ -24,6 +27,11 @@ namespace Transidious
             {
                 SetLine(line);
             }
+
+            link.onClick.AddListener(() =>
+            {
+                line.ActivateModal();
+            });
         }
 
         public void SetColor(Color c)
@@ -44,7 +52,7 @@ namespace Transidious
             return line.name.Length > 4 ? line.name.Substring(0, 4).Trim() : line.name;
         }
 
-        public void SetLine(Line line, bool truncateName = false)
+        public void SetLine(Line line, bool truncateName = false, bool allowLink = true)
         {
             this.line = line;
             SetColor(line.color);
@@ -68,6 +76,8 @@ namespace Transidious
             {
                 placeholderText.text = line.name;
             }
+
+            link.enabled = allowLink;
 
             switch (line.type)
             {

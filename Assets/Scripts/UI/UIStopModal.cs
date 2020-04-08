@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 namespace Transidious
@@ -17,10 +18,23 @@ namespace Transidious
         public UIInfoPanel panel;
 
         /// The next departures.
-        public TMPro.TMP_Text[] nextDepartures;
+        public List<Tuple<Transform, UILineLogo, TMP_Text>> nextDepartures;
 
-        void Start()
+        /// The next departures card.
+        [SerializeField] private Transform nextDeparturesCard;
+
+        /// The departure item prefab.
+        [SerializeField] private GameObject departureItemPrefab;
+
+        public void Initialize()
         {
+            nextDepartures = new List<Tuple<Transform, UILineLogo, TMP_Text>>();
+            
+            modal.Initialize();
+            panel.Initialize();
+
+            panel.AddItem("Waiting", "ui:transit:waiting_citizens", "", "Sprites/ui_citizen_head");
+
 #if DEBUG
             panel.AddItem("schedule", "Schedule");
 #endif
@@ -62,35 +76,40 @@ namespace Transidious
 
             var time = GameController.instance.sim.GameTime;
             var lines = new List<Tuple<Line, DateTime>>();
-
+            
             foreach (var line in stop.lineData)
             {
                 lines.Add(Tuple.Create(line.Key, line.Value.schedule.GetNextDeparture(time)));
+                
+                if (nextDepartures.Count < lines.Count)
+                {
+                    var item = Instantiate(departureItemPrefab, nextDeparturesCard.transform).transform;
+                    nextDepartures.Add(Tuple.Create(item, item.GetChild(0).GetComponent<UILineLogo>(),
+                                                          item.GetChild(1).GetComponent<TMP_Text>()));
+                }
             }
             
             lines.Sort((v1, v2) => v1.Item2.CompareTo(v2.Item2));
 
             if (lines.Count == 0)
             {
-                for (var i = 0; i < nextDepartures.Length; ++i)
-                {
-                    panel.HideItem($"Departures{i}");
-                }
+                nextDeparturesCard.gameObject.SetActive(false);
             }
             else
             {
-                for (var i = 0; i < nextDepartures.Length; ++i)
+                nextDeparturesCard.gameObject.SetActive(true);
+
+                for (var i = 0; i < nextDepartures.Count; ++i)
                 {
+                    var dep = nextDepartures[i];
                     if (i >= lines.Count)
                     {
-                        panel.HideItem($"Departures{i}");
+                        dep.Item1.gameObject.SetActive(false);
                         continue;
                     }
 
-                    panel.ShowItem($"Departures{i}");
-
                     var line = lines[i];
-                    var logo = nextDepartures[i].GetComponentInChildren<UILineLogo>();
+                    var logo = dep.Item2;
                     logo.SetLine(line.Item1, true);
 
                     var diff = (line.Item2 - time).TotalMinutes;
@@ -103,6 +122,10 @@ namespace Transidious
                     else if (diff < 60)
                     {
                         text = Translator.Get("ui:transit:in_x_mins", ((int)System.Math.Ceiling(diff)).ToString());
+
+#if DEBUG
+                        text += $"({Translator.GetDate(line.Item2, Translator.DateFormat.TimeShort)})";
+#endif
                     }
                     else if (time.Date == line.Item2.Date)
                     {
@@ -113,7 +136,8 @@ namespace Transidious
                         text = Translator.GetDate(line.Item2, Translator.DateFormat.DateTimeShort);
                     }
 
-                    nextDepartures[i].text = text;
+                    dep.Item1.gameObject.SetActive(true);
+                    dep.Item3.text = text;
                 }
             }
 

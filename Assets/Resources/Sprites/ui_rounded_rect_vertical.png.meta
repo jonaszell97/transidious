@@ -1,15 +1,15 @@
 fileFormatVersion: 2
-guid: 93ceb56d58541b01fb56d9ba35ad42cf
+guid: 555d4e57860ee4d7b9172e95f210d80f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 432383116780828386
-    second: ui_rounded_rect_0
+      213: 2055464260549280588
+    second: ui_rounded_rect_vertical_0
   externalObjects: {}
   serializedVersion: 10
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 1
+    enableMipMap: 0
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -34,7 +34,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 2
+    filterMode: -1
     aniso: -1
     mipBias: -100
     wrapU: 1
@@ -45,11 +45,11 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 0
+  spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 1024
-  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 3000
+  spriteBorder: {x: 0, y: 280, z: 0, w: 280}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -61,48 +61,50 @@ TextureImporter:
   compressionQualitySet: 0
   textureFormatSet: 0
   platformSettings:
-  - serializedVersion: 2
+  - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
     androidETC2FallbackOverride: 0
-  - serializedVersion: 2
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
     buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
     androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ui_rounded_rect_0
+      name: ui_rounded_rect_vertical_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1024
-        height: 614
+        width: 614
+        height: 1024
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 300, y: 300, z: 300, w: 300}
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 280, z: 0, w: 280}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: adcca497a492693e99213ba8c6686586
-      internalID: 432383116780828386
+      spriteID: af855a4083efa4bfd83ae2219a3dbbcc
+      internalID: 2055464260549280588
       vertices: []
       indices: 
       edges: []
@@ -110,7 +112,7 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: acbd715f085301f608510ef2da4acc5f
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
