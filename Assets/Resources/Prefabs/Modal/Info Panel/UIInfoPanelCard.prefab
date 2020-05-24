@@ -62,6 +62,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemPrefab: {fileID: 6859886147209849691, guid: 29fc902e9641d4d74aee1336fd42bd94,
     type: 3}
+  progressItemPrefab: {fileID: 6859886147209849691, guid: 19798f1e9fc3448efac965dc49178453,
+    type: 3}
 --- !u!114 &7571426777418490026
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -77,6 +79,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 0.3679245, g: 0.3679245, b: 0.3679245, a: 0.88235295}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

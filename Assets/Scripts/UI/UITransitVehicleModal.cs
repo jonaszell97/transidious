@@ -32,7 +32,7 @@ namespace Transidious
             
             var ns = panel.AddItem("NextStop", "ui:transit:next_stop", 
                                                             "", "Sprites/stop_ring");
-            ns.Item4.gameObject.AddComponent<UILocationLink>();
+            ns.Value.gameObject.AddComponent<UILocationLink>();
 
 #if DEBUG
             panel.AddClickableItem("DistanceToNext", "Distance to Next", Color.white, () =>

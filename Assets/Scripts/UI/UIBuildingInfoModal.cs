@@ -125,8 +125,8 @@ namespace Transidious
             residentList.title.SetKey(occupantsKey);
 
             var occupantsItem = panel.GetItem("Occupants");
-            occupantsItem.Item3.SetKey(occupantsKey);
-            occupantsItem.Item4.text = $"{building.ResidentCount} / {building.Capacity}";
+            occupantsItem.Key.SetKey(occupantsKey);
+            occupantsItem.Value.text = $"{building.ResidentCount} / {building.Capacity}";
 
             this.panel.SetValue("Type", Translator.Get("ui:building:type:" + building.type.ToString()));
 

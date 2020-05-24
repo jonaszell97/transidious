@@ -39,22 +39,27 @@ namespace Transidious
                 this.citizen = null;
                 GameController.instance.input.StopFollowing();
             });
-
+            
+            // Age & Occupation
             panel.AddItem("Age", "ui:citizen:age", "", "Sprites/ui_calendar");
             panel.AddItem("Occupation", "ui:citizen:occupation", "", "Sprites/ui_hardhat");
             
+            // Current destination
             var dest = panel.AddItem("Destination", "ui:citizen:destination", 
-                                                             "", "Sprites/ui_destination");
-            carSprite = dest.Item2;
+                                     "", "Sprites/ui_destination");
+            carSprite = dest.Icon;
             
+            // Money
             panel.AddItem("Money", "ui:citizen:money", "", "Sprites/ui_money");
-            
-            var hp = panel.AddItem("Happiness", "ui:citizen:happiness", 
-                                                           "", "Sprites/ui_happy");
-            happinessSprite = hp.Item2;
-            
-            panel.AddItem("Energy", "ui:citizen:energy", "", "Sprites/WIP");
-            panel.AddItem("RemainingWork", "ui:citizen:remaining_work", "", "Sprites/WIP");
+
+            // Happiness
+            var hp = panel.AddProgressItem("Happiness", "ui:citizen:happiness", 
+                                           "Sprites/ui_happy");
+            happinessSprite = hp.Icon;
+
+            // Energy & Work
+            panel.AddProgressItem("Energy", "ui:citizen:energy", "Sprites/WIP");
+            panel.AddProgressItem("RemainingWork", "ui:citizen:remaining_work", "Sprites/WIP");
 
 #if DEBUG
             _debugPanel = Instantiate(ResourceManager.instance.infoPanelCardPrefab, panel.transform.parent)
@@ -142,8 +147,11 @@ namespace Transidious
             var dst = citizen.CurrentDestination;
             if (citizen.activePath != null && dst != null)
             {
-                carSprite.color = citizen.car.color;
-                carSprite.gameObject.SetActive(true);
+                if (citizen.car != null)
+                {
+                    carSprite.color = citizen.car.color;
+                    carSprite.gameObject.SetActive(true);
+                }
 
                 this.panel.ShowItem("Destination");
 
@@ -185,9 +193,9 @@ namespace Transidious
 
         public void UpdateFrequentChanges()
         {
-            this.panel.SetValue("Happiness", $"{citizen.happiness:n2}%");
-            this.panel.SetValue("Energy", $"{citizen.energy:n2}%");
-            this.panel.SetValue("RemainingWork", $"{citizen.remainingWork:n2}%");
+            this.panel.SetProgress("Happiness", citizen.happiness / 100f);
+            this.panel.SetProgress("Energy", citizen.energy / 100f);
+            this.panel.SetProgress("RemainingWork", citizen.remainingWork / 100f);
             this.panel.SetValue("Money", Translator.GetCurrency(citizen.money, true));
 
             if (citizen.happiness < 50)

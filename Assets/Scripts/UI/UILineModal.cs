@@ -245,8 +245,8 @@ namespace Transidious
 
             var systemName = line.type.ToString().ToLower();
             var system = infoPanel.GetItem("System");
-            system.Item2.sprite = SpriteManager.GetSprite($"Sprites/{systemName}_logo");
-            system.Item4.text = Translator.Get($"transit:{systemName}");
+            system.Icon.sprite = SpriteManager.GetSprite($"Sprites/{systemName}_logo");
+            system.Value.text = Translator.Get($"transit:{systemName}");
 
             infoPanel.SetValue("WeeklyPassengers", line.weeklyPassengers.ToString());
             infoPanel.SetValue("TripsSaved", "0%");
