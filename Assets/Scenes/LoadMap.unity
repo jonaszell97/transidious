@@ -1039,6 +1039,16 @@ PrefabInstance:
       propertyPath: manualTrafficLightControl
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5287185505245174272, guid: 8e3ff855e7ea34cdd995207225aa57e2,
+        type: 3}
+      propertyPath: renderTrafficLights
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5287185505245174272, guid: 8e3ff855e7ea34cdd995207225aa57e2,
+        type: 3}
+      propertyPath: renderStreetOrder
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7479790127519674387, guid: 8e3ff855e7ea34cdd995207225aa57e2,
         type: 3}
       propertyPath: sim
@@ -1300,7 +1310,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: linesToLoad.Array.size
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}

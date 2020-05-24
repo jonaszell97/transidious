@@ -53,8 +53,7 @@ message PathStep {
     }
 
     PathStepKind kind = 1;
-    uint64 timestamp = 2;
-    google.protobuf.Any details = 3;
+    google.protobuf.Any details = 2;
 }
 
 message PathPlanningOptions {
@@ -74,13 +73,18 @@ message PathPlanningOptions {
     float changingPenalty = 11;
 }
 
+message PlannedPath {
+    repeated PathStep steps = 1;
+}
+
 message PathPlanningResult {
     float cost = 1;
     float duration = 2;
     uint64 leaveBy = 3;
     uint64 arriveAt = 4;
-    repeated PathStep steps = 5;
-    PathPlanningOptions options = 6;
+    PlannedPath path = 5;
+    repeated int64 stepTimes = 6;
+    PathPlanningOptions options = 7;
 }
 
 message ActivePath {

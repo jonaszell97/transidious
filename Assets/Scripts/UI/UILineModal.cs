@@ -39,6 +39,7 @@ namespace Transidious
             modal.Initialize();
             infoPanel.Initialize();
 
+            infoPanel.AddItem("System", "ui:transit:system", "", "Sprites/bus_logo");
             infoPanel.AddItem("WeeklyPassengers", "ui:transit:weekly_passengers", 
                               "", "Sprites/ui_citizen_head");
 
@@ -219,28 +220,33 @@ namespace Transidious
             
             UpdateColor();
 
-            Stop closestStop;
-            if (route)
-            {
-                Vector2 mousePosWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                var startDistance = (route.beginStop.location - mousePosWorld).magnitude;
-                var endDistance = (route.endStop.location - mousePosWorld).magnitude;
-
-                if (startDistance <= endDistance)
-                {
-                    closestStop = route.beginStop;
-                }
-                else
-                {
-                    closestStop = route.endStop;
-                }
-            }
-            else
-            {
-                closestStop = line.stops[line.stops.Count / 2];
-            }
+            // Stop closestStop;
+            // if (route)
+            // {
+            //     Vector2 mousePosWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            //     var startDistance = (route.beginStop.location - mousePosWorld).magnitude;
+            //     var endDistance = (route.endStop.location - mousePosWorld).magnitude;
+            //
+            //     if (startDistance <= endDistance)
+            //     {
+            //         closestStop = route.beginStop;
+            //     }
+            //     else
+            //     {
+            //         closestStop = route.endStop;
+            //     }
+            // }
+            // else
+            // {
+            //     closestStop = line.stops[line.stops.Count / 2];
+            // }
 
             UpdateLineView();
+
+            var systemName = line.type.ToString().ToLower();
+            var system = infoPanel.GetItem("System");
+            system.Item2.sprite = SpriteManager.GetSprite($"Sprites/{systemName}_logo");
+            system.Item4.text = Translator.Get($"transit:{systemName}");
 
             infoPanel.SetValue("WeeklyPassengers", line.weeklyPassengers.ToString());
             infoPanel.SetValue("TripsSaved", "0%");

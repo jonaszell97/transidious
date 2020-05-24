@@ -29,30 +29,52 @@ namespace Transidious
 
     public class Line : StaticMapObject
     {
+        /// Reference to the loaded map.
         public Map map;
 
+        /// The transit system of this line.
         public TransitType type;
+        
+        /// The current color of the line.
         public Color color;
+
+        /// The material of the line.
         public Material material;
 
-        public bool wasModified = false;
-
+        /// The first stop on the line.
         public Stop depot;
+        
+        /// All of the stops on the line.
         public List<Stop> stops;
+        
+        /// The routes connecting the stops on the line.
         public List<Route> routes;
+        
+        /// The current vehicles on the line.
         public List<TransitVehicle> vehicles;
+        
+        /// The total length of the line.
         public float length;
+        
         public TimeSpan stopDuration;
         public TimeSpan endOfLineWaitTime;
-        public Velocity velocity;
-
+        
+        /// Total weekly passengers on the line.
         public int weeklyPassengers;
 
-        public Dictionary<Stop, float> scheduleOffsets;
+        /// Cumulative lengths, indexed by route index.
+        public float[] cumulativeLengths;
+
+        /// The current schedule of the line.
         public Schedule schedule;
 
+        /// The total travel time of the line without stopping.
+        public TimeSpan TotalTravelTime => (distance / AverageSpeed) + AverageStopDuration.Multiply(routes.Count - 1);
+
+        /// The total length of the line.
         public Distance distance => Distance.FromMeters(length);
 
+        /// Average velocity of a vehicle on the line.
         public Velocity AverageSpeed
         {
             get
@@ -72,9 +94,7 @@ namespace Transidious
             }
         }
 
-        /// <summary>
         /// Average time spent waiting at a stop (in seconds).
-        /// </summary>
         public TimeSpan AverageStopDuration
         {
             get
@@ -127,8 +147,6 @@ namespace Transidious
             };
 
             this.stopDuration = AverageStopDuration;
-            this.velocity = AverageSpeed;
-            
             this.routes = new List<Route>();
             this.stops = new List<Stop>();
             this.vehicles = new List<TransitVehicle>();
@@ -197,21 +215,37 @@ namespace Transidious
 
             begin.wasModified = true;
             end.wasModified = true;
-            this.wasModified = true;
-            this.length += route.length;
 
             return route;
         }
 
+        /// Return a route by index, wrapping around to the first route on overflow.
+        public Route GetRoute(int routeIndex)
+        {
+            return routes[routeIndex % routes.Count];
+        }
+
+        /// Calculate length (and cumulative length) of the line.
+        void CalculateLength()
+        {
+            cumulativeLengths = new float[routes.Count];
+
+            for (var i = 0; i < routes.Count; ++i)
+            {
+                var route = routes[i];
+                length += route.length;
+                cumulativeLengths[i] = length;
+            }
+        }
+
         public void FinalizeLine()
         {
-#if DEBUG
             if (routes.Count == 0)
             {
                 return;
             }
-#endif
 
+            CalculateLength();
             Debug.Assert(routes.Count > 0, "empty line!");
 
             var sim = Game.sim;
@@ -224,61 +258,88 @@ namespace Transidious
             var neededVehiclesExact = (float) (lineDuration.TotalSeconds / interval.TotalSeconds);
             var neededVehicles = (int)Mathf.Ceil(neededVehiclesExact);
 
-            var extraPercentage = (neededVehicles / neededVehiclesExact) - 1f;
-            var extraTime = lineDuration.Multiply(extraPercentage);
-
-            // Increase stop duration to ensure equal spacing between vehicles.
-            this.endOfLineWaitTime = extraTime;
-
             if (!Game.ImportingMap)
             {
                 var departure = earliestDeparture;
+                TransitVehicle next = null;
+
                 for (var i = 0; i < neededVehicles; ++i)
                 {
-                    var v = sim.CreateVehicle(this);
-                    this.vehicles.Add(v);
+                    var v = sim.CreateVehicle(this, next);
+                    vehicles.Add(v);
 
-                    v.nextStopTime = departure;
                     departure = departure.Add(interval).Add(AverageStopDuration);
+                    next = v;
                 }
+
+                vehicles.First().Next = next;
             }
 
-            var totalTravelTime = TimeSpan.Zero;
-            var firstDeparture = earliestDeparture;
+            // var totalTravelTime = TimeSpan.Zero;
+            //
+            // for (var i = 0; i < routes.Count; ++i)
+            // {
+            //     var route = routes[i];
+            //     if (i == 0)
+            //     {
+            //         route.beginStop.SetSchedule(this, new ContinuousSchedule(firstDeparture, interval));
+            //     }
+            //
+            //     totalTravelTime += route.distance / AverageSpeed;
+            //
+            //     if (i != routes.Count - 1)
+            //     {
+            //         route.endStop.SetSchedule(this, new ContinuousSchedule(
+            //             firstDeparture.Add(totalTravelTime), interval));
+            //     }
+            //     
+            //     totalTravelTime += stopDuration;
+            // }
 
-            for (var i = 0; i < routes.Count; ++i)
+            // Equally space the vehicles along the route.
+            var lengthMeters = distance.Meters;
+            var spacing = lengthMeters / neededVehicles;
+            var currentRoute = 0;
+
+            routes[0].beginStop.SetSchedule(this, new ContinuousSchedule(earliestDeparture, interval));
+
+            var diffs = new float[vehicles.Count];
+            for (var i = 0; i < vehicles.Count; ++i)
             {
-                var route = routes[i];
-                if (i == 0)
+                var requiredDistance = i * spacing;
+
+                var routeDistance = currentRoute == 0 ? 0 : cumulativeLengths[currentRoute - 1];
+                while (cumulativeLengths[currentRoute] < requiredDistance)
                 {
-                    route.beginStop.SetSchedule(this, new ContinuousSchedule(firstDeparture, interval));
+                    routeDistance = cumulativeLengths[currentRoute++];
                 }
 
-                totalTravelTime += route.distance / AverageSpeed;
+                var diff = requiredDistance - routeDistance;
+                var vehicle = vehicles[vehicles.Count - 1 - i];
 
-                if (i != routes.Count - 1)
+#if DEBUG
+                if (GameController.instance.ImportingMap)
                 {
-                    route.endStop.SetSchedule(this, new ContinuousSchedule(
-                        firstDeparture.Add(totalTravelTime), interval));
+                    continue;
                 }
-                
-                totalTravelTime += stopDuration;
-            }
-        }
+#endif
 
-        public void UpdateMesh()
-        {
-            if (!wasModified)
+                var distanceToStop = cumulativeLengths[currentRoute] - requiredDistance;
+                routes[currentRoute].endStop.SetSchedule(this, new ContinuousSchedule(
+                    earliestDeparture.Add(Distance.FromMeters(distanceToStop) / AverageSpeed), interval));
+
+                diffs[vehicles.Count - i - 1] = diff;
+                vehicle.SetStartingRoute(currentRoute);
+            }
+
+            var n = 0;
+            foreach (var v in vehicles)
             {
-                return;
+                v.StartDrive(v.CurrentRoute, diffs[n++]);
             }
 
-            foreach (var route in routes)
-            {
-                route.UpdatePath();
-            }
-
-            wasModified = false;
+            // The first vehicle has to start manually, the others will follow automatically.
+            // vehicles.First().StartDrive();
         }
 
         public new Serialization.Line ToProtobuf()
@@ -305,14 +366,11 @@ namespace Transidious
             routes = line.RouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
             depot = map.GetMapObject<Stop>((int)line.DepotID);
 
-            this.length = this.routes.Sum(r => r.length);
-
             foreach (var stop in stops)
             {
                 stop.AddLine(this);
             }
 
-            wasModified = true;
             this.FinalizeLine();
         }
     }

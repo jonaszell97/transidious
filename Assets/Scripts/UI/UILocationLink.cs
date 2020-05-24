@@ -91,7 +91,10 @@ namespace Transidious
             }
 
             var loc = linkedCitizen?.currentPosition ?? linkedLocation;
-            var newPos = Vector2.MoveTowards(Camera.main.transform.position, loc, movementSpeed * Time.deltaTime);
+            var newPos = Vector2.MoveTowards(Camera.main.transform.position, 
+                                                     loc, 
+                                                     movementSpeed * Time.deltaTime);
+
             if (newPos.Equals(linkedLocation))
             {
                 moving = false;

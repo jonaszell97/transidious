@@ -21,6 +21,13 @@ namespace Transidious
         /// The car sprite.
         [SerializeField] Image carSprite;
 
+        /// The schedule text.
+        [SerializeField] TMP_Text scheduleText;
+
+#if DEBUG
+        private UIInfoPanel _debugPanel;
+#endif
+
         public void Initialize()
         {
             modal.Initialize();
@@ -33,14 +40,14 @@ namespace Transidious
                 GameController.instance.input.StopFollowing();
             });
 
-            panel.AddItem("Age", "ui:citizen:age", "", "Sprites/WIP");
-            panel.AddItem("Occupation", "ui:citizen:occupation", "", "Sprites/WIP");
+            panel.AddItem("Age", "ui:citizen:age", "", "Sprites/ui_calendar");
+            panel.AddItem("Occupation", "ui:citizen:occupation", "", "Sprites/ui_hardhat");
             
             var dest = panel.AddItem("Destination", "ui:citizen:destination", 
-                                                             "", "Sprites/ui_car");
+                                                             "", "Sprites/ui_destination");
             carSprite = dest.Item2;
             
-            panel.AddItem("Money", "ui:citizen:money", "", "Sprites/money");
+            panel.AddItem("Money", "ui:citizen:money", "", "Sprites/ui_money");
             
             var hp = panel.AddItem("Happiness", "ui:citizen:happiness", 
                                                            "", "Sprites/ui_happy");
@@ -50,17 +57,44 @@ namespace Transidious
             panel.AddItem("RemainingWork", "ui:citizen:remaining_work", "", "Sprites/WIP");
 
 #if DEBUG
-            var debugPanel = Instantiate(ResourceManager.instance.infoPanelCardPrefab, panel.transform.parent)
+            _debugPanel = Instantiate(ResourceManager.instance.infoPanelCardPrefab, panel.transform.parent)
                 .GetComponent<UIInfoPanel>();
             
-            debugPanel.Initialize();
+            _debugPanel.Initialize();
 
-            debugPanel.AddClickableItem("Preferences", "Preferences", Color.gray, () =>
+            _debugPanel.AddItem("Distance From Start", "Distance From Start", "");
+
+            _debugPanel.AddClickableItem("Next Car", "Next Car", Color.white, () =>
+            {
+                if (!(citizen.activePath?.IsDriving) ?? false)
+                    return;
+
+                var next = GameController.instance.sim.trafficSim.GetNextCar(
+                    citizen.activePath._drivingState.drivingCar);
+                if (next != null)
+                {
+                    GameController.instance.input.MoveTowards(next.Item1.CurrentPosition);
+                }
+            });
+
+            _debugPanel.AddClickableItem("Prev Car", "Prev Car", Color.white, () =>
+            {
+                if (!(citizen.activePath?.IsDriving) ?? false)
+                    return;
+
+                var prev = citizen.activePath._drivingState.drivingCar.prev;
+                if (prev != null)
+                {
+                    GameController.instance.input.MoveTowards(prev.CurrentPosition);
+                }
+            });
+            
+            _debugPanel.AddClickableItem("Preferences", "Preferences", Color.gray, () =>
             {
                 Utility.Dump(citizen.transitPreferences);
             });
 
-            debugPanel.AddClickableItem("HappinessInfluences", "Happiness Influences", Color.gray, () =>
+            _debugPanel.AddClickableItem("HappinessInfluences", "Happiness Influences", Color.gray, () =>
             {
                 foreach (var item in citizen.happinessInfluences)
                 {
@@ -68,16 +102,32 @@ namespace Transidious
                 }
             });
             
-            debugPanel.AddClickableItem("Start Animation", "Start Animation", Color.blue, () =>
+            _debugPanel.AddClickableItem("Start Animation", "Start Animation", Color.blue, () =>
             {
                 var sim = GameController.instance.sim;
                 var c = citizen;
                 sim.ScheduleEvent(sim.GameTime.AddMinutes(5), () => { c.SetHappiness(c.happiness + 2f); });
             });
             
-            debugPanel.AddClickableItem("Current Path", "Current Path", Color.blue, () =>
+            _debugPanel.AddClickableItem("Current Path", "Current Path", Color.blue, () =>
             {
                 Debug.Log(citizen.activePath?.path?.ToString() ?? "no active path");
+            });
+
+            _debugPanel.AddClickableItem("Generate Schedule", "Generate Schedule", Color.blue, () =>
+            {
+                citizen.activePath = null;
+                
+                var prevDate = GameController.instance.sim.GameTime.Date;
+                for (var i = 0; i < 10; ++i)
+                {
+                    Debug.Log(citizen.currentEvent.DebugDescription);
+
+                    var nextDate = citizen.currentEvent.endTime.Date;
+                    var newDay = prevDate != nextDate;
+
+                    citizen.Update(citizen.currentEvent.endTime, newDay, nextDate - prevDate);
+                }
             });
 #endif
         }
@@ -129,6 +179,8 @@ namespace Transidious
                 this.panel.HideItem("Destination");
                 carSprite.gameObject.SetActive(false);
             }
+
+            // scheduleText.text = citizen.currentEvent.DebugDescription;
         }
 
         public void UpdateFrequentChanges()
@@ -150,6 +202,10 @@ namespace Transidious
             {
                 happinessSprite.sprite = SpriteManager.instance.happinessSprites[2];
             }
+
+            if (citizen.activePath?.IsDriving ?? false)
+                this._debugPanel.SetValue("Distance From Start",
+                $"{citizen.activePath._drivingState.drivingCar.distanceFromStart:n2} m");
         }
 
         public void SetCitizen(Citizen citizen)

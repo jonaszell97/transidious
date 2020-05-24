@@ -18,19 +18,13 @@ namespace Transidious
     {
         public enum GameStatus
         {
-            /// <summary>
             ///  The game is currently in the main menu.
-            /// </summary>
             MainMenu,
 
-            /// <summary>
             ///  The game is currently in play mode.
-            /// </summary>
             Playing,
 
-            /// <summary>
             ///  The game is currently paused.
-            /// </summary>
             Paused,
 
             /// The map is being loaded.
@@ -55,9 +49,7 @@ namespace Transidious
         public SnapController snapController;
         public SaveManager saveManager;
 
-        /// <summary>
         ///  The currently loaded map.
-        /// </summary>
         public Map loadedMap => SaveManager.loadedMap;
 
         public GameObject loadedMapObj;
@@ -74,18 +66,16 @@ namespace Transidious
         /// Reference to the finance controller.
         public FinanceController financeController;
 
-        /// <summary>
         ///  The input controller.
-        /// </summary>
         public InputController input;
+
+        /// The router instance.
+        public Router router;
 
         /// The translator for the current language.
         public Translator lang;
 
-        /// <summary>
-        ///  Prefab for creating new maps.
-        /// </summary>
-        public GameObject mapPrefab;
+        ///  Prefab for creating tooltips.
         public GameObject tooltipPrefab;
 
         /// Prefab for line renderers.
@@ -94,9 +84,7 @@ namespace Transidious
         /// Prefab for color gradients.
         public GameObject colorGradientPrefab;
 
-        /// <summary>
         /// Callback to be executed once the game is loaded.
-        /// </summary>
         public UnityEvent onLoad;
 
 #if DEBUG
@@ -151,13 +139,7 @@ namespace Transidious
         public DeveloperConsole developerConsole;
 
         static GameController _instance;
-        public static GameController instance
-        {
-            get
-            {
-                return _instance;
-            }
-        }
+        public static GameController instance => _instance;
 
         public Material GetUnlitMaterial(Color c)
         {
@@ -186,22 +168,6 @@ namespace Transidious
 #endif
 
                 unlitMaterials.Add(c, m);
-            }
-
-            return m;
-        }
-
-        public Material GetHighlightedMaterial(Color mainColor, Color outlineColor)
-        {
-            var tup = new Tuple<Color, Color>(outlineColor, mainColor);
-            if (!highlightedMaterials.TryGetValue(tup, out Material m))
-            {
-                m = new Material(highlightedMaterial);
-                m.SetColor("_OutlineColor", outlineColor);
-                m.SetColor("_Color", mainColor);
-                m.SetFloat("_Outline", 1f);
-
-                highlightedMaterials.Add(tup, m);
             }
 
             return m;
@@ -240,37 +206,13 @@ namespace Transidious
             }
         }
 
-        public bool Playing
-        {
-            get
-            {
-                return status == GameStatus.Playing;
-            }
-        }
+        public bool Playing => status == GameStatus.Playing;
 
-        public bool Paused
-        {
-            get
-            {
-                return status == GameStatus.Paused;
-            }
-        }
+        public bool Paused => status == GameStatus.Paused;
 
-        public bool ImportingMap
-        {
-            get
-            {
-                return status == GameStatus.ImportingMap;
-            }
-        }
+        public bool ImportingMap => status == GameStatus.ImportingMap;
 
-        public bool Loading
-        {
-            get
-            {
-                return status == GameStatus.Loading;
-            }
-        }
+        public bool Loading => status == GameStatus.Loading;
 
 #if DEBUG
         public int numRandomLines = 50;
@@ -282,6 +224,40 @@ namespace Transidious
         }
 #endif
 
+        public void LoadMission(string mission)
+        {
+            StartCoroutine(LoadMissionAsync(mission));
+        }
+        
+        System.Collections.IEnumerator LoadMissionAsync(string missionToLoad)
+        {
+            GameController._instance = this;
+
+            this.status = GameStatus.Loading;
+            loadingScreen.gameObject.SetActive(true);
+
+            var mission = Mission.FromFile(missionToLoad);
+            var map = mission.LoadMap();
+
+            loadingScreen.SetText("Loading Map...");
+            yield return SaveManager.LoadSave(this, map, saveFileToLoad);
+
+            loadingScreen.SetText("Spawning Citizens...");
+            yield return mission.Load();
+
+            loadingScreen.SetText("Initializing Routes...");
+            transitEditor.InitOverlappingRoutes();
+            
+            loadingScreen.SetText("Initializing Router...");
+            router.Initialize(map);
+
+            this.status = GameStatus.Playing;
+            this.onLoad.Invoke();
+
+            loadingScreen.gameObject.SetActive(false);
+            input.EnableControls();
+        }
+
         System.Collections.IEnumerator LoadMapAsync(Map map)
         {
             GameController._instance = this;
@@ -290,20 +266,25 @@ namespace Transidious
             loadingScreen.gameObject.SetActive(true);
 
             yield return SaveManager.LoadSave(this, map, saveFileToLoad);
+
+            loadingScreen.SetText("Initializing Router...");
+            router.Initialize(map);
+            
+            this.status = GameStatus.Playing;
             this.onLoad.Invoke();
 
-            this.status = GameStatus.Playing;
             loadingScreen.gameObject.SetActive(false);
             input.EnableControls();
 
+#if DEBUG
             for (var i = 0; i < numRandomLines; ++i)
             {
-                var type = (TransitType)UnityEngine.Random.Range(0, 5);
+                var type = (TransitType)RNG.Next(0, 5);
                 var numStops = 0;
                 
                 if (type == TransitType.Bus)
                 {
-                    numStops = UnityEngine.Random.Range(10, 50);
+                    numStops = RNG.Next(10, 50);
                 }
 
                 loadedMap.CreateRandomizedLine(type, null, numStops);
@@ -319,34 +300,7 @@ namespace Transidious
                     DeveloperConsole.Run(cmd);
                 }
             }
-
-            //var sched = new Schedule
-            //{
-            //    dayHours = Tuple.Create(4, 22),
-            //    nightHours = Tuple.Create(22, 1),
-            //    operatingDays = Weekday.All & ~Weekday.Sunday,
-            //    dayInterval = 7,
-            //    nightInterval = 30,
-            //};
-
-            //var dates = new DateTime[]
-            //{
-            //    DateTime.Parse("01/01/2001 10:00"),
-            //    DateTime.Parse("01/01/2001 02:00"),
-            //    DateTime.Parse("01/03/2001 03:59"),
-            //    DateTime.Parse("01/01/2001 04:01"),
-            //    DateTime.Parse("01/01/2001 22:30"),
-            //    DateTime.Parse("01/03/2001 00:50"),
-            //    DateTime.Parse("01/05/2001 00:59"),
-            //    DateTime.Parse("12/31/2000 10:00"),
-            //};
-
-            //foreach (var date in dates)
-            //{
-            //    var nextDep = sched.GetNextDeparture(date);
-            //    Debug.Log("next departure after " + Translator.GetDate(date, Translator.DateFormat.DateTimeLong) + ": " +
-            //        Translator.GetDate(nextDep, Translator.DateFormat.DateTimeLong));
-            //}
+#endif
         }
 
         void Awake()
@@ -357,6 +311,7 @@ namespace Transidious
             this.settings = new Settings(this.qualityLevel);
 #endif
 
+            RNG.Reseed(-1);
             developerConsole.Initialize();
 
             if (status == GameStatus.Disabled || status == GameStatus.ImportingMap)
@@ -367,6 +322,7 @@ namespace Transidious
 
             this.lang = Translator.SetActiveLanguage("en_US");
             this.mapEditor.gameObject.SetActive(false);
+            this.router = new Router();
 
             this.onLoad = new UnityEvent();
 
@@ -388,7 +344,7 @@ namespace Transidious
 
             if (!string.IsNullOrEmpty(missionToLoad))
             {
-                Mission.FromFile(missionToLoad).Load();
+                LoadMission(missionToLoad);
             }
 #if UNITY_EDITOR
             else if (areaToLoad != OSMImportHelper.Area.Default)
@@ -396,14 +352,6 @@ namespace Transidious
                 LoadMap(areaToLoad.ToString());
             }
 #endif
-        }
-
-        void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.F12))
-            {
-                DeveloperConsole.instance.Toggle();
-            }
         }
 
         public bool SetLanguage(string newLang)
@@ -429,6 +377,18 @@ namespace Transidious
             case TransitType.LightRail: return Translator.Get("transit:lightrail");
             case TransitType.IntercityRail: return Translator.Get("transit:intercity");
             case TransitType.Ferry: return Translator.Get("transit:ferry");
+            }
+        }
+
+        public void TogglePause()
+        {
+            if (Paused)
+            {
+                ExitPause();
+            }
+            else
+            {
+                EnterPause();
             }
         }
 

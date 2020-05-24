@@ -538,7 +538,7 @@ namespace Transidious
                                                           previousStop.transform.position,
                                                           game.input.GameCursorPosition);
 
-                    if (result == null || !result.ValidForTram)
+                    if (result == null || !result.path.ValidForTram)
                     {
                         ResetPath();
                         ActivateTooltip(selectedSystem.Value, "Cannot add stop here");
@@ -1586,7 +1586,6 @@ namespace Transidious
                 newPositions, newWidths, 20, 0f, collider);
 
             route.UpdateMesh(mesh, newPositions, newWidths);
-            route.line.wasModified = false;
             route.EnableCollision();
         }
 
@@ -2132,7 +2131,6 @@ namespace Transidious
             //var mesh = MeshBuilder.CreateBakedLineMesh(newPositions, newWidths, collider);
 
             route.UpdateMesh(mesh, newPositions, newWidths);
-            route.line.wasModified = false;
             route.EnableCollision();
         }
     }

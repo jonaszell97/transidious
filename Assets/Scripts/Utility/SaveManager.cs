@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -92,9 +93,11 @@ namespace Transidious
             };
 
             result.Buildings.AddRange(map.buildings.Select(b => b.ToProtobuf()));
+            result.NaturalFeatures.AddRange(map.naturalFeatures.Select(b => b.ToProtobuf()));
+
             result.Streets.AddRange(map.streets.Select(b => b.ToProtobuf()));
             result.StreetIntersections.AddRange(map.streetIntersections.Select(b => b.ToProtobuf()));
-            result.NaturalFeatures.AddRange(map.naturalFeatures.Select(b => b.ToProtobuf()));
+            result.TrafficLights.AddRange(map.TrafficLights.Select(tl => tl.Value.Serialize()));
 
             result.BoundaryPositions.AddRange(map.boundaryPositions?.Select(v => v.ToProtobuf()));
             result.BoundaryMeshes.Add(map.boundaryBackgroundObj.GetComponent<MeshFilter>().mesh.ToProtobuf2D());
@@ -363,6 +366,14 @@ namespace Transidious
             foreach (var inter in serializedMap.StreetIntersections)
             {
                 StreetIntersection.Deserialize(inter, map);
+            }
+
+            // Deserialize traffic lights.
+            var trafficSim = GameController.instance.sim.trafficSim;
+            foreach (var data in serializedMap.TrafficLights)
+            {
+                var tl = new TrafficLight(data);
+                trafficSim.trafficLights.Add(tl.Id, tl);
             }
 
             // Deserialize natural features.

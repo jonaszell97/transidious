@@ -3,8 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
+using Transidious.PathPlanning;
 
 namespace Transidious
 {
@@ -92,6 +91,9 @@ namespace Transidious
         /// List of all intersections.
         public List<StreetIntersection> streetIntersections;
 
+        /// List of all traffic lights.
+        public Dictionary<int, TrafficLight> TrafficLights => Game.sim.trafficSim.trafficLights;
+        
         /// Map of streets indexed by position.
         public Dictionary<Vector3, StreetIntersection> streetIntersectionMap;
 
@@ -109,6 +111,7 @@ namespace Transidious
 
         /// List of buildings.
         public List<Building> buildings;
+        
         /// Map of buildings by type.
         public Dictionary<Building.Type, List<Building>> buildingsByType;
 
@@ -430,6 +433,16 @@ namespace Transidious
             return null;
         }
 
+        public TrafficLight GetTrafficLight(int id)
+        {
+            if (TrafficLights.TryGetValue(id, out var tl))
+            {
+                return tl;
+            }
+
+            return null;
+        }
+
         public TileIterator GetTilesForObject(IMapObject obj)
         {
             return new TileIterator(this, obj);
@@ -677,13 +690,6 @@ namespace Transidious
             return tiles;
         }
 
-        public class PointOnStreet
-        {
-            public StreetSegment seg;
-            public Vector3 pos;
-            public int prevIdx;
-        }
-
         PointOnStreet GetClosestStreet(Vector3 position, int radius,
                                        int tileX, int tileY,
                                        float minDist, StreetSegment minSeg,
@@ -758,7 +764,7 @@ namespace Transidious
                 return null;
             }
 
-            return new PointOnStreet { seg = minSeg, pos = minPnt, prevIdx = prevIdx };
+            return new PointOnStreet { street = minSeg, pos = minPnt, prevIdx = prevIdx };
         }
 
         public PointOnStreet GetClosestStreet(Vector3 position,
@@ -895,9 +901,9 @@ namespace Transidious
             var minY = System.Math.Max(centerTile.y - searchRadius, 0);
             var maxY = System.Math.Min(centerTile.y + searchRadius, tilesHeight - 1);
 
-            for (var x = minX; x < maxX; ++x)
+            for (var x = minX; x <= maxX; ++x)
             {
-                for (var y = minY; y < maxY; ++y)
+                for (var y = minY; y <= maxY; ++y)
                 {
                     if (searchRadius > 1)
                     {
@@ -1146,7 +1152,7 @@ namespace Transidious
             {
                 case TransitType.Bus:
                 default:
-                    if (UnityEngine.Random.value < .5f)
+                    if (RNG.value < .5f)
                     {
                         return "M" + (lastMetroBusLine++);
                     }
@@ -1176,7 +1182,7 @@ namespace Transidious
             Vector2? pt = null;
             if (previousStop == null)
             {
-                pt = new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(minY, maxY));
+                pt = new Vector2(RNG.Next(minX, maxX), RNG.Next(minY, maxY));
             }
             else if (previousStop.Item4.intersectingStreets.Count == 1)
             {
@@ -1186,8 +1192,8 @@ namespace Transidious
                 while (true)
                 {
                     pt = new Vector2(
-                        UnityEngine.Random.Range(loc.x - maxDistance, loc.x + maxDistance),
-                        UnityEngine.Random.Range(loc.y - maxDistance, loc.y + maxDistance));
+                        RNG.Next(loc.x - maxDistance, loc.x + maxDistance),
+                        RNG.Next(loc.y - maxDistance, loc.y + maxDistance));
 
                     if (IsPointOnMap(pt.Value) && (pt.Value - loc).sqrMagnitude >= minSqrDistance)
                     {
@@ -1197,7 +1203,7 @@ namespace Transidious
                     if (attempts++ > 1000)
                     {
                         Debug.LogError("can't find a close point on the map!");
-                        pt = new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(minY, maxY));
+                        pt = new Vector2(RNG.Next(minX, maxX), RNG.Next(minY, maxY));
 
                         break;
                     }
@@ -1211,31 +1217,31 @@ namespace Transidious
             if (pt.HasValue)
             {
                 var closestPt = GetClosestStreet(pt.Value);
-                if (closestPt.seg.OneWay)
+                if (closestPt.street.OneWay)
                 {
                     return GetRandomStopPair(previousStop);
                 }
 
-                street = closestPt.seg;
-                nextIntersection = closestPt.seg.endIntersection;
+                street = closestPt.street;
+                nextIntersection = closestPt.street.endIntersection;
 
                 {
                     var positionsFwd = GameController.instance.sim.trafficSim.GetPath(
                         street, street.RightmostLane);
 
                     var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsFwd);
-                    fwd = GetOrCreateStop(closestPt.seg.street.name, newPtPos.Item1);
+                    fwd = GetOrCreateStop(closestPt.street.street.name, newPtPos.Item1);
                 }
                 {
                     var positionsBwd = GameController.instance.sim.trafficSim.GetPath(
                         street, street.LeftmostLane);
 
                     var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsBwd);
-                    bwd = GetOrCreateStop(closestPt.seg.street.name, newPtPos.Item1);
+                    bwd = GetOrCreateStop(closestPt.street.street.name, newPtPos.Item1);
                 }
             }
             else {
-                var rnd = UnityEngine.Random.Range(0, previousStop.Item4.intersectingStreets.Count - 1);
+                var rnd = RNG.Next((float) 0, previousStop.Item4.intersectingStreets.Count - 1);
                 var i = 0;
                 street = null;
                 
@@ -1304,7 +1310,7 @@ namespace Transidious
             Vector2 pt;
             if (previousStop == null)
             {
-                pt = new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(minY, maxY));
+                pt = new Vector2(RNG.Next(minX, maxX), RNG.Next(minY, maxY));
             }
             else
             {
@@ -1312,8 +1318,8 @@ namespace Transidious
                 while (true)
                 {
                     pt = new Vector2(
-                        UnityEngine.Random.Range(previousStop.location.x - maxDistance, previousStop.location.x + maxDistance),
-                        UnityEngine.Random.Range(previousStop.location.y - maxDistance, previousStop.location.y + maxDistance));
+                        RNG.Next(previousStop.location.x - maxDistance, previousStop.location.x + maxDistance),
+                        RNG.Next(previousStop.location.y - maxDistance, previousStop.location.y + maxDistance));
 
                     if (IsPointOnMap(pt) && (pt - previousStop.location).sqrMagnitude >= minSqrDistance)
                     {
@@ -1323,7 +1329,7 @@ namespace Transidious
                     if (attempts++ > 1000)
                     {
                         Debug.LogError("can't find a close point on the map!");
-                        pt = new Vector2(UnityEngine.Random.Range(minX, maxX), UnityEngine.Random.Range(minY, maxY));
+                        pt = new Vector2(RNG.Next(minX, maxX), RNG.Next(minY, maxY));
 
                         break;
                     }
@@ -1332,7 +1338,7 @@ namespace Transidious
             }
 
             var closestPt = GetClosestStreet(pt);
-            var street = closestPt.seg;
+            var street = closestPt.street;
 
             if (usedSegments.Contains(street))
             {
@@ -1343,19 +1349,19 @@ namespace Transidious
 
             var closestPtAndPos = street.GetClosestPointAndPosition(closestPt.pos);
             var positions = GameController.instance.sim.trafficSim.GetPath(
-                street, (closestPtAndPos.Item2 == Math.PointPosition.Right || street.street.isOneWay)
+                street, (closestPtAndPos.Item2 == Math.PointPosition.Right || street.IsOneWay)
                     ? street.RightmostLane
                     : street.LeftmostLane);
 
             closestPtAndPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positions);
             closestPt.pos = closestPtAndPos.Item1;
 
-            return GetOrCreateStop(closestPt.seg.street.name, closestPt.pos);
+            return GetOrCreateStop(closestPt.street.street.name, closestPt.pos);
         }
 
         public Line CreateRandomizedLine(TransitType type, string name = null, int stops = 2)
         {
-            var builder = CreateLine(type, name ?? DefaultLineName(type), Utility.RandomColor);
+            var builder = CreateLine(type, name ?? DefaultLineName(type), RNG.RandomColor);
             Stop firstStop = null;
             Tuple<Stop, Stop, StreetSegment, StreetIntersection> previousStop = null;
             
@@ -1460,12 +1466,9 @@ namespace Transidious
             return stop;
         }
 
-        /// <summary>
         ///  Create a street.
-        /// </summary>
         public Street CreateStreet(string name, Street.Type type, bool lit,
-                                   bool oneWay, int maxspeed, int lanes,
-                                   int id = -1)
+                                   int maxspeed, int lanes, int id = -1)
         {
             string currentName = name;
 
@@ -1484,7 +1487,7 @@ namespace Transidious
             var street = new Street();
             streets.Add(street);
 
-            street.Initialize(this, type, currentName, lit, oneWay, maxspeed, lanes, id);
+            street.Initialize(this, type, currentName, lit, maxspeed, lanes, id);
             RegisterMapObject(street, id);
 
             if (modifiedName)
@@ -1974,13 +1977,15 @@ namespace Transidious
             UpdateTextScale();
             UpdateVisibleTiles();
 
-            if (isLoadedFromSaveFile)
+#if DEBUG
+            if (Game.sim.trafficSim.renderTrafficLights)
             {
                 foreach (var inter in streetIntersections)
                 {
-                    inter.GenerateTrafficLights(this);
+                    inter.CreateTrafficLightSprites();
                 }
             }
+#endif
 
             if (isLoadedFromSaveFile)
             {

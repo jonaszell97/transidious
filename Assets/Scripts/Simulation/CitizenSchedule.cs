@@ -167,9 +167,6 @@ namespace Transidious.Simulation
         private static readonly EventType[] _leisureEventTypes = new[]
             {EventType.Sleep, EventType.Relaxation, EventType.Exercise, EventType.Leisure};
 
-        /// Seed PRNG for reproducibility.
-        private static System.Random _random = new System.Random();
-
         /// The citizen this schedule is for.
         public readonly Citizen citizen;
 
@@ -338,17 +335,18 @@ namespace Transidious.Simulation
             }
             else
             {
-                type = Utility.RandomElement(_leisureEventTypes);
+                type = RNG.RandomElement(_leisureEventTypes);
                 duration = Mathf.Min(GetRandomDuration(type), minutesUntilNextEvent, GetMaxPossibleDuration(type));
             }
 
             var location = GetDestination(citizen, type);
-            
-            _pathPlanner.Reset(currentTime);
+
+            _pathPlanner.Reset();
             var path = _pathPlanner.FindClosestPath(
                 SaveManager.loadedMap, 
                 citizen.currentPosition,
-                location.Centroid);
+                location.Centroid,
+                currentTime);
 
             return new EventInfo
             {
@@ -391,11 +389,12 @@ namespace Transidious.Simulation
             _nextFixedEvent.Item2._done = true;
             _nextFixedEvent = null;
 
-            _pathPlanner.Reset(currentTime);
+            _pathPlanner.Reset();
             nextFixedEvent.path = _pathPlanner.FindClosestPath(
                 SaveManager.loadedMap, 
                 citizen.currentPosition,
-                nextFixedEvent.location.Centroid);
+                nextFixedEvent.location.Centroid,
+                currentTime);
 
             return nextFixedEvent;
         }
@@ -412,7 +411,7 @@ namespace Transidious.Simulation
                 case EventType.Exercise:
                 {
                     var gym = c.GetPointOfInterest(Citizen.PointOfInterest.Gym);
-                    if (gym == null || _random.NextFloat() <= .5f)
+                    if (gym == null || RNG.value <= .5f)
                     {
                         return GetRandomDestination(c, type);
                     }
@@ -422,7 +421,7 @@ namespace Transidious.Simulation
                 case EventType.GroceryShopping:
                 {
                     var gs = c.GetPointOfInterest(Citizen.PointOfInterest.GroceryStore);
-                    if (gs == null || _random.NextFloat() <= .5f)
+                    if (gs == null || RNG.value <= .5f)
                     {
                         return GetRandomDestination(c, type);
                     }
@@ -430,7 +429,7 @@ namespace Transidious.Simulation
                     return gs;
                 }
                 case EventType.Relaxation:
-                    if (_random.NextFloat() <= .75f)
+                    if (RNG.value <= .75f)
                     {
                         return GetRandomDestination(c, type);
                     }
@@ -454,8 +453,8 @@ namespace Transidious.Simulation
             // Move this around a bit so we don't always end up at the same places.
             var pos = c.currentPosition;
             pos = new Vector2(
-                Mathf.Clamp(pos.x + _random.NextFloat(50f, 150f), map.minX, map.maxX),
-                Mathf.Clamp(pos.y + _random.NextFloat(50f, 150f), map.minY, map.maxY));
+                Mathf.Clamp(pos.x + RNG.Next(50f, 150f), map.minX, map.maxX),
+                Mathf.Clamp(pos.y + RNG.Next(50f, 150f), map.minY, map.maxY));
 
             switch (EventType)
             {
@@ -546,29 +545,22 @@ namespace Transidious.Simulation
             switch (type)
             {
                 case EventType.Work:
-                    return _random.Next(8 * 60, 10 * 60);
+                    return RNG.Next(8 * 60, 10 * 60);
                 case EventType.Leisure:
-                    return _random.Next(30, 300);
+                    return RNG.Next(30, 300);
                 case EventType.Exercise:
-                    return _random.Next(30, 120);
+                    return RNG.Next(30, 120);
                 case EventType.GroceryShopping:
-                    return _random.Next(30, 60);
+                    return RNG.Next(30, 60);
                 case EventType.Relaxation:
-                    return _random.Next(30, 360);
+                    return RNG.Next(30, 360);
                 case EventType.Sleep:
                     // This is only used for naps.
-                    return _random.Next(30, 120);
+                    return RNG.Next(30, 120);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
         }
-
-#if DEBUG
-        public static void Reseed(int seed)
-        {
-            _random = new System.Random(seed);
-        }
-#endif
     }
 
     /*
@@ -636,7 +628,7 @@ namespace Transidious.Simulation
             {
                 Debug.Assert(nextEvents.Length > 0, "no next event!");
 
-                var rnd = _random.Next(0f, 1f);
+                var rnd = RNG.Next(0f, 1f);
                 foreach (var e in nextEvents)
                 {
                     if (rnd >= e.Item1)
@@ -960,7 +952,7 @@ namespace Transidious.Simulation
 
         public ScheduleEvent GetSchedule(Citizen.Occupation occupation, System.DayOfWeek weekday)
         {
-            return Utility.RandomElement(schedules[Tuple.Create(occupation, weekday)]);
+            return RNG.RandomElement(schedules[Tuple.Create(occupation, weekday)]);
         }
 
         void InitializeRandomSchedules()

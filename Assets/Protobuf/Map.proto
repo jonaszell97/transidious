@@ -37,6 +37,8 @@ message Map {
     float backgroundTileSize = 14;
     Vector2 backgroundMin = 15;
     Vector2 backgroundSize = 16;
+
+    repeated TrafficLight trafficLights = 17;
 }
 
 message Expense {

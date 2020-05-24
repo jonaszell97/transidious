@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using TMPro;
 using Transidious.PathPlanning;
 
 namespace Transidious
@@ -23,19 +24,17 @@ namespace Transidious
             public ActivePath path;
             public Car car;
             public StreetSegment segment;
+            public bool backward;
+            public DrivingCar next;
+            public DrivingCar prev;
+            public int lane;
+            public float distanceFromStart;
+            public TrafficLight waitingForTrafficLight;
+            
             public StreetSegment nextSegment;
             public StreetIntersection nextIntersection;
             public TurnType? nextTurn;
-            public bool backward;
-            public DrivingCar next;
-            public int lane;
-            public float distanceFromStart;
-
-            public TrafficLight waitingForTrafficLight;
-
-#if DEBUG
-            public Text numberTxt;
-#endif
+            public int nextLane;
 
             public Velocity CurrentVelocity => path.CurrentVelocity;
 
@@ -58,12 +57,37 @@ namespace Transidious
             public bool Turning => path.currentStep is TurnStep;
         }
 
-        public class CarOnIntersection
+        public Tuple<DrivingCar, float> GetNextCar(DrivingCar car)
         {
-            public Car car;
-            public TurnType turnType;
-            public StreetSegment comesFrom;
-            public StreetSegment goesTo;
+            if (car.next != null)
+            {
+                return Tuple.Create(car.next, car.next.distanceFromStart - car.distanceFromStart);
+            }
+
+            if (!car.Turning && car.nextIntersection != null)
+            {
+                var firstCar = GetFirstCarOnIntersection(car.nextIntersection, car.segment, car.nextSegment);
+                if (firstCar != null)
+                {
+                    var distance = car.DistanceToIntersection + firstCar.distanceFromStart;
+                    return Tuple.Create(firstCar, distance);
+                }
+            }
+
+            if (car.nextSegment != null)
+            {
+                var firstCar = GetDrivingCars(car.nextSegment)[car.nextLane];
+                if (firstCar != null)
+                {
+                    var distance = car.DistanceToIntersection
+                                   + GetIntersectionLength(car.nextIntersection, car.segment, car.nextSegment)
+                                   + firstCar.distanceFromStart;
+                    
+                    return Tuple.Create(firstCar, distance);
+                }
+            }
+
+            return null;
         }
 
         /// Reference to the simulation manager.
@@ -88,19 +112,19 @@ namespace Transidious
 
         /// For each street, an array of linked lists of cars currently driving on this segment, 
         /// indexed by lane from left to right.
-        public Dictionary<StreetSegment, DrivingCar[]> drivingCars;
-
-        /// Map from intersections to the cars currently crossing the intersection.
-        Dictionary<StreetIntersection, List<CarOnIntersection>> intersectionMap;
+        public Dictionary<int, DrivingCar[]> drivingCars;
 
         /// List of all traffic lights.
-        public List<TrafficLight> trafficLights;
+        public Dictionary<int, TrafficLight> trafficLights;
 
         /// List of computed paths on a street, from stop line to stop line. One for each lane.
         Dictionary<StreetSegment, Vector3[][]> computedPaths;
 
         /// List of computed paths for an intersection.
         Dictionary<StreetIntersection, Vector3[][][][]> computedIntersectionPaths;
+        
+        /// Intersection path lengths.
+        Dictionary<StreetIntersection, float[][]> intersectionPathLengths;
 
 #if DEBUG
         public bool manualTrafficLightControl = false;
@@ -117,11 +141,11 @@ namespace Transidious
 
         void Awake()
         {
-            this.drivingCars = new Dictionary<StreetSegment, DrivingCar[]>();
-            this.trafficLights = new List<TrafficLight>();
-            this.intersectionMap = new Dictionary<StreetIntersection, List<CarOnIntersection>>();
+            this.drivingCars = new Dictionary<int, DrivingCar[]>();
+            this.trafficLights = new Dictionary<int, TrafficLight>();
             this.computedPaths = new Dictionary<StreetSegment, Vector3[][]>();
             this.computedIntersectionPaths = new Dictionary<StreetIntersection, Vector3[][][][]>();
+            this.intersectionPathLengths = new Dictionary<StreetIntersection, float[][]>();
         }
 
         void Start()
@@ -185,7 +209,7 @@ namespace Transidious
 
         bool IsRightLane(StreetSegment seg, int lane)
         {
-            if (seg.street.isOneWay)
+            if (seg.IsOneWay)
                 return true;
 
             return lane >= (seg.street.lanes / 2);
@@ -206,10 +230,10 @@ namespace Transidious
 
         DrivingCar[] GetDrivingCars(StreetSegment seg)
         {
-            if (!drivingCars.TryGetValue(seg, out DrivingCar[] cars))
+            if (!drivingCars.TryGetValue(seg.id, out DrivingCar[] cars))
             {
                 cars = new DrivingCar[seg.street.lanes];
-                drivingCars.Add(seg, cars);
+                drivingCars.Add(seg.id, cars);
             }
 
             return cars;
@@ -220,15 +244,34 @@ namespace Transidious
             return GetDrivingCars(seg)[lane];
         }
 
-        List<CarOnIntersection> GetCarsOnIntersection(StreetIntersection intersection)
+        DrivingCar[] GetCarsOnIntersection(StreetIntersection intersection)
         {
-            if (!intersectionMap.TryGetValue(intersection, out List<CarOnIntersection> cars))
+            if (!drivingCars.TryGetValue(intersection.id, out DrivingCar[] cars))
             {
-                cars = new List<CarOnIntersection>();
-                intersectionMap.Add(intersection, cars);
+                cars = new DrivingCar[intersection.intersectingStreets.Count * intersection.intersectingStreets.Count];
+                drivingCars.Add(intersection.id, cars);
             }
 
             return cars;
+        }
+        
+        DrivingCar GetFirstCarOnIntersection(StreetIntersection intersection, StreetSegment from, StreetSegment to)
+        {
+            var cars = GetCarsOnIntersection(intersection);
+            var fromIdx = intersection.RelativePosition(from);
+            var toIdx = intersection.RelativePosition(to);
+            var idx = fromIdx * intersection.intersectingStreets.Count + toIdx;
+            return cars[idx];
+        }
+
+        void SetFirstCarOnIntersection(StreetIntersection intersection, StreetSegment from, StreetSegment to,
+                                       DrivingCar car)
+        {
+            var cars = GetCarsOnIntersection(intersection);
+            var fromIdx = intersection.RelativePosition(from);
+            var toIdx = intersection.RelativePosition(to);
+            var idx = fromIdx * intersection.intersectingStreets.Count + toIdx;
+            cars[idx] = car;
         }
 
         public class PathSegmentInfo
@@ -309,7 +352,7 @@ namespace Transidious
         {
             var path = new List<Vector3>();
 
-            foreach (var step in result.steps)
+            foreach (var step in result.path.Steps)
             {
                 StreetSegment nextSegment;
                 GetStepPath(step, out nextSegment, out bool backward, out bool finalStep, out int lane,
@@ -492,11 +535,9 @@ namespace Transidious
                                  StreetSegment from, StreetSegment to,
                                  int lane)
         {
-            if (!computedIntersectionPaths.TryGetValue(intersection,
-                                                       out Vector3[][][][] paths))
+            if (!computedIntersectionPaths.TryGetValue(intersection, out Vector3[][][][] paths))
             {
                 paths = ComputeIntersectionPaths(intersection);
-                computedIntersectionPaths.Add(intersection, paths);
             }
 
             return paths[intersection.RelativePosition(from)]
@@ -504,23 +545,40 @@ namespace Transidious
                 [intersection.RelativePosition(to)];
         }
 
+        public float GetIntersectionLength(StreetIntersection intersection, StreetSegment from, StreetSegment to)
+        {
+            if (!computedIntersectionPaths.TryGetValue(intersection, out Vector3[][][][] paths))
+            {
+                ComputeIntersectionPaths(intersection);
+            }
+
+            return intersectionPathLengths[intersection][intersection.RelativePosition(from)]
+                [intersection.RelativePosition(to)];
+        }
+
         public Vector3[][][][] ComputeIntersectionPaths(StreetIntersection intersection)
         {
             var paths = new Vector3[intersection.NumIntersectingStreets][][][];
+            var lengths = new float[intersection.NumIntersectingStreets][];
+            
             var currentPath = new List<Vector3>();
 
             foreach (var from in intersection.IncomingStreets)
             {
                 var fromLanes = from.street.lanes;
-                var fromLanesPerDirection = from.street.LanesPerDirection;
+                var fromLanesPerDirection = from.LanesPerDirection;
 
-                ref var fromPaths = ref paths[intersection.RelativePosition(from)];
+                var idx = intersection.RelativePosition(from);
+                ref var fromPaths = ref paths[idx];
                 fromPaths = new Vector3[fromLanesPerDirection][][];
+
+                ref var fromLengths = ref lengths[idx];
+                fromLengths = new float[intersection.NumIntersectingStreets];
 
                 var endsHere = from.endIntersection == intersection;
 
                 int fromLane = fromLanesPerDirection;
-                if (from.street.isOneWay)
+                if (from.IsOneWay)
                 {
                     --fromLane;
                     Debug.Assert(endsHere, "invalid one-way street!");
@@ -532,9 +590,11 @@ namespace Transidious
 
                 while (true)
                 {
-                    ref var toPaths = ref fromPaths[from.LanePositionFromMiddle(fromLane) - 1];
+                    idx = from.LanePositionFromMiddle(fromLane) - 1;
+                    ref var toPaths = ref fromPaths[idx];
                     toPaths = new Vector3[intersection.NumIntersectingStreets][];
 
+                    var i = 0;
                     foreach (var to in intersection.OutgoingStreets)
                     {
                         var uturn = false;
@@ -551,9 +611,9 @@ namespace Transidious
 
                             uturn = true;
                         }
-
+                        
                         var toLanes = to.street.lanes;
-                        var toLanesHalf = to.street.LanesPerDirection;
+                        var toLanesHalf = to.LanesPerDirection;
 
                         int toLane;
                         var distanceFromMiddle = from.LanePositionFromMiddle(fromLane);
@@ -562,10 +622,10 @@ namespace Transidious
                         {
                             toLane = endsHere ? fromLane : from.MirrorLane(fromLane);
                         }
-                        else if (from.street.LanesPerDirection == to.street.LanesPerDirection)
+                        else if (from.LanesPerDirection == to.LanesPerDirection)
                         {
                             // Use equivalent lane
-                            if (to.street.isOneWay)
+                            if (to.IsOneWay)
                             {
                                 toLane = distanceFromMiddle - 1;
                             }
@@ -640,11 +700,14 @@ namespace Transidious
                             // currentPath.Add(p0_B);
                         }
 
-                        toPaths[intersection.RelativePosition(to)] = currentPath.ToArray();
+                        idx = intersection.RelativePosition(to);
+                        toPaths[idx] = currentPath.ToArray();
+                        fromLengths[idx] = Math.PathLength(currentPath);
+
                         currentPath.Clear();
                     }
 
-                    if (!endsHere || from.street.isOneWay)
+                    if (!endsHere || from.IsOneWay)
                     {
                         --fromLane;
                         if (fromLane < 0)
@@ -662,6 +725,9 @@ namespace Transidious
                     }
                 }
             }
+
+            computedIntersectionPaths.Add(intersection, paths);
+            intersectionPathLengths.Add(intersection, lengths);
 
             return paths;
         }
@@ -690,21 +756,23 @@ namespace Transidious
             else if (firstCar.distanceFromStart > distanceFromStart)
             {
                 newCar.next = firstCar;
+                firstCar.prev = newCar;
+                
                 cars[lane] = newCar;
             }
             else
             {
-                var prevCar = firstCar;
-                firstCar = firstCar.next;
-
-                while (firstCar != null && firstCar.distanceFromStart < distanceFromStart)
+                while (firstCar.next != null && firstCar.next.distanceFromStart < distanceFromStart)
                 {
-                    prevCar = firstCar;
                     firstCar = firstCar.next;
                 }
 
-                prevCar.next = newCar;
-                newCar.next = firstCar;
+                if (firstCar.next != null)
+                    firstCar.next.prev = newCar;
+
+                newCar.next = firstCar.next;
+                firstCar.next = newCar;
+                newCar.prev = firstCar;
             }
 
             if (path.nextStep is TurnStep turnStep)
@@ -712,6 +780,7 @@ namespace Transidious
                 newCar.nextIntersection = turnStep.intersection;
                 newCar.nextSegment = turnStep.to.segment;
                 newCar.nextTurn = GetTurnType(newCar.segment, newCar.nextSegment, newCar.nextIntersection);
+                newCar.nextLane = GetDefaultLane(newCar.nextSegment, turnStep.to.backward);
             }
 
             return newCar;
@@ -719,26 +788,23 @@ namespace Transidious
 
         public void ExitStreetSegment(StreetSegment seg, DrivingCar car)
         {
-#if DEBUG
-            Destroy(car.numberTxt?.gameObject);
-            car.numberTxt = null;
-#endif
-
             var cars = GetDrivingCars(seg);
-            var firstCar = cars[car.lane];
-            if (firstCar == car)
+            if (car.prev == null)
             {
                 cars[car.lane] = car.next;
-                return;
             }
-
-            while (firstCar.next != car)
+            else
             {
-                Debug.Assert(firstCar.next != null, "car is not driving on this street!");
-                firstCar = firstCar.next;
+                car.prev.next = car.next;
             }
 
-            firstCar.next = car.next;
+            if (car.next != null)
+            {
+                car.next.prev = car.prev;
+            }
+            
+            car.prev = null;
+            car.next = null;
         }
 
         TurnType GetTurnType(StreetSegment from, StreetSegment to, StreetIntersection intersection)
@@ -785,30 +851,50 @@ namespace Transidious
             return TurnType.Unclassified;
         }
 
-        public CarOnIntersection EnterIntersection(DrivingCar drivingCar,
-                                                   StreetIntersection intersection,
-                                                   StreetSegment nextSegment)
+        public void EnterIntersection(DrivingCar drivingCar, StreetIntersection intersection)
         {
-            var coi = new CarOnIntersection
+            var firstCar = GetFirstCarOnIntersection(intersection, drivingCar.segment, drivingCar.nextSegment);
+            drivingCar.next = null;
+            drivingCar.prev = null;
+
+            if (firstCar != null)
             {
-                car = drivingCar.car,
-                turnType = drivingCar.nextTurn ?? TurnType.Unclassified,
-                comesFrom = drivingCar.segment,
-                goesTo = nextSegment
-            };
+                firstCar.prev = drivingCar;
+                drivingCar.next = firstCar;
+            }
 
-            GetCarsOnIntersection(intersection).Add(coi);
-            return coi;
+            SetFirstCarOnIntersection(intersection, drivingCar.segment, drivingCar.nextSegment, drivingCar);
         }
 
-        public void ExitIntersection(CarOnIntersection car, StreetIntersection intersection)
+        public void ExitIntersection(DrivingCar car, StreetIntersection intersection)
         {
-            GetCarsOnIntersection(intersection).Remove(car);
+            if (car.next != null)
+            {
+                GameController.instance.EnterPause();
+                GameController.instance.input.SetCameraPosition(car.CurrentPosition);
+                GameController.instance.input.SetZoomLevel(InputController.minZoom);
+                car.path.citizen.ActivateModal();
+                return;
+            }
+            
+            Debug.Assert(car.next == null, "only last car can exit intersection!");
+
+            if (car.prev == null)
+            {
+                SetFirstCarOnIntersection(intersection, car.segment, car.nextSegment, null);
+            }
+            else
+            {
+                car.prev.next = null;
+            }
+
+            car.prev = null;
+            car.next = null;
         }
 
-        int GetDefaultLane(StreetSegment seg, bool backward)
+        public int GetDefaultLane(StreetSegment seg, bool backward)
         {
-            if (backward && !seg.street.isOneWay)
+            if (backward && !seg.IsOneWay)
             {
                 return seg.LeftmostLane;
             }
@@ -1396,18 +1482,18 @@ namespace Transidious
             var carsOnIntersection = GetCarsOnIntersection(intersection);
             foreach (var coi in carsOnIntersection)
             {
-                if (coi.car == dc.car)
+                if (coi == dc)
                 {
                     continue;
                 }
-                if (coi.comesFrom == dc.segment)
+                if (coi.segment == dc.segment)
                 {
                     continue;
                 }
 
-                var fromPos = intersection.RelativePosition(coi.comesFrom);
+                var fromPos = intersection.RelativePosition(coi.segment);
                 if (ConflictingTurns(intersection, relativePos, fromPos, dc.nextTurn.Value,
-                                     coi.turnType))
+                                     coi.nextTurn.Value))
                 {
                     return true;
                 }
@@ -1449,36 +1535,12 @@ namespace Transidious
             var timeToRed = tl.TimeUntilNextRedPhase;
             var distanceLeft = car.DistanceToIntersection;
 
-            return (v_alpha * distanceLeft) >= timeToRed.TotalSeconds;
+            return (v_alpha / distanceLeft) >= timeToRed.TotalSeconds;
         }
         
         float GetIntersectionTerm(DrivingCar car, float a, float v_alpha)
         {
             StreetIntersection intersection = car.nextIntersection;
-
-            // U-Turn - check for cars on the same segment (but opposite lane).
-            if (intersection.intersectingStreets.Count == 1)
-            {
-                var firstCar = drivingCars[car.nextSegment][car.nextSegment.MirrorLane(car.lane)];
-                if (firstCar == null)
-                {
-                    return 0f;
-                }
-
-                return GetNextCarTerm(car, firstCar, v_alpha, a);
-            }
-
-            // Trivial intersection - check for cars on the next segment.
-            if (intersection.intersectingStreets.Count == 2)
-            {
-                // var firstCar = drivingCars[car.nextSegment][car.lane];
-                // if (firstCar == null)
-                // {
-                //     return 0f;
-                // }
-                // return GetNextCarTerm(car, firstCar, v_alpha, a);
-                return 0f;
-            }
 
             var distanceToIntersection = car.DistanceToIntersection;
             TrafficLight tl = car.backward
@@ -1500,24 +1562,14 @@ namespace Transidious
             return 0f;
         }
 
-        float GetNextCarTerm(DrivingCar car, float v_alpha, float a)
+        float GetNextCarTerm(DrivingCar car, Tuple<DrivingCar, float> nextCarAndDistance, float v_alpha, float a)
         {
-            // Approaching rate.
-            float deltaV = v_alpha - car.next.CurrentVelocity.RealTimeMPS;
-
             // Net distance to next vehicle.
-            float s_alpha = car.DistanceToNextCar;
+            float s_alpha = Mathf.Max(car.Length * 0.5f, 
+                nextCarAndDistance.Item2 - car.Length * 0.5f - nextCarAndDistance.Item1.Length * .5f);
 
-            return BusyRoadTerm(s0_car, T, a, v_alpha, s_alpha, deltaV);
-        }
-
-        float GetNextCarTerm(DrivingCar car, DrivingCar nextCar, float v_alpha, float a)
-        {
             // Approaching rate.
-            float deltaV = v_alpha - nextCar.CurrentVelocity.RealTimeMPS;
-
-            // Net distance to next vehicle.
-            float s_alpha = car.DistanceToIntersection + nextCar.distanceFromStart;
+            float deltaV = v_alpha - nextCarAndDistance.Item1.CurrentVelocity.RealTimeMPS;
 
             return BusyRoadTerm(s0_car, T, a, v_alpha, s_alpha, deltaV);
         }
@@ -1531,15 +1583,11 @@ namespace Transidious
             float freeRoadTerm = Mathf.Pow(v_alpha / v0, delta);
             float busyRoadTerm;
 
-            // FIXME next car for turns
-            if (car.Turning)
-            {
-                busyRoadTerm = 0f;
-            }
             // If there's another car on the same segment before any intersection, use that.
-            else if (car.next != null)
+            var nextCar = GetNextCar(car);
+            if (nextCar != null)
             {
-                busyRoadTerm = GetNextCarTerm(car, v_alpha, a);
+                busyRoadTerm = GetNextCarTerm(car, nextCar, v_alpha, a);
             }
             // Otherwise, if there is a non-trivial intersection, check that.
             else if (car.nextIntersection != null)
@@ -1550,6 +1598,11 @@ namespace Transidious
             else
             {
                 busyRoadTerm =  BusyRoadTerm(0f, 0f, a, v_alpha, car.DistanceToGoal, v_alpha);
+            }
+
+            if (float.IsNaN(busyRoadTerm)&&!t.Equals(-1f))
+            {
+                GetSafeAcceleration(car, -1f, v_alpha, a);
             }
 
             // Safe Acceleration
@@ -1638,7 +1691,7 @@ namespace Transidious
 
             foreach (var tl in trafficLights)
             {
-                tl.Update(Time.deltaTime * sim.SpeedMultiplier);
+                tl.Value.Update(Time.deltaTime * sim.SpeedMultiplier);
             }
         }
 
@@ -1661,38 +1714,61 @@ namespace Transidious
             if (!renderCarNumbers)
                 return;
 
-            foreach (var pair in drivingCars)
+            foreach (var c in sim.citizens)
             {
-                foreach (var carIt in pair.Value)
+                var path = c.Value.activePath;
+                if (path == null || !path.IsDriving)
                 {
-                    var car = carIt;
-
-                    int i = 0;
-                    while (car != null)
-                    {
-                        Vector3 pos = car.CurrentPosition;
-                        pos.z = Map.Layer(MapLayer.Foreground);
-
-                        var txt = ((int)car.distanceFromStart).ToString() + "m/" + car.lane.ToString() + "/" + i.ToString();
-                        if (car.numberTxt == null)
-                        {
-                            car.numberTxt = sim.game.loadedMap.CreateText(pos, txt, Color.black, 11);
-                            car.numberTxt.textMesh.fontSize = .01f;
-                            car.numberTxt.textMesh.alignment = TMPro.TextAlignmentOptions.Center;
-                        }
-                        else
-                        {
-                            car.numberTxt.transform.position = pos;
-                            car.numberTxt.textMesh.text = txt;
-                        }
-
-                        car.numberTxt.textMesh.autoSizeTextContainer = true;
-                        car.numberTxt.textMesh.ForceMeshUpdate();
-
-                        car = car.next;
-                        ++i;
-                    }
+                    continue;
                 }
+
+                TMP_Text txt;
+                if (path.transform.childCount == 0)
+                {
+                    var child = new GameObject();
+                    child.transform.SetParent(path.transform, false);
+
+                    txt = child.AddComponent<TMPro.TextMeshPro>();
+                    txt.fontSize = 20f;
+                    txt.color = Color.black;
+                    txt.alignment = TextAlignmentOptions.Center | TextAlignmentOptions.Midline;
+                }
+                else
+                {
+                    txt = path.transform.GetChild(0).GetComponent<TMP_Text>();
+                }
+
+                if (path._drivingState.drivingCar.Turning)
+                {
+                    txt.text = "";
+                    continue;
+                }
+
+                var dc = path._drivingState.drivingCar;
+                var pos = 0;
+                var n = 0;
+
+                var current = dc;
+                while (current != null)
+                {
+                    current = current.prev;
+                    ++pos;
+                    ++n;
+                }
+
+                current = dc.next;
+                while (current != null)
+                {
+                    current = current.next;
+                    ++n;
+                }
+
+                if (pos == 1)
+                {
+                    Debug.Assert(dc == GetDrivingCars(dc.segment)[dc.lane], "not first");
+                }
+
+                txt.text = pos + " / " + n;
             }
         }
 #endif

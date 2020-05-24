@@ -94,7 +94,7 @@ namespace Transidious
 
         static string GetFirstName(FirstNameInfo[] names, int totalOccurences)
         {
-            var idx = UnityEngine.Random.Range(0, totalOccurences);
+            var idx = RNG.Next(0, totalOccurences);
             var sum = 0;
             var i = 0;
 
@@ -147,7 +147,7 @@ namespace Transidious
                     LoadFile("Names/last_names_en_US", ref lastNames);
                 }
 
-                var idx = UnityEngine.Random.Range(0, lastNames.Length);
+                var idx = RNG.Next(0, lastNames.Length);
                 return lastNames[idx];
             }
         }
@@ -161,7 +161,7 @@ namespace Transidious
                     LoadFile("Names/places_en_US", ref places);
                 }
 
-                var idx = UnityEngine.Random.Range(0, places.Length);
+                var idx = RNG.Next(0, places.Length);
                 return places[idx];
             }
         }
@@ -192,149 +192,149 @@ namespace Transidious
                     80-84	1,834,897	0.65%	3,110,470	1.11%   48.51%      98.83%
                     85+	    1,226,998	0.44%	3,012,589	1.07%   48.95%      99.90%
                 */
-                var rnd = UnityEngine.Random.value;
+                var rnd = RNG.value;
                 if (rnd < 0.0349f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(0, 5));
+                    return new Tuple<bool, int>(false, RNG.Next(0, 5));
                 }
                 if (rnd < 0.0723f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(5, 10));
+                    return new Tuple<bool, int>(false, RNG.Next(5, 10));
                 }
                 if (rnd < 0.1097f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(10, 15));
+                    return new Tuple<bool, int>(false, RNG.Next(10, 15));
                 }
                 if (rnd < 0.1466f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(15, 20));
+                    return new Tuple<bool, int>(false, RNG.Next(15, 20));
                 }
                 if (rnd < 0.1810f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(20, 25));
+                    return new Tuple<bool, int>(false, RNG.Next(20, 25));
                 }
                 if (rnd < 0.2158f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(25, 30));
+                    return new Tuple<bool, int>(false, RNG.Next(25, 30));
                 }
                 if (rnd < 0.2515f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(30, 35));
+                    return new Tuple<bool, int>(false, RNG.Next(30, 35));
                 }
                 if (rnd < 0.2917f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(35, 40));
+                    return new Tuple<bool, int>(false, RNG.Next(35, 40));
                 }
                 if (rnd < 0.3312f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(40, 45));
+                    return new Tuple<bool, int>(false, RNG.Next(40, 45));
                 }
                 if (rnd < 0.3663f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(45, 50));
+                    return new Tuple<bool, int>(false, RNG.Next(45, 50));
                 }
                 if (rnd < 0.3969f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(50, 55));
+                    return new Tuple<bool, int>(false, RNG.Next(50, 55));
                 }
                 if (rnd < 0.4200f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(55, 60));
+                    return new Tuple<bool, int>(false, RNG.Next(55, 60));
                 }
                 if (rnd < 0.4383f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(60, 65));
+                    return new Tuple<bool, int>(false, RNG.Next(60, 65));
                 }
                 if (rnd < 0.4539f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(65, 70));
+                    return new Tuple<bool, int>(false, RNG.Next(65, 70));
                 }
                 if (rnd < 0.4678f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(70, 75));
+                    return new Tuple<bool, int>(false, RNG.Next(70, 75));
                 }
                 if (rnd < 0.4786f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(75, 80));
+                    return new Tuple<bool, int>(false, RNG.Next(75, 80));
                 }
                 if (rnd < 0.4851f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(80, 85));
+                    return new Tuple<bool, int>(false, RNG.Next(80, 85));
                 }
                 if (rnd < 0.4895f)
                 {
-                    return new Tuple<bool, int>(false, UnityEngine.Random.Range(85, 105));
+                    return new Tuple<bool, int>(false, RNG.Next(85, 105));
                 }
                 if (rnd < 0.5228)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(0, 5));
+                    return new Tuple<bool, int>(true, RNG.Next(0, 5));
                 }
                 if (rnd < 0.5584f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(5, 10));
+                    return new Tuple<bool, int>(true, RNG.Next(5, 10));
                 }
                 if (rnd < 0.5940f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(10, 15));
+                    return new Tuple<bool, int>(true, RNG.Next(10, 15));
                 }
                 if (rnd < 0.6289f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(15, 20));
+                    return new Tuple<bool, int>(true, RNG.Next(15, 20));
                 }
                 if (rnd < 0.6619f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(20, 25));
+                    return new Tuple<bool, int>(true, RNG.Next(20, 25));
                 }
                 if (rnd < 0.6960f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(25, 30));
+                    return new Tuple<bool, int>(true, RNG.Next(25, 30));
                 }
                 if (rnd < 0.7322f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(30, 35));
+                    return new Tuple<bool, int>(true, RNG.Next(30, 35));
                 }
                 if (rnd < 0.7727f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(35, 40));
+                    return new Tuple<bool, int>(true, RNG.Next(35, 40));
                 }
                 if (rnd < 0.8129f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(40, 45));
+                    return new Tuple<bool, int>(true, RNG.Next(40, 45));
                 }
                 if (rnd < 0.8492f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(45, 50));
+                    return new Tuple<bool, int>(true, RNG.Next(45, 50));
                 }
                 if (rnd < 0.8492f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(50, 55));
+                    return new Tuple<bool, int>(true, RNG.Next(50, 55));
                 }
                 if (rnd < 0.8811f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(55, 60));
+                    return new Tuple<bool, int>(true, RNG.Next(55, 60));
                 }
                 if (rnd < 0.9058f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(60, 65));
+                    return new Tuple<bool, int>(true, RNG.Next(60, 65));
                 }
                 if (rnd < 0.9259f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(65, 70));
+                    return new Tuple<bool, int>(true, RNG.Next(65, 70));
                 }
                 if (rnd < 0.9441f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(70, 75));
+                    return new Tuple<bool, int>(true, RNG.Next(70, 75));
                 }
                 if (rnd < 0.9617f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(75, 80));
+                    return new Tuple<bool, int>(true, RNG.Next(75, 80));
                 }
                 if (rnd < 0.9772f)
                 {
-                    return new Tuple<bool, int>(true, UnityEngine.Random.Range(80, 85));
+                    return new Tuple<bool, int>(true, RNG.Next(80, 85));
                 }
 
-                return new Tuple<bool, int>(true, UnityEngine.Random.Range(85, 105));
+                return new Tuple<bool, int>(true, RNG.Next(85, 105));
             }
         }
     }

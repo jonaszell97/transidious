@@ -243,6 +243,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef70e60e73e0e01794f56de5c7d60f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  loadingScreenText: {fileID: 1062539485438546782}
 --- !u!1001 &1062539484207747342
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -250,11 +251,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1062539486223006412}
     m_Modifications:
-    - target: {fileID: 6592840648467451611, guid: 2db00d72f6b6b338ab6309249c2ae260,
-        type: 3}
-      propertyPath: m_Name
-      value: UISpinner
-      objectReference: {fileID: 0}
     - target: {fileID: 6353002060070756674, guid: 2db00d72f6b6b338ab6309249c2ae260,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -359,6 +355,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6592840648467451611, guid: 2db00d72f6b6b338ab6309249c2ae260,
+        type: 3}
+      propertyPath: m_Name
+      value: UISpinner
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2db00d72f6b6b338ab6309249c2ae260, type: 3}

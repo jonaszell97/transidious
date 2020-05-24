@@ -31,19 +31,10 @@ namespace Transidious
         /// The (ordered) partial streets of this street.
         public List<StreetSegment> segments;
 
-        /// <summary>
         /// Whether or not this street is lit.
-        /// </summary>
         public bool lit;
 
-        /// <summary>
-        /// Whether or not this street is onw-way only.
-        /// </summary>
-        public bool isOneWay;
-
-        /// <summary>
         /// The maximum speed (in kmh) of this street.
-        /// </summary>
         public Velocity maxspeed;
 
         /// The number of lanes on the road.
@@ -53,7 +44,7 @@ namespace Transidious
         public float length;
 
         public void Initialize(Map map, Type type, string name, bool lit,
-                               bool isOneWay, int maxspeed, int lanes, int id = -1)
+                               int maxspeed, int lanes, int id = -1)
         {
             base.Initialize(MapObjectKind.Street, id);
 
@@ -61,7 +52,6 @@ namespace Transidious
             this.type = type;
             this.name = name;
             this.lit = lit;
-            this.isOneWay = isOneWay;
             this.maxspeed = Velocity.FromRealTimeKPH(maxspeed > 0 ? maxspeed : GetDefaultMaxSpeed());
             this.lanes = lanes > 0 ? lanes : GetDefaultLanes();
             this.segments = new List<StreetSegment>();
@@ -122,19 +112,6 @@ namespace Transidious
                 return 30;
             default:
                 return 50;
-            }
-        }
-
-        public int LanesPerDirection
-        {
-            get
-            {
-                if (isOneWay)
-                {
-                    return lanes;
-                }
-
-                return lanes / 2;
             }
         }
 
@@ -255,7 +232,7 @@ namespace Transidious
 
         void GenerateDirectionalArrow(StreetSegment seg, PositionOnStreetSegment posOnStreet)
         {
-            if (!seg.street.isOneWay || seg.length < 50f)
+            if (!seg.IsOneWay || seg.length < 50f)
             {
                 return;
             }
@@ -281,7 +258,7 @@ namespace Transidious
 
         void GenerateDirectionalArrow(StreetSegment seg)
         {
-            if (!seg.street.isOneWay || seg.length < 30f)
+            if (!seg.IsOneWay || seg.length < 30f)
             {
                 return;
             }
@@ -385,6 +362,7 @@ namespace Transidious
                                         StreetIntersection startIntersection,
                                         StreetIntersection endIntersection,
                                         int atPosition = -1,
+                                        bool isOneWay = false,
                                         bool hasTramTracks = false,
                                         int segId = -1)
         {
@@ -407,8 +385,8 @@ namespace Transidious
                 segments.Insert(pos, seg);
             }
 
-            seg.Initialize(this, pos, path, startIntersection, endIntersection, hasTramTracks,
-                           segId);
+            seg.Initialize(this, pos, path, startIntersection, endIntersection, 
+                           isOneWay, hasTramTracks, segId);
 
 #if DEBUG
             seg.name = this.name + ", Segment #" + this.segments.Count;
@@ -423,9 +401,14 @@ namespace Transidious
             var newSeg = AddSegment(seg.Positions.Select(v => (Vector3)v.Deserialize()).ToList(),
                                     map.GetMapObject<StreetIntersection>((int)seg.StartIntersectionID),
                                     map.GetMapObject<StreetIntersection>((int)seg.EndIntersectionID),
-                                    -1, seg.HasTramTracks, (int)seg.MapObject.Id);
+                                    -1, false,
+                                    seg.HasTramTracks, (int)seg.MapObject.Id);
 
-            newSeg.occupiedParkingSpots = seg.OccupiedParkingSpots;
+            var flags = (StreetSegment.Flags) seg.Flags;
+            newSeg.flags = flags;
+
+            newSeg.startTrafficLight = map.GetTrafficLight(seg.StartTrafficLightID);
+            newSeg.endTrafficLight = map.GetTrafficLight(seg.EndTrafficLightID);
             newSeg.Deserialize(seg.MapObject);
         }
 
@@ -435,7 +418,7 @@ namespace Transidious
             seg.DeleteSegment();
 
             var splitPt = newIntersection.Location;
-            var dist = (seg.positions.First() - splitPt).magnitude;
+            var dist = ((Vector2)seg.positions.First() - splitPt).magnitude;
 
             int i = 1;
             for (; i < seg.positions.Count; ++i)
@@ -480,7 +463,6 @@ namespace Transidious
                 MapObject = base.ToProtobuf(),
                 DisplayName = displayName ?? string.Empty,
                 Lit = lit,
-                Oneway = isOneWay,
                 Maxspeed = (uint)maxspeed.KPH,
                 Lanes = (uint)lanes,
                 Type = (Serialization.Street.Types.Type)type,
@@ -493,8 +475,8 @@ namespace Transidious
         public static Street Deserialize(Serialization.Street street, Map map)
         {
             var s = map.CreateStreet(street.MapObject.Name, (Type)street.Type, street.Lit,
-                                     street.Oneway, (int)street.Maxspeed,
-                                     (int)street.Lanes, (int)street.MapObject.Id);
+                                           (int)street.Maxspeed,
+                                           (int)street.Lanes, (int)street.MapObject.Id);
 
             s.Deserialize(street.MapObject);
 

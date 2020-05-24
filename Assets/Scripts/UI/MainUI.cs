@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UI;
 
 namespace Transidious
 {
@@ -189,6 +190,14 @@ namespace Transidious
         
         /// The transit vehicle info modal.
         public UITransitVehicleModal transitVehicleModal;
+
+#if DEBUG
+        /// The street modal.
+        public UIStreetModal streetModal;
+
+        /// The intersection modal.
+        public UIIntersectionModal intersectionModal;
+#endif
         
         void RegisterUICallbacks()
         {
@@ -275,6 +284,11 @@ namespace Transidious
             stopModal.Initialize();
             lineModal.Initialize();
             transitVehicleModal.Initialize();
+            
+#if DEBUG
+            streetModal.Initialize();
+            intersectionModal.Initialize();
+#endif
         }
 
         void Awake()
@@ -306,14 +320,7 @@ namespace Transidious
 
         void OnPlayPauseClick()
         {
-            if (game.status == GameController.GameStatus.Paused)
-            {
-                game.ExitPause();
-            }
-            else
-            {
-                game.EnterPause();
-            }
+            game.TogglePause();
         }
 
         void OnSimSpeedClick()
@@ -628,15 +635,15 @@ namespace Transidious
 
             foreach (var b in game.loadedMap.buildings)
             {
-                if (b.type != Building.Type.Residential || b.occupants == 0)
+                if (b.type != Building.Type.Residential || b.ResidentCount == 0)
                 {
                     continue;
                 }
 
-                maxOccupants = System.Math.Max(maxOccupants, b.occupants * populationMultiplier);
+                maxOccupants = System.Math.Max(maxOccupants, b.ResidentCount * populationMultiplier);
 
                 var radius = Mathf.Min((b.centroid - b.collisionRect.center).magnitude * radiusMultiplier, 250f);
-                buildings.Add(Tuple.Create(b.centroid, b.occupants * populationMultiplier, radius));
+                buildings.Add(Tuple.Create(b.centroid, b.ResidentCount * populationMultiplier, radius));
             }
 
             if (buildings.Count == 0)

@@ -16,36 +16,58 @@ namespace Transidious
             YellowRed = 3,
         }
 
+        private static int _lastAssignedID = 0;
         public static readonly float DefaultGreenTime = 10f;
         public static readonly float DefaultRedTime = 10f;
         public static readonly float DefaultYellowTime = 2f;
         public static readonly float DefaultYellowRedTime = 4f;
 
-        public TrafficLight(float initialRedTime, float redTime, bool green = false)
+        public TrafficLight(int numTrafficLights, int greenPhase)
         {
-            this.redTime = redTime;
-            this.timeToNextSwitch = initialRedTime;
-            this.status = green ? Status.Green : Status.Red;
+            this._timeToNextSwitch = greenPhase == 0
+                ? DefaultGreenTime
+                : greenPhase * (DefaultRedTime + DefaultYellowTime)
+                  + (greenPhase - 1) * DefaultYellowRedTime;
+
+            this._redTime = (numTrafficLights - 1) 
+                          * (DefaultRedTime
+                             + DefaultYellowTime
+                             + DefaultYellowRedTime);
+
+            this.Id = ++_lastAssignedID;
+            this.GreenPhase = greenPhase;
+            this._status = greenPhase == 0 ? Status.Green : Status.Red;
         }
 
-        public Status status;
-        float timeToNextSwitch;
-        float redTime;
+        public TrafficLight(Serialization.TrafficLight tl)
+        {
+            Id = tl.ID;
+            _status = (Status) tl.Status;
+            _timeToNextSwitch = tl.TimeToNextSwitch;
+            _redTime = tl.RedTime;
+            GreenPhase = tl.GreenPhase;
+        }
+
+        public readonly int Id;
+        private Status _status;
+        private float _timeToNextSwitch;
+        private readonly float _redTime;
+        public int GreenPhase { get; private set; }
 
         public TimeSpan TimeUntilNextRedPhase
         {
             get
             {
-                switch (status)
+                switch (_status)
                 {
                     case Status.Red:
                     case Status.YellowRed:
                     default:
                         return TimeSpan.Zero;
                     case Status.Yellow:
-                        return TimeSpan.FromSeconds(timeToNextSwitch);
+                        return TimeSpan.FromSeconds(_timeToNextSwitch);
                     case Status.Green:
-                        return TimeSpan.FromSeconds(timeToNextSwitch + DefaultYellowTime);
+                        return TimeSpan.FromSeconds(_timeToNextSwitch + DefaultYellowTime);
                 }
             }
         }
@@ -58,7 +80,7 @@ namespace Transidious
         {
             get
             {
-                switch (status)
+                switch (_status)
                 {
                     case Status.Green:
                         default:
@@ -76,26 +98,26 @@ namespace Transidious
 
         void SetTimeToNextSwitch()
         {
-            switch (status)
+            switch (_status)
             {
             case Status.Green:
-                timeToNextSwitch = DefaultGreenTime;
+                _timeToNextSwitch = DefaultGreenTime;
                 break;
             case Status.Red:
-                timeToNextSwitch = redTime;
+                _timeToNextSwitch = _redTime;
                 break;
             case Status.Yellow:
-                timeToNextSwitch = DefaultYellowTime;
+                _timeToNextSwitch = DefaultYellowTime;
                 break;
             case Status.YellowRed:
-                timeToNextSwitch = DefaultYellowRedTime;
+                _timeToNextSwitch = DefaultYellowRedTime;
                 break;
             }
         }
 
         public void Switch()
         {
-            status = (Status)(((int)status + 1) % 4);
+            _status = (Status)(((int)_status + 1) % 4);
             SetTimeToNextSwitch();
 
 #if DEBUG
@@ -112,20 +134,32 @@ namespace Transidious
 
         public void Update(float delta)
         {
-            timeToNextSwitch -= delta;
-            if (timeToNextSwitch <= 0f)
+            _timeToNextSwitch -= delta;
+            if (_timeToNextSwitch <= 0f)
             {
                 Switch();
             }
         }
 
-        public bool MustStop => status == Status.Red || status == Status.YellowRed;
+        public bool MustStop => _status == Status.Red || _status == Status.YellowRed;
+
+        public Serialization.TrafficLight Serialize()
+        {
+            return new Serialization.TrafficLight
+            {
+                ID = Id,
+                Status = (int)_status,
+                RedTime = _redTime,
+                TimeToNextSwitch = _timeToNextSwitch,
+                GreenPhase = GreenPhase,
+            };
+        }
     }
 
     public class StreetIntersection : StaticMapObject, IStop
     {
         /// Position of the intersection.
-        public Vector3 position;
+        public Vector3 position => centroid;
 
         /// Intersecting streets.
         public List<StreetSegment> intersectingStreets;
@@ -168,7 +202,7 @@ namespace Transidious
 
             this.id = id;
             this.name = "";
-            this.position = pos;
+            this.centroid = pos;
             this.intersectingStreets = new List<StreetSegment>();
             this.streetAngles = new Dictionary<StreetSegment, float>();
         }
@@ -178,13 +212,15 @@ namespace Transidious
             return new Serialization.StreetIntersection
             {
                 MapObject = base.ToProtobuf(),
-                Position = ((Vector2)position).ToProtobuf(),
             };
         }
 
         public static StreetIntersection Deserialize(Serialization.StreetIntersection inter, Map map)
         {
-            var obj = map.CreateIntersection(inter.Position.Deserialize(), (int)inter.MapObject.Id);
+            // FIXME
+            inter.MapObject.Centroid = inter.Position;
+            
+            var obj = map.CreateIntersection(inter.MapObject.Centroid.Deserialize(), (int)inter.MapObject.Id);
             obj.Deserialize(inter.MapObject);
 
             return obj;
@@ -195,7 +231,7 @@ namespace Transidious
             intersectingStreets.Remove(seg);
         }
 
-        public Vector3 Location => position;
+        public Vector2 Location => position;
 
         public IEnumerable<IRoute> Routes
         {
@@ -224,7 +260,7 @@ namespace Transidious
         {
             get
             {
-                return intersectingStreets.Where(s => !s.street.isOneWay || s.endIntersection == this);
+                return intersectingStreets.Where(s => !s.IsOneWay || s.endIntersection == this);
             }
         }
 
@@ -232,7 +268,7 @@ namespace Transidious
         {
             get
             {
-                return intersectingStreets.Where(s => !s.street.isOneWay || s.startIntersection == this);
+                return intersectingStreets.Where(s => !s.IsOneWay || s.startIntersection == this);
             }
         }
 
@@ -304,7 +340,7 @@ namespace Transidious
             intersectingStreets.Add(seg);
         }
 
-        void CalculateRelativePositions()
+        public void CalculateRelativePositions()
         {
             if (relativePositions == null)
             {
@@ -425,14 +461,207 @@ namespace Transidious
             return slot % slotCount;
         }
 
-        public void GenerateTrafficLights(Map map)
+#if UNITY_EDITOR
+        bool IsPotentialMatch(StreetSegment thisSegment, StreetSegment otherSegment)
         {
-            if (intersectingStreets.Count <= 2)
-                return;
+            if (otherSegment.street.DisplayName == thisSegment.street.DisplayName)
+            {
+                return true;
+            }
+
+            var thisDirection = (thisSegment.positions.SecondToLast() - thisSegment.positions.Last());
+            var otherDirection = (otherSegment.positions.SecondToLast() - otherSegment.positions.Last());
+
+            return Math.IsStraightAngleDeg(thisDirection, otherDirection, 60f);
+        }
+        
+        bool IsPotentialMatchTwoWay(StreetSegment thisSegment, StreetSegment otherSegment, StreetIntersection otherInter)
+        {
+            if (otherSegment.street.DisplayName == thisSegment.street.DisplayName)
+            {
+                return true;
+            }
+
+            Vector2 thisDirection, otherDirection;
+            if (this == thisSegment.endIntersection)
+            {
+                thisDirection = (thisSegment.positions.SecondToLast() - thisSegment.positions.Last());
+            }
+            else
+            {
+                thisDirection = (thisSegment.positions[1] - thisSegment.positions[0]);
+            }
+            
+            if (otherInter == otherSegment.endIntersection)
+            {
+                otherDirection = (otherSegment.positions.SecondToLast() - otherSegment.positions.Last());
+            }
+            else
+            {
+                otherDirection = (otherSegment.positions[1] - otherSegment.positions[0]);
+            }
+            
+            return Math.IsStraightAngleDeg(thisDirection, otherDirection, 60f);
+        }
+
+        Tuple<StreetSegment, TrafficLight> CheckIntersectionTwoWay(
+            StreetSegment seg, StreetIntersection otherIntersection,
+            Dictionary<StreetIntersection, List<StreetSegment>> data,
+            bool recurse = true)
+        {
+            foreach (var other in otherIntersection.intersectingStreets)
+            {
+                if (other == seg)
+                    continue;
+
+                if (!IsPotentialMatchTwoWay(seg, other, otherIntersection))
+                {
+                    continue;
+                }
+
+                var otherHasTrafficLight = false;
+                TrafficLight tl = null;
+                
+                if (data == null)
+                {
+                    tl = otherIntersection == other.endIntersection
+                        ? other.endTrafficLight
+                        : other.startTrafficLight;
+
+                    otherHasTrafficLight = tl != null;
+                }
+                else if (data.TryGetValue(otherIntersection, out var value))
+                {
+                    otherHasTrafficLight = value.Contains(other);
+                }
+
+                if (!otherHasTrafficLight)
+                {
+                    if (!recurse)
+                        continue;
+                    
+                    var result = CheckIntersectionTwoWay(seg, 
+                        otherIntersection == other.endIntersection ? other.startIntersection : other.endIntersection,
+                        data, false);
+
+                    if (result == null)
+                        continue;
+
+                    return result;
+                }
+
+                return Tuple.Create(other, tl);
+            }
+
+            return null;
+        }
+
+        Tuple<StreetSegment, TrafficLight> FindPotentialOppositeSegmentTwoWay(
+            StreetSegment seg, 
+            Dictionary<StreetIntersection, List<StreetSegment>> data)
+        {
+            foreach (var s in intersectingStreets)
+            {
+                if (s == seg || s.OneWay)
+                {
+                    continue;
+                }
+                
+                var otherIntersection = this == s.startIntersection
+                    ? s.endIntersection
+                    : s.startIntersection;
+                
+                if (otherIntersection == null)
+                    continue;
+
+                var potentialResult = CheckIntersectionTwoWay(seg, otherIntersection, data);
+                if (potentialResult != null)
+                {
+                    return potentialResult;
+                }
+            }
+
+            return null;
+        }
+
+        Tuple<StreetSegment, TrafficLight> CheckIntersection(
+            StreetSegment seg, StreetIntersection otherIntersection,
+            Dictionary<StreetIntersection, List<StreetSegment>> data,
+            bool recurse = true)
+        {
+            foreach (var other in otherIntersection.intersectingStreets)
+            {
+                if (!other.OneWay
+                    || otherIntersection != other.endIntersection
+                    || !IsPotentialMatch(seg, other))
+                {
+                    continue;
+                }
+
+                var otherHasTrafficLight = false;
+                if (data == null)
+                {
+                    otherHasTrafficLight = other.endTrafficLight != null;
+                }
+                else if (data.TryGetValue(otherIntersection, out var value))
+                {
+                    otherHasTrafficLight = value.Contains(other);
+                }
+
+                if (!otherHasTrafficLight)
+                {
+                    if (!recurse)
+                        continue;
+
+                    var result = CheckIntersection(seg, other.startIntersection, data, false);
+                    if (result == null)
+                        continue;
+
+                    return result;
+                }
+
+                return Tuple.Create(other, other.endTrafficLight);
+            }
+
+            return null;
+        }
+
+        public Tuple<StreetSegment, TrafficLight> FindPotentialOppositeSegment(
+            StreetSegment seg, Dictionary<StreetIntersection, List<StreetSegment>> data = null)
+        {
+            if (!seg.OneWay)
+                return FindPotentialOppositeSegmentTwoWay(seg, data);
+
+            foreach (var s in intersectingStreets)
+            {
+                if (s.street.DisplayName == seg.street.DisplayName)
+                    continue;
+
+                var otherIntersection = this == s.startIntersection
+                    ? s.endIntersection
+                    : s.startIntersection;
+
+                if (otherIntersection == null)
+                    continue;
+
+                var potentialResult = CheckIntersection(seg, otherIntersection, data);
+                if (potentialResult != null)
+                {
+                    return potentialResult;
+                }
+            }
+
+            return null;
+        }
+
+        public void GenerateTrafficLights(Map map, Dictionary<StreetIntersection, List<StreetSegment>> data)
+        {
+            var segments = data[this];
+            // if (intersectingStreets.Count <= 2)
+            //     return;
 
             CalculateRelativePositions();
 
-#if DEBUG
             if (GameController.instance.sim.trafficSim.renderStreetOrder)
             {
                 foreach (var seg in intersectingStreets)
@@ -448,104 +677,130 @@ namespace Transidious
                     txt.textMesh.ForceMeshUpdate();
                 }
             }
-#endif
 
-            bool shouldGenerateTrafficLights = false;
-            bool allOneWay = true;
-            bool foundLink = false;
+            // var shouldGenerateTrafficLights = false;
+            // var oneWay = 0;
+            // var foundLink = false;
+            //
+            // foreach (var seg in intersectingStreets)
+            // {
+            //     oneWay += seg.isOneWay ? 1 : 0;
+            //     
+            //     switch (seg.street.type)
+            //     {
+            //     case Street.Type.Primary:
+            //     case Street.Type.Secondary:
+            //         shouldGenerateTrafficLights = true;
+            //         break;
+            //     case Street.Type.Link:
+            //         foundLink = true;
+            //         break;
+            //     default:
+            //         break;
+            //     }
+            // }
+            //
+            // if (!shouldGenerateTrafficLights || (oneWay >= intersectingStreets.Count - 1) || foundLink)
+            // {
+            //     return;
+            // }
+
+            var trafficSim = map.Game.sim.trafficSim;
+            var assignments = new Dictionary<StreetSegment, StreetSegment>();
+            var assigned = new HashSet<StreetSegment>();
+            var greenPhases = new HashSet<int>();
 
             foreach (var seg in intersectingStreets)
             {
-                allOneWay &= seg.street.isOneWay;
-                switch (seg.street.type)
-                {
-                case Street.Type.Primary:
-                case Street.Type.Secondary:
-                    // case Street.Type.Tertiary:
-                    shouldGenerateTrafficLights = true;
-                    break;
-                case Street.Type.Link:
-                    foundLink = true;
-                    break;
-                default:
-                    break;
-                }
-            }
+                if (assigned.Contains(seg) || !segments.Contains(seg))
+                    continue;
 
-            if (!shouldGenerateTrafficLights || allOneWay || foundLink)
-            {
-                return;
-            }
+                // var potentialOpposite = FindPotentialOppositeSegment(seg, data);
+                // if (potentialOpposite?.Item2 != null)
+                // {
+                //     SetTrafficLight(seg, potentialOpposite.Item2);
+                //     assigned.Add(seg);
+                //     ++numTrafficLights;
+                //     greenPhases.Add(potentialOpposite.Item2.GreenPhase);
+                //
+                //     continue;
+                // }
 
-            var trafficSim = map.Game.sim.trafficSim;
+                var thisDir = seg.RelativeDirection(this);
 
-            int numStreets = intersectingStreets.Count;
-            if (numStreets % 2 != 0)
-            {
-                ++numStreets;
-            }
-
-            numTrafficLights = numStreets / 2;
-            var redTime = (numTrafficLights - 1) * (TrafficLight.DefaultRedTime
-                    + TrafficLight.DefaultYellowTime
-                + TrafficLight.DefaultYellowRedTime);
-
-            for (int i = 0; i < numTrafficLights; ++i)
-            {
-                var initialRedTime = i == 0
-                    ? TrafficLight.DefaultGreenTime
-                    : i * (TrafficLight.DefaultRedTime + TrafficLight.DefaultYellowTime)
-                        + (i - 1) * TrafficLight.DefaultYellowRedTime;
-
-                var tl = new TrafficLight(initialRedTime, redTime, i == 0);
-                trafficSim.trafficLights.Add(tl);
-
-                var seg = intersectingStreets[i];
-                SetTrafficLight(seg, tl);
-
-                var relativePos = relativePositions[seg];
                 StreetSegment oppositeSeg = null;
+                float minAngle = 30f;
 
                 foreach (var otherSeg in intersectingStreets)
                 {
-                    if (seg == otherSeg)
+                    if (seg == otherSeg || !segments.Contains(otherSeg))
                         continue;
 
-                    var otherPos = relativePositions[otherSeg];
-                    if (System.Math.Abs(otherPos - relativePos) == numTrafficLights)
+                    var otherDir = otherSeg.RelativeDirection(this);
+                    var angle = Mathf.Abs(180f - Math.DirectionalAngleDeg(thisDir, otherDir));
+
+                    if (angle < minAngle)
                     {
+                        minAngle = angle;
                         oppositeSeg = otherSeg;
-                        break;
                     }
                 }
 
-                if (oppositeSeg != null)
-                    SetTrafficLight(oppositeSeg, tl);
-
-#if DEBUG
-                if (trafficSim.renderTrafficLights)
+                ++numTrafficLights;
+                assignments.Add(seg, oppositeSeg);
+                assigned.Add(seg);
+                assigned.Add(oppositeSeg);
+            }
+            foreach (var (seg, value) in assignments)
+            {
+                var greenPhase = 0;
+                while (greenPhases.Contains(greenPhase))
                 {
-                    var sprite1 = SpriteManager.CreateSprite(tl.SpriteName);
-
-                    sprite1.transform.SetParent(map.transform);
-                    sprite1.transform.position = GetTrafficLightPosition(seg);
-                    sprite1.transform.SetLayer(MapLayer.Foreground);
-
-                    tl.spriteObj1 = sprite1;
-
-                    if (oppositeSeg != null)
-                    {
-                        var sprite2 = SpriteManager.CreateSprite(tl.SpriteName);
-
-                        sprite2.transform.SetParent(map.transform);
-                        sprite2.transform.position = GetTrafficLightPosition(oppositeSeg);
-                        sprite2.transform.SetLayer(MapLayer.Foreground);
-
-                        tl.spriteObj2 = sprite2;
-                    }
+                    ++greenPhase;
                 }
-#endif
+
+                greenPhases.Add(greenPhase);
+                
+                var tl = new TrafficLight(numTrafficLights, greenPhase);
+                trafficSim.trafficLights.Add(tl.Id, tl);
+
+                SetTrafficLight(seg, tl);
+
+                if (value != null)
+                    SetTrafficLight(value, tl);
             }
         }
+#endif
+
+#if DEBUG
+        public void CreateTrafficLightSprites()
+        {
+            var map = SaveManager.loadedMap;
+            foreach (var seg in intersectingStreets)
+            {
+                var tl = seg.GetTrafficLight(this);
+                if (tl == null) 
+                    continue;
+
+                var sprite1 = SpriteManager.CreateSprite(tl.SpriteName);
+                sprite1.transform.SetParent(map.transform);
+                sprite1.transform.position = GetTrafficLightPosition(seg);
+                sprite1.transform.SetLayer(MapLayer.Foreground);
+                sprite1.name = tl.Id.ToString();
+
+                if (tl.spriteObj1 == null)
+                    tl.spriteObj1 = sprite1;
+                else
+                    tl.spriteObj2 = sprite1;
+            }
+        }
+        
+        public override void ActivateModal()
+        {
+            var modal = MainUI.instance.intersectionModal;
+            modal.SetIntersection(this);
+            modal.modal.Enable();
+        }
+#endif
     }
 }

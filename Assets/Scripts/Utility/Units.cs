@@ -193,6 +193,24 @@ namespace Transidious
         {
             return TimeSpan.FromSeconds(d.Meters / v.MPS);
         }
+        
+        /// The time it takes to travel distance d at velocity v (in game).
+        public static Velocity operator /(Distance d, TimeSpan ts)
+        {
+            return Velocity.FromMPS(d.Meters / (float)ts.TotalSeconds);
+        }
+
+        /// Add two distances.
+        public static Distance operator +(Distance d1, Distance d2)
+        {
+            return FromMeters(d1.Meters + d2.Meters);
+        }
+        
+        /// Subtract two distances.
+        public static Distance operator -(Distance d1, Distance d2)
+        {
+            return FromMeters(d1.Meters - d2.Meters);
+        }
     }
 
     public struct Velocity
@@ -205,9 +223,9 @@ namespace Transidious
         /// Create a velocity from real-time mps.
         public static Velocity FromRealTimeMPS(float mps)
         {
-            return new Velocity {_mps = mps / 60f};
+            return new Velocity {_mps = mps / SimulationController.BaseSpeedMultiplier};
         }
-        
+
         /// Create a velocity from game-time mps.
         public static Velocity FromMPS(float mps)
         {
@@ -219,7 +237,7 @@ namespace Transidious
         {
             return FromRealTimeMPS(kph * Math.Kph2Mps);
         }
-        
+
         /// Create a velocity from game-time kph.
         public static Velocity FromKPH(float kph)
         {
@@ -230,12 +248,42 @@ namespace Transidious
         public float MPS => _mps;
 
         /// Return the real-time velocity in mps.
-        public float RealTimeMPS => _mps * 60f;
+        public float RealTimeMPS => _mps * SimulationController.BaseSpeedMultiplier;
 
         /// Return the velocity in kph.
         public float KPH => _mps * Math.Mps2Kph;
         
         /// Return the real-time velocity in kph.
         public float RealTimeKPH => RealTimeMPS * Math.Mps2Kph;
+        
+        /// Calculate the distance driven at velocity v over interval t.
+        public static Distance operator *(Velocity v, TimeSpan t)
+        {
+            return Distance.FromMeters(v.MPS * (float)t.TotalSeconds);
+        }
+        
+        /// Add two velocities.
+        public static Velocity operator +(Velocity v1, Velocity v2)
+        {
+            return Velocity.FromMPS(v1.MPS + v2.MPS);
+        }
+        
+        /// Subtract two velocities.
+        public static Velocity operator -(Velocity v1, Velocity v2)
+        {
+            return Velocity.FromMPS(v1.MPS - v2.MPS);
+        }
+        
+        /// Multiply the velocity.
+        public static Velocity operator *(Velocity v, float f)
+        {
+            return Velocity.FromMPS(v.MPS * f);
+        }
+        
+        /// Divide the velocity.
+        public static Velocity operator /(Velocity v, float f)
+        {
+            return Velocity.FromMPS(v.MPS / f);
+        }
     }
 }

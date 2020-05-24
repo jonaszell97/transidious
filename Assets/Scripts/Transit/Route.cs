@@ -383,6 +383,12 @@ namespace Transidious
             }
 
             var modal = MainUI.instance.lineModal;
+            if (modal.selectedLine == line)
+            {
+                modal.modal.Disable();
+                return;
+            }
+
             if (modal.selectedLine != null && modal.selectedLine != this.line)
             {
                 DeactivateGradient();

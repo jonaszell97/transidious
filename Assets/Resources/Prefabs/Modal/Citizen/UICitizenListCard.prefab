@@ -260,7 +260,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
-  m_VerticalFit: 2
+  m_VerticalFit: 1
 --- !u!114 &1539267638374188994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -301,3 +301,4 @@ MonoBehaviour:
   title: {fileID: 5387883263871204224}
   listItemPrefab: {fileID: 5382260468198675417, guid: 61e211338e7f0400eab2bd1aa9290839,
     type: 3}
+  _layoutGroup: {fileID: 1539267638374188994}

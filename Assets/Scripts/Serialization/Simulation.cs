@@ -25,92 +25,95 @@ namespace Transidious.Serialization {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChBTaW11bGF0aW9uLnByb3RvEhlUcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
-            "GgxDb21tb24ucHJvdG8aGWdvb2dsZS9wcm90b2J1Zi9hbnkucHJvdG8irgYK",
+            "GgxDb21tb24ucHJvdG8aGWdvb2dsZS9wcm90b2J1Zi9hbnkucHJvdG8imwYK",
             "CFBhdGhTdGVwEj4KBGtpbmQYASABKA4yMC5UcmFuc2lkaW91cy5TZXJpYWxp",
-            "emF0aW9uLlBhdGhTdGVwLlBhdGhTdGVwS2luZBIRCgl0aW1lc3RhbXAYAiAB",
-            "KAQSJQoHZGV0YWlscxgDIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkabAoI",
-            "V2Fsa1N0ZXASMAoEZnJvbRgBIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uVmVjdG9yMhIuCgJ0bxgCIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlh",
-            "bGl6YXRpb24uVmVjdG9yMhowCglEcml2ZVN0ZXASEQoJc2VnbWVudElEGAEg",
-            "ASgNEhAKCGJhY2t3YXJkGAIgASgIGuEBChBQYXJ0aWFsRHJpdmVTdGVwEjQK",
-            "CHN0YXJ0UG9zGAEgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5W",
-            "ZWN0b3IyEjIKBmVuZFBvcxgCIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uVmVjdG9yMhIRCglzZWdtZW50SUQYAyABKA0SEAoIYmFja3dhcmQY",
-            "BCABKAgSFAoMcGFydGlhbFN0YXJ0GAUgASgIEhIKCnBhcnRpYWxFbmQYBiAB",
-            "KAgSFAoMcGFya2luZ0xvdElEGAcgASgNGjUKEVB1YmxpY1RyYW5zaXRTdGVw",
-            "Eg4KBmxpbmVJRBgBIAEoDRIQCghyb3V0ZUlEcxgCIAMoDRp4CghUdXJuU3Rl",
-            "cBIVCg1mcm9tU2VnbWVudElEGAEgASgNEhQKDGZyb21CYWNrd2FyZBgCIAEo",
-            "CBITCgt0b1NlZ21lbnRJRBgDIAEoDRISCgp0b0JhY2t3YXJkGAQgASgIEhYK",
-            "DmludGVyc2VjdGlvbklEGAUgASgNGh8KCFdhaXRTdGVwEhMKC3dhaXRpbmdU",
-            "aW1lGAEgASgCIlIKDFBhdGhTdGVwS2luZBIICgRXYWxrEAASCQoFRHJpdmUQ",
-            "ARIQCgxQYXJ0aWFsRHJpdmUQAhIRCg1QdWJsaWNUcmFuc2l0EAMSCAoEV2Fp",
-            "dBAEIoQCChNQYXRoUGxhbm5pbmdPcHRpb25zEhAKCGFsbG93Q2FyGAEgASgI",
-            "EhEKCWFsbG93V2FsaxgCIAEoCBIPCgdzdGFydElEGAMgASgEEg0KBWVuZElE",
-            "GAQgASgEEgwKBHRpbWUYBSABKAQSGgoSbWF4V2Fsa2luZ0Rpc3RhbmNlGAYg",
-            "ASgCEhkKEXdhbGtpbmdUaW1lRmFjdG9yGAcgASgCEhgKEHRyYXZlbFRpbWVG",
-            "YWN0b3IYCCABKAISGQoRd2FpdGluZ1RpbWVGYWN0b3IYCSABKAISFQoNY2Fy",
-            "VGltZUZhY3RvchgKIAEoAhIXCg9jaGFuZ2luZ1BlbmFsdHkYCyABKAIizAEK",
-            "ElBhdGhQbGFubmluZ1Jlc3VsdBIMCgRjb3N0GAEgASgCEhAKCGR1cmF0aW9u",
-            "GAIgASgCEg8KB2xlYXZlQnkYAyABKAQSEAoIYXJyaXZlQXQYBCABKAQSMgoF",
-            "c3RlcHMYBSADKAsyIy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlBhdGhT",
-            "dGVwEj8KB29wdGlvbnMYBiABKAsyLi5UcmFuc2lkaW91cy5TZXJpYWxpemF0",
-            "aW9uLlBhdGhQbGFubmluZ09wdGlvbnMivgEKCkFjdGl2ZVBhdGgSEQoJY2l0",
-            "aXplbklkGAEgASgNEjsKBHBhdGgYAiABKAsyLS5UcmFuc2lkaW91cy5TZXJp",
-            "YWxpemF0aW9uLlBhdGhQbGFubmluZ1Jlc3VsdBISCgpfd2FpdFVudGlsGAMg",
-            "ASgDEhQKDF9jdXJyZW50U3RlcBgEIAEoBRIcChRfY3VycmVudFN0ZXBQcm9n",
-            "cmVzcxgFIAEoAhIYChBfY3VycmVudFZlbG9jaXR5GAYgASgCIrIBCgNDYXIS",
-            "CgoCaWQYASABKA0SEAoIZHJpdmVySWQYAiABKA0SEAoIY2FyTW9kZWwYAyAB",
-            "KA0SNAoIcG9zaXRpb24YBCABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0",
-            "aW9uLlZlY3RvcjISLwoFY29sb3IYBSABKAsyIC5UcmFuc2lkaW91cy5TZXJp",
-            "YWxpemF0aW9uLkNvbG9yEhQKDHBhcmtpbmdMb3RJRBgGIAEoDSLXDAoHQ2l0",
-            "aXplbhIKCgJpZBgBIAEoDRIRCglmaXJzdE5hbWUYAiABKAkSEAoIbGFzdE5h",
-            "bWUYAyABKAkSCwoDYWdlGAQgASgNEhAKCGJpcnRoZGF5GAUgASgNEg4KBmZl",
-            "bWFsZRgGIAEoCBJBCgpvY2N1cGF0aW9uGAcgASgOMi0uVHJhbnNpZGlvdXMu",
-            "U2VyaWFsaXphdGlvbi5DaXRpemVuLk9jY3VwYXRpb24SDQoFbW9uZXkYCCAB",
-            "KAISEAoIZWR1Y2F0ZWQYCSABKAgSEQoJaGFwcGluZXNzGAogASgNEkYKDXJl",
-            "bGF0aW9uc2hpcHMYCyADKAsyLy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
-            "LkNpdGl6ZW4uUmVsYXRpb25zaGlwEkwKEHBvaW50c09mSW50ZXJlc3QYDCAD",
-            "KAsyMi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uUG9pbnRP",
-            "ZkludGVyZXN0ElIKE2hhcHBpbmVzc0luZmx1ZW5jZXMYDSADKAsyNS5UcmFu",
-            "c2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uSGFwcGluZXNzSW5mbHVl",
-            "bmNlEg0KBWNhcklEGA4gASgNEjsKD2N1cnJlbnRQb3NpdGlvbhgPIAEoCzIi",
-            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhI5CgphY3RpdmVQ",
-            "YXRoGBAgASgLMiUuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5BY3RpdmVQ",
-            "YXRoEhMKC3NjaGVkdWxlSWR4GBEgASgFEhIKCnNjaGVkdWxlSUQYEiABKA0S",
-            "OAoOcHJlZmVycmVkQ29sb3IYEyABKAsyIC5UcmFuc2lkaW91cy5TZXJpYWxp",
-            "emF0aW9uLkNvbG9yEkoKEnRyYW5zaXRQcmVmZXJlbmNlcxgUIAEoCzIuLlRy",
-            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFBsYW5uaW5nT3B0aW9ucxpk",
-            "CgxSZWxhdGlvbnNoaXASQQoEa2luZBgBIAEoDjIzLlRyYW5zaWRpb3VzLlNl",
-            "cmlhbGl6YXRpb24uQ2l0aXplbi5SZWxhdGlvbnNoaXBLaW5kEhEKCWNpdGl6",
-            "ZW5JZBgCIAEoDRprCg9Qb2ludE9mSW50ZXJlc3QSRAoEa2luZBgBIAEoDjI2",
-            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXplbi5Qb2ludE9mSW50",
-            "ZXJlc3RLaW5kEhIKCmJ1aWxkaW5nSWQYAiABKA0akQEKEkhhcHBpbmVzc0lu",
-            "Zmx1ZW5jZRIWCg5kZXNjcmlwdGlvbktleRgBIAEoCRIRCglpbmZsdWVuY2UY",
-            "AiABKAISDQoFdGlja3MYAyABKAUSEwoLcmVsYXRpdmVDYXAYBCABKAISFQoN",
-            "YWJzb2x1dGVDYXBMbxgFIAEoAhIVCg1hYnNvbHV0ZUNhcEhpGAYgASgCGugB",
-            "Cg5TY2hlZHVsZWRFdmVudBIQCghzdGFydHNBdBgBIAEoDRI7CgRwYXRoGAIg",
-            "ASgLMi0uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5QYXRoUGxhbm5pbmdS",
-            "ZXN1bHQSRAoJbmV4dEV2ZW50GAMgASgLMjEuVHJhbnNpZGlvdXMuU2VyaWFs",
-            "aXphdGlvbi5DaXRpemVuLlNjaGVkdWxlZEV2ZW50EkEKBXBsYWNlGAQgASgL",
-            "MjIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlBvaW50T2ZJ",
-            "bnRlcmVzdCKPAQoKT2NjdXBhdGlvbhIKCgZXb3JrZXIQABILCgdSZXRpcmVk",
-            "EAESEAoMS2luZGVyZ2FyZGVuEAISGwoXRWxlbWVudGFyeVNjaG9vbFN0dWRl",
-            "bnQQAxIVChFIaWdoU2Nob29sU3R1ZGVudBAEEhUKEVVuaXZlcnNpdHlTdHVk",
-            "ZW50EAUSCwoHVHJhaW5lZRAGIigKEFJlbGF0aW9uc2hpcEtpbmQSFAoQU2ln",
-            "bmlmaWNhbnRPdGhlchAAIkcKE1BvaW50T2ZJbnRlcmVzdEtpbmQSCAoESG9t",
-            "ZRAAEggKBFdvcmsQARIKCgZTY2hvb2wQAhIQCgxHcm9jZXJ5U3RvcmUQA0Ic",
-            "qgIZVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbmIGcHJvdG8z"));
+            "emF0aW9uLlBhdGhTdGVwLlBhdGhTdGVwS2luZBIlCgdkZXRhaWxzGAIgASgL",
+            "MhQuZ29vZ2xlLnByb3RvYnVmLkFueRpsCghXYWxrU3RlcBIwCgRmcm9tGAEg",
+            "ASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyEi4KAnRv",
+            "GAIgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyGjAK",
+            "CURyaXZlU3RlcBIRCglzZWdtZW50SUQYASABKA0SEAoIYmFja3dhcmQYAiAB",
+            "KAga4QEKEFBhcnRpYWxEcml2ZVN0ZXASNAoIc3RhcnRQb3MYASABKAsyIi5U",
+            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjISMgoGZW5kUG9zGAIg",
+            "ASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyEhEKCXNl",
+            "Z21lbnRJRBgDIAEoDRIQCghiYWNrd2FyZBgEIAEoCBIUCgxwYXJ0aWFsU3Rh",
+            "cnQYBSABKAgSEgoKcGFydGlhbEVuZBgGIAEoCBIUCgxwYXJraW5nTG90SUQY",
+            "ByABKA0aNQoRUHVibGljVHJhbnNpdFN0ZXASDgoGbGluZUlEGAEgASgNEhAK",
+            "CHJvdXRlSURzGAIgAygNGngKCFR1cm5TdGVwEhUKDWZyb21TZWdtZW50SUQY",
+            "ASABKA0SFAoMZnJvbUJhY2t3YXJkGAIgASgIEhMKC3RvU2VnbWVudElEGAMg",
+            "ASgNEhIKCnRvQmFja3dhcmQYBCABKAgSFgoOaW50ZXJzZWN0aW9uSUQYBSAB",
+            "KA0aHwoIV2FpdFN0ZXASEwoLd2FpdGluZ1RpbWUYASABKAIiUgoMUGF0aFN0",
+            "ZXBLaW5kEggKBFdhbGsQABIJCgVEcml2ZRABEhAKDFBhcnRpYWxEcml2ZRAC",
+            "EhEKDVB1YmxpY1RyYW5zaXQQAxIICgRXYWl0EAQihAIKE1BhdGhQbGFubmlu",
+            "Z09wdGlvbnMSEAoIYWxsb3dDYXIYASABKAgSEQoJYWxsb3dXYWxrGAIgASgI",
+            "Eg8KB3N0YXJ0SUQYAyABKAQSDQoFZW5kSUQYBCABKAQSDAoEdGltZRgFIAEo",
+            "BBIaChJtYXhXYWxraW5nRGlzdGFuY2UYBiABKAISGQoRd2Fsa2luZ1RpbWVG",
+            "YWN0b3IYByABKAISGAoQdHJhdmVsVGltZUZhY3RvchgIIAEoAhIZChF3YWl0",
+            "aW5nVGltZUZhY3RvchgJIAEoAhIVCg1jYXJUaW1lRmFjdG9yGAogASgCEhcK",
+            "D2NoYW5naW5nUGVuYWx0eRgLIAEoAiJBCgtQbGFubmVkUGF0aBIyCgVzdGVw",
+            "cxgBIAMoCzIjLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFN0ZXAi",
+            "4QEKElBhdGhQbGFubmluZ1Jlc3VsdBIMCgRjb3N0GAEgASgCEhAKCGR1cmF0",
+            "aW9uGAIgASgCEg8KB2xlYXZlQnkYAyABKAQSEAoIYXJyaXZlQXQYBCABKAQS",
+            "NAoEcGF0aBgFIAEoCzImLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGxh",
+            "bm5lZFBhdGgSEQoJc3RlcFRpbWVzGAYgAygDEj8KB29wdGlvbnMYByABKAsy",
+            "Li5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlBhdGhQbGFubmluZ09wdGlv",
+            "bnMivgEKCkFjdGl2ZVBhdGgSEQoJY2l0aXplbklkGAEgASgNEjsKBHBhdGgY",
+            "AiABKAsyLS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlBhdGhQbGFubmlu",
+            "Z1Jlc3VsdBISCgpfd2FpdFVudGlsGAMgASgDEhQKDF9jdXJyZW50U3RlcBgE",
+            "IAEoBRIcChRfY3VycmVudFN0ZXBQcm9ncmVzcxgFIAEoAhIYChBfY3VycmVu",
+            "dFZlbG9jaXR5GAYgASgCIrIBCgNDYXISCgoCaWQYASABKA0SEAoIZHJpdmVy",
+            "SWQYAiABKA0SEAoIY2FyTW9kZWwYAyABKA0SNAoIcG9zaXRpb24YBCABKAsy",
+            "Ii5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjISLwoFY29sb3IY",
+            "BSABKAsyIC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNvbG9yEhQKDHBh",
+            "cmtpbmdMb3RJRBgGIAEoDSLXDAoHQ2l0aXplbhIKCgJpZBgBIAEoDRIRCglm",
+            "aXJzdE5hbWUYAiABKAkSEAoIbGFzdE5hbWUYAyABKAkSCwoDYWdlGAQgASgN",
+            "EhAKCGJpcnRoZGF5GAUgASgNEg4KBmZlbWFsZRgGIAEoCBJBCgpvY2N1cGF0",
+            "aW9uGAcgASgOMi0uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVu",
+            "Lk9jY3VwYXRpb24SDQoFbW9uZXkYCCABKAISEAoIZWR1Y2F0ZWQYCSABKAgS",
+            "EQoJaGFwcGluZXNzGAogASgNEkYKDXJlbGF0aW9uc2hpcHMYCyADKAsyLy5U",
+            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uUmVsYXRpb25zaGlw",
+            "EkwKEHBvaW50c09mSW50ZXJlc3QYDCADKAsyMi5UcmFuc2lkaW91cy5TZXJp",
+            "YWxpemF0aW9uLkNpdGl6ZW4uUG9pbnRPZkludGVyZXN0ElIKE2hhcHBpbmVz",
+            "c0luZmx1ZW5jZXMYDSADKAsyNS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
+            "LkNpdGl6ZW4uSGFwcGluZXNzSW5mbHVlbmNlEg0KBWNhcklEGA4gASgNEjsK",
+            "D2N1cnJlbnRQb3NpdGlvbhgPIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
+            "YXRpb24uVmVjdG9yMhI5CgphY3RpdmVQYXRoGBAgASgLMiUuVHJhbnNpZGlv",
+            "dXMuU2VyaWFsaXphdGlvbi5BY3RpdmVQYXRoEhMKC3NjaGVkdWxlSWR4GBEg",
+            "ASgFEhIKCnNjaGVkdWxlSUQYEiABKA0SOAoOcHJlZmVycmVkQ29sb3IYEyAB",
+            "KAsyIC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNvbG9yEkoKEnRyYW5z",
+            "aXRQcmVmZXJlbmNlcxgUIAEoCzIuLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
+            "b24uUGF0aFBsYW5uaW5nT3B0aW9ucxpkCgxSZWxhdGlvbnNoaXASQQoEa2lu",
+            "ZBgBIAEoDjIzLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXplbi5S",
+            "ZWxhdGlvbnNoaXBLaW5kEhEKCWNpdGl6ZW5JZBgCIAEoDRprCg9Qb2ludE9m",
+            "SW50ZXJlc3QSRAoEa2luZBgBIAEoDjI2LlRyYW5zaWRpb3VzLlNlcmlhbGl6",
+            "YXRpb24uQ2l0aXplbi5Qb2ludE9mSW50ZXJlc3RLaW5kEhIKCmJ1aWxkaW5n",
+            "SWQYAiABKA0akQEKEkhhcHBpbmVzc0luZmx1ZW5jZRIWCg5kZXNjcmlwdGlv",
+            "bktleRgBIAEoCRIRCglpbmZsdWVuY2UYAiABKAISDQoFdGlja3MYAyABKAUS",
+            "EwoLcmVsYXRpdmVDYXAYBCABKAISFQoNYWJzb2x1dGVDYXBMbxgFIAEoAhIV",
+            "Cg1hYnNvbHV0ZUNhcEhpGAYgASgCGugBCg5TY2hlZHVsZWRFdmVudBIQCghz",
+            "dGFydHNBdBgBIAEoDRI7CgRwYXRoGAIgASgLMi0uVHJhbnNpZGlvdXMuU2Vy",
+            "aWFsaXphdGlvbi5QYXRoUGxhbm5pbmdSZXN1bHQSRAoJbmV4dEV2ZW50GAMg",
+            "ASgLMjEuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlNjaGVk",
+            "dWxlZEV2ZW50EkEKBXBsYWNlGAQgASgLMjIuVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbi5DaXRpemVuLlBvaW50T2ZJbnRlcmVzdCKPAQoKT2NjdXBhdGlv",
+            "bhIKCgZXb3JrZXIQABILCgdSZXRpcmVkEAESEAoMS2luZGVyZ2FyZGVuEAIS",
+            "GwoXRWxlbWVudGFyeVNjaG9vbFN0dWRlbnQQAxIVChFIaWdoU2Nob29sU3R1",
+            "ZGVudBAEEhUKEVVuaXZlcnNpdHlTdHVkZW50EAUSCwoHVHJhaW5lZRAGIigK",
+            "EFJlbGF0aW9uc2hpcEtpbmQSFAoQU2lnbmlmaWNhbnRPdGhlchAAIkcKE1Bv",
+            "aW50T2ZJbnRlcmVzdEtpbmQSCAoESG9tZRAAEggKBFdvcmsQARIKCgZTY2hv",
+            "b2wQAhIQCgxHcm9jZXJ5U3RvcmUQA0IcqgIZVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep), global::Transidious.Serialization.PathStep.Parser, new[]{ "Kind", "Timestamp", "Details" }, null, new[]{ typeof(global::Transidious.Serialization.PathStep.Types.PathStepKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.WalkStep), global::Transidious.Serialization.PathStep.Types.WalkStep.Parser, new[]{ "From", "To" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep), global::Transidious.Serialization.PathStep.Parser, new[]{ "Kind", "Details" }, null, new[]{ typeof(global::Transidious.Serialization.PathStep.Types.PathStepKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.WalkStep), global::Transidious.Serialization.PathStep.Types.WalkStep.Parser, new[]{ "From", "To" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.DriveStep), global::Transidious.Serialization.PathStep.Types.DriveStep.Parser, new[]{ "SegmentID", "Backward" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.PartialDriveStep), global::Transidious.Serialization.PathStep.Types.PartialDriveStep.Parser, new[]{ "StartPos", "EndPos", "SegmentID", "Backward", "PartialStart", "PartialEnd", "ParkingLotID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.PublicTransitStep), global::Transidious.Serialization.PathStep.Types.PublicTransitStep.Parser, new[]{ "LineID", "RouteIDs" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.TurnStep), global::Transidious.Serialization.PathStep.Types.TurnStep.Parser, new[]{ "FromSegmentID", "FromBackward", "ToSegmentID", "ToBackward", "IntersectionID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathStep.Types.WaitStep), global::Transidious.Serialization.PathStep.Types.WaitStep.Parser, new[]{ "WaitingTime" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathPlanningOptions), global::Transidious.Serialization.PathPlanningOptions.Parser, new[]{ "AllowCar", "AllowWalk", "StartID", "EndID", "Time", "MaxWalkingDistance", "WalkingTimeFactor", "TravelTimeFactor", "WaitingTimeFactor", "CarTimeFactor", "ChangingPenalty" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathPlanningResult), global::Transidious.Serialization.PathPlanningResult.Parser, new[]{ "Cost", "Duration", "LeaveBy", "ArriveAt", "Steps", "Options" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PlannedPath), global::Transidious.Serialization.PlannedPath.Parser, new[]{ "Steps" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathPlanningResult), global::Transidious.Serialization.PathPlanningResult.Parser, new[]{ "Cost", "Duration", "LeaveBy", "ArriveAt", "Path", "StepTimes", "Options" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.ActivePath), global::Transidious.Serialization.ActivePath.Parser, new[]{ "CitizenId", "Path", "WaitUntil", "CurrentStep", "CurrentStepProgress", "CurrentVelocity" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Car), global::Transidious.Serialization.Car.Parser, new[]{ "Id", "DriverId", "CarModel", "Position", "Color", "ParkingLotID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen), global::Transidious.Serialization.Citizen.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "Birthday", "Female", "Occupation", "Money", "Educated", "Happiness", "Relationships", "PointsOfInterest", "HappinessInfluences", "CarID", "CurrentPosition", "ActivePath", "ScheduleIdx", "ScheduleID", "PreferredColor", "TransitPreferences" }, null, new[]{ typeof(global::Transidious.Serialization.Citizen.Types.Occupation), typeof(global::Transidious.Serialization.Citizen.Types.RelationshipKind), typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterestKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.Relationship), global::Transidious.Serialization.Citizen.Types.Relationship.Parser, new[]{ "Kind", "CitizenId" }, null, null, null),
@@ -149,7 +152,6 @@ namespace Transidious.Serialization {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public PathStep(PathStep other) : this() {
       kind_ = other.kind_;
-      timestamp_ = other.timestamp_;
       details_ = other.details_ != null ? other.details_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -170,19 +172,8 @@ namespace Transidious.Serialization {
       }
     }
 
-    /// <summary>Field number for the "timestamp" field.</summary>
-    public const int TimestampFieldNumber = 2;
-    private ulong timestamp_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public ulong Timestamp {
-      get { return timestamp_; }
-      set {
-        timestamp_ = value;
-      }
-    }
-
     /// <summary>Field number for the "details" field.</summary>
-    public const int DetailsFieldNumber = 3;
+    public const int DetailsFieldNumber = 2;
     private global::Google.Protobuf.WellKnownTypes.Any details_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Any Details {
@@ -206,7 +197,6 @@ namespace Transidious.Serialization {
         return true;
       }
       if (Kind != other.Kind) return false;
-      if (Timestamp != other.Timestamp) return false;
       if (!object.Equals(Details, other.Details)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -215,7 +205,6 @@ namespace Transidious.Serialization {
     public override int GetHashCode() {
       int hash = 1;
       if (Kind != 0) hash ^= Kind.GetHashCode();
-      if (Timestamp != 0UL) hash ^= Timestamp.GetHashCode();
       if (details_ != null) hash ^= Details.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -234,12 +223,8 @@ namespace Transidious.Serialization {
         output.WriteRawTag(8);
         output.WriteEnum((int) Kind);
       }
-      if (Timestamp != 0UL) {
-        output.WriteRawTag(16);
-        output.WriteUInt64(Timestamp);
-      }
       if (details_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(18);
         output.WriteMessage(Details);
       }
       if (_unknownFields != null) {
@@ -252,9 +237,6 @@ namespace Transidious.Serialization {
       int size = 0;
       if (Kind != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Kind);
-      }
-      if (Timestamp != 0UL) {
-        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(Timestamp);
       }
       if (details_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Details);
@@ -272,9 +254,6 @@ namespace Transidious.Serialization {
       }
       if (other.Kind != 0) {
         Kind = other.Kind;
-      }
-      if (other.Timestamp != 0UL) {
-        Timestamp = other.Timestamp;
       }
       if (other.details_ != null) {
         if (details_ == null) {
@@ -297,11 +276,7 @@ namespace Transidious.Serialization {
             Kind = (global::Transidious.Serialization.PathStep.Types.PathStepKind) input.ReadEnum();
             break;
           }
-          case 16: {
-            Timestamp = input.ReadUInt64();
-            break;
-          }
-          case 26: {
+          case 18: {
             if (details_ == null) {
               Details = new global::Google.Protobuf.WellKnownTypes.Any();
             }
@@ -1893,6 +1868,127 @@ namespace Transidious.Serialization {
 
   }
 
+  public sealed partial class PlannedPath : pb::IMessage<PlannedPath> {
+    private static readonly pb::MessageParser<PlannedPath> _parser = new pb::MessageParser<PlannedPath>(() => new PlannedPath());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<PlannedPath> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Transidious.Serialization.SimulationReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PlannedPath() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PlannedPath(PlannedPath other) : this() {
+      steps_ = other.steps_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public PlannedPath Clone() {
+      return new PlannedPath(this);
+    }
+
+    /// <summary>Field number for the "steps" field.</summary>
+    public const int StepsFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.PathStep> _repeated_steps_codec
+        = pb::FieldCodec.ForMessage(10, global::Transidious.Serialization.PathStep.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.PathStep> steps_ = new pbc::RepeatedField<global::Transidious.Serialization.PathStep>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.PathStep> Steps {
+      get { return steps_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as PlannedPath);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(PlannedPath other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!steps_.Equals(other.steps_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= steps_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      steps_.WriteTo(output, _repeated_steps_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      size += steps_.CalculateSize(_repeated_steps_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(PlannedPath other) {
+      if (other == null) {
+        return;
+      }
+      steps_.Add(other.steps_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            steps_.AddEntriesFrom(input, _repeated_steps_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class PathPlanningResult : pb::IMessage<PathPlanningResult> {
     private static readonly pb::MessageParser<PathPlanningResult> _parser = new pb::MessageParser<PathPlanningResult>(() => new PathPlanningResult());
     private pb::UnknownFieldSet _unknownFields;
@@ -1901,7 +1997,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.SimulationReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Transidious.Serialization.SimulationReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1922,7 +2018,8 @@ namespace Transidious.Serialization {
       duration_ = other.duration_;
       leaveBy_ = other.leaveBy_;
       arriveAt_ = other.arriveAt_;
-      steps_ = other.steps_.Clone();
+      path_ = other.path_ != null ? other.path_.Clone() : null;
+      stepTimes_ = other.stepTimes_.Clone();
       options_ = other.options_ != null ? other.options_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -1976,18 +2073,29 @@ namespace Transidious.Serialization {
       }
     }
 
-    /// <summary>Field number for the "steps" field.</summary>
-    public const int StepsFieldNumber = 5;
-    private static readonly pb::FieldCodec<global::Transidious.Serialization.PathStep> _repeated_steps_codec
-        = pb::FieldCodec.ForMessage(42, global::Transidious.Serialization.PathStep.Parser);
-    private readonly pbc::RepeatedField<global::Transidious.Serialization.PathStep> steps_ = new pbc::RepeatedField<global::Transidious.Serialization.PathStep>();
+    /// <summary>Field number for the "path" field.</summary>
+    public const int PathFieldNumber = 5;
+    private global::Transidious.Serialization.PlannedPath path_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::Transidious.Serialization.PathStep> Steps {
-      get { return steps_; }
+    public global::Transidious.Serialization.PlannedPath Path {
+      get { return path_; }
+      set {
+        path_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "stepTimes" field.</summary>
+    public const int StepTimesFieldNumber = 6;
+    private static readonly pb::FieldCodec<long> _repeated_stepTimes_codec
+        = pb::FieldCodec.ForInt64(50);
+    private readonly pbc::RepeatedField<long> stepTimes_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<long> StepTimes {
+      get { return stepTimes_; }
     }
 
     /// <summary>Field number for the "options" field.</summary>
-    public const int OptionsFieldNumber = 6;
+    public const int OptionsFieldNumber = 7;
     private global::Transidious.Serialization.PathPlanningOptions options_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Transidious.Serialization.PathPlanningOptions Options {
@@ -2014,7 +2122,8 @@ namespace Transidious.Serialization {
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Duration, other.Duration)) return false;
       if (LeaveBy != other.LeaveBy) return false;
       if (ArriveAt != other.ArriveAt) return false;
-      if(!steps_.Equals(other.steps_)) return false;
+      if (!object.Equals(Path, other.Path)) return false;
+      if(!stepTimes_.Equals(other.stepTimes_)) return false;
       if (!object.Equals(Options, other.Options)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -2026,7 +2135,8 @@ namespace Transidious.Serialization {
       if (Duration != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Duration);
       if (LeaveBy != 0UL) hash ^= LeaveBy.GetHashCode();
       if (ArriveAt != 0UL) hash ^= ArriveAt.GetHashCode();
-      hash ^= steps_.GetHashCode();
+      if (path_ != null) hash ^= Path.GetHashCode();
+      hash ^= stepTimes_.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -2057,9 +2167,13 @@ namespace Transidious.Serialization {
         output.WriteRawTag(32);
         output.WriteUInt64(ArriveAt);
       }
-      steps_.WriteTo(output, _repeated_steps_codec);
+      if (path_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(Path);
+      }
+      stepTimes_.WriteTo(output, _repeated_stepTimes_codec);
       if (options_ != null) {
-        output.WriteRawTag(50);
+        output.WriteRawTag(58);
         output.WriteMessage(Options);
       }
       if (_unknownFields != null) {
@@ -2082,7 +2196,10 @@ namespace Transidious.Serialization {
       if (ArriveAt != 0UL) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(ArriveAt);
       }
-      size += steps_.CalculateSize(_repeated_steps_codec);
+      if (path_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Path);
+      }
+      size += stepTimes_.CalculateSize(_repeated_stepTimes_codec);
       if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
@@ -2109,7 +2226,13 @@ namespace Transidious.Serialization {
       if (other.ArriveAt != 0UL) {
         ArriveAt = other.ArriveAt;
       }
-      steps_.Add(other.steps_);
+      if (other.path_ != null) {
+        if (path_ == null) {
+          Path = new global::Transidious.Serialization.PlannedPath();
+        }
+        Path.MergeFrom(other.Path);
+      }
+      stepTimes_.Add(other.stepTimes_);
       if (other.options_ != null) {
         if (options_ == null) {
           Options = new global::Transidious.Serialization.PathPlanningOptions();
@@ -2144,10 +2267,18 @@ namespace Transidious.Serialization {
             break;
           }
           case 42: {
-            steps_.AddEntriesFrom(input, _repeated_steps_codec);
+            if (path_ == null) {
+              Path = new global::Transidious.Serialization.PlannedPath();
+            }
+            input.ReadMessage(Path);
             break;
           }
-          case 50: {
+          case 50:
+          case 48: {
+            stepTimes_.AddEntriesFrom(input, _repeated_stepTimes_codec);
+            break;
+          }
+          case 58: {
             if (options_ == null) {
               Options = new global::Transidious.Serialization.PathPlanningOptions();
             }
@@ -2168,7 +2299,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.SimulationReflection.Descriptor.MessageTypes[3]; }
+      get { return global::Transidious.Serialization.SimulationReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2443,7 +2574,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.SimulationReflection.Descriptor.MessageTypes[4]; }
+      get { return global::Transidious.Serialization.SimulationReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2724,7 +2855,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.SimulationReflection.Descriptor.MessageTypes[5]; }
+      get { return global::Transidious.Serialization.SimulationReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

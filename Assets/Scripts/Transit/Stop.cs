@@ -38,6 +38,9 @@ namespace Transidious
             /// Intersection info about the line.
             internal LineIntersectionInfo intersectionInfo = new LineIntersectionInfo();
 
+            /// The next departure of the line at this stop.
+            internal DateTime nextDeparture;
+
             /// The schedule for this line at this stop.
             internal ISchedule schedule;
         }
@@ -307,7 +310,7 @@ namespace Transidious
                                                   Map.Layer(MapLayer.TransitStops));
         }
 
-        public Vector3 Location => location;
+        public Vector2 Location => location;
 
         public IEnumerable<IRoute> Routes
         {
@@ -375,8 +378,12 @@ namespace Transidious
         {
             Debug.Assert(lineData.ContainsKey(line), "line does not stop here!");
             return lineData[line].schedule.GetNextDeparture(after);
-            //var offset = line.scheduleOffsets[this];
-            //return line.schedule.GetNextDeparture(after.AddMinutes(-offset)).AddMinutes(offset);
+        }
+
+        public void SetNextDeparture(Line line, DateTime dep)
+        {
+            Debug.Assert(lineData.ContainsKey(line), "line does not stop here!");
+            lineData[line].nextDeparture = dep;
         }
 
         /// \return The incoming route from the direction of the line's depot stop.
@@ -1546,6 +1553,12 @@ namespace Transidious
 
             if (GameController.instance.input.IsPointerOverUIElement())
             {
+                return;
+            }
+            
+            if (MainUI.instance.stopModal.stop == this)
+            {
+                MainUI.instance.stopModal.modal.Disable();
                 return;
             }
 

@@ -32,7 +32,6 @@ namespace Transidious
         public string number;
 
         public Type type;
-        public int occupants;
         public Rect collisionRect;
         public List<Citizen> inhabitants;
 
@@ -53,7 +52,6 @@ namespace Transidious
             this.type = type;
             this.street = street;
             this.number = numberStr;
-            this.occupants = 0;
             this.Capacity = GetDefaultCapacity(type, area);
             this.number = numberStr;
             this.mesh = mesh;
@@ -65,7 +63,7 @@ namespace Transidious
             var closest = map.GetClosestStreet(this.centroid);
             if (closest != null)
             {
-                street = closest.seg;
+                street = closest.street;
             }
         }
 
@@ -217,7 +215,6 @@ namespace Transidious
                 StreetID = (uint)(street?.id ?? 0),
                 Type = (Serialization.Building.Types.Type)type,
                 Position = centroid.ToProtobuf(),
-                Occupants = occupants,
             };
         }
 
@@ -230,7 +227,6 @@ namespace Transidious
                 b.MapObject.Area, b.MapObject.Centroid.Deserialize(),
                 (int)b.MapObject.Id);
 
-            building.occupants = b.Occupants;
             building.streetID = (int)b.StreetID;
             building.Deserialize(b.MapObject);
 
@@ -267,6 +263,12 @@ namespace Transidious
 
             if (GameController.instance.input.IsPointerOverUIElement())
             {
+                return;
+            }
+
+            if (MainUI.instance.buildingModal.building == this)
+            {
+                MainUI.instance.buildingModal.modal.Disable();
                 return;
             }
 

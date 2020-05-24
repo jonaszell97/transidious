@@ -12,7 +12,7 @@ namespace Transidious
     public class ActivePath : MonoBehaviour
     {
         /// Helper class to store the current driving state.
-        class DrivingState
+        internal class DrivingState
         {
             /// Reference to the TrafficSimulator's DrivingCar for this path.
             internal TrafficSimulator.DrivingCar drivingCar;
@@ -39,10 +39,10 @@ namespace Transidious
         {
             get
             {
-                if (_currentStep >= path.steps.Count)
+                if (_currentStep >= path.path.Steps.Length)
                     return null;
 
-                return path.steps[_currentStep];
+                return path.path.Steps[_currentStep];
             }
         }
         
@@ -52,10 +52,10 @@ namespace Transidious
         {
             get
             {
-                if (_currentStep + 1 >= path.steps.Count)
+                if (_currentStep + 1 >= path.path.Steps.Length)
                     return null;
 
-                return path.steps[_currentStep + 1];
+                return path.path.Steps[_currentStep + 1];
             }
         }
         
@@ -89,13 +89,12 @@ namespace Transidious
         private DateTime? _waitUntil;
 
         /// The current driving car ref.
-        private DrivingState _drivingState;
+        internal DrivingState _drivingState;
 
         /// The transit vehicle this path is currently in.
         public TransitVehicle transitVehicle;
 
         public bool IsDriving => _drivingState != null && _pathFollowingHelper != null;
-        public bool IsWalking => currentStep.type == PathStep.Type.Walk;
 
         public Bounds Bounds => spriteRenderer.bounds;
 
@@ -117,8 +116,8 @@ namespace Transidious
         private static readonly float _tileUpdateInterval = 0.5f;
 
         /// Time since last tile update.
-        private float _timeSinceLastTileUpdate = 0f;
-        
+        private float _timeSinceLastTileUpdate;
+
         /// Initialize a path for a citizen.
         public void Initialize(PathPlanningResult path, Citizen c, System.Action onDone = null)
         {
@@ -126,7 +125,7 @@ namespace Transidious
             this.citizen = c;
             this.trafficSim = GameController.instance.sim.trafficSim;
             this.onDone = onDone;
-            this._currentStep = path.steps.Count;
+            this._currentStep = path.path.Steps.Length;
 
             this.transform.SetLayer(MapLayer.Cars);
             this.transform.SetParent(GameController.instance.sim.transform);
@@ -197,7 +196,7 @@ namespace Transidious
 
             citizen.currentPosition = transform.position;
 
-            if (_currentStep >= path.steps.Count)
+            if (_currentStep >= path.path.Steps.Length)
             {
                 return;
             }
@@ -235,7 +234,7 @@ namespace Transidious
                 case PathStep.Type.PartialDrive:
                 case PathStep.Type.Walk:
                 case PathStep.Type.Turn:
-                    _currentStepProgress = _pathFollowingHelper.TotalProgress;
+                    _currentStepProgress = _pathFollowingHelper.TotalProgressRelative;
                     break;
                 case PathStep.Type.PublicTransit:
                     // TODO
@@ -245,7 +244,7 @@ namespace Transidious
 
         public void ContinuePath()
         {
-            var step = path.steps[_currentStep];
+            var step = path.path.Steps[_currentStep];
             switch (step.type)
             {
                 case PathStep.Type.Walk:
@@ -330,8 +329,9 @@ namespace Transidious
                     // _boxCollider2D.enabled = false;
                 }
             }
+            
 
-            if (++_currentStep < path.steps.Count)
+            if (++_currentStep < path.path.Steps.Length)
             {
                 ContinuePath();
             }
@@ -383,7 +383,7 @@ namespace Transidious
 
             if (_currentStepProgress > 0f)
             {
-                _pathFollowingHelper.SimulateProgress(_currentStepProgress);
+                _pathFollowingHelper.SimulateProgressRelative(_currentStepProgress);
             }
         }
 
@@ -395,12 +395,11 @@ namespace Transidious
                        IMapObject dstParkingLot = null)
         {
             var car = citizen.car;
-            Debug.Assert(car != null, "citizen has no car!");
-
+            
             // Leave the parking lot (if necessary).
             if (_drivingState == null && car.parkingLot != null)
             {
-                car.parkingLot.RemoveResident(citizen);
+                car.parkingLot.RemoveVisitor(citizen);
             }
 
             // Initialize car sprite.
@@ -426,7 +425,7 @@ namespace Transidious
                 {
                     if (dstParkingLot != null)
                     {
-                        dstParkingLot.AddResident(citizen);
+                        dstParkingLot.AddVisitor(citizen);
                         car.parkingLot = dstParkingLot;
                     }
 
@@ -436,7 +435,8 @@ namespace Transidious
 
             if (_currentStepProgress > 0f)
             {
-                _pathFollowingHelper.SimulateProgress(_currentStepProgress);
+                _pathFollowingHelper.SimulateProgressRelative(_currentStepProgress);
+                _currentStepProgress = 0f;
             }
         }
 
@@ -444,21 +444,21 @@ namespace Transidious
         {
             // First, generate a smooth path crossing the intersection.
             var intersectionPath = trafficSim.GetIntersectionPath(step, _drivingState.drivingCar.lane);
-            var carOnIntersection = trafficSim.EnterIntersection(
-                _drivingState.drivingCar, step.intersection, step.to.segment);
+            trafficSim.EnterIntersection(_drivingState.drivingCar, step.intersection);
 
             // Initialize path following helper.
             _pathFollowingHelper = new PathFollowingObject(
                 trafficSim.sim, this.gameObject, intersectionPath, _currentVelocity, 
                 () =>
                 {
-                    trafficSim.ExitIntersection(carOnIntersection, step.intersection);
+                    trafficSim.ExitIntersection(_drivingState.drivingCar, step.intersection);
                     CompleteStep();
                 });
 
             if (_currentStepProgress > 0f)
             {
-                _pathFollowingHelper.SimulateProgress(_currentStepProgress);
+                _pathFollowingHelper.SimulateProgressRelative(_currentStepProgress);
+                _currentStepProgress = 0f;
             }
         }
 
@@ -492,10 +492,19 @@ namespace Transidious
 
             _pathFollowingHelper.Update(elapsedTime);
 
-            drivingCar.distanceFromStart = sim.trafficSim.GetDistanceFromStart(
-                drivingCar.segment,
-                drivingCar.CurrentPosition,
-                drivingCar.lane);
+            var step = currentStep;
+            if (step is PartialDriveStep)
+            {
+                drivingCar.distanceFromStart = sim.trafficSim.GetDistanceFromStart(
+                    drivingCar.segment,
+                    drivingCar.CurrentPosition,
+                    drivingCar.lane);
+            }
+            else
+            {
+                drivingCar.distanceFromStart = _pathFollowingHelper.DistanceFromStart.Meters;
+            }
+            
         }
 
         /**
@@ -531,13 +540,13 @@ namespace Transidious
                     case PathStep.Type.Drive:
                     case PathStep.Type.PartialDrive:
                     case PathStep.Type.Turn:
-                        return -7f;
+                        return -3f;
                     case PathStep.Type.Walk:
-                        return -5f;
+                        return -4f;
                     case PathStep.Type.Wait:
-                        return -1f;
+                        return -.5f;
                     case PathStep.Type.PublicTransit:
-                        return +1f;
+                        return +.5f;
                 }
             }
         }
@@ -572,10 +581,9 @@ namespace Transidious
         public static ActivePath Deserialize(Serialization.ActivePath path)
         {
             var result = ResourceManager.instance.GetActivePath(true);
-            result.Initialize(
-                PathPlanningResult.Deserialize(GameController.instance.loadedMap, path.Path), 
+            result.Initialize(new PathPlanningResult(path.Path, GameController.instance.loadedMap), 
                 GameController.instance.sim.GetCitizen(path.CitizenId));
-            
+
             if (path.WaitUntil != -1)
             {
                 result._waitUntil = new DateTime(path.WaitUntil);

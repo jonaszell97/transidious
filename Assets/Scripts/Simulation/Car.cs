@@ -79,7 +79,7 @@ namespace Transidious
         {
             get
             {
-                var rnd = UnityEngine.Random.Range(0f, 1f);
+                var rnd = RNG.Next(0f, 1f);
 
                 var i = 0;
                 var sum = _colorDistribution[i].Item1;
@@ -88,7 +88,7 @@ namespace Transidious
                 {
                     if (++i == _colorDistribution.Length)
                     {
-                        return Utility.RandomColor;
+                        return RNG.RandomColor;
                     }
 
                     sum += _colorDistribution[i].Item1;
@@ -102,7 +102,7 @@ namespace Transidious
         {
             get
             {
-                var rnd = UnityEngine.Random.Range(0f, 1f);
+                var rnd = RNG.Next(0f, 1f);
                 if (rnd < 0.4f)
                     return 1;
 

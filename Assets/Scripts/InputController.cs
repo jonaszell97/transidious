@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Events;
 
 namespace Transidious
 {
@@ -485,8 +486,8 @@ namespace Transidious
                 return;
             }
 
-            followObject = null;
-            moving = false;
+            _followObject = null;
+            _movingTowards = null;
             
             SetCameraPosition(newPosition);
         }
@@ -504,20 +505,27 @@ namespace Transidious
             FireEvent(InputEvent.Pan);
         }
 
-        bool moving = false;
-        Vector2 movingTowards;
+        /// The point the camera is moving towards automatically.
+        Vector2? _movingTowards;
+
+        /// The camera's movement speed.
         float movementSpeed;
 
-        public void MoveTowards(Vector2 worldPos, float speed = 0f)
+        /// The completion callback once moving is finished.
+        UnityAction onMoveDone;
+
+        public void MoveTowards(Vector2 worldPos, float speed = 0f, UnityAction onDone = null)
         {
             if (speed <= 0f)
             {
                 speed = (worldPos - (Vector2)camera.transform.position).magnitude * 2f;
             }
 
-            movingTowards = worldPos;
+            _movingTowards = worldPos;
             movementSpeed = speed;
-            moving = true;
+            onMoveDone = onDone;
+
+            _followObject = null;
         }
 
         public enum FollowingMode
@@ -526,18 +534,22 @@ namespace Transidious
             Visible,
         }
 
-        GameObject followObject;
-        FollowingMode followingMode;
+        /// The object the camera is tracking.
+        GameObject _followObject;
+        
+        /// The tracking mode.
+        FollowingMode _followingMode;
 
         public void FollowObject(GameObject obj, FollowingMode mode = FollowingMode.Visible)
         {
-            this.followObject = obj;
-            this.followingMode = mode;
+            this._followObject = obj;
+            this._followingMode = mode;
+            this._movingTowards = null;
         }
 
         public void StopFollowing()
         {
-            followObject = null;
+            _followObject = null;
         }
 
         public void UpdateZoomLevels(Map map)
@@ -655,6 +667,9 @@ namespace Transidious
             RegisterKeyboardEventListener(
                 KeyCode.Alpha4, 
                 _ => controller.sim.SetSimulationSpeed(SimulationController.SimulationSpeed.Speed4));
+
+            RegisterKeyboardEventListener(KeyCode.F12, _ => DeveloperConsole.instance.Toggle());
+            RegisterKeyboardEventListener(KeyCode.Space, _ => controller.TogglePause());
 #endif
 
 #if UNITY_EDITOR
@@ -742,28 +757,30 @@ namespace Transidious
                 }
             }
 
-            if (moving)
+            if (_movingTowards.HasValue)
             {
                 var currentPos = camera.transform.position;
+                var destination = _movingTowards.Value;
                 var delta = movementSpeed * Time.deltaTime;
-                
-                var newPos = Vector2.MoveTowards(currentPos, movingTowards, delta);
-                if (newPos.Equals(movingTowards))
+
+                var newPos = Vector2.MoveTowards(currentPos, destination, delta);
+                if (newPos.Equals(_movingTowards))
                 {
-                    moving = false;
+                    onMoveDone?.Invoke();
+                    _movingTowards = null;
                 }
 
                 SetCameraPosition(newPos, false);
             }
-            else if (followObject != null)
+            else if (_followObject != null)
             {
-                Vector2 pos = followObject.transform.position;
+                Vector2 pos = _followObject.transform.position;
             
-                if (followingMode == FollowingMode.Center)
+                if (_followingMode == FollowingMode.Center)
                 {
                     SetCameraPosition(pos);
                 }
-                else if (followingMode == FollowingMode.Visible)
+                else if (_followingMode == FollowingMode.Visible)
                 {
                     if (!IsPositionVisibleByCamera(pos))
                     {
@@ -804,9 +821,7 @@ namespace Transidious
                     };
 
                     var planner = new PathPlanning.PathPlanner(options);
-                    var ppResult = planner.FindClosestPath(controller.loadedMap,
-                                                           _fromPos.Value,
-                                                           clickedPos);
+                    var ppResult = planner.FindClosestPath(controller.loadedMap, _fromPos.Value, clickedPos);
 
                     _fromPos = null;
                     if (ppResult == null)
@@ -816,7 +831,7 @@ namespace Transidious
                     else
                     {
                         Debug.Log(ppResult.ToString());
-                        ppResult.DebugDraw();
+                        ppResult.path.DebugDraw();
                     }
                 }
             }
@@ -831,7 +846,7 @@ namespace Transidious
                 }
                 else
                 {
-                    var c = controller.sim.CreateCitizen(true);
+                    var c = controller.sim.CreateCitizen(true, true);
 
                     var planner = new PathPlanning.PathPlanner(c.transitPreferences);
                     var map = controller.loadedMap;
@@ -877,10 +892,38 @@ namespace Transidious
                     Utility.DrawLine(parkingLot.outlinePositions[0].Select(
                         v2 => new Vector3(v2.x, v2.y, Map.Layer(MapLayer.Foreground))).ToArray(), 
                         3f, Color.red);
+
+                    var closestPt = SaveManager.loadedMap.GetClosestStreet(parkingLot.Centroid);
+                    Utility.DrawCircle(closestPt.pos, 3f, 3f, Color.yellow);
                 }
                 else
                 {
                     Debug.Log("no parking lot found????");
+                }
+            }
+            
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F7))
+            {
+                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if (_fromPos == null)
+                {
+                    Debug.Log("first point set");
+                    _fromPos = clickedPos;
+                }
+                else
+                {
+                    var from = _fromPos.Value;
+                    var to = clickedPos;
+
+                    var hubs = controller.router.GetClosestHubs(from, to);
+                    Utility.DrawCircle(from, 3f, 3f, Color.red);
+                    Utility.DrawArrow(from, hubs.Item1.Location, 2f, Color.blue);
+                    Utility.DrawCircle(hubs.Item1.Location, 3f, 3f, Color.yellow);
+                    Utility.DrawCircle(hubs.Item2.Location, 3f, 3f, Color.yellow);
+                    Utility.DrawArrow(hubs.Item2.Location, to, 2f, Color.blue);
+                    Utility.DrawCircle(to, 3f, 3f, Color.red);
+                    
+                    _fromPos = null;
                 }
             }
 
@@ -889,7 +932,7 @@ namespace Transidious
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 var pos = controller.loadedMap.GetClosestStreet(clickedPos);
 
-                if (pos.seg != null)
+                if (pos.street != null)
                 {
                     Utility.DrawCircle(pos.pos, 3f, 3f, Color.red);
                 }
@@ -907,8 +950,8 @@ namespace Transidious
                         _highlighted.ResetColor();
                     }
 
-                    _highlighted = posOnStreet.seg;
-                    posOnStreet.seg.UpdateColor(Color.red);
+                    _highlighted = posOnStreet.street;
+                    posOnStreet.street.UpdateColor(Color.red);
 
                     this.gameObject.transform.position = posOnStreet.pos;
                     this.gameObject.DrawCircle(10f, 10f, Color.blue);

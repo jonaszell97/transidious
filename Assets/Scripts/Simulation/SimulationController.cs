@@ -156,6 +156,32 @@ namespace Transidious
                 timeSinceLastCompleteUpdate = TimeSpan.Zero;
                 newDay = false;
             }
+
+            // if (gameTime.Minute % 10 == 0 && gameTime.Second == 0)
+            // {
+            //     foreach (var line in SaveManager.loadedMap.transitLines)
+            //     {
+            //         var maxDiff = 0f;
+            //         var sum = 0f;
+            //
+            //         var first = true;
+            //         foreach (var v in line.vehicles)
+            //         {
+            //             if (first || v.Velocity.MPS.Equals(0f))
+            //             {
+            //                 first = false;
+            //                 sum += 20f;
+            //                 continue;
+            //             }
+            //
+            //             var dist = (float)v.DistanceToNext.TotalMinutes;
+            //             sum += dist;
+            //             maxDiff = Mathf.Max(maxDiff, Mathf.Abs(20f - dist));
+            //         }
+            //
+            //         Debug.Log($"avg distance: {sum / line.vehicles.Count:n2} min, max diff: {maxDiff:n2} min");
+            //     }
+            // }
         }
 
         /// <summary>
@@ -213,7 +239,7 @@ namespace Transidious
             scheduledEvents[id].active = true;
         }
 
-        public readonly int BaseSpeedMultiplier = 60;
+        public static readonly int BaseSpeedMultiplier = 60;
 
         public int SpeedMultiplier
         {
@@ -245,17 +271,7 @@ namespace Transidious
             game.mainUI.simSpeedButton.GetComponent<Image>().sprite =
                 SpriteManager.instance.simSpeedSprites[Mathf.Min((int)simSpeed, 2)];
         }
-
-        public static TimeSpan RealTimeToGameTime(TimeSpan ts)
-        {
-            return TimeSpan.FromSeconds(ts.TotalSeconds * 60);
-        }
-
-        public static TimeSpan GameTimeToRealTime(TimeSpan ts)
-        {
-            return TimeSpan.FromSeconds(ts.TotalSeconds / 60);
-        }
-
+        
         void OnLanguageChange()
         {
             if (this.timeStringBuffer.Length != Translator.MaxTimeStringLength)
@@ -317,7 +333,7 @@ namespace Transidious
 
             for (var i = 0; i < SpeedMultiplier; ++i)
             {
-                gameTime = gameTime.AddSeconds(BaseSpeedMultiplier * Time.fixedDeltaTime);
+                gameTime = gameTime.AddSeconds(BaseSpeedMultiplier * Time.deltaTime);
                 FireTimedEvents();
 
                 if (gameTime.Minute == prevMinute)
@@ -410,7 +426,7 @@ namespace Transidious
         public Car CreateCar(Serialization.Car c)
         {
             var driver = citizens[c.DriverId];
-            var car = new Car(this, driver, c.Color?.Deserialize() ?? Utility.RandomColor,
+            var car = new Car(this, driver, c.Color?.Deserialize() ?? RNG.RandomColor,
                               (int)c.CarModel, c.Id);
 
             if (c.ParkingLotID != 0)
@@ -422,60 +438,35 @@ namespace Transidious
             return car;
         }
 
-        public TransitVehicle CreateVehicle(Line line)
+        public TransitVehicle CreateVehicle(Line line, TransitVehicle next)
         {
-            var obj = Instantiate(transitVehiclePrefab); ;
-            obj.transform.SetParent(this.transform, false);
-
-            if (line.stops.Count > 0)
-            {
-                var pos = line.stops.First().transform.position;
-                obj.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.TransitStops, 1));
-            }
-
+            var obj = Instantiate(transitVehiclePrefab, this.transform, false);
+            
             var vehicle = obj.GetComponent<TransitVehicle>();
-            vehicle.Initialize(line);
-
-            return vehicle;
-        }
-
-        public TransitVehicle CreateVehicle(Line line, Stop stop)
-        {
-            var obj = Instantiate(transitVehiclePrefab); ;
-            obj.transform.SetParent(this.transform, false);
-
-            var pos = stop.transform.position;
-            obj.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.TransitStops, 1));
-
-            var vehicle = obj.GetComponent<TransitVehicle>();
-            vehicle.Initialize(line);
-            vehicle.gameObject.SetActive(false);
+            vehicle.Initialize(line, next);
 
             return vehicle;
         }
 
         public Building RandomBuilding()
         {
-            var idx = UnityEngine.Random.Range(0, game.loadedMap.buildings.Count);
-            return game.loadedMap.buildings[idx];
+            return RNG.RandomElement(game.loadedMap.buildings);
         }
 
         public Building RandomUnoccupiedBuilding(Building.Type type)
         {
             var map = SaveManager.loadedMap;
-            var pos = new Vector2(UnityEngine.Random.Range(map.minX, map.maxX), 
-                                  UnityEngine.Random.Range(map.minY, map.maxY));
+            var pos = RNG.Vector2(map.minX, map.maxX, map.minY, map.maxY);
 
             while (!map.IsPointOnMap(pos))
             {
-                pos = new Vector2(UnityEngine.Random.Range(map.minX, map.maxX), 
-                    UnityEngine.Random.Range(map.minY, map.maxY));
+                pos = RNG.Vector2(map.minX, map.maxX, map.minY, map.maxY);
             }
             
             return ClosestUnoccupiedBuilding(type, pos);
         }
 
-        public Building ClosestUnoccupiedBuilding(Building.Type type, Vector2 pos)
+        public Building ClosestUnoccupiedBuilding(Building.Type type, Vector2 pos, bool ignoreOccupancy = false)
         {
             if (!game.loadedMap.buildingsByType.TryGetValue(type, out List<Building> buildings))
             {
@@ -488,7 +479,7 @@ namespace Transidious
             foreach (var building in buildings)
             {
                 var distance = (building.centroid - pos).sqrMagnitude;
-                if (distance < minDistance && building.occupants < building.Capacity)
+                if (distance < minDistance && (ignoreOccupancy || building.ResidentCount < building.Capacity))
                 {
                     minDistance = distance;
                     closestBuilding = building;
@@ -498,7 +489,7 @@ namespace Transidious
             return closestBuilding;
         }
 
-        public Citizen CreateCitizen(bool init, bool hasCar = true)
+        public Citizen CreateCitizen(bool init, bool hasCar = false)
         {
             var c = new Citizen(this);
             if (hasCar)
@@ -556,13 +547,25 @@ namespace Transidious
             for (int i = 0; i < amount; ++i)
             {
                 var citizen = CreateCitizen(false);
-                if (citizen.age >= 18 && UnityEngine.Random.value >= .1f)
+                if (citizen.age >= 18 && RNG.value >= .1f)
                 {
-                    citizen.car = CreateCar(citizen, Vector3.zero, Utility.RandomColor);
+                    citizen.car = CreateCar(citizen, Vector3.zero, RNG.RandomColor);
                 }
 
                 citizen.Initialize();
                 citizens?.Add(citizen);
+            }
+        }
+        
+        public IEnumerator SpawnRandomCitizensAsync(int amount, float thresholdTime)
+        {
+            for (int i = 0; i < amount; ++i)
+            {
+                var citizen = CreateCitizen(true);
+                if (FrameTimer.instance.FrameDuration >= thresholdTime)
+                {
+                    yield return null;
+                }
             }
         }
 
@@ -596,7 +599,7 @@ namespace Transidious
             for (int i = 0; i < amount; ++i)
             {
                 var citizen = CreateCitizen();
-                citizen.car = CreateCar(citizen, Vector3.zero, Utility.RandomColor);
+                citizen.car = CreateCar(citizen, Vector3.zero, RNG.RandomColor);
 
                 if (FrameTimer.instance.FrameDuration >= 8)
                 {

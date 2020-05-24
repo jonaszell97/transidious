@@ -53,8 +53,8 @@ namespace Transidious
             this.line = line;
             lineLogo.SetLine(line, true);
             lineName.text = line.name;
-            linePassengers.text = UnityEngine.Random.Range(100, 10000).ToString();
-            lineEfficiency.text = UnityEngine.Random.Range(0, 100).ToString() + "%";
+            linePassengers.text = RNG.Next(100, 10000).ToString();
+            lineEfficiency.text = RNG.Next(0, 100).ToString() + "%";
         }
     }
 }

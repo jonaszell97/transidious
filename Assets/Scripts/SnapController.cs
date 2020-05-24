@@ -258,7 +258,7 @@ namespace Transidious
                 closestPtAndPos = street.GetClosestPointAndPosition(cursorPos);
                 var positions = game.sim.trafficSim.GetPath(
                     street,
-                    (closestPtAndPos.Item2 == Math.PointPosition.Right || street.street.isOneWay)
+                    (closestPtAndPos.Item2 == Math.PointPosition.Right || street.IsOneWay)
                         ? street.RightmostLane
                         : street.LeftmostLane);
 

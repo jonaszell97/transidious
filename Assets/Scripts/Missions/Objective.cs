@@ -8,29 +8,19 @@ namespace Transidious
     {
         public enum Type
         {
-            /// <summary>
-            /// Completed when reaching a certain amount of money. 
-            /// </summary>
+            /// Completed when reaching a certain amount of money.
             TotalMoney = 0,
 
-            /// <summary>
-            /// Completed when reaching a certain amount of monthly income. 
-            /// </summary>
+            /// Completed when reaching a certain amount of monthly income.
             MonthlyIncome = 1,
 
-            /// <summary>
             /// Completed when a certain amount of average citizen happiness is reached.
-            /// </summary>
             AvgHappiness = 2,
 
-            /// <summary>
             /// Completed when reaching a certain amount of total passengers.
-            /// </summary>
             TotalPassengers = 3,
 
-            /// <summary>
             /// Completed when reaching a certain percentage of saved trips.
-            /// </summary>
             TripsSaved = 4,
         }
 
@@ -44,7 +34,7 @@ namespace Transidious
         public Objective(Type type, Decimal requirement, DateTime? deadline = null)
         {
             this.type = type;
-            this.requirement = requirement;
+            this.requirement = (float)requirement;
             this.status = Status.InProgress;
             this.deadline = deadline;
         }
@@ -52,7 +42,7 @@ namespace Transidious
         public Objective(Type type, int requirement, DateTime? deadline = null)
         {
             this.type = type;
-            this.requirement = (decimal)requirement;
+            this.requirement = requirement;
             this.status = Status.InProgress;
             this.deadline = deadline;
         }
@@ -60,56 +50,30 @@ namespace Transidious
         public Objective(Type type, float requirement, DateTime? deadline = null)
         {
             this.type = type;
-            this.requirement = (decimal)requirement;
+            this.requirement = requirement;
             this.status = Status.InProgress;
             this.deadline = deadline;
         }
 
-        /// <summary>
         /// The type of the objective.
-        /// </summary>
-        public Type type { get; }
+        public Type type;
 
-        /// <summary>
         /// The status of the objective.
-        /// </summary>
-        public Status status { get; set; }
+        public Status status;
 
-        /// <summary>
         /// The time by which the objective has to be completed.
-        /// </summary>
         public DateTime? deadline;
 
-        /// <summary>
         /// The value of the requirement; exact meaning is dependent on objective type.
-        /// </summary>
-        public decimal requirement;
+        public float requirement;
 
-        /// <summary>
         /// Whether or not the objective is completed.
-        /// </summary>
-        public bool IsCompleted
-        {
-            get
-            {
-                return status == Status.Completed;
-            }
-        }
+        public bool IsCompleted => status == Status.Completed;
 
-        /// <summary>
         /// Whether or not the objective can still be completed.
-        /// </summary>
-        public bool IsFailed
-        {
-            get
-            {
-                return status == Status.Failed;
-            }
-        }
+        public bool IsFailed => status == Status.Failed;
 
-        /// <summary>
         /// The progress of the objective, between 0 and 1.
-        /// </summary>
         public float Progress
         {
             get
@@ -117,7 +81,7 @@ namespace Transidious
                 switch (type)
                 {
                     case Type.TotalMoney:
-                        return (float)(financeController.Money / requirement);
+                        return ((float)financeController.Money / requirement);
                     default:
                         Debug.LogError("unsupported requirement type");
                         return 0f;
@@ -125,26 +89,11 @@ namespace Transidious
             }
         }
 
-        SimulationController simulationController
-        {
-            get
-            {
-                return GameController.instance.sim;
-            }
-        }
+        SimulationController simulationController => GameController.instance.sim;
 
-        FinanceController financeController
-        {
-            get
-            {
-                return GameController.instance.financeController;
-            }
-        }
+        private FinanceController financeController => GameController.instance.financeController;
 
-        /// <summary>
         /// Update the progress of the objective.
-        /// </summary>
-        /// <returns>True if the objective has failed.</returns>
         public bool UpdateProgress()
         {
             if (status != Status.InProgress)

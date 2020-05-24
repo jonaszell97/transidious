@@ -27,54 +27,55 @@ namespace Transidious.Serialization {
             "CglNYXAucHJvdG8SGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24aDENvbW1v",
             "bi5wcm90bxoOQnVpbGRpbmcucHJvdG8aFE5hdHVyYWxGZWF0dXJlLnByb3Rv",
             "GgxTdHJlZXQucHJvdG8aDVRyYW5zaXQucHJvdG8aEFNpbXVsYXRpb24ucHJv",
-            "dG8iUAoHTWFwVGlsZRIJCgF4GAEgASgNEgkKAXkYAiABKA0SFAoMbWFwT2Jq",
-            "ZWN0SURzGAMgAygNEhkKEW9ycGhhbmVkT2JqZWN0SURzGAQgAygNItEFCgNN",
-            "YXASOAoGdHJpcGxlGAEgASgLMiguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
-            "bi5WZXJzaW9uVHJpcGxlEj0KEWJvdW5kYXJ5UG9zaXRpb25zGAIgAygLMiIu",
-            "VHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyEgwKBG1pblgYAyAB",
-            "KAISDAoEbWF4WBgEIAEoAhIMCgRtaW5ZGAUgASgCEgwKBG1heFkYBiABKAIS",
-            "PQoRc3RhcnRpbmdDYW1lcmFQb3MYByABKAsyIi5UcmFuc2lkaW91cy5TZXJp",
-            "YWxpemF0aW9uLlZlY3RvcjMSOQoOYm91bmRhcnlNZXNoZXMYCCADKAsyIS5U",
-            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1lc2gyRBI2CglidWlsZGluZ3MY",
-            "CSADKAsyIy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkJ1aWxkaW5nEkIK",
-            "D25hdHVyYWxGZWF0dXJlcxgKIAMoCzIpLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uTmF0dXJhbEZlYXR1cmUSMgoHc3RyZWV0cxgLIAMoCzIhLlRyYW5z",
-            "aWRpb3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0EkoKE3N0cmVldEludGVyc2Vj",
-            "dGlvbnMYDCADKAsyLS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlN0cmVl",
-            "dEludGVyc2VjdGlvbhIQCgh0aWxlU2l6ZRgNIAEoAhIaChJiYWNrZ3JvdW5k",
-            "VGlsZVNpemUYDiABKAISOQoNYmFja2dyb3VuZE1pbhgPIAEoCzIiLlRyYW5z",
-            "aWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhI6Cg5iYWNrZ3JvdW5kU2l6",
-            "ZRgQIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMiJS",
-            "CgdFeHBlbnNlEhMKC2Rlc2NyaXB0aW9uGAEgASgJEjIKBmFtb3VudBgCIAEo",
-            "CzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uRGVjaW1hbCJSCgdFYXJu",
-            "aW5nEhMKC2Rlc2NyaXB0aW9uGAEgASgJEjIKBmFtb3VudBgCIAEoCzIiLlRy",
-            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uRGVjaW1hbCLQAgoIRmluYW5jZXMS",
-            "MQoFbW9uZXkYASABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkRl",
-            "Y2ltYWwSNAoIZXhwZW5zZXMYAiABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxp",
-            "emF0aW9uLkRlY2ltYWwSOAoMZXhwZW5zZUl0ZW1zGAMgAygLMiIuVHJhbnNp",
-            "ZGlvdXMuU2VyaWFsaXphdGlvbi5FeHBlbnNlEjQKCGVhcm5pbmdzGAQgASgL",
-            "MiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5EZWNpbWFsEjgKDGVhcm5p",
-            "bmdJdGVtcxgFIAMoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uRWFy",
-            "bmluZxIxCgV0YXhlcxgGIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
-            "b24uRWFybmluZyK7BAoIU2F2ZUZpbGUSOAoGdHJpcGxlGAEgASgLMiguVHJh",
-            "bnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZXJzaW9uVHJpcGxlEjsKBXRpbGVz",
-            "GAIgAygLMiwuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5TYXZlRmlsZS5N",
-            "YXBUaWxlcxIuCgVsaW5lcxgDIAMoCzIfLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uTGluZRIuCgVzdG9wcxgEIAMoCzIfLlRyYW5zaWRpb3VzLlNlcmlh",
-            "bGl6YXRpb24uU3RvcBIwCgZyb3V0ZXMYBSADKAsyIC5UcmFuc2lkaW91cy5T",
-            "ZXJpYWxpemF0aW9uLlJvdXRlEjQKCGNpdGl6ZW5zGAYgAygLMiIuVHJhbnNp",
-            "ZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuEiwKBGNhcnMYByADKAsyHi5U",
-            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNhchI6CgthY3RpdmVQYXRocxgI",
-            "IAMoCzIlLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQWN0aXZlUGF0aBIQ",
-            "CghnYW1lVGltZRgJIAEoBBI1CghmaW5hbmNlcxgKIAEoCzIjLlRyYW5zaWRp",
-            "b3VzLlNlcmlhbGl6YXRpb24uRmluYW5jZXMaPQoITWFwVGlsZXMSMQoFdGls",
-            "ZXMYASADKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1hcFRpbGVC",
-            "HKoCGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
+            "dG8iNQoHTWFwVGlsZRIJCgF4GAEgASgNEgkKAXkYAiABKA0SFAoMbWFwT2Jq",
+            "ZWN0SURzGAMgAygNIpEGCgNNYXASOAoGdHJpcGxlGAEgASgLMiguVHJhbnNp",
+            "ZGlvdXMuU2VyaWFsaXphdGlvbi5WZXJzaW9uVHJpcGxlEj0KEWJvdW5kYXJ5",
+            "UG9zaXRpb25zGAIgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5W",
+            "ZWN0b3IyEgwKBG1pblgYAyABKAISDAoEbWF4WBgEIAEoAhIMCgRtaW5ZGAUg",
+            "ASgCEgwKBG1heFkYBiABKAISPQoRc3RhcnRpbmdDYW1lcmFQb3MYByABKAsy",
+            "Ii5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjMSOQoOYm91bmRh",
+            "cnlNZXNoZXMYCCADKAsyIS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1l",
+            "c2gyRBI2CglidWlsZGluZ3MYCSADKAsyIy5UcmFuc2lkaW91cy5TZXJpYWxp",
+            "emF0aW9uLkJ1aWxkaW5nEkIKD25hdHVyYWxGZWF0dXJlcxgKIAMoCzIpLlRy",
+            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTmF0dXJhbEZlYXR1cmUSMgoHc3Ry",
+            "ZWV0cxgLIAMoCzIhLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0",
+            "EkoKE3N0cmVldEludGVyc2VjdGlvbnMYDCADKAsyLS5UcmFuc2lkaW91cy5T",
+            "ZXJpYWxpemF0aW9uLlN0cmVldEludGVyc2VjdGlvbhIQCgh0aWxlU2l6ZRgN",
+            "IAEoAhIaChJiYWNrZ3JvdW5kVGlsZVNpemUYDiABKAISOQoNYmFja2dyb3Vu",
+            "ZE1pbhgPIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9y",
+            "MhI6Cg5iYWNrZ3JvdW5kU2l6ZRgQIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlh",
+            "bGl6YXRpb24uVmVjdG9yMhI+Cg10cmFmZmljTGlnaHRzGBEgAygLMicuVHJh",
+            "bnNpZGlvdXMuU2VyaWFsaXphdGlvbi5UcmFmZmljTGlnaHQiUgoHRXhwZW5z",
+            "ZRITCgtkZXNjcmlwdGlvbhgBIAEoCRIyCgZhbW91bnQYAiABKAsyIi5UcmFu",
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uLkRlY2ltYWwiUgoHRWFybmluZxITCgtk",
+            "ZXNjcmlwdGlvbhgBIAEoCRIyCgZhbW91bnQYAiABKAsyIi5UcmFuc2lkaW91",
+            "cy5TZXJpYWxpemF0aW9uLkRlY2ltYWwi0AIKCEZpbmFuY2VzEjEKBW1vbmV5",
+            "GAEgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5EZWNpbWFsEjQK",
+            "CGV4cGVuc2VzGAIgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5E",
+            "ZWNpbWFsEjgKDGV4cGVuc2VJdGVtcxgDIAMoCzIiLlRyYW5zaWRpb3VzLlNl",
+            "cmlhbGl6YXRpb24uRXhwZW5zZRI0CghlYXJuaW5ncxgEIAEoCzIiLlRyYW5z",
+            "aWRpb3VzLlNlcmlhbGl6YXRpb24uRGVjaW1hbBI4CgxlYXJuaW5nSXRlbXMY",
+            "BSADKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkVhcm5pbmcSMQoF",
+            "dGF4ZXMYBiABKAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkVhcm5p",
+            "bmciuwQKCFNhdmVGaWxlEjgKBnRyaXBsZRgBIAEoCzIoLlRyYW5zaWRpb3Vz",
+            "LlNlcmlhbGl6YXRpb24uVmVyc2lvblRyaXBsZRI7CgV0aWxlcxgCIAMoCzIs",
+            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU2F2ZUZpbGUuTWFwVGlsZXMS",
+            "LgoFbGluZXMYAyADKAsyHy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkxp",
+            "bmUSLgoFc3RvcHMYBCADKAsyHy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
+            "LlN0b3ASMAoGcm91dGVzGAUgAygLMiAuVHJhbnNpZGlvdXMuU2VyaWFsaXph",
+            "dGlvbi5Sb3V0ZRI0CghjaXRpemVucxgGIAMoCzIiLlRyYW5zaWRpb3VzLlNl",
+            "cmlhbGl6YXRpb24uQ2l0aXplbhIsCgRjYXJzGAcgAygLMh4uVHJhbnNpZGlv",
+            "dXMuU2VyaWFsaXphdGlvbi5DYXISOgoLYWN0aXZlUGF0aHMYCCADKAsyJS5U",
+            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkFjdGl2ZVBhdGgSEAoIZ2FtZVRp",
+            "bWUYCSABKAQSNQoIZmluYW5jZXMYCiABKAsyIy5UcmFuc2lkaW91cy5TZXJp",
+            "YWxpemF0aW9uLkZpbmFuY2VzGj0KCE1hcFRpbGVzEjEKBXRpbGVzGAEgAygL",
+            "MiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5NYXBUaWxlQhyqAhlUcmFu",
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Transidious.Serialization.BuildingReflection.Descriptor, global::Transidious.Serialization.NaturalFeatureReflection.Descriptor, global::Transidious.Serialization.StreetReflection.Descriptor, global::Transidious.Serialization.TransitReflection.Descriptor, global::Transidious.Serialization.SimulationReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapTile), global::Transidious.Serialization.MapTile.Parser, new[]{ "X", "Y", "MapObjectIDs", "OrphanedObjectIDs" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Map), global::Transidious.Serialization.Map.Parser, new[]{ "Triple", "BoundaryPositions", "MinX", "MaxX", "MinY", "MaxY", "StartingCameraPos", "BoundaryMeshes", "Buildings", "NaturalFeatures", "Streets", "StreetIntersections", "TileSize", "BackgroundTileSize", "BackgroundMin", "BackgroundSize" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapTile), global::Transidious.Serialization.MapTile.Parser, new[]{ "X", "Y", "MapObjectIDs" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Map), global::Transidious.Serialization.Map.Parser, new[]{ "Triple", "BoundaryPositions", "MinX", "MaxX", "MinY", "MaxY", "StartingCameraPos", "BoundaryMeshes", "Buildings", "NaturalFeatures", "Streets", "StreetIntersections", "TileSize", "BackgroundTileSize", "BackgroundMin", "BackgroundSize", "TrafficLights" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Expense), global::Transidious.Serialization.Expense.Parser, new[]{ "Description", "Amount" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Earning), global::Transidious.Serialization.Earning.Parser, new[]{ "Description", "Amount" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Finances), global::Transidious.Serialization.Finances.Parser, new[]{ "Money", "Expenses", "ExpenseItems", "Earnings", "EarningItems", "Taxes" }, null, null, null),
@@ -113,7 +114,6 @@ namespace Transidious.Serialization {
       x_ = other.x_;
       y_ = other.y_;
       mapObjectIDs_ = other.mapObjectIDs_.Clone();
-      orphanedObjectIDs_ = other.orphanedObjectIDs_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -154,16 +154,6 @@ namespace Transidious.Serialization {
       get { return mapObjectIDs_; }
     }
 
-    /// <summary>Field number for the "orphanedObjectIDs" field.</summary>
-    public const int OrphanedObjectIDsFieldNumber = 4;
-    private static readonly pb::FieldCodec<uint> _repeated_orphanedObjectIDs_codec
-        = pb::FieldCodec.ForUInt32(34);
-    private readonly pbc::RepeatedField<uint> orphanedObjectIDs_ = new pbc::RepeatedField<uint>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<uint> OrphanedObjectIDs {
-      get { return orphanedObjectIDs_; }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MapTile);
@@ -180,7 +170,6 @@ namespace Transidious.Serialization {
       if (X != other.X) return false;
       if (Y != other.Y) return false;
       if(!mapObjectIDs_.Equals(other.mapObjectIDs_)) return false;
-      if(!orphanedObjectIDs_.Equals(other.orphanedObjectIDs_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -190,7 +179,6 @@ namespace Transidious.Serialization {
       if (X != 0) hash ^= X.GetHashCode();
       if (Y != 0) hash ^= Y.GetHashCode();
       hash ^= mapObjectIDs_.GetHashCode();
-      hash ^= orphanedObjectIDs_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -213,7 +201,6 @@ namespace Transidious.Serialization {
         output.WriteUInt32(Y);
       }
       mapObjectIDs_.WriteTo(output, _repeated_mapObjectIDs_codec);
-      orphanedObjectIDs_.WriteTo(output, _repeated_orphanedObjectIDs_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -229,7 +216,6 @@ namespace Transidious.Serialization {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Y);
       }
       size += mapObjectIDs_.CalculateSize(_repeated_mapObjectIDs_codec);
-      size += orphanedObjectIDs_.CalculateSize(_repeated_orphanedObjectIDs_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -248,7 +234,6 @@ namespace Transidious.Serialization {
         Y = other.Y;
       }
       mapObjectIDs_.Add(other.mapObjectIDs_);
-      orphanedObjectIDs_.Add(other.orphanedObjectIDs_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -271,11 +256,6 @@ namespace Transidious.Serialization {
           case 26:
           case 24: {
             mapObjectIDs_.AddEntriesFrom(input, _repeated_mapObjectIDs_codec);
-            break;
-          }
-          case 34:
-          case 32: {
-            orphanedObjectIDs_.AddEntriesFrom(input, _repeated_orphanedObjectIDs_codec);
             break;
           }
         }
@@ -325,6 +305,7 @@ namespace Transidious.Serialization {
       backgroundTileSize_ = other.backgroundTileSize_;
       backgroundMin_ = other.backgroundMin_ != null ? other.backgroundMin_.Clone() : null;
       backgroundSize_ = other.backgroundSize_ != null ? other.backgroundSize_.Clone() : null;
+      trafficLights_ = other.trafficLights_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -503,6 +484,16 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "trafficLights" field.</summary>
+    public const int TrafficLightsFieldNumber = 17;
+    private static readonly pb::FieldCodec<global::Transidious.Serialization.TrafficLight> _repeated_trafficLights_codec
+        = pb::FieldCodec.ForMessage(138, global::Transidious.Serialization.TrafficLight.Parser);
+    private readonly pbc::RepeatedField<global::Transidious.Serialization.TrafficLight> trafficLights_ = new pbc::RepeatedField<global::Transidious.Serialization.TrafficLight>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Transidious.Serialization.TrafficLight> TrafficLights {
+      get { return trafficLights_; }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Map);
@@ -532,6 +523,7 @@ namespace Transidious.Serialization {
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(BackgroundTileSize, other.BackgroundTileSize)) return false;
       if (!object.Equals(BackgroundMin, other.BackgroundMin)) return false;
       if (!object.Equals(BackgroundSize, other.BackgroundSize)) return false;
+      if(!trafficLights_.Equals(other.trafficLights_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -554,6 +546,7 @@ namespace Transidious.Serialization {
       if (BackgroundTileSize != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(BackgroundTileSize);
       if (backgroundMin_ != null) hash ^= BackgroundMin.GetHashCode();
       if (backgroundSize_ != null) hash ^= BackgroundSize.GetHashCode();
+      hash ^= trafficLights_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -613,6 +606,7 @@ namespace Transidious.Serialization {
         output.WriteRawTag(130, 1);
         output.WriteMessage(BackgroundSize);
       }
+      trafficLights_.WriteTo(output, _repeated_trafficLights_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -657,6 +651,7 @@ namespace Transidious.Serialization {
       if (backgroundSize_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(BackgroundSize);
       }
+      size += trafficLights_.CalculateSize(_repeated_trafficLights_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -716,6 +711,7 @@ namespace Transidious.Serialization {
         }
         BackgroundSize.MergeFrom(other.BackgroundSize);
       }
+      trafficLights_.Add(other.trafficLights_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -801,6 +797,10 @@ namespace Transidious.Serialization {
               BackgroundSize = new global::Transidious.Serialization.Vector2();
             }
             input.ReadMessage(BackgroundSize);
+            break;
+          }
+          case 138: {
+            trafficLights_.AddEntriesFrom(input, _repeated_trafficLights_codec);
             break;
           }
         }

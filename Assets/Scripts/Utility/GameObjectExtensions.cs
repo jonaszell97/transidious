@@ -39,6 +39,16 @@ namespace Transidious
 
             return defaultValue;
         }
+
+        public static TValue SecondToLast<TValue>(this IReadOnlyList<TValue> list)
+        {
+            return list[list.Count - 2];
+        }
+
+        public static TValue TryGet<TValue>(this IReadOnlyList<TValue> list, int index)
+        {
+            return list.Count > index ? list[index] : default(TValue);
+        }
     }
 
     public static class GameObjectExtensions
@@ -242,31 +252,6 @@ namespace Transidious
                                             Color c)
         {
             return Utility.DrawCircle(container.transform.position, radius, lineWidth, c);
-        }
-
-        public static float NextFloat(this System.Random rng)
-        {
-            return (float) rng.NextDouble();
-        }
-
-        public static float NextFloat(this System.Random rng, float min, float max)
-        {
-            return min + rng.NextFloat() * (max - min);
-        }
-
-        public static Vector2 Vector2(this System.Random rng,
-                                      float minX, float maxX,
-                                      float minY, float maxY)
-        {
-            return new Vector2(rng.NextFloat(minX, maxX), rng.NextFloat(minY, maxY));
-        }
-
-        public static Vector3 Vector3(this System.Random rng,
-                                      float minX, float maxX,
-                                      float minY, float maxY,
-                                      float z = 0f)
-        {
-            return new Vector3(rng.NextFloat(minX, maxX), rng.NextFloat(minY, maxY), z);
         }
     }
 }

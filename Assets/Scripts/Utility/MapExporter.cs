@@ -159,22 +159,13 @@ namespace Transidious
             return meshes;
         }
 
-        public void ExportMap(string fileName, int backgroundBlur = 0)
+        public void ExportMap(string fileName)
         {
-            bool isBackground = backgroundBlur != 0;
-
             // FIXME
             var prevStatus = GameController.instance.status;
             GameController.instance.status = GameController.GameStatus.Disabled;
 
-            if (isBackground)
-            {
-                System.IO.Directory.CreateDirectory($"Assets/Resources/Maps/{fileName}/Backgrounds");
-            }
-            else
-            {
-                System.IO.Directory.CreateDirectory($"Assets/Resources/Maps/{fileName}");
-            }
+            System.IO.Directory.CreateDirectory($"Assets/Resources/Maps/{fileName}");
 
             using (var drawing = new Bitmap(resolution, resolution))
             {
@@ -189,6 +180,12 @@ namespace Transidious
                     {
                         for (var y = 0; y < map.tilesHeight; ++y)
                         {
+                            var assetName = $"Assets/Resources/Maps/{fileName}/{x}_{y}.png";
+                            if (System.IO.File.Exists(assetName))
+                            {
+                                continue;
+                            }
+
                             var backgroundColor = ToDrawingColor(map.GetDefaultBackgroundColor(MapDisplayMode.Day));
                             graphics.FillRectangle(
                                 new SolidBrush(backgroundColor),
@@ -197,24 +194,236 @@ namespace Transidious
                             var tile = map.GetTile(x, y);
                             if (DrawTile(tile, graphics, false))
                             {
-                                if (isBackground)
-                                {
-                                    var assetName = $"Assets/Resources/Maps/{fileName}/Backgrounds/{x}_{y}.png";
-                                    using (var blurred = Blur(drawing, backgroundBlur))
-                                    {
-                                        blurred.Save(assetName);
-                                    }
-                                }
-                                else
-                                {
-                                    var assetName = $"Assets/Resources/Maps/{fileName}/{x}_{y}.png";
-                                    drawing.Save(assetName);
-                                }
+                                drawing.Save(assetName);
                             }
                         }
                     }
                 }
             }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            foreach (var tile in map.tiles)
+            {
+                tile.UpdateSprite();
+            }
+
+            // FIXME
+            GameController.instance.status = prevStatus;
+        }
+        
+        public void ExportMapBackground(string fileName, int backgroundBlur)
+        {
+            var prevStatus = GameController.instance.status;
+            GameController.instance.status = GameController.GameStatus.Disabled;
+
+            var path = $"Assets/Resources/Maps/{fileName}/Backgrounds";
+            if (System.IO.Directory.Exists(path))
+            {
+                foreach (var tile in map.tiles)
+                {
+                    tile.UpdateSprite();
+                }
+                
+                return;
+            }
+            
+            System.IO.Directory.CreateDirectory(path);
+
+            var backgroundColor = ToDrawingColor(map.GetDefaultBackgroundColor(MapDisplayMode.Day));
+            
+            var drawings = new Bitmap[map.tilesWidth][];
+            for (var x = 0; x < map.tilesWidth; ++x)
+            {
+                drawings[x] = new Bitmap[map.tilesHeight];
+                
+                for (var y = 0; y < map.tilesHeight; ++y)
+                {
+                    var drawing = new Bitmap(resolution, resolution);
+                    drawings[x][y] = drawing;
+                    
+                    using (var graphics = System.Drawing.Graphics.FromImage(drawing))
+                    {
+                        graphics.CompositingQuality = CompositingQuality.HighQuality;
+                        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        graphics.CompositingMode = CompositingMode.SourceCopy;
+                        graphics.SmoothingMode = SmoothingMode.HighQuality;
+
+                        graphics.FillRectangle(
+                            new SolidBrush(backgroundColor),
+                            new Rectangle(0, 0, resolution, resolution));
+
+                        var tile = map.GetTile(x, y);
+                        DrawTile(tile, graphics, false);
+                    }
+                }
+            }
+
+            var offset = backgroundBlur;
+            var expandedDrawing = new Bitmap(resolution + 2 * offset, resolution + 2 * offset);
+            var expandedGraphics = System.Drawing.Graphics.FromImage(expandedDrawing);
+            
+            var blurRect = new Rectangle(offset, offset, resolution, resolution);
+            var fullRect = new Rectangle(0, 0, resolution, resolution);
+            
+            var final = new Bitmap(resolution, resolution);
+            var finalGraphics = System.Drawing.Graphics.FromImage(final);
+
+            for (var x = 0; x < map.tilesWidth; ++x)
+            {
+                for (var y = 0; y < map.tilesHeight; ++y)
+                {
+                    var drawing = drawings[x][y];
+                    expandedGraphics.FillRectangle(
+                        new SolidBrush(backgroundColor),
+                        new Rectangle(0, 0, resolution + 2*offset, resolution + 2*offset));
+                    
+                    expandedGraphics.DrawImage(
+                        drawing, 
+                        new Rectangle(offset, offset, resolution, resolution),
+                        new Rectangle(0, 0, resolution, resolution),
+                        GraphicsUnit.Pixel);
+
+                    for (var xx = -1; xx <= 1; ++xx)
+                    {
+                        for (var yy = -1; yy <= 1; ++yy)
+                        {
+                            if (xx == 0 && yy == 0)
+                                continue;
+
+                            var borderingTileX = x + xx;
+                            var borderingTileY = y + yy;
+                            
+                            if (borderingTileX < 0 || borderingTileX >= map.tilesWidth)
+                                continue;
+                            
+                            if (borderingTileY < 0 || borderingTileY >= map.tilesHeight)
+                                continue;
+
+                            var borderingTile = drawings[borderingTileX][borderingTileY];
+
+                            int dstX, dstY, width, height;
+                            int srcX, srcY;
+
+                            // Top left
+                            if (xx == -1 && yy == 1)
+                            {
+                                dstX = 0;
+                                dstY = 0;
+                                width = offset;
+                                height = offset;
+                                srcX = resolution - offset;
+                                srcY = resolution - offset;
+                            }
+                            // Top middle
+                            else if (xx == 0 && yy == 1)
+                            {
+                                dstX = offset;
+                                dstY = 0;
+                                width = resolution;
+                                height = offset;
+                                srcX = 0;
+                                srcY = resolution - offset;
+                            }
+                            // Top right
+                            else if (xx == 1 && yy == 1)
+                            {
+                                dstX = resolution + offset;
+                                dstY = 0;
+                                width = offset;
+                                height = offset;
+                                srcX = 0;
+                                srcY = resolution - offset;
+                            }
+                            // Middle left
+                            else if (xx == -1 && yy == 0)
+                            {
+                                dstX = 0;
+                                dstY = offset;
+                                width = offset;
+                                height = resolution;
+                                srcX = resolution - offset;
+                                srcY = 0;
+                            }
+                            // Middle right
+                            else if (xx == 1 && yy == 0)
+                            {
+                                dstX = resolution + offset;
+                                dstY = offset;
+                                width = offset;
+                                height = resolution;
+                                srcX = 0;
+                                srcY = 0;
+                            }
+                            // Bottom left
+                            else if (xx == -1 && yy == -1)
+                            {
+                                dstX = 0;
+                                dstY = resolution + offset;
+                                width = offset;
+                                height = offset;
+                                srcX = resolution - offset;
+                                srcY = 0;
+                            }
+                            // Bottom middle
+                            else if (xx == 0 && yy == -1)
+                            {
+                                dstX = offset;
+                                dstY = resolution + offset;
+                                width = resolution;
+                                height = offset;
+                                srcX = 0;
+                                srcY = 0;
+                            }
+                            // Bottom right
+                            else if (xx == 1 && yy == -1)
+                            {
+                                dstX = resolution + offset;
+                                dstY = resolution + offset;
+                                width = offset;
+                                height = offset;
+                                srcX = 0;
+                                srcY = 0;
+                            }
+                            else
+                            {
+                                Debug.Assert(false, "should not happen!");
+                                continue;
+                            }
+
+                            expandedGraphics.DrawImage(
+                                borderingTile, 
+                                new Rectangle(dstX, dstY, width, height),
+                                new Rectangle(srcX, srcY, width, height),
+                                GraphicsUnit.Pixel);
+                            
+                            // expandedDrawing.Save($"Assets/Resources/Maps/{fileName}/Backgrounds/TEST/{x}_{y}_{xx}_{yy}.png");
+
+                            using (var blurred = Blur(expandedDrawing, backgroundBlur))
+                            {
+                                finalGraphics.DrawImage(blurred, fullRect, blurRect, GraphicsUnit.Pixel);
+                                
+                                var assetName = $"Assets/Resources/Maps/{fileName}/Backgrounds/{x}_{y}.png";
+                                final.Save(assetName);
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (var drawingArr in drawings)
+            {
+                foreach (var drawing in drawingArr)
+                {
+                    drawing.Dispose();
+                }
+            }
+
+            expandedDrawing.Dispose();
+            expandedGraphics.Dispose();
+            final.Dispose();
+            finalGraphics.Dispose();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -714,6 +923,44 @@ namespace Transidious
 
         public IEnumerator CreatePrefabMeshes(bool fast, bool includeFeatures, float thresholdTime = 1000)
         {
+            var meshPath = $"Assets/Resources/Maps/{map.name}/Meshes";
+            if (AssetDatabase.IsValidFolder(meshPath))
+            {
+                foreach (var file in System.IO.Directory.EnumerateFiles(meshPath, "*.asset"))
+                {
+                    if (file.IndexOf(' ') == -1)
+                        continue;
+                    
+                    var realFile = file.Replace(meshPath + "/", "").Replace(".asset", "");
+                    var tileName = realFile.Substring(0, realFile.IndexOf(' '));
+                    var xy = tileName.Split('_');
+                    
+                    int.TryParse(xy[0], out int x);
+                    int.TryParse(xy[1], out int y);
+                    var group = xy[2];
+
+                    var tile = map.GetTile(x, y);
+                    var obj = new GameObject();
+                    var info = realFile.Split(' ');
+                    
+                    ColorUtility.TryParseHtmlString("#" + info[1], out Color c);
+                    float.TryParse(info[2], out float layer);
+
+                    obj.transform.SetParent(tile.meshes.transform);
+                    obj.transform.position = new Vector3(0f, 0f, layer);
+
+                    var mr = obj.AddComponent<MeshRenderer>();
+                    mr.material = GameController.instance.GetUnlitMaterial(c);
+
+                    var mf = obj.AddComponent<MeshFilter>();
+                    mf.sharedMesh = (Mesh)Resources.Load(file.Replace("Assets/Resources/", "").Replace(".asset", ""));
+
+                    obj.name = $"{x}_{y}_{group} {ColorUtility.ToHtmlStringRGB(c)} {layer:n0}";
+                }
+
+                yield break;
+            }
+            
             var meshes = new Dictionary<MapTile, List<Tuple<string, Mesh, UnityEngine.Color, float>>>();
             foreach (var tile in map.AllTiles)
             {
@@ -901,6 +1148,12 @@ namespace Transidious
             // Save multi meshes.
             foreach (var tile in map.AllTiles)
             {
+                if (!_tileMeshes.ContainsKey(tile))
+                {
+                    tile.gameObject.SetActive(false);
+                    continue;
+                }
+
                 foreach (var mesh in _tileMeshes[tile])
                 {
                     SaveMesh(mesh.sharedMesh, $"{meshPath}/{tile.x}_{tile.y}_{mesh.name}.asset");

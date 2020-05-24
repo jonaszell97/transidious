@@ -3,8 +3,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Transidious.PathPlanning;
-using Transidious.Simulation;
-using Random = UnityEngine.Random;
 
 namespace Transidious
 {
@@ -167,7 +165,7 @@ namespace Transidious
             this.sim.citizens.Add(this.id, this);
             this.sim.citizenList.Add(this);
             this.car = car;
-            this.preferredColor = Utility.RandomColor;
+            this.preferredColor = RNG.RandomColor;
 
             this.pointsOfInterest = new Dictionary<PointOfInterest, IMapObject>();
             this.relationships = new Dictionary<Relationship, Citizen>();
@@ -204,17 +202,6 @@ namespace Transidious
                 var kind = (PointOfInterest)poi.Kind;
                 var building = map.GetMapObject<Building>((int)poi.BuildingId);
                 this.pointsOfInterest.Add(kind, building);
-
-                switch (kind)
-                {
-                    case PointOfInterest.Home:
-                    case PointOfInterest.Work:
-                    case PointOfInterest.School:
-                        ++building.occupants;
-                        break;
-                    default:
-                        break;
-                }
             }
 
             foreach (var inf in c.HappinessInfluences)
@@ -246,45 +233,45 @@ namespace Transidious
             {
                 allowCar = false;
                 carTimeFactor = 1f;
-                changingPenalty = Random.Range(10f, 15f);
-                waitingTimeFactor = Random.Range(1.5f, 2f);
-                walkingTimeFactor = Random.Range(2f, 2.5f);
+                changingPenalty = RNG.Next(10f, 15f);
+                waitingTimeFactor = RNG.Next(1.5f, 2f);
+                walkingTimeFactor = RNG.Next(2f, 2.5f);
                 maxWalkingDistance = 100f;
             }
             else if (age < 18)
             {
                 allowCar = false;
                 carTimeFactor = 1f;
-                changingPenalty = Random.Range(5f, 15f);
-                waitingTimeFactor = Random.Range(1f, 2f);
-                walkingTimeFactor = Random.Range(1f, 2.5f);
+                changingPenalty = RNG.Next(5f, 15f);
+                waitingTimeFactor = RNG.Next(1f, 2f);
+                walkingTimeFactor = RNG.Next(1f, 2.5f);
                 maxWalkingDistance = 200f;
             }
             else if (age < 40)
             {
-                allowCar = Random.value <= .6f;
-                carTimeFactor = Random.Range(.8f, 3f);
-                changingPenalty = Random.Range(3f, 15f);
-                waitingTimeFactor = Random.Range(2f, 3f);
-                walkingTimeFactor = Random.Range(.8f, 2f);
+                allowCar = RNG.value <= .6f;
+                carTimeFactor = RNG.Next(.8f, 3f);
+                changingPenalty = RNG.Next(3f, 15f);
+                waitingTimeFactor = RNG.Next(2f, 3f);
+                walkingTimeFactor = RNG.Next(.8f, 2f);
                 maxWalkingDistance = 150f;
             }
             else if (age < 65)
             {
-                allowCar = Random.value <= .75f;
-                carTimeFactor = Random.Range(.6f, 2.5f);
-                changingPenalty = Random.Range(5f, 15f);
-                waitingTimeFactor = Random.Range(1f, 2f);
-                walkingTimeFactor = Random.Range(2.5f, 3f);
+                allowCar = RNG.value <= .75f;
+                carTimeFactor = RNG.Next(.6f, 2.5f);
+                changingPenalty = RNG.Next(5f, 15f);
+                waitingTimeFactor = RNG.Next(1f, 2f);
+                walkingTimeFactor = RNG.Next(2.5f, 3f);
                 maxWalkingDistance = 100f;
             }
             else
             {
-                allowCar = Random.value <= .3f;
-                carTimeFactor = Random.Range(2f, 4f);
-                changingPenalty = Random.Range(2f, 5f);
-                waitingTimeFactor = Random.Range(1f, 1.5f);
-                walkingTimeFactor = Random.Range(3f, 8f);
+                allowCar = RNG.value <= .3f;
+                carTimeFactor = RNG.Next(2f, 4f);
+                changingPenalty = RNG.Next(2f, 5f);
+                waitingTimeFactor = RNG.Next(1f, 1.5f);
+                walkingTimeFactor = RNG.Next(3f, 8f);
                 maxWalkingDistance = 50f;
             }
 
@@ -445,7 +432,7 @@ namespace Transidious
             
             if (!birthday.HasValue)
             {
-                this.birthday = (short)Random.Range(0, 365);
+                this.birthday = (short)RNG.Next((float) 0, 365);
             }
             else
             {
@@ -454,7 +441,7 @@ namespace Transidious
 
             if (!happiness.HasValue)
             {
-                this.happiness = Random.Range(70f, 100f);
+                this.happiness = RNG.Next(70f, 100f);
             }
             else
             {
@@ -463,7 +450,7 @@ namespace Transidious
 
             if (!money.HasValue)
             {
-                this.money = (decimal)Random.Range(0f, 1000f);
+                this.money = (decimal)RNG.Next(0f, 1000f);
             }
             else
             {
@@ -590,7 +577,7 @@ namespace Transidious
             }
             else if (age < 25)
             {
-                if (UnityEngine.Random.value < UniversityProbability)
+                if (RNG.value < UniversityProbability)
                 {
                     this.occupation = Occupation.UniversityStudent;
                 }
@@ -611,6 +598,21 @@ namespace Transidious
             AssignWorkplace();
         }
 
+        private static Tuple<float, Building.Type>[] _workplaces = new[]
+        {
+            Tuple.Create(.15f, Building.Type.Shop),
+            Tuple.Create(.40f, Building.Type.Office),
+            Tuple.Create(.60f, Building.Type.Industrial),
+            Tuple.Create(.65f, Building.Type.Hospital),
+            Tuple.Create(.70f, Building.Type.Airport),
+            Tuple.Create(.75f, Building.Type.Church),
+            Tuple.Create(.80f, Building.Type.Hotel),
+            Tuple.Create(.85f, Building.Type.Stadium),
+            Tuple.Create(.90f, Building.Type.Sight),
+            Tuple.Create(.95f, Building.Type.University),
+            Tuple.Create(1.0f, Building.Type.HighSchool),
+        };
+        
         void AssignWorkplace()
         {
             Building.Type buildingType;
@@ -637,17 +639,39 @@ namespace Transidious
                 break;
             case Occupation.Trainee:
             case Occupation.Worker:
-                buildingType = educated ? Building.Type.Office : Building.Type.Shop;
+            {
+                buildingType = Building.Type.Office;
+                
+                var rnd = RNG.value;
+                foreach (var el in _workplaces)
+                {
+                    if (rnd <= el.Item1)
+                    {
+                        buildingType = el.Item2;
+                        break;
+                    }
+                }
+
                 poiType = PointOfInterest.Work;
                 break;
             }
+            }
 
             var place = sim.ClosestUnoccupiedBuilding(buildingType, Home.centroid);
-            if (place != null)
+            if (place == null)
             {
-                ++place.occupants;
-                pointsOfInterest.Add(poiType, place);
+                Debug.LogWarning($"could not find unoccupied {buildingType} building!");
+                place = sim.ClosestUnoccupiedBuilding(buildingType, Home.centroid, true);
+
+                if (place == null)
+                {
+                    AssignWorkplace();
+                    return;
+                }
             }
+            
+            place.AddResident(this);
+            pointsOfInterest.Add(poiType, place);
         }
 
         public IMapObject GetPointOfInterest(params Citizen.PointOfInterest[] options)
@@ -674,7 +698,7 @@ namespace Transidious
                 }
             }
 
-            return Utility.RandomElement(possibilities);
+            return RNG.RandomElement(possibilities);
         }
 
         public void UpdateAge()
@@ -714,13 +738,11 @@ namespace Transidious
         public void UpdateDailySchedule(DateTime currentTime, bool newDay)
         {
             currentEvent.location?.RemoveVisitor(this);
-
             currentEvent = schedule.GetNextEvent(currentTime, newDay);
-            Debug.Log($"[{Name}] {currentEvent.DebugDescription}");
 
             if (currentEvent.path != null)
             {
-                var activePath = FollowPath(currentEvent.path);
+                activePath = FollowPath(currentEvent.path);
                 if (currentEvent.location != null)
                 {
                     activePath.onDone = () =>

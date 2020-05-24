@@ -24,16 +24,9 @@ namespace Transidious
         /// The number of iterations to perform.
         public int iterations = 10_000;
 
-        /// The random number generator to use.
-        private System.Random _random;
-
-        private void Awake()
-        {
-            _random = new System.Random(seed);
-        }
-
         private void Start()
         {
+            RNG.Reseed(seed);
             GameController.instance.onLoad.AddListener(ExecuteBenchmarks);
         }
 
@@ -78,8 +71,8 @@ namespace Transidious
             var planner = new PathPlanner(options);
             for (var i = 0; i < iterations; ++i)
             {
-                var from = _random.Vector2(map.minX, map.maxX, map.minY, map.maxY);
-                var to = _random.Vector2(map.minX, map.maxX, map.minY, map.maxY);
+                var from = RNG.Vector2(map.minX, map.maxX, map.minY, map.maxY);
+                var to = RNG.Vector2(map.minX, map.maxX, map.minY, map.maxY);
 
                 _ = planner.FindClosestDrive(map, from, to, true);
             }

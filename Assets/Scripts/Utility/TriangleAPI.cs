@@ -361,8 +361,8 @@ namespace Transidious
             int whileCount = 0;
             do
             {
-                point = new Vector3(UnityEngine.Random.Range(leftMost, rightMost),
-                                    UnityEngine.Random.Range(bottomMost, topMost));
+                point = new Vector3(RNG.Next(leftMost, rightMost),
+                                    RNG.Next(bottomMost, topMost));
 
                 if (whileCount++ > 10000)
                 {

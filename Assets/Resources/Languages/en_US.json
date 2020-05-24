@@ -134,6 +134,10 @@
         },
 
         {
+            "key": "ui:citizen:schedule",
+            "text": "Schedule"
+        },
+        {
             "key": "ui:citizen:destination",
             "text": "Destination"
         },
@@ -240,6 +244,10 @@
         {
             "key": "ui:transit:next_departures",
             "text": "Next Departures"
+        },
+        {
+            "key": "ui:transit:system",
+            "text": "System"
         },
         {
             "key": "ui:transit:passengers",

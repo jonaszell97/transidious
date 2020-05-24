@@ -4,28 +4,6 @@ namespace Transidious
 {
     public static class Utility
     {
-        public static T RandomElement<T>(System.Collections.Generic.List<T> coll)
-        {
-            return coll[UnityEngine.Random.Range(0, coll.Count)];
-        }
-
-        public static T RandomElement<T>(T[] coll)
-        {
-            return coll[UnityEngine.Random.Range(0, coll.Length)];
-        }
-
-        public static Color RandomColor
-        {
-            get
-            {
-                return new Color(
-                    UnityEngine.Random.Range(0f, 1f),
-                    UnityEngine.Random.Range(0f, 1f),
-                    UnityEngine.Random.Range(0f, 1f)
-                );
-            }
-        }
-
         public static Vector2[] Points(this Rect rect)
         {
             return new Vector2[]

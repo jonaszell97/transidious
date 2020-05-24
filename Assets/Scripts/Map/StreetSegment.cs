@@ -8,6 +8,14 @@ namespace Transidious
 {
     public class StreetSegment : StaticMapObject, IRoute
     {
+        [System.Flags] public enum Flags
+        {
+            None   = 0x0,
+            OneWay = 0x1,
+            Bridge = 0x2,
+            All    = ~None,
+        }
+
         public class Lane : IRoute
         {
             /// The segment this lane belongs to.
@@ -168,14 +176,49 @@ namespace Transidious
         /// Distance of the stop line from the middle of the intersection.
         public float EndStopLineDistance = 10f;
 
-        /// The number of used parking spots on this street.
-        public int occupiedParkingSpots;
+        /// The flags.
+        public Flags flags = Flags.None;
+
+        /// Whether or not this street is onw-way only.
+        public bool IsOneWay
+        {
+            get => flags.HasFlag(Flags.OneWay);
+            set
+            {
+                if (value)
+                {
+                    flags |= Flags.OneWay;
+                }
+                else
+                {
+                    flags &= ~Flags.OneWay;
+                }
+            }
+        }
+
+        /// Whether or not this is a bridge.
+        public bool IsBridge
+        {
+            get => flags.HasFlag(Flags.Bridge);
+            set
+            {
+                if (value)
+                {
+                    flags |= Flags.Bridge;
+                }
+                else
+                {
+                    flags &= ~Flags.Bridge;
+                }
+            }
+        }
         
         public Distance distance => Distance.FromMeters(length);
-
+        
         public void Initialize(Street street, int position, List<Vector3> positions,
                                StreetIntersection startIntersection,
                                StreetIntersection endIntersection,
+                               bool isOneWay = false,
                                bool hasTramTracks = false, int id = -1)
         {
             base.Initialize(MapObjectKind.StreetSegment, id);
@@ -187,6 +230,7 @@ namespace Transidious
             this.hasTramTracks = hasTramTracks;
             this.cumulativeDistances = new List<float>();
             this.positions = positions;
+            this.IsOneWay = isOneWay;
 
             startIntersection.AddIntersectingStreet(this);
 
@@ -280,7 +324,7 @@ namespace Transidious
 
         public int LanePositionFromMiddle(int lane, bool ignoreOneWay = false)
         {
-            if (street.isOneWay && !ignoreOneWay)
+            if (IsOneWay && !ignoreOneWay)
                 return lane + 1;
 
             var lanes = street.lanes;
@@ -297,21 +341,9 @@ namespace Transidious
             }
         }
 
-        public int RightmostLane
-        {
-            get
-            {
-                return street.lanes - 1;
-            }
-        }
+        public int RightmostLane => street.lanes - 1;
 
-        public int LeftmostLane
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public int LeftmostLane => 0;
 
         public int MirrorLane(int lane)
         {
@@ -541,11 +573,33 @@ namespace Transidious
             return positions[positions.Count - 2] - positions[positions.Count - 1];
         }
 
+        public TrafficLight GetTrafficLight(StreetIntersection intersection)
+        {
+            return intersection == startIntersection ? startTrafficLight : endTrafficLight;
+        }
+
+        public void SetTrafficLight(StreetIntersection intersection, TrafficLight tl)
+        {
+            if (intersection == startIntersection)
+            {
+                startTrafficLight = tl;
+            }
+            else
+            {
+                endTrafficLight = tl;
+            }
+        }
+
+        public StreetIntersection GetOppositeIntersection(StreetIntersection intersection)
+        {
+            return intersection == startIntersection ? endIntersection : startIntersection;
+        }
+
         public Vector2 RandomPoint
         {
             get
             {
-                var offset = UnityEngine.Random.Range(0f, length);
+                var offset = RNG.Next(0f, length);
                 for (var i = 0; i < positions.Count; ++i)
                 {
                     var dist = cumulativeDistances[i];
@@ -572,7 +626,7 @@ namespace Transidious
 
         public IStop End => endIntersection;
 
-        public bool OneWay => street.isOneWay;
+        public bool OneWay => IsOneWay;
 
         public TimeSpan TravelTime => GetTravelTime(Distance.FromMeters(length));
 
@@ -715,6 +769,19 @@ namespace Transidious
                     return Colors.GetColor($"street.defaultBorder{mode}");
             }
         }
+        
+        public int LanesPerDirection
+        {
+            get
+            {
+                if (IsOneWay)
+                {
+                    return street.lanes;
+                }
+
+                return street.lanes / 2;
+            }
+        }
 
 #if UNITY_EDITOR
         static LineRenderer _tmpRenderer;
@@ -728,8 +795,10 @@ namespace Transidious
                 _tmpRenderer.enabled = false;
             }
 
+            var z = IsBridge ? .1f : 0f;
+
             _tmpRenderer.positionCount = positions.Count;
-            _tmpRenderer.SetPositions(positions.Select(v => new Vector3(v.x, v.y)).ToArray());
+            _tmpRenderer.SetPositions(positions.Select(v => new Vector3(v.x, v.y, z)).ToArray());
 
             _tmpRenderer.numCornerVertices = Settings.Current.qualitySettings.StreetCornerVerts;
             _tmpRenderer.numCapVertices = Settings.Current.qualitySettings.StreetCapVerts;
@@ -754,8 +823,6 @@ namespace Transidious
             Mesh outlineMesh = null;
             if (street.type != Street.Type.River)
             {
-                _tmpRenderer.SetPositions(positions.Select(v => new Vector3(v.x, v.y)).ToArray());
-
                 var borderWidth = streetWidth + GetBorderWidth(RenderingDistance.Near);
                 _tmpRenderer.startWidth = borderWidth;
                 _tmpRenderer.endWidth = _tmpRenderer.startWidth;
@@ -840,8 +907,8 @@ namespace Transidious
                 {
                     continue;
                 }
-                if (!(street.isOneWay && intersection == startIntersection)
-                && !(s.street.isOneWay && intersection == s.endIntersection))
+                if (!(IsOneWay && intersection == startIntersection)
+                && !(s.IsOneWay && intersection == s.endIntersection))
                 {
                     var rightLane = this.RightmostLane;
                     var rightPath = trafficSim.GetPath(intersection, this, s, rightLane);
@@ -851,8 +918,8 @@ namespace Transidious
                     trackMeshes.Add(rightMeshes.Item2);
                 }
 
-                if (!(street.isOneWay && intersection == endIntersection)
-                && !(s.street.isOneWay && intersection == s.startIntersection))
+                if (!(IsOneWay && intersection == endIntersection)
+                && !(s.IsOneWay && intersection == s.startIntersection))
                 {
                     // Create tracks for left lane.
                     var leftLane = this.LeftmostLane;
@@ -874,7 +941,7 @@ namespace Transidious
             var rightMeshes = GetTramTrackMesh(rightPath, true);
 
             var trackMeshes = new List<Mesh> { rightMeshes.Item1, rightMeshes.Item2 };
-            if (!street.isOneWay)
+            if (!IsOneWay)
             {
                 // Create tracks for left lane.
                 var leftLane = this.LeftmostLane;
@@ -1021,8 +1088,10 @@ namespace Transidious
                 MapObject = base.ToProtobuf(),
                 StartIntersectionID = (uint)(startIntersection?.id ?? 0),
                 EndIntersectionID = (uint)(endIntersection?.id ?? 0),
+                StartTrafficLightID = startTrafficLight?.Id ?? 0,
+                EndTrafficLightID = endTrafficLight?.Id ?? 0,
                 HasTramTracks = hasTramTracks,
-                OccupiedParkingSpots = occupiedParkingSpots,
+                Flags = (int)flags,
             };
 
             result.Positions.AddRange(positions.Select(s => ((Vector2)s).ToProtobuf()));
@@ -1057,28 +1126,87 @@ namespace Transidious
         }
 
 #if DEBUG
-        // private Text _debugText;
-        //
-        // public override void OnMouseDown()
-        // {
-        //     base.OnMouseDown();
-        //     if (_debugText == null)
-        //     {
-        //         var startPos = positions.Count / 2;
-        //         var endPos = startPos < positions.Count - 1 ? startPos + 1 : startPos - 1;
-        //         var dir = (positions[endPos] - positions[startPos]);
-        //         var middlePos = positions[startPos] + dir * .5f;
-        //
-        //         _debugText = Game.loadedMap.CreateText(middlePos, name, Color.black, 3f);
-        //
-        //         if (dir.x < 0f)
-        //             dir = new Vector3(-dir.x, -dir.y, dir.z);
-        //
-        //         _debugText.transform.rotation = Quaternion.FromToRotation(Vector3.right, dir);
-        //     }
-        //
-        //     Debug.Log($"free parking spots: {occupiedParkingSpots} / {totalParkingSpots}");
-        // }
+        private static LineRenderer _highlightLine;
+
+        public void Highlight(Color c)
+        {
+            if (_highlightLine == null)
+            {
+                var obj = new GameObject();
+                _highlightLine = obj.AddComponent<LineRenderer>();
+                _highlightLine.startWidth = 3f;
+                _highlightLine.endWidth = 3f;
+            }
+
+            _highlightLine.material = Game.GetUnlitMaterial(c);
+            _highlightLine.positionCount = positions.Count;
+            _highlightLine.SetPositions(positions.Select(v=>v.WithZ(Map.Layer(MapLayer.Streets, 1))).ToArray());
+            _highlightLine.gameObject.SetActive(true);
+        }
+
+        public void Unhighlight()
+        {
+            _highlightLine?.gameObject.SetActive(false);
+        }
+
+        public override void ActivateModal()
+        {
+            var modal = MainUI.instance.streetModal;
+            modal.SetStreet(this);
+            modal.modal.Enable();
+
+            Highlight(Color.red);
+        }
+
+        public override void OnMouseDown()
+        {
+            base.OnMouseDown();
+
+            if (!Game.MouseDownActive(MapObjectKind.StreetSegment))
+            {
+                return;
+            }
+
+            if (GameController.instance.input.IsPointerOverUIElement())
+            {
+                return;
+            }
+
+            var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            var radius = GetStreetWidth(RenderingDistance.Near);
+
+            if (Distance.Between(pos, positions.First()).Meters <= radius)
+            {
+                if (MainUI.instance.intersectionModal.intersection == startIntersection)
+                {
+                    MainUI.instance.intersectionModal.modal.Disable();
+                    return;
+                }
+
+                startIntersection.ActivateModal();
+                return;
+            }
+
+            if (Distance.Between(pos, positions.Last()).Meters <= radius)
+            {
+                if (MainUI.instance.intersectionModal.intersection == endIntersection)
+                {
+                    MainUI.instance.intersectionModal.modal.Disable();
+                    return;
+                }
+
+                endIntersection.ActivateModal();
+                return;
+            } 
+            
+            if (MainUI.instance.streetModal.segment == this)
+            {
+                MainUI.instance.streetModal.modal.Disable();
+                return;
+            }
+
+            ActivateModal();
+        }
 
         public override bool ShouldCheckMouseOver()
         {

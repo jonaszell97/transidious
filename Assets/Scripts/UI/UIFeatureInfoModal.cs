@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using TMPro;
+using Transidious.UI;
 
 namespace Transidious
 {
@@ -14,6 +14,9 @@ namespace Transidious
         /// The info panel.
         public UIInfoPanel panel;
 
+        /// The current visitor list.
+        public UICitizenList visitorList;
+
 #if DEBUG
         private UIInfoPanel debugPanel;
 #endif
@@ -22,6 +25,8 @@ namespace Transidious
         {
             modal.Initialize();
             panel.Initialize();
+            
+            visitorList.Initialize("ui:building:visitors");
             
             var maxCharacters = 100;
             modal.titleInput.interactable = true;
@@ -71,11 +76,22 @@ namespace Transidious
             this.feature = feature;
             this.modal.SetTitle(feature.name);
 
-            this.panel.SetValue("Occupants", feature.Visitors + " / " + feature.Capacity);
+            this.panel.SetValue("Occupants", feature.VisitorCount + " / " + feature.Capacity);
             this.panel.SetValue("Type", Translator.Get("ui:feature:type:" + feature.type.ToString()));
 
+            var visitors = feature.Visitors;
+            if (visitors != null)
+            {
+                visitorList.gameObject.SetActive(true);
+                visitorList.SetCitizens(visitors);
+            }
+            else
+            {
+                visitorList.gameObject.SetActive(false);
+            }
+
 #if DEBUG
-            this.debugPanel.SetValue("Area", feature.area.ToString() + " m²");
+            this.debugPanel.SetValue("Area", feature.area + " m²");
             this.debugPanel.SetValue("Triangles", (feature.mesh?.triangles.Length ?? 0).ToString());
 #endif
         }

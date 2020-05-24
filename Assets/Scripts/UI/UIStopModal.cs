@@ -25,9 +25,16 @@ namespace Transidious
 
         /// The departure item prefab.
         [SerializeField] private GameObject departureItemPrefab;
+        
+        /// Helper list.
+        private  List<Tuple<Line, DateTime, DateTime>> _lines;
+
+        /// Minute of last update.
+        private int _lastUpdateMin;
 
         public void Initialize()
         {
+            _lines = new List<Tuple<Line, DateTime, DateTime>>();
             nextDepartures = new List<Tuple<Transform, UILineLogo, TMP_Text>>();
             
             modal.Initialize();
@@ -69,19 +76,16 @@ namespace Transidious
             });
         }
 
-        public void SetStop(Stop stop)
+        void UpdateDepartures()
         {
-            this.stop = stop;
-            this.modal.SetTitle(stop.name);
-
-            var time = GameController.instance.sim.GameTime;
-            var lines = new List<Tuple<Line, DateTime>>();
+            _lines.Clear();
             
+            var time = GameController.instance.sim.GameTime;
             foreach (var line in stop.lineData)
             {
-                lines.Add(Tuple.Create(line.Key, line.Value.schedule.GetNextDeparture(time)));
-                
-                if (nextDepartures.Count < lines.Count)
+                _lines.Add(Tuple.Create(line.Key, line.Value.schedule.GetNextDeparture(time), line.Value.nextDeparture));
+
+                if (nextDepartures.Count < _lines.Count)
                 {
                     var item = Instantiate(departureItemPrefab, nextDeparturesCard.transform).transform;
                     nextDepartures.Add(Tuple.Create(item, item.GetChild(0).GetComponent<UILineLogo>(),
@@ -89,9 +93,9 @@ namespace Transidious
                 }
             }
             
-            lines.Sort((v1, v2) => v1.Item2.CompareTo(v2.Item2));
+            _lines.Sort((v1, v2) => v1.Item2.CompareTo(v2.Item2));
 
-            if (lines.Count == 0)
+            if (_lines.Count == 0)
             {
                 nextDeparturesCard.gameObject.SetActive(false);
             }
@@ -102,17 +106,18 @@ namespace Transidious
                 for (var i = 0; i < nextDepartures.Count; ++i)
                 {
                     var dep = nextDepartures[i];
-                    if (i >= lines.Count)
+                    if (i >= _lines.Count)
                     {
                         dep.Item1.gameObject.SetActive(false);
                         continue;
                     }
 
-                    var line = lines[i];
+                    var line = _lines[i];
                     var logo = dep.Item2;
                     logo.SetLine(line.Item1, true);
 
-                    var diff = (line.Item2 - time).TotalMinutes;
+                    var diff = (float)(line.Item2 - time).TotalMinutes;
+                    // var late = (float)(line.Item3 - line.Item2).TotalMinutes;
 
                     string text;
                     if (diff < 1)
@@ -124,7 +129,7 @@ namespace Transidious
                         text = Translator.Get("ui:transit:in_x_mins", ((int)System.Math.Ceiling(diff)).ToString());
 
 #if DEBUG
-                        text += $"({Translator.GetDate(line.Item2, Translator.DateFormat.TimeShort)})";
+                        text += $" ({Translator.GetDate(line.Item2, Translator.DateFormat.TimeShort)})";
 #endif
                     }
                     else if (time.Date == line.Item2.Date)
@@ -142,10 +147,27 @@ namespace Transidious
             }
 
             panel.SetValue("Waiting", stop.TotalWaitingCitizens.ToString());
+            _lastUpdateMin = GameController.instance.sim.GameTime.Minute;
+        }
+
+        public void SetStop(Stop stop)
+        {
+            this.stop = stop;
+            this.modal.SetTitle(stop.name);
+            
+            UpdateDepartures();
 
 #if DEBUG
             panel.SetValue("schedule", stop.GetSchedule(stop.lineData.First().Key).ToString());
 #endif
+        }
+
+        private void Update()
+        {
+            if (GameController.instance.sim.GameTime.Minute != _lastUpdateMin)
+            {
+                UpdateDepartures();
+            }
         }
     }
 }

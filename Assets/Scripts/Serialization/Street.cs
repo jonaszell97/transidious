@@ -28,26 +28,31 @@ namespace Transidious.Serialization {
             "bW1vbi5wcm90byKDAQoSU3RyZWV0SW50ZXJzZWN0aW9uEjcKCW1hcE9iamVj",
             "dBgBIAEoCzIkLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTWFwT2JqZWN0",
             "EjQKCHBvc2l0aW9uGAIgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
-            "bi5WZWN0b3IyIuwBCg1TdHJlZXRTZWdtZW50EjcKCW1hcE9iamVjdBgBIAEo",
-            "CzIkLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTWFwT2JqZWN0EjUKCXBv",
-            "c2l0aW9ucxgCIAMoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVj",
-            "dG9yMhIbChNzdGFydEludGVyc2VjdGlvbklEGAMgASgNEhkKEWVuZEludGVy",
-            "c2VjdGlvbklEGAQgASgNEhUKDWhhc1RyYW1UcmFja3MYBSABKAgSHAoUb2Nj",
-            "dXBpZWRQYXJraW5nU3BvdHMYBiABKAUi6AIKBlN0cmVldBI3CgltYXBPYmpl",
-            "Y3QYASABKAsyJC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1hcE9iamVj",
-            "dBITCgtkaXNwbGF5TmFtZRgCIAEoCRI0CgR0eXBlGAMgASgOMiYuVHJhbnNp",
-            "ZGlvdXMuU2VyaWFsaXphdGlvbi5TdHJlZXQuVHlwZRI6CghzZWdtZW50cxgE",
-            "IAMoCzIoLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0U2VnbWVu",
-            "dBILCgNsaXQYBSABKAgSDgoGb25ld2F5GAYgASgIEhAKCG1heHNwZWVkGAcg",
-            "ASgNEg0KBWxhbmVzGAggASgNImAKBFR5cGUSCwoHUHJpbWFyeRAAEg0KCVNl",
-            "Y29uZGFyeRABEgwKCFRlcnRpYXJ5EAISDwoLUmVzaWRlbnRpYWwQAxIICgRM",
-            "aW5rEAQSCAoEUGF0aBAFEgkKBVJpdmVyEAZCHKoCGVRyYW5zaWRpb3VzLlNl",
-            "cmlhbGl6YXRpb25iBnByb3RvMw=="));
+            "bi5WZWN0b3IyImkKDFRyYWZmaWNMaWdodBIKCgJJRBgBIAEoBRIOCgZzdGF0",
+            "dXMYAiABKAUSGAoQdGltZVRvTmV4dFN3aXRjaBgDIAEoAhIPCgdyZWRUaW1l",
+            "GAQgASgCEhIKCmdyZWVuUGhhc2UYBSABKAUiswIKDVN0cmVldFNlZ21lbnQS",
+            "NwoJbWFwT2JqZWN0GAEgASgLMiQuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
+            "bi5NYXBPYmplY3QSNQoJcG9zaXRpb25zGAIgAygLMiIuVHJhbnNpZGlvdXMu",
+            "U2VyaWFsaXphdGlvbi5WZWN0b3IyEhsKE3N0YXJ0SW50ZXJzZWN0aW9uSUQY",
+            "AyABKA0SGQoRZW5kSW50ZXJzZWN0aW9uSUQYBCABKA0SFQoNaGFzVHJhbVRy",
+            "YWNrcxgFIAEoCBIcChRvY2N1cGllZFBhcmtpbmdTcG90cxgGIAEoBRIbChNz",
+            "dGFydFRyYWZmaWNMaWdodElEGAcgASgFEhkKEWVuZFRyYWZmaWNMaWdodElE",
+            "GAggASgFEg0KBWZsYWdzGAkgASgFIugCCgZTdHJlZXQSNwoJbWFwT2JqZWN0",
+            "GAEgASgLMiQuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5NYXBPYmplY3QS",
+            "EwoLZGlzcGxheU5hbWUYAiABKAkSNAoEdHlwZRgDIAEoDjImLlRyYW5zaWRp",
+            "b3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0LlR5cGUSOgoIc2VnbWVudHMYBCAD",
+            "KAsyKC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlN0cmVldFNlZ21lbnQS",
+            "CwoDbGl0GAUgASgIEg4KBm9uZXdheRgGIAEoCBIQCghtYXhzcGVlZBgHIAEo",
+            "DRINCgVsYW5lcxgIIAEoDSJgCgRUeXBlEgsKB1ByaW1hcnkQABINCglTZWNv",
+            "bmRhcnkQARIMCghUZXJ0aWFyeRACEg8KC1Jlc2lkZW50aWFsEAMSCAoETGlu",
+            "axAEEggKBFBhdGgQBRIJCgVSaXZlchAGQhyqAhlUcmFuc2lkaW91cy5TZXJp",
+            "YWxpemF0aW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetIntersection), global::Transidious.Serialization.StreetIntersection.Parser, new[]{ "MapObject", "Position" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetSegment), global::Transidious.Serialization.StreetSegment.Parser, new[]{ "MapObject", "Positions", "StartIntersectionID", "EndIntersectionID", "HasTramTracks", "OccupiedParkingSpots" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.TrafficLight), global::Transidious.Serialization.TrafficLight.Parser, new[]{ "ID", "Status", "TimeToNextSwitch", "RedTime", "GreenPhase" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetSegment), global::Transidious.Serialization.StreetSegment.Parser, new[]{ "MapObject", "Positions", "StartIntersectionID", "EndIntersectionID", "HasTramTracks", "OccupiedParkingSpots", "StartTrafficLightID", "EndTrafficLightID", "Flags" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Street), global::Transidious.Serialization.Street.Parser, new[]{ "MapObject", "DisplayName", "Type", "Segments", "Lit", "Oneway", "Maxspeed", "Lanes" }, null, new[]{ typeof(global::Transidious.Serialization.Street.Types.Type) }, null)
           }));
     }
@@ -224,6 +229,247 @@ namespace Transidious.Serialization {
 
   }
 
+  public sealed partial class TrafficLight : pb::IMessage<TrafficLight> {
+    private static readonly pb::MessageParser<TrafficLight> _parser = new pb::MessageParser<TrafficLight>(() => new TrafficLight());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<TrafficLight> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TrafficLight() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TrafficLight(TrafficLight other) : this() {
+      iD_ = other.iD_;
+      status_ = other.status_;
+      timeToNextSwitch_ = other.timeToNextSwitch_;
+      redTime_ = other.redTime_;
+      greenPhase_ = other.greenPhase_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TrafficLight Clone() {
+      return new TrafficLight(this);
+    }
+
+    /// <summary>Field number for the "ID" field.</summary>
+    public const int IDFieldNumber = 1;
+    private int iD_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int ID {
+      get { return iD_; }
+      set {
+        iD_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "status" field.</summary>
+    public const int StatusFieldNumber = 2;
+    private int status_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Status {
+      get { return status_; }
+      set {
+        status_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "timeToNextSwitch" field.</summary>
+    public const int TimeToNextSwitchFieldNumber = 3;
+    private float timeToNextSwitch_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float TimeToNextSwitch {
+      get { return timeToNextSwitch_; }
+      set {
+        timeToNextSwitch_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "redTime" field.</summary>
+    public const int RedTimeFieldNumber = 4;
+    private float redTime_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float RedTime {
+      get { return redTime_; }
+      set {
+        redTime_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "greenPhase" field.</summary>
+    public const int GreenPhaseFieldNumber = 5;
+    private int greenPhase_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int GreenPhase {
+      get { return greenPhase_; }
+      set {
+        greenPhase_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as TrafficLight);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(TrafficLight other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (ID != other.ID) return false;
+      if (Status != other.Status) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(TimeToNextSwitch, other.TimeToNextSwitch)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(RedTime, other.RedTime)) return false;
+      if (GreenPhase != other.GreenPhase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (ID != 0) hash ^= ID.GetHashCode();
+      if (Status != 0) hash ^= Status.GetHashCode();
+      if (TimeToNextSwitch != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(TimeToNextSwitch);
+      if (RedTime != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(RedTime);
+      if (GreenPhase != 0) hash ^= GreenPhase.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (ID != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(ID);
+      }
+      if (Status != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Status);
+      }
+      if (TimeToNextSwitch != 0F) {
+        output.WriteRawTag(29);
+        output.WriteFloat(TimeToNextSwitch);
+      }
+      if (RedTime != 0F) {
+        output.WriteRawTag(37);
+        output.WriteFloat(RedTime);
+      }
+      if (GreenPhase != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(GreenPhase);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (ID != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ID);
+      }
+      if (Status != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Status);
+      }
+      if (TimeToNextSwitch != 0F) {
+        size += 1 + 4;
+      }
+      if (RedTime != 0F) {
+        size += 1 + 4;
+      }
+      if (GreenPhase != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(GreenPhase);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(TrafficLight other) {
+      if (other == null) {
+        return;
+      }
+      if (other.ID != 0) {
+        ID = other.ID;
+      }
+      if (other.Status != 0) {
+        Status = other.Status;
+      }
+      if (other.TimeToNextSwitch != 0F) {
+        TimeToNextSwitch = other.TimeToNextSwitch;
+      }
+      if (other.RedTime != 0F) {
+        RedTime = other.RedTime;
+      }
+      if (other.GreenPhase != 0) {
+        GreenPhase = other.GreenPhase;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            ID = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Status = input.ReadInt32();
+            break;
+          }
+          case 29: {
+            TimeToNextSwitch = input.ReadFloat();
+            break;
+          }
+          case 37: {
+            RedTime = input.ReadFloat();
+            break;
+          }
+          case 40: {
+            GreenPhase = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   public sealed partial class StreetSegment : pb::IMessage<StreetSegment> {
     private static readonly pb::MessageParser<StreetSegment> _parser = new pb::MessageParser<StreetSegment>(() => new StreetSegment());
     private pb::UnknownFieldSet _unknownFields;
@@ -232,7 +478,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -255,6 +501,9 @@ namespace Transidious.Serialization {
       endIntersectionID_ = other.endIntersectionID_;
       hasTramTracks_ = other.hasTramTracks_;
       occupiedParkingSpots_ = other.occupiedParkingSpots_;
+      startTrafficLightID_ = other.startTrafficLightID_;
+      endTrafficLightID_ = other.endTrafficLightID_;
+      flags_ = other.flags_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -328,6 +577,39 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "startTrafficLightID" field.</summary>
+    public const int StartTrafficLightIDFieldNumber = 7;
+    private int startTrafficLightID_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int StartTrafficLightID {
+      get { return startTrafficLightID_; }
+      set {
+        startTrafficLightID_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "endTrafficLightID" field.</summary>
+    public const int EndTrafficLightIDFieldNumber = 8;
+    private int endTrafficLightID_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int EndTrafficLightID {
+      get { return endTrafficLightID_; }
+      set {
+        endTrafficLightID_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "flags" field.</summary>
+    public const int FlagsFieldNumber = 9;
+    private int flags_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Flags {
+      get { return flags_; }
+      set {
+        flags_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as StreetSegment);
@@ -347,6 +629,9 @@ namespace Transidious.Serialization {
       if (EndIntersectionID != other.EndIntersectionID) return false;
       if (HasTramTracks != other.HasTramTracks) return false;
       if (OccupiedParkingSpots != other.OccupiedParkingSpots) return false;
+      if (StartTrafficLightID != other.StartTrafficLightID) return false;
+      if (EndTrafficLightID != other.EndTrafficLightID) return false;
+      if (Flags != other.Flags) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -359,6 +644,9 @@ namespace Transidious.Serialization {
       if (EndIntersectionID != 0) hash ^= EndIntersectionID.GetHashCode();
       if (HasTramTracks != false) hash ^= HasTramTracks.GetHashCode();
       if (OccupiedParkingSpots != 0) hash ^= OccupiedParkingSpots.GetHashCode();
+      if (StartTrafficLightID != 0) hash ^= StartTrafficLightID.GetHashCode();
+      if (EndTrafficLightID != 0) hash ^= EndTrafficLightID.GetHashCode();
+      if (Flags != 0) hash ^= Flags.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -393,6 +681,18 @@ namespace Transidious.Serialization {
         output.WriteRawTag(48);
         output.WriteInt32(OccupiedParkingSpots);
       }
+      if (StartTrafficLightID != 0) {
+        output.WriteRawTag(56);
+        output.WriteInt32(StartTrafficLightID);
+      }
+      if (EndTrafficLightID != 0) {
+        output.WriteRawTag(64);
+        output.WriteInt32(EndTrafficLightID);
+      }
+      if (Flags != 0) {
+        output.WriteRawTag(72);
+        output.WriteInt32(Flags);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -416,6 +716,15 @@ namespace Transidious.Serialization {
       }
       if (OccupiedParkingSpots != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(OccupiedParkingSpots);
+      }
+      if (StartTrafficLightID != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(StartTrafficLightID);
+      }
+      if (EndTrafficLightID != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(EndTrafficLightID);
+      }
+      if (Flags != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Flags);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -446,6 +755,15 @@ namespace Transidious.Serialization {
       }
       if (other.OccupiedParkingSpots != 0) {
         OccupiedParkingSpots = other.OccupiedParkingSpots;
+      }
+      if (other.StartTrafficLightID != 0) {
+        StartTrafficLightID = other.StartTrafficLightID;
+      }
+      if (other.EndTrafficLightID != 0) {
+        EndTrafficLightID = other.EndTrafficLightID;
+      }
+      if (other.Flags != 0) {
+        Flags = other.Flags;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -485,6 +803,18 @@ namespace Transidious.Serialization {
             OccupiedParkingSpots = input.ReadInt32();
             break;
           }
+          case 56: {
+            StartTrafficLightID = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            EndTrafficLightID = input.ReadInt32();
+            break;
+          }
+          case 72: {
+            Flags = input.ReadInt32();
+            break;
+          }
         }
       }
     }
@@ -499,7 +829,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Transidious.PathPlanning;
 using UnityEngine;
 
 namespace Transidious
@@ -79,6 +80,18 @@ namespace Transidious
                 angle += 2f * Mathf.PI;
 
             return angle;
+        }
+
+        public static bool IsStraightAngleRad(Vector2 v1, Vector2 v2, float tolerance)
+        {
+            var angle = DirectionalAngleRad(v1, v2);
+            return Mathf.Abs(Mathf.PI - angle) <= tolerance;
+        }
+        
+        public static bool IsStraightAngleDeg(Vector2 v1, Vector2 v2, float tolerance)
+        {
+            var angle = DirectionalAngleDeg(v1, v2);
+            return Mathf.Abs(180f - angle) <= tolerance;
         }
 
         public static CardinalDirection ClassifyDirection(float angle)
@@ -219,13 +232,13 @@ namespace Transidious
             return PointPosition.Right;
         }
 
-        public static PointPosition GetPointPosition(Vector3 p, Map.PointOnStreet pos)
+        public static PointPosition GetPointPosition(Vector3 p, PointOnStreet pos)
         {
-            if (pos.seg.street.isOneWay)
+            if (pos.street.IsOneWay)
                 return PointPosition.Right;
 
-            var a = pos.seg.drivablePositions[pos.prevIdx];
-            var b = pos.seg.drivablePositions[pos.prevIdx + 1];
+            var a = pos.street.drivablePositions[pos.prevIdx];
+            var b = pos.street.drivablePositions[pos.prevIdx + 1];
 
             return GetPointPosition(a, b, p);
         }
@@ -278,6 +291,15 @@ namespace Transidious
 
             found = t1 >= 0f && 0f <= t2 && t2 <= 1f;
             return o + d * t1;
+        }
+
+        public static float PathLength(IReadOnlyList<Vector3> path)
+        {
+            float length = 0f;
+            for (var i = 1; i < path.Count; ++i)
+                length += (path[i] - path[i - 1]).magnitude;
+            
+            return length;
         }
 
         public static float NormalizeAngle(float angle)
@@ -714,8 +736,8 @@ namespace Transidious
 
             while (true)
             {
-                var x = UnityEngine.Random.Range(boundingBox.x, boundingBox.x + boundingBox.width);
-                var y = UnityEngine.Random.Range(boundingBox.y, boundingBox.y + boundingBox.height);
+                var x = RNG.Next(boundingBox.x, boundingBox.x + boundingBox.width);
+                var y = RNG.Next(boundingBox.y, boundingBox.y + boundingBox.height);
                 var pt = new Vector2(x, y);
 
                 if (IsPointInPolygon(pt, poly))

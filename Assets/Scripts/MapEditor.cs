@@ -284,8 +284,7 @@ namespace Transidious
                 }
             }
 
-            var street = game.loadedMap.CreateStreet("<new street>", streetType,
-                                                     true, false, 50, 2);
+            var street = game.loadedMap.CreateStreet("<new street>", streetType, false, 50, 2);
 
             street.AddSegment(new List<Vector3> { startPos, endPos }, startIntersection, endIntersection);
             street.CreateTextMeshes();

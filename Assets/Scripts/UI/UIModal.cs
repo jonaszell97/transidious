@@ -14,6 +14,9 @@ namespace Transidious
         /// The title input field.
         public TMP_InputField titleInput;
 
+        /// The animator for the modal.
+        [SerializeField] private TransformAnimator _animator;
+        
         /// The close button.
         [SerializeField] Button closeButton;
 
@@ -41,6 +44,9 @@ namespace Transidious
         /// Callback that is invoked when the tab is changed.
         public UnityAction<int> onTabChange;
 
+        /// The anchored position when disabled.
+        private Vector2 _disabledAnchoredPos;
+
         /// The currently selected tab.
         public int SelectedTab { get; private set; }
 
@@ -51,6 +57,12 @@ namespace Transidious
                 _modals = new List<UIModal>();
             }
 
+            _animator.Initialize();
+            _animator.SetAnimationType(TransformAnimator.AnimationType.Circular, TransformAnimator.ExecutionMode.Manual);
+
+            _disabledAnchoredPos = GetComponent<RectTransform>().anchoredPosition;
+            _animator.SetTargetAnchoredPosition(new Vector2(-_disabledAnchoredPos.x, _disabledAnchoredPos.y), _disabledAnchoredPos);
+            
             SelectedTab = -1;
             _modals.Add(this);
             
@@ -81,13 +93,13 @@ namespace Transidious
 
             for (i = 0; i < _tabs.Length; ++i)
             {
-                _tabs[i] = (RectTransform)viewport.GetChild(i);
+                _tabs[i] = (RectTransform)viewport.GetChild(i + 1);
             }
         }
 
         public void Enable()
         {
-            if (gameObject.activeSelf && SelectedTab == 0)
+            if (_animator.IsAnimating || (gameObject.activeSelf && SelectedTab == 0))
             {
                 return;
             }
@@ -99,17 +111,27 @@ namespace Transidious
 
             LoadTab(0);
             gameObject.SetActive(true);
+            //
+            // _animator.SetTargetAnchoredPosition(new Vector2(-_disabledAnchoredPos.x, _disabledAnchoredPos.y), _disabledAnchoredPos);
+            _animator.onFinish = null;
+            _animator.StartAnimation(.2f);
         }
 
         public void Disable()
         {
-            if (!gameObject.activeSelf)
+            if (_animator.IsAnimating || !gameObject.activeSelf)
             {
                 return;
             }
 
-            gameObject.SetActive(false);
-            this.onClose.Invoke();
+            // _animator.SetTargetAnchoredPosition(_disabledAnchoredPos, new Vector2(-_disabledAnchoredPos.x, _disabledAnchoredPos.y));
+            _animator.onFinish = () =>
+            {
+                gameObject.SetActive(false);
+                this.onClose.Invoke();
+            };
+
+            _animator.StartAnimation(.2f);
         }
 
         public void SetTitle(string title, bool editable = false)
@@ -132,6 +154,7 @@ namespace Transidious
                 if (i == tab)
                 {
                     c.gameObject.SetActive(true);
+
                     scrollView.content = c;
                     _tabBarButtons[i].GetComponent<Image>().color = Color.white;
 
@@ -143,6 +166,8 @@ namespace Transidious
                             break;
                         }
                     }
+                    
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(c);
                 }
                 else
                 {

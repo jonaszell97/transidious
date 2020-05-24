@@ -7,69 +7,115 @@ namespace Transidious
 {
     public class TransitVehicle : MonoBehaviour
     {
-        /// <summary>
         /// The line this vehicle belongs to.
-        /// </summary>
         public Line line;
 
-        /// <summary>
         /// Reference to the simulation controller.
-        /// </summary>
         SimulationController sim;
 
-        /// <summary>
         /// The sprite renderer component.
-        /// </summary>
         [SerializeField] SpriteRenderer spriteRenderer;
 
-        /// <summary>
         /// The current route this vehicle is driving on.
-        /// </summary>
-        int currentRoute = 0;
-
-        /// <summary>
+        public int CurrentRoute { get; private set; }
+        
         /// The path following component.
-        /// </summary>
-        PathFollowingObject pathFollow;
+        private PathFollowingObject _pathFollow;
 
         /// The vehicle capacity.
-        public int capacity;
+        public int Capacity { get; private set; }
 
-        /// <summary>
         /// The current passengers.
-        /// </summary>
-        public Dictionary<Stop, List<Stop.WaitingCitizen>> passengers;
+        public Dictionary<Stop, List<Stop.WaitingCitizen>> Passengers { get; private set; }
 
-        public int passengerCount;
-        Velocity velocity;
+        /// The total passenger count.
+        public int PassengerCount { get; private set; }
 
+        /// The current velocity
+        public Velocity Velocity { get; private set; }
+
+        /// The next transit vehicle on the same line.
+        public TransitVehicle Next { get; set; }
+
+        /// The time we should wait until departing to the next stop.
+        private TimeSpan? _waitingTime;
+
+        /// The extra distance driven on the last route.
+        private float _extraDistanceDriven;
+
+        /// The next stop on the line.
         public Stop NextStop
         {
             get
             {
-                if (currentRoute >= line.routes.Count)
+                if (CurrentRoute == -1)
                 {
-                    return null;
+                    return line.routes.First().endStop;
+                }
+                if (CurrentRoute >= line.routes.Count)
+                {
+                    return line.routes.First().beginStop;
                 }
 
-                return line.routes[currentRoute].endStop;
+                return line.routes[CurrentRoute].endStop;
             }
         }
 
-        public void Initialize(Line line, Velocity? velocity = null, int? capacity = null)
+        /// The distance (in meters) from the start of the line.
+        private Distance DistanceFromStartOfLine
         {
-            this.line = line;
-            this.spriteRenderer.color = line.color;
-            this.sim = GameController.instance.sim;
-            this.passengers = new Dictionary<Stop, List<Stop.WaitingCitizen>>();
-            this.passengerCount = 0;
-            this.currentRoute = line.routes.Count;
+            get
+            {
+                var baseDistance = 0f;
+                if (CurrentRoute > 0)
+                {
+                    baseDistance = line.cumulativeLengths[CurrentRoute - 1];
+                }
 
-            this.velocity = velocity ?? line.AverageSpeed;
-            this.capacity = capacity ?? GetDefaultCapacity(line.type);
+                return Distance.FromMeters(baseDistance + (_pathFollow?.TotalProgressAbsolute ?? 0f));
+            }
         }
 
-        public static int GetDefaultCapacity(TransitType type)
+        /// The distance (in time) from the start of the line.
+        private TimeSpan TimeFromStartOfLine =>
+            (DistanceFromStartOfLine / line.AverageSpeed)
+            + line.AverageStopDuration.Multiply(CurrentRoute);
+
+        /// The distance (in time) to the next vehicle on the line.
+        public TimeSpan DistanceToNext
+        {
+            get
+            {
+                var timeFromStart = TimeFromStartOfLine;
+                var nextTimeFromStart = Next.TimeFromStartOfLine;
+
+                if (timeFromStart <= nextTimeFromStart)
+                {
+                    return nextTimeFromStart - timeFromStart;
+                }
+
+                return line.TotalTravelTime - timeFromStart + nextTimeFromStart;
+            }
+        }
+
+        public void Initialize(Line line, TransitVehicle next, int? capacity = null)
+        {
+            this.line = line;
+            this.Next = next;
+            this.spriteRenderer.color = line.color;
+            this.sim = GameController.instance.sim;
+            this.Passengers = new Dictionary<Stop, List<Stop.WaitingCitizen>>();
+            this.PassengerCount = 0;
+            this.CurrentRoute = 0;
+
+            this.Velocity = Velocity.zero;
+            this.Capacity = capacity ?? GetDefaultCapacity(line.type);
+
+            var pos = line.routes[0].positions[0];
+            transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.TransitStops, 1));
+        }
+
+        private static int GetDefaultCapacity(TransitType type)
         {
             switch (type)
             {
@@ -94,143 +140,98 @@ namespace Transidious
             this.spriteRenderer.color = line.color;
         }
 
-        static System.Collections.Generic.Dictionary<Tuple<Line, Stop>, DateTime> lastStopAtStation
-            = new System.Collections.Generic.Dictionary<Tuple<Line, Stop>, DateTime>();
-
-        DateTime _startTime;
-        float _length;
-
-        public void StartDrive(int routeIndex = 0)
+        public void SetStartingRoute(int routeIndex)
         {
-            if (routeIndex >= line.routes.Count)
-            {
-                return;
-            }
+            CurrentRoute = routeIndex;
+        }
 
-            if (routeIndex == 0)
-            {
-                _length = 0f;
-                _startTime = sim.GameTime;
-            }
+        public void StartDrive(int routeIndex = 0, float progress = 0f)
+        {
+            this.CurrentRoute = routeIndex;
+            this.Velocity = line.AverageSpeed;
 
-            this.currentRoute = routeIndex;
-
-            var route = line.routes[currentRoute];
-            if ((route.positions?.Count ?? 0) == 0)
-            {
-                return;
-            }
-
-            var trafficSim = sim.trafficSim;
+            var route = line.routes[CurrentRoute];
             var waitingCitizens = route.beginStop.GetWaitingCitizens(line);
             var taken = 0;
 
-            while (passengerCount + taken < capacity && taken < waitingCitizens.Count)
+            while (PassengerCount + taken < Capacity && taken < waitingCitizens.Count)
             {
                 var c = waitingCitizens[taken];
-                if (!passengers.ContainsKey(c.finalStop))
+                if (!Passengers.ContainsKey(c.finalStop))
                 {
-                    passengers.Add(c.finalStop, new List<Stop.WaitingCitizen>());
+                    Passengers.Add(c.finalStop, new List<Stop.WaitingCitizen>());
                 }
 
-                ++passengerCount;
+                ++PassengerCount;
                 ++taken;
                 ++line.weeklyPassengers;
 
-                passengers[c.finalStop].Add(c);
+                Passengers[c.finalStop].Add(c);
                 c.path.transitVehicle = this;
             }
 
             waitingCitizens.RemoveRange(0, taken);
 
             this.gameObject.SetActive(true);
-            this.transform.SetPositionInLayer(route.positions[0]);
+            this.transform.SetPositionInLayer(route.positions.First());
 
-            this.pathFollow = new PathFollowingObject(
-                sim, this.gameObject, route.positions,
-                velocity,
+            var expectedArrival = route.endStop.NextDeparture(line, sim.GameTime);
+            var current = Next;
+
+            while (current.CurrentRoute == CurrentRoute)
+            {
+                expectedArrival = route.endStop.NextDeparture(line, expectedArrival.AddSeconds(1));
+                current = current.Next;
+            }
+
+            this._pathFollow = new PathFollowingObject(
+                sim, this.gameObject, route.positions, Velocity,
                 () =>
                 {
-                  var nextDep = route.endStop.NextDeparture(line, sim.GameTime - TimeSpan.FromMinutes(5));
-                  if (currentRoute < line.routes.Count - 1)
-                  {
-                      nextStopTime = nextDep.Add(line.stopDuration);
+                    var diff = sim.GameTime - expectedArrival;
+                    if (diff.TotalSeconds < 0f)
+                    {
+                        _waitingTime = diff;
+                    }
+                    else
+                    {
+                        _extraDistanceDriven = (line.AverageSpeed * diff).Meters;
+                    }
 
-                      // var diff = sim.GameTime - nextDep;
-                      // if (System.Math.Abs(diff.TotalSeconds) >= 100)
-                      // {
-                      //     // GameController.instance.EnterPause();
-                      //     GameController.instance.input.MoveTowards(transform.position, 100f);
-                      //     Debug.LogError($"Diff: {diff.TotalSeconds:n2}sec, next dep {nextDep.ToLongTimeString()} <-> actual {sim.GameTime.ToLongTimeString()}");
-                      // }
-                      // else
-                      // {
-                      //     Debug.Log($"Diff: {diff.TotalSeconds:n2}sec");
-                      // }
-                  }
-                  else
-                  {
-                      nextStopTime = nextDep.Add(line.stopDuration + line.endOfLineWaitTime);
-                      Debug.Log($"line done");
-                  }
+                    _pathFollow = null;
+                    _waitingTime = line.AverageStopDuration;
+                    CurrentRoute = (CurrentRoute + 1) % line.routes.Count;
 
-                  pathFollow = null;
+                    // Check citizens leaving here.
+                    var stop = route.endStop;
+                    if (Passengers.TryGetValue(stop, out List<Stop.WaitingCitizen> leaving))
+                    {
+                        foreach (var c in leaving)
+                        {
+                            c.path.CompleteStep();
+                        }
 
-                  // Check citizens leaving here.
-                  var stop = route.endStop;
-                  if (passengers.TryGetValue(stop, out List<Stop.WaitingCitizen> leaving))
-                  {
-                      foreach (var c in leaving)
-                      {
-                          c.path.CompleteStep();
-                      }
+                        PassengerCount -= leaving.Count;
+                        leaving.Clear();
+                    }
 
-                      passengerCount -= leaving.Count;
-                      leaving.Clear();
-                  }
-
-                  var key = Tuple.Create(line, stop);
-                  if (lastStopAtStation.ContainsKey(key))
-                  {
-                      // var diff = (nextDep - lastStopAtStation[key]).TotalMinutes;
-                      // if ((diff - line.schedule.dayInterval) >= .5)
-                      // {
-                      //     Debug.LogError($"diff: {(diff - line.schedule.dayInterval):n2}min, time between stops: {(sim.GameTime - lastStopAtStation[key]).TotalMinutes}m");
-                      // }
-                      // else
-                      // {
-                      //     Debug.Log($"time between stops: {(sim.GameTime - lastStopAtStation[key]).TotalMinutes}m");
-                      // }
-
-                      lastStopAtStation[key] = sim.GameTime;
-                  }
-                  else
-                  {
-                      lastStopAtStation.Add(key, sim.GameTime);
-                  }
+                    // Update modal.
+                    if (MainUI.instance.transitVehicleModal.vehicle == this)
+                    {
+                        MainUI.instance.transitVehicleModal.UpdateAll();
+                    }
                 });
 
-            // Make sure to update the velocity right away.
-            timeSinceLastUpdate = TrafficSimulator.VelocityUpdateInterval;
-            timeElapsed = 0f;
-        }
+            if (progress > 0f)
+            {
+                _pathFollow.SimulateProgressAbsolute(progress);
+            }
 
-        /// The time at which we should continue along the route.
-        public DateTime? nextStopTime;
-
-        /// Total time elapsed while driving.
-        public float timeElapsed;
-
-        /// Elapsed time since the last update of the car's velocity.
-        public float timeSinceLastUpdate;
-
-        void UpdateVelocity()
-        {
-            // SetVelocity(sim.trafficSim.GetCarVelocity(drivingCar));
-
-            // Must be updated after the velocity calculation.
-            timeElapsed += Time.fixedDeltaTime * sim.SpeedMultiplier;
-            timeSinceLastUpdate = 0f;
+            if (_extraDistanceDriven > 0f)
+            {
+                _pathFollow.SimulateProgressAbsolute(_extraDistanceDriven);
+                _extraDistanceDriven = 0f;
+            }
         }
 
         void Update()
@@ -240,57 +241,53 @@ namespace Transidious
                 return;
             }
 
-            if (pathFollow != null)
+            var speedMultiplier = sim.SpeedMultiplier;
+            for (var i = 0; i < speedMultiplier; ++i)
             {
-                pathFollow.Update(Time.deltaTime * sim.SpeedMultiplier);
+                if (_pathFollow != null)
+                {
+                    _pathFollow.Update(Time.deltaTime);
+                    continue;
+                }
+
+                var extraTime = 0f;
+                if (_waitingTime.HasValue)
+                {
+                    var waitingSeconds = (float) _waitingTime.Value.TotalSeconds;
+                    waitingSeconds -= Time.deltaTime;
+
+                    if (waitingSeconds > 0f)
+                    {
+                        _waitingTime = TimeSpan.FromSeconds(waitingSeconds);
+                        continue;
+                    }
+
+                    extraTime = -waitingSeconds;
+                    _waitingTime = null;
+                }
+
+                var diff = (float) DistanceToNext.TotalMinutes - line.schedule.dayInterval;
+                if (diff < 0f)
+                {
+                    return;
+                }
+
+                StartDrive(CurrentRoute);
+                _pathFollow.Update(extraTime);
+            }
+        }
+
+        public void ActivateModal()
+        {
+            var modal = MainUI.instance.transitVehicleModal;
+            if (modal.vehicle == this)
+            {
+                modal.modal.Disable();
                 return;
             }
 
-            if (nextStopTime.HasValue && sim.GameTime >= nextStopTime.Value)
-            {
-                var diff = SimulationController.GameTimeToRealTime(sim.GameTime - nextStopTime.Value);
-                // Debug.Log($"diff: {diff}");
-
-                nextStopTime = null;
-
-                if (currentRoute + 1 >= line.routes.Count)
-                {
-                    StartDrive();
-                }
-                else
-                {
-                    StartDrive(currentRoute + 1);
-                }
-
-                pathFollow?.Update((Time.deltaTime + (float)diff.TotalSeconds) * sim.SpeedMultiplier);
-            }
-
-            //if (!sim.game.Paused && pathFollow != null)
-            //{
-            //    var elapsedTime = Time.deltaTime * sim.SpeedMultiplier;
-            //    timeSinceLastUpdate += elapsedTime;
-
-            //    if (timeSinceLastUpdate < TrafficSimulator.VelocityUpdateInterval)
-            //    {
-            //        timeElapsed += elapsedTime;
-            //    }
-            //    else
-            //    {
-            //        UpdateVelocity();
-            //    }
-
-            //    if (drivingCar.waitingForTrafficLight != null)
-            //    {
-            //        if (drivingCar.waitingForTrafficLight.MustStop)
-            //        {
-            //            return;
-            //        }
-
-            //        drivingCar.waitingForTrafficLight = null;
-            //    }
-
-            //    pathFollow.Update();
-            //}
+            modal.SetVehicle(this);
+            modal.modal.Enable();
         }
 
         public void OnMouseDown()
@@ -299,10 +296,8 @@ namespace Transidious
             {
                 return;
             }
-
-            var modal = MainUI.instance.transitVehicleModal;
-            modal.SetVehicle(this);
-            modal.modal.Enable();
+            
+            ActivateModal();
         }
     }
 }

@@ -5,8 +5,8 @@
     "startingMoney": 5000,
     "gameTime": "01/01/2019 07:00:00",
 
-    "startingPopulation": 2500,
-    "citiziens": [{
+    "startingPopulation": 1000,
+    "citizens": [{
         "firstName": "Maria",
         "lastName": "Berghain",
         "female": true,

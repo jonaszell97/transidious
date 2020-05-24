@@ -32,70 +32,47 @@ namespace Transidious
             Automatic,
         }
 
-        /// <summary>
         ///  The animation type.
-        /// </summary>
         public AnimationType animationType;
 
-        /// <summary>
         ///  The types of animation to perform.
-        /// </summary>
         public TransformType type;
 
-        /// <summary>
         ///  The execution mode of the animation.
-        /// </summary>
         public ExecutionMode executionMode;
 
-        /// <summary>
         ///  The desired duration of the animation.
-        /// </summary>
         public float duration;
 
-        /// <summary>
         /// The target position / local position.
-        /// </summary>
         public Vector3 targetPosition;
 
-        /// <summary>
         /// The target rotation.
-        /// </summary>
         public Quaternion targetRotation;
 
-        /// <summary>
         ///  The target scale.
-        /// </summary>
         public Vector3 targetScale;
 
-        /// <summary>
         /// The original position / local position.
-        /// </summary>
         public Vector3 originalPosition;
 
-        /// <summary>
         /// The original rotation.
-        /// </summary>
         public Quaternion originalRotation;
 
-        /// <summary>
         ///  The original scale.
-        /// </summary>
         public Vector3 originalScale;
 
-        /// <summary>
         /// Callback function to call once the animation is finished.
-        /// </summary>
         public UnityAction onFinish;
 
-        /// <summary>
         ///  Whether or not the animation is currently active.
-        /// </summary>
-        bool active;
+        bool _active;
 
-        /// <summary>
         /// Multiplier for the move towards function.
-        /// </summary>
-        float[] movementMultipliers;
+        float[] _movementMultipliers;
+        
+        /// Whether or not the animation is currently active.
+        public bool IsAnimating => _active;
 
         public void SetTargetPosition(Vector3 targetPosition, Vector3? originalPosition = null)
         {
@@ -103,7 +80,7 @@ namespace Transidious
             this.type &= ~TransformType.AnchoredPosition;
             this.targetPosition = targetPosition;
             this.originalPosition = originalPosition ?? transform.position;
-            this.movementMultipliers[0] = (this.targetPosition - this.originalPosition).magnitude;
+            this._movementMultipliers[0] = (this.targetPosition - this.originalPosition).magnitude;
         }
 
         public void SetTargetAnchoredPosition(Vector2 targetPosition, Vector2? originalPosition = null)
@@ -112,7 +89,7 @@ namespace Transidious
             this.type &= ~TransformType.Position;
             this.targetPosition = targetPosition;
             this.originalPosition = originalPosition ?? rectTransform.anchoredPosition;
-            this.movementMultipliers[0] = (this.targetPosition - this.originalPosition).magnitude;
+            this._movementMultipliers[0] = (this.targetPosition - this.originalPosition).magnitude;
         }
 
         public void SetTargetRotation(Quaternion targetRotation, Quaternion? originalRotation= null)
@@ -129,7 +106,7 @@ namespace Transidious
             this.type &= ~TransformType.SizeDelta;
             this.targetScale = targetScale;
             this.originalScale = originalScale ?? transform.localScale;
-            this.movementMultipliers[2] = (this.targetScale - this.originalScale).magnitude;
+            this._movementMultipliers[2] = (this.targetScale - this.originalScale).magnitude;
         }
 
         public void SetTargetSizeDelta(Vector2 targetDelta, Vector2? originalDelta = null)
@@ -138,7 +115,7 @@ namespace Transidious
             this.type &= ~TransformType.Scale;
             this.targetScale = targetDelta;
             this.originalScale = originalDelta ?? rectTransform.sizeDelta;
-            this.movementMultipliers[2] = (this.targetScale - this.originalScale).magnitude;
+            this._movementMultipliers[2] = (this.targetScale - this.originalScale).magnitude;
         }
 
         public void SetAnimationType(AnimationType animationType, ExecutionMode mode)
@@ -149,14 +126,14 @@ namespace Transidious
 
         public void StartAnimation(float duration)
         {
-            this.active = true;
-            gameObject.SetActive(true);
+            this._active = true;
+            this.enabled = true;
 
             if (!duration.Equals(this.duration))
             {
-                movementMultipliers[0] = movementMultipliers[0] * this.duration / duration;
-                movementMultipliers[1] = movementMultipliers[1] * this.duration / duration;
-                movementMultipliers[2] = movementMultipliers[2] * this.duration / duration;
+                _movementMultipliers[0] = (this.targetPosition - this.originalPosition).magnitude * this.duration / duration;
+                _movementMultipliers[1] = 1f * this.duration / duration;
+                _movementMultipliers[2] = (this.targetScale - this.originalScale).magnitude * this.duration / duration;
 
                 this.duration = duration;
             }
@@ -210,13 +187,13 @@ namespace Transidious
         public void Initialize()
         {
             this.duration = 1f;
-            this.movementMultipliers = new [] { 1f, 1f, 1f };
+            this._movementMultipliers = new [] { 1f, 1f, 1f };
             this.executionMode = ExecutionMode.Manual;
         }
 
         void Update()
         {
-            if (!active)
+            if (!_active)
             {
                 return;
             }
@@ -225,33 +202,33 @@ namespace Transidious
 
             if (type.HasFlag(TransformType.Position))
             {
-                transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * movementMultipliers[0]);
+                transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * _movementMultipliers[0]);
                 allDone &= transform.position.Equals(targetPosition);
             }
 
             if (type.HasFlag(TransformType.AnchoredPosition))
             {
                 var rectTransform = this.rectTransform;
-                rectTransform.anchoredPosition = Vector3.MoveTowards(rectTransform.anchoredPosition, targetPosition, Time.deltaTime * movementMultipliers[0]);
+                rectTransform.anchoredPosition = Vector3.MoveTowards(rectTransform.anchoredPosition, targetPosition, Time.deltaTime * _movementMultipliers[0]);
                 allDone &= rectTransform.anchoredPosition.Equals(targetPosition);
             }
 
             if (type.HasFlag(TransformType.Rotation))
             {
-                transform.rotation = Quaternion.Lerp(originalRotation, targetRotation, Time.deltaTime * movementMultipliers[1]);
+                transform.rotation = Quaternion.Lerp(originalRotation, targetRotation, Time.deltaTime * _movementMultipliers[1]);
                 allDone &= transform.rotation.Equals(targetRotation);
             }
 
             if (type.HasFlag(TransformType.Scale))
             {
-                transform.localScale = Vector3.MoveTowards(transform.localScale, targetScale, Time.deltaTime * movementMultipliers[2]);
+                transform.localScale = Vector3.MoveTowards(transform.localScale, targetScale, Time.deltaTime * _movementMultipliers[2]);
                 allDone &= transform.localScale.Equals(targetScale);
             }
 
             if (type.HasFlag(TransformType.SizeDelta))
             {
                 var rectTransform = this.rectTransform;
-                rectTransform.sizeDelta = Vector3.MoveTowards(rectTransform.sizeDelta, targetScale, Time.deltaTime * movementMultipliers[2]);
+                rectTransform.sizeDelta = Vector3.MoveTowards(rectTransform.sizeDelta, targetScale, Time.deltaTime * _movementMultipliers[2]);
                 allDone &= rectTransform.sizeDelta.Equals(targetScale);
             }
 
@@ -264,7 +241,8 @@ namespace Transidious
                     case AnimationType.Loop:
                         if (executionMode == ExecutionMode.Manual)
                         {
-                            active = false;
+                            _active = false;
+                            enabled = false;
                         }
 
                         Reset();
@@ -272,7 +250,8 @@ namespace Transidious
                     case AnimationType.Circular:
                         if (executionMode == ExecutionMode.Manual)
                         {
-                            active = false;
+                            _active = false;
+                            enabled = false;
                         }
 
                         Invert();

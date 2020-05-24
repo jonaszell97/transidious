@@ -133,28 +133,28 @@ namespace Transidious
             var residents = building.Residents;
             var visitors = building.Visitors;
 
-            if (residents == null && visitors == null)
+            if (residents != null)
             {
-                residentList.gameObject.SetActive(false);
-                visitorList.gameObject.SetActive(false);
+                residentList.gameObject.SetActive(true);
+                residentList.SetCitizens(residents);
             }
             else
             {
-                if (residents != null)
-                {
-                    residentList.gameObject.SetActive(true);
-                    residentList.SetCitizens(residents);
-                }
-                else if (visitors != null)
-                {
-                    visitorList.gameObject.SetActive(true);
-                    visitorList.SetCitizens(visitors);
-                }
+                residentList.gameObject.SetActive(false);
             }
 
+            if (visitors != null)
+            {
+                visitorList.gameObject.SetActive(true);
+                visitorList.SetCitizens(visitors);
+            }
+            else
+            {
+                visitorList.gameObject.SetActive(false);
+            }
 
 #if DEBUG
-            this.debugPanel.SetValue("Area", building.area.ToString() + " m²");
+            this.debugPanel.SetValue("Area", $"{building.area} m²");
             this.debugPanel.SetValue("Triangles", (building.mesh?.triangles.Length ?? 0).ToString());
             this.debugPanel.SetValue("Vertices", (building.mesh?.vertexCount ?? 0).ToString());
 #endif

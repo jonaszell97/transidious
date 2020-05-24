@@ -203,6 +203,12 @@ namespace Transidious
             {
                 return;
             }
+            
+            if (MainUI.instance.featureModal.feature == this)
+            {
+                MainUI.instance.featureModal.modal.Disable();
+                return;
+            }
 
             ActivateModal();
         }

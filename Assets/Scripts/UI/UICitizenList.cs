@@ -11,6 +11,9 @@ namespace Transidious.UI
     {
         /// The title object.
         public UIText title;
+
+        /// The current citizen list.
+        public Citizen[] citizens;
         
         /// Prefab for instantiating a new citizen item.
         [SerializeField] private GameObject listItemPrefab;
@@ -26,12 +29,21 @@ namespace Transidious.UI
 
         public void SetCitizens(IEnumerable<Citizen> citizenEnum)
         {
-            var citizens = citizenEnum.ToArray();
+            citizens = citizenEnum.ToArray();
+            
             while (listItems.Count < citizens.Length)
             {
                 var inst = Instantiate(listItemPrefab, this.transform);
                 var tf = inst.transform;
-                
+
+                var n = listItems.Count;
+                var btn = tf.GetChild(1).GetComponent<Button>();
+                btn.onClick.AddListener(() =>
+                {
+                    var c = citizens[n];
+                    GameController.instance.input.MoveTowards(c.currentPosition, 0f, () => c.ActivateModal());
+                });
+
                 listItems.Add(Tuple.Create(
                     inst,
                     tf.GetChild(0).GetComponent<Image>(),
@@ -50,9 +62,6 @@ namespace Transidious.UI
                 var c = citizens[i];
                 item.Item3.text = c.Name;
                 item.Item1.SetActive(true);
-
-                var link = item.Item3.GetComponent<UILocationLink>();
-                link.SetLocation(c);
             }
         }
     }
