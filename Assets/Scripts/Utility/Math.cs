@@ -42,13 +42,59 @@ namespace Transidious
             }
         }
 
-        public static float cubicBezierLength(Vector2 p0, Vector2 p1,
+        public static float CubicBezierLength(Vector2 p0, Vector2 p1,
                                               Vector2 p2, Vector2 p3)
         {
             float len = 0.0f;
             arcLengthUtil(p0, p1, p2, p3, 5, ref len);
 
             return len;
+        }
+
+        public static Vector2 CubicBezierPoint(float t,
+                                               Vector2 startPt, Vector2 controlPt1,
+                                               Vector2 controlPt2, Vector2 endPt)
+        {
+            var B0_t = Mathf.Pow((1 - t), 3);
+            var B1_t = 3 * t * Mathf.Pow((1 - t), 2);
+            var B2_t = 3 * Mathf.Pow(t, 2) * (1 - t);
+            var B3_t = Mathf.Pow(t, 3);
+
+            var x = (B0_t * startPt.x) + (B1_t * controlPt1.x) + (B2_t * controlPt2.x)
+                    + (B3_t * endPt.x);
+            var y = (B0_t * startPt.y) + (B1_t * controlPt1.y) + (B2_t * controlPt2.y)
+                    + (B3_t * endPt.y);
+            
+            return new Vector2(x, y);
+        }
+
+        public static float QuadraticBezierLength(Vector2 startPt, Vector2 controlPt, Vector2 endPt)
+        {
+            const float step = 1f / 8f;
+            var prev = startPt;
+            var length = 0f;
+
+            for (var t = step; t <= 1f; t += step)
+            {
+                var pt = QuadraticBezierPoint(t, startPt, controlPt, endPt);
+                length += (pt - prev).magnitude;
+
+                prev = pt;
+            }
+            
+            Debug.Assert(prev.Equals(endPt));
+            return length;
+        }
+
+        public static Vector2 QuadraticBezierPoint(float t, Vector2 startPt,
+                                                   Vector2 controlPt, Vector2 endPt)
+        {
+            var x = (1 - t) * (1 - t) * startPt.x + 2 * (1 - t) * t * controlPt.x
+                                                  + t * t * endPt.x;
+            var y = (1 - t) * (1 - t) * startPt.y + 2 * (1 - t) * t * controlPt.y
+                                                  + t * t * endPt.y;
+            
+            return new Vector2(x, y);
         }
 
         public static float PointAngleDeg(Vector3 p0, Vector3 p3)
@@ -639,6 +685,11 @@ namespace Transidious
 
         public static float GetAreaOfPolygon(IReadOnlyList<Vector2> poly)
         {
+            return GetAreaOfPolygon(poly, out bool _);
+        }
+
+        public static float GetAreaOfPolygon(IReadOnlyList<Vector2> poly, out bool isCounterClockwise)
+        {
             var sum = 0f;
             for (var i = 1; i <= poly.Count; ++i)
             {
@@ -656,30 +707,17 @@ namespace Transidious
                 sum += (p0.x * p1.y - p0.y * p1.x);
             }
 
-            return sum * .5f;
-        }
-
-        public static float GetAreaOfPolygon(IReadOnlyList<Vector3> poly)
-        {
-            var sum = 0f;
-            for (var i = 0; i < poly.Count; ++i)
+            if (sum < 0f)
             {
-                var p0 = poly[i];
-
-                Vector2 p1;
-                if (i == poly.Count - 1)
-                {
-                    p1 = poly[0];
-                }
-                else
-                {
-                    p1 = poly[i + 1];
-                }
-
-                sum += (p0.x * p1.y - p0.y * p1.x);
+                isCounterClockwise = true;
+                sum = -sum;
+            }
+            else
+            {
+                isCounterClockwise = false;
             }
 
-            return Mathf.Abs(sum * .5f);
+            return sum * .5f;
         }
 
         public static Vector2 GetCentroid(IReadOnlyList<Vector2> poly)
@@ -905,9 +943,9 @@ namespace Transidious
             return list;
         }
 
-        static Vector3[] GetUnityPath(List<ClipperLib.IntPoint> path)
+        static Vector2[] GetUnityPath(List<ClipperLib.IntPoint> path)
         {
-            return path.Select(p => new Vector3((float)p.X / (float)ClipPrecision, (float)p.Y / (float)ClipPrecision)).ToArray();
+            return path.Select(p => new Vector2((float)p.X / (float)ClipPrecision, (float)p.Y / (float)ClipPrecision)).ToArray();
         }
 
         static void PopulateResultPSLG(PSLG pslg, ClipperLib.PolyNode node, bool hole)

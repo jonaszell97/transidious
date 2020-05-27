@@ -23,6 +23,30 @@ namespace Transidious
         All                  = ~0x0,
     }
 
+    public enum OccupancyKind
+    {
+        /// Someone who lives in the building.
+        Resident,
+
+        /// Someone who works in the building / feature.
+        Worker,
+
+        /// Someone who is a student at the building.
+        Student,
+
+        /// Someone who is shopping at the building.
+        Customer,
+
+        /// Someone who is visiting the building / feature.
+        Visitor,
+
+        /// Someone who is parking at the lot.
+        ParkingCitizen,
+        
+        /// Sentinel value to mark the last occupancy kind.
+        _Last,
+    }
+
     [System.Serializable]
     public struct SerializableMapObject
     {
@@ -47,15 +71,12 @@ namespace Transidious
         Transform transform { get; }
         Vector2[][] outlinePositions { get; }
 
-        int Capacity { get; }
-        int ResidentCount { get; }
-        int VisitorCount { get; }
-        SortedSet<Citizen> Residents { get; }
-        SortedSet<Citizen> Visitors { get; }
-        void AddResident(Citizen c);
-        void RemoveResident(Citizen c);
-        void AddVisitor(Citizen c);
-        void RemoveVisitor(Citizen c);
+        int GetCapacity(OccupancyKind kind);
+        bool HasCapacity(OccupancyKind kind);
+        int GetOccupancyCount(OccupancyKind kind);
+        SortedSet<Citizen> GetOccupants(OccupancyKind kind);
+        bool AddOccupant(OccupancyKind kind, Citizen c, bool force = false);
+        void RemoveOccupant(OccupancyKind kind, Citizen c);
 
         void Hide();
         void Show(RenderingDistance renderingDistance);
@@ -80,9 +101,6 @@ namespace Transidious
         public Vector2[][] outlinePositions { get; set; }
         public float area;
         public Vector2 centroid;
-
-        public SortedSet<Citizen> Residents { get; private set; }
-        public SortedSet<Citizen> Visitors { get; private set; }
 
         public int Id
         {
@@ -112,10 +130,44 @@ namespace Transidious
 
         public Vector2 Centroid => centroid;
 
-        public int Capacity { get; protected set; }
-        public int VisitorCount => Visitors?.Count ?? 0;
-        public int ResidentCount => Residents?.Count ?? 0;
+        public virtual int GetCapacity(OccupancyKind kind)
+        {
+            return 0;
+        }
 
+        public bool HasCapacity(OccupancyKind kind)
+        {
+            return GetCapacity(kind) > GetOccupancyCount(kind);
+        }
+
+        public int GetOccupancyCount(OccupancyKind kind)
+        {
+            return Game.loadedMap.GetOccupancyCount(id, kind);
+        }
+
+        public SortedSet<Citizen> GetOccupants(OccupancyKind kind)
+        {
+            return Game.loadedMap.GetOccupants(id, kind);
+        }
+
+        public bool AddOccupant(OccupancyKind kind, Citizen c, bool force = false)
+        {
+            var map = Game.loadedMap;
+            var capacity = GetCapacity(kind);
+
+            if (!force && (capacity == 0 || map.GetOccupancyCount(id, kind) >= capacity))
+            {
+                return false;
+            }
+
+            Game.loadedMap.AddOccupant(id, kind, c);
+            return true;
+        }
+
+        public void RemoveOccupant(OccupancyKind kind, Citizen c)
+        {
+            Game.loadedMap.RemoveOccupant(id, kind, c);
+        }
 
         protected void Initialize(MapObjectKind kind, int id,
                                   float area = 0f,
@@ -134,37 +186,6 @@ namespace Transidious
         public virtual Color GetColor()
         {
             return Color.clear;
-        }
-
-        public void AddResident(Citizen c)
-        {
-            if (Residents == null)
-            {
-                Residents = new SortedSet<Citizen>();
-            }
-
-            Residents.Add(c);
-            Debug.Assert(Residents.Count <= Capacity);
-        }
-
-        public void RemoveResident(Citizen c)
-        {
-            Residents.Remove(c);
-        }
-
-        public void AddVisitor(Citizen c)
-        {
-            if (Visitors == null)
-            {
-                Visitors = new SortedSet<Citizen>();
-            }
-
-            Visitors.Add(c);
-        }
-
-        public void RemoveVisitor(Citizen c)
-        {
-            Visitors.Remove(c);
         }
 
         public Serialization.MapObject ToProtobuf()
@@ -257,9 +278,6 @@ namespace Transidious
         public new Collider2D collider;
         public Vector2 centroid;
         public Vector2[][] outlinePositions { get; }
-        
-        public SortedSet<Citizen> Residents { get; private set; }
-        public SortedSet<Citizen> Visitors { get; private set; }
 
         protected void Initialize(MapObjectKind kind, int id, Vector2 centroid)
         {
@@ -301,40 +319,44 @@ namespace Transidious
         public InputController inputController => GameController.instance.input;
 
         public Vector2 Centroid => centroid;
-        
-        public int Capacity { get; protected set; }
-        public int VisitorCount => Visitors?.Count ?? 0;
-        public int ResidentCount => Residents?.Count ?? 0;
-        
-        public void AddResident(Citizen c)
+
+        public virtual int GetCapacity(OccupancyKind kind)
         {
-            if (Residents == null)
+            return 0;
+        }
+        
+        public bool HasCapacity(OccupancyKind kind)
+        {
+            return GetCapacity(kind) > GetOccupancyCount(kind);
+        }
+
+        public int GetOccupancyCount(OccupancyKind kind)
+        {
+            return Game.loadedMap.GetOccupancyCount(id, kind);
+        }
+
+        public SortedSet<Citizen> GetOccupants(OccupancyKind kind)
+        {
+            return Game.loadedMap.GetOccupants(id, kind);
+        }
+
+        public bool AddOccupant(OccupancyKind kind, Citizen c, bool force = false)
+        {
+            var map = Game.loadedMap;
+            var capacity = GetCapacity(kind);
+
+            if (!force && (capacity == 0 || map.GetOccupancyCount(id, kind) >= capacity))
             {
-                Residents = new SortedSet<Citizen>();
+                return false;
             }
 
-            Residents.Add(c);
-            Debug.Assert(Residents.Count <= Capacity);
+            Game.loadedMap.AddOccupant(id, kind, c);
+            return true;
         }
 
-        public void RemoveResident(Citizen c)
+        public void RemoveOccupant(OccupancyKind kind, Citizen c)
         {
-            Residents.Remove(c);
-        }
-
-        public void AddVisitor(Citizen c)
-        {
-            if (Visitors == null)
-            {
-                Visitors = new SortedSet<Citizen>();
-            }
-
-            Visitors.Add(c);
-        }
-
-        public void RemoveVisitor(Citizen c)
-        {
-            Visitors.Remove(c);
+            Game.loadedMap.RemoveOccupant(id, kind, c);
         }
 
         public void Hide()

@@ -60,48 +60,48 @@ namespace Transidious.Serialization {
             "AiABKAsyLS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlBhdGhQbGFubmlu",
             "Z1Jlc3VsdBISCgpfd2FpdFVudGlsGAMgASgDEhQKDF9jdXJyZW50U3RlcBgE",
             "IAEoBRIcChRfY3VycmVudFN0ZXBQcm9ncmVzcxgFIAEoAhIYChBfY3VycmVu",
-            "dFZlbG9jaXR5GAYgASgCIrIBCgNDYXISCgoCaWQYASABKA0SEAoIZHJpdmVy",
+            "dFZlbG9jaXR5GAYgASgCIscBCgNDYXISCgoCaWQYASABKA0SEAoIZHJpdmVy",
             "SWQYAiABKA0SEAoIY2FyTW9kZWwYAyABKA0SNAoIcG9zaXRpb24YBCABKAsy",
             "Ii5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjISLwoFY29sb3IY",
             "BSABKAsyIC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNvbG9yEhQKDHBh",
-            "cmtpbmdMb3RJRBgGIAEoDSLXDAoHQ2l0aXplbhIKCgJpZBgBIAEoDRIRCglm",
-            "aXJzdE5hbWUYAiABKAkSEAoIbGFzdE5hbWUYAyABKAkSCwoDYWdlGAQgASgN",
-            "EhAKCGJpcnRoZGF5GAUgASgNEg4KBmZlbWFsZRgGIAEoCBJBCgpvY2N1cGF0",
-            "aW9uGAcgASgOMi0uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVu",
-            "Lk9jY3VwYXRpb24SDQoFbW9uZXkYCCABKAISEAoIZWR1Y2F0ZWQYCSABKAgS",
-            "EQoJaGFwcGluZXNzGAogASgNEkYKDXJlbGF0aW9uc2hpcHMYCyADKAsyLy5U",
-            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uUmVsYXRpb25zaGlw",
-            "EkwKEHBvaW50c09mSW50ZXJlc3QYDCADKAsyMi5UcmFuc2lkaW91cy5TZXJp",
-            "YWxpemF0aW9uLkNpdGl6ZW4uUG9pbnRPZkludGVyZXN0ElIKE2hhcHBpbmVz",
-            "c0luZmx1ZW5jZXMYDSADKAsyNS5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
-            "LkNpdGl6ZW4uSGFwcGluZXNzSW5mbHVlbmNlEg0KBWNhcklEGA4gASgNEjsK",
-            "D2N1cnJlbnRQb3NpdGlvbhgPIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uVmVjdG9yMhI5CgphY3RpdmVQYXRoGBAgASgLMiUuVHJhbnNpZGlv",
-            "dXMuU2VyaWFsaXphdGlvbi5BY3RpdmVQYXRoEhMKC3NjaGVkdWxlSWR4GBEg",
-            "ASgFEhIKCnNjaGVkdWxlSUQYEiABKA0SOAoOcHJlZmVycmVkQ29sb3IYEyAB",
-            "KAsyIC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNvbG9yEkoKEnRyYW5z",
-            "aXRQcmVmZXJlbmNlcxgUIAEoCzIuLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
-            "b24uUGF0aFBsYW5uaW5nT3B0aW9ucxpkCgxSZWxhdGlvbnNoaXASQQoEa2lu",
-            "ZBgBIAEoDjIzLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXplbi5S",
-            "ZWxhdGlvbnNoaXBLaW5kEhEKCWNpdGl6ZW5JZBgCIAEoDRprCg9Qb2ludE9m",
-            "SW50ZXJlc3QSRAoEa2luZBgBIAEoDjI2LlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uQ2l0aXplbi5Qb2ludE9mSW50ZXJlc3RLaW5kEhIKCmJ1aWxkaW5n",
-            "SWQYAiABKA0akQEKEkhhcHBpbmVzc0luZmx1ZW5jZRIWCg5kZXNjcmlwdGlv",
-            "bktleRgBIAEoCRIRCglpbmZsdWVuY2UYAiABKAISDQoFdGlja3MYAyABKAUS",
-            "EwoLcmVsYXRpdmVDYXAYBCABKAISFQoNYWJzb2x1dGVDYXBMbxgFIAEoAhIV",
-            "Cg1hYnNvbHV0ZUNhcEhpGAYgASgCGugBCg5TY2hlZHVsZWRFdmVudBIQCghz",
-            "dGFydHNBdBgBIAEoDRI7CgRwYXRoGAIgASgLMi0uVHJhbnNpZGlvdXMuU2Vy",
-            "aWFsaXphdGlvbi5QYXRoUGxhbm5pbmdSZXN1bHQSRAoJbmV4dEV2ZW50GAMg",
-            "ASgLMjEuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlNjaGVk",
-            "dWxlZEV2ZW50EkEKBXBsYWNlGAQgASgLMjIuVHJhbnNpZGlvdXMuU2VyaWFs",
-            "aXphdGlvbi5DaXRpemVuLlBvaW50T2ZJbnRlcmVzdCKPAQoKT2NjdXBhdGlv",
-            "bhIKCgZXb3JrZXIQABILCgdSZXRpcmVkEAESEAoMS2luZGVyZ2FyZGVuEAIS",
-            "GwoXRWxlbWVudGFyeVNjaG9vbFN0dWRlbnQQAxIVChFIaWdoU2Nob29sU3R1",
-            "ZGVudBAEEhUKEVVuaXZlcnNpdHlTdHVkZW50EAUSCwoHVHJhaW5lZRAGIigK",
-            "EFJlbGF0aW9uc2hpcEtpbmQSFAoQU2lnbmlmaWNhbnRPdGhlchAAIkcKE1Bv",
-            "aW50T2ZJbnRlcmVzdEtpbmQSCAoESG9tZRAAEggKBFdvcmsQARIKCgZTY2hv",
-            "b2wQAhIQCgxHcm9jZXJ5U3RvcmUQA0IcqgIZVHJhbnNpZGlvdXMuU2VyaWFs",
-            "aXphdGlvbmIGcHJvdG8z"));
+            "cmtpbmdMb3RJRBgGIAEoDRITCgtiZWhhdmlvdXJJRBgHIAEoDSLXDAoHQ2l0",
+            "aXplbhIKCgJpZBgBIAEoDRIRCglmaXJzdE5hbWUYAiABKAkSEAoIbGFzdE5h",
+            "bWUYAyABKAkSCwoDYWdlGAQgASgNEhAKCGJpcnRoZGF5GAUgASgNEg4KBmZl",
+            "bWFsZRgGIAEoCBJBCgpvY2N1cGF0aW9uGAcgASgOMi0uVHJhbnNpZGlvdXMu",
+            "U2VyaWFsaXphdGlvbi5DaXRpemVuLk9jY3VwYXRpb24SDQoFbW9uZXkYCCAB",
+            "KAISEAoIZWR1Y2F0ZWQYCSABKAgSEQoJaGFwcGluZXNzGAogASgNEkYKDXJl",
+            "bGF0aW9uc2hpcHMYCyADKAsyLy5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9u",
+            "LkNpdGl6ZW4uUmVsYXRpb25zaGlwEkwKEHBvaW50c09mSW50ZXJlc3QYDCAD",
+            "KAsyMi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uUG9pbnRP",
+            "ZkludGVyZXN0ElIKE2hhcHBpbmVzc0luZmx1ZW5jZXMYDSADKAsyNS5UcmFu",
+            "c2lkaW91cy5TZXJpYWxpemF0aW9uLkNpdGl6ZW4uSGFwcGluZXNzSW5mbHVl",
+            "bmNlEg0KBWNhcklEGA4gASgNEjsKD2N1cnJlbnRQb3NpdGlvbhgPIAEoCzIi",
+            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9yMhI5CgphY3RpdmVQ",
+            "YXRoGBAgASgLMiUuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5BY3RpdmVQ",
+            "YXRoEhMKC3NjaGVkdWxlSWR4GBEgASgFEhIKCnNjaGVkdWxlSUQYEiABKA0S",
+            "OAoOcHJlZmVycmVkQ29sb3IYEyABKAsyIC5UcmFuc2lkaW91cy5TZXJpYWxp",
+            "emF0aW9uLkNvbG9yEkoKEnRyYW5zaXRQcmVmZXJlbmNlcxgUIAEoCzIuLlRy",
+            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uUGF0aFBsYW5uaW5nT3B0aW9ucxpk",
+            "CgxSZWxhdGlvbnNoaXASQQoEa2luZBgBIAEoDjIzLlRyYW5zaWRpb3VzLlNl",
+            "cmlhbGl6YXRpb24uQ2l0aXplbi5SZWxhdGlvbnNoaXBLaW5kEhEKCWNpdGl6",
+            "ZW5JZBgCIAEoDRprCg9Qb2ludE9mSW50ZXJlc3QSRAoEa2luZBgBIAEoDjI2",
+            "LlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uQ2l0aXplbi5Qb2ludE9mSW50",
+            "ZXJlc3RLaW5kEhIKCmJ1aWxkaW5nSWQYAiABKA0akQEKEkhhcHBpbmVzc0lu",
+            "Zmx1ZW5jZRIWCg5kZXNjcmlwdGlvbktleRgBIAEoCRIRCglpbmZsdWVuY2UY",
+            "AiABKAISDQoFdGlja3MYAyABKAUSEwoLcmVsYXRpdmVDYXAYBCABKAISFQoN",
+            "YWJzb2x1dGVDYXBMbxgFIAEoAhIVCg1hYnNvbHV0ZUNhcEhpGAYgASgCGugB",
+            "Cg5TY2hlZHVsZWRFdmVudBIQCghzdGFydHNBdBgBIAEoDRI7CgRwYXRoGAIg",
+            "ASgLMi0uVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5QYXRoUGxhbm5pbmdS",
+            "ZXN1bHQSRAoJbmV4dEV2ZW50GAMgASgLMjEuVHJhbnNpZGlvdXMuU2VyaWFs",
+            "aXphdGlvbi5DaXRpemVuLlNjaGVkdWxlZEV2ZW50EkEKBXBsYWNlGAQgASgL",
+            "MjIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5DaXRpemVuLlBvaW50T2ZJ",
+            "bnRlcmVzdCKPAQoKT2NjdXBhdGlvbhIKCgZXb3JrZXIQABILCgdSZXRpcmVk",
+            "EAESEAoMS2luZGVyZ2FyZGVuEAISGwoXRWxlbWVudGFyeVNjaG9vbFN0dWRl",
+            "bnQQAxIVChFIaWdoU2Nob29sU3R1ZGVudBAEEhUKEVVuaXZlcnNpdHlTdHVk",
+            "ZW50EAUSCwoHVHJhaW5lZRAGIigKEFJlbGF0aW9uc2hpcEtpbmQSFAoQU2ln",
+            "bmlmaWNhbnRPdGhlchAAIkcKE1BvaW50T2ZJbnRlcmVzdEtpbmQSCAoESG9t",
+            "ZRAAEggKBFdvcmsQARIKCgZTY2hvb2wQAhIQCgxHcm9jZXJ5U3RvcmUQA0Ic",
+            "qgIZVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -115,7 +115,7 @@ namespace Transidious.Serialization {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PlannedPath), global::Transidious.Serialization.PlannedPath.Parser, new[]{ "Steps" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.PathPlanningResult), global::Transidious.Serialization.PathPlanningResult.Parser, new[]{ "Cost", "Duration", "LeaveBy", "ArriveAt", "Path", "StepTimes", "Options" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.ActivePath), global::Transidious.Serialization.ActivePath.Parser, new[]{ "CitizenId", "Path", "WaitUntil", "CurrentStep", "CurrentStepProgress", "CurrentVelocity" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Car), global::Transidious.Serialization.Car.Parser, new[]{ "Id", "DriverId", "CarModel", "Position", "Color", "ParkingLotID" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Car), global::Transidious.Serialization.Car.Parser, new[]{ "Id", "DriverId", "CarModel", "Position", "Color", "ParkingLotID", "BehaviourID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen), global::Transidious.Serialization.Citizen.Parser, new[]{ "Id", "FirstName", "LastName", "Age", "Birthday", "Female", "Occupation", "Money", "Educated", "Happiness", "Relationships", "PointsOfInterest", "HappinessInfluences", "CarID", "CurrentPosition", "ActivePath", "ScheduleIdx", "ScheduleID", "PreferredColor", "TransitPreferences" }, null, new[]{ typeof(global::Transidious.Serialization.Citizen.Types.Occupation), typeof(global::Transidious.Serialization.Citizen.Types.RelationshipKind), typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterestKind) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.Relationship), global::Transidious.Serialization.Citizen.Types.Relationship.Parser, new[]{ "Kind", "CitizenId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.PointOfInterest), global::Transidious.Serialization.Citizen.Types.PointOfInterest.Parser, new[]{ "Kind", "BuildingId" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Citizen.Types.HappinessInfluence), global::Transidious.Serialization.Citizen.Types.HappinessInfluence.Parser, new[]{ "DescriptionKey", "Influence", "Ticks", "RelativeCap", "AbsoluteCapLo", "AbsoluteCapHi" }, null, null, null),
@@ -2597,6 +2597,7 @@ namespace Transidious.Serialization {
       position_ = other.position_ != null ? other.position_.Clone() : null;
       color_ = other.color_ != null ? other.color_.Clone() : null;
       parkingLotID_ = other.parkingLotID_;
+      behaviourID_ = other.behaviourID_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2671,6 +2672,17 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "behaviourID" field.</summary>
+    public const int BehaviourIDFieldNumber = 7;
+    private uint behaviourID_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public uint BehaviourID {
+      get { return behaviourID_; }
+      set {
+        behaviourID_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Car);
@@ -2690,6 +2702,7 @@ namespace Transidious.Serialization {
       if (!object.Equals(Position, other.Position)) return false;
       if (!object.Equals(Color, other.Color)) return false;
       if (ParkingLotID != other.ParkingLotID) return false;
+      if (BehaviourID != other.BehaviourID) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -2702,6 +2715,7 @@ namespace Transidious.Serialization {
       if (position_ != null) hash ^= Position.GetHashCode();
       if (color_ != null) hash ^= Color.GetHashCode();
       if (ParkingLotID != 0) hash ^= ParkingLotID.GetHashCode();
+      if (BehaviourID != 0) hash ^= BehaviourID.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2739,6 +2753,10 @@ namespace Transidious.Serialization {
         output.WriteRawTag(48);
         output.WriteUInt32(ParkingLotID);
       }
+      if (BehaviourID != 0) {
+        output.WriteRawTag(56);
+        output.WriteUInt32(BehaviourID);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -2764,6 +2782,9 @@ namespace Transidious.Serialization {
       }
       if (ParkingLotID != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(ParkingLotID);
+      }
+      if (BehaviourID != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(BehaviourID);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2799,6 +2820,9 @@ namespace Transidious.Serialization {
       }
       if (other.ParkingLotID != 0) {
         ParkingLotID = other.ParkingLotID;
+      }
+      if (other.BehaviourID != 0) {
+        BehaviourID = other.BehaviourID;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2839,6 +2863,10 @@ namespace Transidious.Serialization {
           }
           case 48: {
             ParkingLotID = input.ReadUInt32();
+            break;
+          }
+          case 56: {
+            BehaviourID = input.ReadUInt32();
             break;
           }
         }

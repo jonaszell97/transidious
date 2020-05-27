@@ -38,14 +38,6 @@ namespace Transidious
                 this.layer = layer;
                 this.color = color;
                 this.pslg = new PSLG();
-                this.pslg.AddOrderedVertices(poly.Select(v => (Vector3)v).ToArray());
-            }
-
-            public MeshInfo(Vector3[] poly, float layer, UnityEngine.Color color)
-            {
-                this.layer = layer;
-                this.color = color;
-                this.pslg = new PSLG();
                 this.pslg.AddOrderedVertices(poly);
             }
         }
@@ -122,12 +114,6 @@ namespace Transidious
             this.meshInfo.Add(obj, new MeshInfo(poly, layer, color));
         }
 
-        public void RegisterMesh(IMapObject obj, Vector3[] poly,
-                                 float layer, UnityEngine.Color color)
-        {
-            this.meshInfo.Add(obj, new MeshInfo(poly, layer, color));
-        }
-
         public void RegisterMesh(PSLG pslg, float layer, UnityEngine.Color color)
         {
             var tiles = map.GetTiles(pslg.Outlines);
@@ -135,12 +121,6 @@ namespace Transidious
         }
 
         public void RegisterMesh(Vector2[] poly, float layer, UnityEngine.Color color)
-        {
-            var tiles = map.GetTiles(poly);
-            this._otherMeshes.Add(Tuple.Create(tiles.ToArray(), new MeshInfo(poly, layer, color)));
-        }
-
-        public void RegisterMesh(Vector3[] poly, float layer, UnityEngine.Color color)
         {
             var tiles = map.GetTiles(poly);
             this._otherMeshes.Add(Tuple.Create(tiles.ToArray(), new MeshInfo(poly, layer, color)));
@@ -739,14 +719,17 @@ namespace Transidious
                 }
             }
 
+            // Draw street outlines
             foreach (var seg in streetsToDraw)
             {
                 var meshes = GetStreetMesh(seg);
                 var outlineColor = seg.GetBorderColor();
 
                 if (meshes.Item2 == null)
+                {
                     continue;
-                
+                }
+
                 if (global)
                 {
                     FillGlobalPoly(g, outlineColor, meshes.Item2, resolution);
@@ -756,9 +739,32 @@ namespace Transidious
                     FillPoly(g, outlineColor, meshes.Item2, tile);
                 }
             }
-
+            
+            // Draw rivers
             foreach (var seg in streetsToDraw)
             {
+                if (!seg.IsRiver)
+                    continue;
+                
+                var meshes = GetStreetMesh(seg);
+                var streetColor = seg.GetStreetColor();
+                
+                if (global)
+                {
+                    FillGlobalPoly(g, streetColor, meshes.Item1, resolution);
+                }
+                else
+                {
+                    FillPoly(g, streetColor, meshes.Item1, tile);
+                }
+            }
+            
+            // Draw other streets
+            foreach (var seg in streetsToDraw)
+            {
+                if (seg.IsRiver)
+                    continue;
+
                 var meshes = GetStreetMesh(seg);
                 var streetColor = seg.GetStreetColor();
                 
@@ -891,13 +897,13 @@ namespace Transidious
                 var minY = tile.y * map.tileSize;
                 var maxY = tile.y * map.tileSize + map.tileSize;
             
-                cutout.AddHole(new List<Vector3>
+                cutout.AddHole(new List<Vector2>
                 {
-                    new Vector3(minX, minY),
-                    new Vector3(minX, maxY),
-                    new Vector3(maxX, maxY),
-                    new Vector3(maxX, minY),
-                    new Vector3(minX, minY),
+                    new Vector2(minX, minY),
+                    new Vector2(minX, maxY),
+                    new Vector2(maxX, maxY),
+                    new Vector2(maxX, minY),
+                    new Vector2(minX, minY),
                 });
             
                 minX -= 1000f;
@@ -905,13 +911,13 @@ namespace Transidious
                 maxX += 1000f;
                 maxY += 1000f;
             
-                cutout.AddVertexLoop(new List<Vector3>
+                cutout.AddVertexLoop(new List<Vector2>
                 {
-                    new Vector3(minX, minY),
-                    new Vector3(minX, maxY),
-                    new Vector3(maxX, maxY),
-                    new Vector3(maxX, minY),
-                    new Vector3(minX, minY),
+                    new Vector2(minX, minY),
+                    new Vector2(minX, maxY),
+                    new Vector2(maxX, maxY),
+                    new Vector2(maxX, minY),
+                    new Vector2(minX, minY),
                 });
             
                 _tileCutouts.Add(tile, cutout);
@@ -974,7 +980,10 @@ namespace Transidious
                 {
                     var streetMeshes = GetStreetMesh(seg);
                     var streetColor = seg.GetStreetColor();
-                    var streetLayer = Map.Layer(MapLayer.Streets);
+
+                    var mapLayer = seg.IsRiver ? MapLayer.Rivers : MapLayer.Streets;
+                    var positionInLayer = seg.IsBridge ? 1 : 0;
+                    var streetLayer = Map.Layer(mapLayer, positionInLayer);
 
                     foreach (var tile in map.GetTilesForObject(info.Key))
                     {
@@ -986,7 +995,7 @@ namespace Transidious
                     if (streetMeshes.Item2 != null)
                     {
                         var outlineColor = seg.GetBorderColor();
-                        var outlineLayer = Map.Layer(MapLayer.StreetOutlines);
+                        var outlineLayer = Map.Layer(MapLayer.StreetOutlines, positionInLayer);
                         
                         foreach (var tile in map.GetTilesForObject(info.Key))
                         {
@@ -1188,7 +1197,7 @@ namespace Transidious
             var sh = Shader.Find("Unlit/Texture");
 
             var boundaryPSLG = new PSLG(Map.Layer(MapLayer.Foreground));
-            boundaryPSLG.AddVertexLoop(prefabMap.boundaryPositions.Select(v => (Vector3)v).ToList());
+            boundaryPSLG.AddOrderedVertices(prefabMap.boundaryPositions);
 
             var uv = new List<Vector2>();
             for (var x = 0; x < backgroundSize.x; ++x)
@@ -1214,10 +1223,10 @@ namespace Transidious
                     var basePSLG = new PSLG(Map.Layer(MapLayer.Foreground));
                     basePSLG.AddOrderedVertices(new []
                     {
-                        new Vector3(min_x, min_y),
-                        new Vector3(min_x, max_y),
-                        new Vector3(max_x, max_y),
-                        new Vector3(max_x, min_y),
+                        new Vector2(min_x, min_y),
+                        new Vector2(min_x, max_y),
+                        new Vector2(max_x, max_y),
+                        new Vector2(max_x, min_y),
                     });
 
                     var pslg = Math.PolygonDiff(basePSLG, boundaryPSLG);

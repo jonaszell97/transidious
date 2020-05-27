@@ -37,7 +37,7 @@ namespace Transidious
             );
         }
 
-        public void DrawLine(IReadOnlyList<Vector3> worldPath, Color c, float lineWidth = .4f)
+        public void DrawLine(IReadOnlyList<Vector2> worldPath, Color c, float lineWidth = .4f)
         {
             var rect = GetComponent<RectTransform>().rect;
             var map = GameController.instance.loadedMap;

@@ -39,7 +39,7 @@ namespace Transidious
 
         TemporaryLine currentLine;
         DynamicMapObject previousStop;
-        List<Vector3> currentPath;
+        List<Vector2> currentPath;
         List<TrafficSimulator.PathSegmentInfo> currentSegments;
         GameObject existingPathMesh;
         GameObject plannedPathMesh;
@@ -713,7 +713,7 @@ namespace Transidious
                 name = Translator.Get("tooltip:new_line",
                                       game.GetSystemName(selectedSystem.Value)),
                 stops = new List<IMapObject>(),
-                completePath = new List<Vector3>(),
+                completePath = new List<Vector2>(),
                 paths = new List<int>(),
                 streetSegments = new List<List<TrafficSimulator.PathSegmentInfo>>(),
             };
@@ -932,26 +932,6 @@ namespace Transidious
             linesPerPositionMap.Add(key, lines.Count);
         }
 
-        void CheckOverlappingRoutes_Alt(HashSet<Tuple<StreetSegment, int>> segments)
-        {
-            var linesPerSegmentMap = new Dictionary<Tuple<StreetSegment, Vector2, int>, int>();
-            var allPositionsMap = new Dictionary<Tuple<StreetSegment, int>, List<Vector3>>();
-            var coveredPositions = new HashSet<Vector2>();
-            var affectedRoutes = new HashSet<Route>();
-
-            foreach (var seg in segments)
-            {
-                var allPositions = CheckOverlappingRoutes(seg.Item1, seg.Item2,
-                                                          linesPerSegmentMap,
-                                                          coveredPositions,
-                                                          affectedRoutes);
-
-                allPositionsMap.Add(seg, allPositions);
-            }
-
-            UpdateRouteMeshes_Alt(affectedRoutes, linesPerSegmentMap, allPositionsMap);
-        }
-
         void UpdateOccupiedSegments(Dictionary<Route, List<Tuple<int, int>>> occupiedSegments,
                                     int insertPos)
         {
@@ -973,13 +953,13 @@ namespace Transidious
             }
         }
 
-        List<Vector3> CheckOverlappingRoutes(StreetSegment seg, int lane,
+        List<Vector2> CheckOverlappingRoutes(StreetSegment seg, int lane,
                                              Dictionary<Tuple<StreetSegment, Vector2, int>, int> linesPerPositionMap,
                                              HashSet<Vector2> coveredPositions,
                                              HashSet<Route> affectedRoutes)
         {
             var routes = seg.GetTransitRoutes(lane);
-            var originalPath = game.sim.trafficSim.GetPath(seg, lane);
+            var originalPath = game.sim.trafficSim.StreetPathBuilder.GetPath(seg, lane).Points;
             var path = originalPath.ToList();
 
             // For a path like 'A -> B -> C', remember how many lines drive on each route (A->B), (B->C)
@@ -1297,7 +1277,7 @@ namespace Transidious
                 endPos = route.positions[endIdx];
             }
 
-            var offsetPath = game.sim.trafficSim.GetPath(seg, lane);
+            var offsetPath = game.sim.trafficSim.StreetPathBuilder.GetPath(seg, lane).Points;
             var startDistance = seg.GetDistanceFromStartStopLine(startPos, offsetPath);
             var endDistance = seg.GetDistanceFromStartStopLine(endPos, offsetPath);
             var offsets = offsetMap[Tuple.Create(seg, lane)];
@@ -1327,7 +1307,7 @@ namespace Transidious
         {
             var positions = route.positions;
             
-            var newPositions = Enumerable.Repeat(Vector3.zero, positions.Count).ToList();
+            var newPositions = Enumerable.Repeat(Vector2.zero, positions.Count).ToList();
             var newWidths = Enumerable.Repeat(0f, positions.Count).ToList();
 
             var segments = new Dictionary<int, StreetSegment>();
@@ -1613,7 +1593,7 @@ namespace Transidious
                 endPos = route.positions[endIdx];
             }
 
-            var offsetPath = game.sim.trafficSim.GetPath(segment, lane);
+            var offsetPath = game.sim.trafficSim.StreetPathBuilder.GetPath(segment, lane).Points;
             var startDistance = segment.GetDistanceFromStartStopLine(startPos, offsetPath);
             var endDistance = segment.GetDistanceFromStartStopLine(endPos, offsetPath);
 
@@ -1641,7 +1621,7 @@ namespace Transidious
             var currentPositions = route.CurrentPositions;
             var currentWidths = route.CurrentWidths;
 
-            var newPositions = Enumerable.Repeat(Vector3.zero, positions.Count).ToList();
+            var newPositions = Enumerable.Repeat(Vector2.zero, positions.Count).ToList();
             var newWidths = Enumerable.Repeat(0f, positions.Count).ToList();
 
             var segments = new Dictionary<int, StreetSegment>();

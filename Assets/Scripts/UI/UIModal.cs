@@ -47,6 +47,9 @@ namespace Transidious
         /// The anchored position when disabled.
         private Vector2 _disabledAnchoredPos;
 
+        /// Whether or not the modal is active.
+        public bool Active { get; private set; }
+
         /// The currently selected tab.
         public int SelectedTab { get; private set; }
 
@@ -99,36 +102,40 @@ namespace Transidious
 
         public void Enable()
         {
-            if (_animator.IsAnimating || (gameObject.activeSelf && SelectedTab == 0))
+            if (_animator.IsAnimating || Active)
             {
                 return;
             }
 
             foreach (var modal in _modals)
             {
+                if (modal._animator.IsAnimating)
+                {
+                    return;
+                }
+
                 modal.Disable();
             }
 
             LoadTab(0);
             gameObject.SetActive(true);
-            //
-            // _animator.SetTargetAnchoredPosition(new Vector2(-_disabledAnchoredPos.x, _disabledAnchoredPos.y), _disabledAnchoredPos);
-            _animator.onFinish = null;
+            _animator.onFinish = () => { Active = true; };
             _animator.StartAnimation(.2f);
         }
 
         public void Disable()
         {
-            if (_animator.IsAnimating || !gameObject.activeSelf)
+            if (_animator.IsAnimating || !Active)
             {
                 return;
             }
 
-            // _animator.SetTargetAnchoredPosition(_disabledAnchoredPos, new Vector2(-_disabledAnchoredPos.x, _disabledAnchoredPos.y));
             _animator.onFinish = () =>
             {
                 gameObject.SetActive(false);
                 this.onClose.Invoke();
+                _animator.onFinish = null;
+                Active = false;
             };
 
             _animator.StartAnimation(.2f);

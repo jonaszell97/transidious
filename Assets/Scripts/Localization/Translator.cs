@@ -95,7 +95,7 @@ namespace Transidious
         {
             if (!items.TryGetValue(key, out string text))
             {
-                Debug.LogWarning("language is missing item '" + key + "'");
+                // Debug.LogWarning("language is missing item '" + key + "'");
 #if DEBUG
                 return key;
 #else
@@ -305,7 +305,7 @@ namespace Transidious
             var hour = time.Hour;
             var isAM = hour <= 11;
 
-            if (hour == 0)
+            if (hour == 0 || hour == 12)
             {
                 hour = 12;
             }

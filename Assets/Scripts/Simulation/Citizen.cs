@@ -363,8 +363,6 @@ namespace Transidious
                 return;
             }
 
-            Debug.Log("starting animation!");
-
             var sr = sprite.GetComponent<SpriteRenderer>();
             sr.sprite = SpriteManager.GetSprite("Sprites/arrow");
             sr.color = Colors.GetColor(diff < 0f ? "ui.happinessLow" : "ui.happinessHigh");
@@ -522,7 +520,7 @@ namespace Transidious
                 return;
             }
 
-            home.AddResident(this);
+            home.AddOccupant(OccupancyKind.Resident, this);
             this.pointsOfInterest.Add(PointOfInterest.Home, home);
             
             currentPosition = home.Centroid;
@@ -669,8 +667,8 @@ namespace Transidious
                     return;
                 }
             }
-            
-            place.AddResident(this);
+
+            place.AddOccupant(OccupancyKind.Worker, this);
             pointsOfInterest.Add(poiType, place);
         }
 
@@ -737,7 +735,7 @@ namespace Transidious
 
         public void UpdateDailySchedule(DateTime currentTime, bool newDay)
         {
-            currentEvent.location?.RemoveVisitor(this);
+            currentEvent.location?.RemoveOccupant(OccupancyKind.Visitor, this);
             currentEvent = schedule.GetNextEvent(currentTime, newDay);
 
             if (currentEvent.path != null)
@@ -747,7 +745,7 @@ namespace Transidious
                 {
                     activePath.onDone = () =>
                     {
-                        currentEvent.location.AddVisitor(this);
+                        currentEvent.location.AddOccupant(OccupancyKind.Visitor, this);
 
                         var modal = MainUI.instance.citizenModal;
                         if (modal.citizen == this)

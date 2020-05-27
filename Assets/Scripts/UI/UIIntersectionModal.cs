@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using Transidious;
 using UnityEngine;
@@ -19,9 +20,33 @@ namespace UI
         /// Prefab for street items.
         [SerializeField] private GameObject _intersectingStreetItemPrefab;
 
+        /// The info panel.
+        [SerializeField] private UIInfoPanel _infoPanel;
+
         public void Initialize()
         {
             modal.Initialize();
+
+            _infoPanel.Initialize();
+            _infoPanel.AddClickableItem("Paths", "Show Intersection Paths", Color.white, () =>
+            {
+                var builder = GameController.instance.sim.trafficSim.StreetPathBuilder;
+                var points = new List<Vector2>();
+
+                foreach (var incoming in intersection.IncomingStreets)
+                {
+                    foreach (var outgoing in intersection.OutgoingStreets)
+                    {
+                        var path = builder.GetIntersectionPath(intersection, incoming, outgoing);
+                        path.AddPoints(points, 5);
+
+                        var color = RNG.RandomColor;
+                        Utility.DrawLine(points.ToArray(), 1f, color, Map.Layer(MapLayer.Foreground), false, true);
+
+                        points.Clear();
+                    }
+                }
+            });
         }
 
         public void SetIntersection(StreetIntersection intersection)
@@ -33,6 +58,8 @@ namespace UI
             for (var i = existing; i < intersection.intersectingStreets.Count; ++i)
             {
                 var inst = Instantiate(_intersectingStreetItemPrefab, _intersectingStreetList, false);
+                inst.name = $"IntersectingStreetItem {i}";
+                
                 var n = i;
                 inst.GetComponent<Button>().onClick.AddListener(() =>
                 {

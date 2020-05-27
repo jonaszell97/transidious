@@ -250,17 +250,17 @@ namespace Transidious
                 Cursor.visible = false;
             }
 
-            var cursorPos = game.input.NativeCursorPosition;
+            Vector2 cursorPos = game.input.NativeCursorPosition;
 
-            System.Tuple<Vector3, Math.PointPosition> closestPtAndPos;
+            Tuple<Vector2, Math.PointPosition> closestPtAndPos;
             if (snapSettings.settings.snapToLane)
             {
                 closestPtAndPos = street.GetClosestPointAndPosition(cursorPos);
-                var positions = game.sim.trafficSim.GetPath(
+                var positions = game.sim.trafficSim.StreetPathBuilder.GetPath(
                     street,
                     (closestPtAndPos.Item2 == Math.PointPosition.Right || street.IsOneWay)
                         ? street.RightmostLane
-                        : street.LeftmostLane);
+                        : street.LeftmostLane).Points;
 
                 closestPtAndPos = StreetSegment.GetClosestPointAndPosition(cursorPos, positions);
             }
@@ -274,14 +274,14 @@ namespace Transidious
 
             if (snapSettings.settings.snapToEnd)
             {
-                var distanceFromStart = (street.drivablePositions.First() - closestPt).magnitude;
+                var distanceFromStart = ((Vector2)street.drivablePositions.First() - closestPt).magnitude;
                 if (distanceFromStart < endSnapThreshold)
                 {
                     closestPt = street.drivablePositions.First();
                     pos = Math.PointPosition.OnLine;
                 }
 
-                var distanceFromEnd = (street.drivablePositions.Last() - closestPt).magnitude;
+                var distanceFromEnd = ((Vector2)street.drivablePositions.Last() - closestPt).magnitude;
                 if (distanceFromEnd < endSnapThreshold)
                 {
                     closestPt = street.drivablePositions.Last();

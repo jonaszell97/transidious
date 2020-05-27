@@ -926,6 +926,23 @@ namespace Transidious
                     _fromPos = null;
                 }
             }
+            
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F8))
+            {
+                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if (_fromPos == null)
+                {
+                    Debug.Log("first point set");
+                    _fromPos = clickedPos;
+                }
+                else
+                {
+                    Vector2 from = _fromPos.Value;
+                    Vector2 to = clickedPos;
+
+                    Debug.Log($"distance: {(from-to).magnitude}m");
+                }
+            }
 
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F6))
             {

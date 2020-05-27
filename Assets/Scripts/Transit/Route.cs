@@ -10,13 +10,11 @@ namespace Transidious
     {
         public Line line;
 
-        public List<Vector3> positions;
+        public List<Vector2> positions;
         public float length;
 
-        List<Vector3> overlapAwarePositions;
+        List<Vector2> overlapAwarePositions;
         List<float> overlapAwareWidths;
-        public Path path;
-        public Path originalPath;
 
         /// For each street segment this route is on, the index into the position vector where that
         /// segments positions start.
@@ -24,11 +22,8 @@ namespace Transidious
         Dictionary<int, TrafficSimulator.PathSegmentInfo> pathSegmentInfoMap;
 
         public Stop beginStop;
-        public Stop.Slot beginSlot;
-
         public Stop endStop;
-        public Stop.Slot endSlot;
-
+        
         public TimeSpan totalTravelTime;
         public bool isBackRoute = false;
 
@@ -38,7 +33,7 @@ namespace Transidious
 
         private static ColorGradient _lineGradient;
         
-        public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector3> positions,
+        public void Initialize(Line line, Stop beginStop, Stop endStop, List<Vector2> positions,
                                bool isBackRoute = false, int id = -1)
         {
             base.Initialize(MapObjectKind.Line, id, new Vector2());
@@ -46,14 +41,11 @@ namespace Transidious
             this.line = line;
             this.positions = positions;
             this.beginStop = beginStop;
-            this.beginSlot = null;
             this.endStop = endStop;
-            this.endSlot = null;
             this.transform.position = new Vector3(0, 0, 0);
             this.transform.SetParent(line.transform, false);
             this.isBackRoute = isBackRoute;
             this.name = "(" + line.name + ") " + beginStop.name + " -> " + endStop.name;
-            this.originalPath = path;
 
             this.pathSegmentInfoMap = new Dictionary<int, TrafficSimulator.PathSegmentInfo>();
             this.streetSegmentOffsetMap = new Dictionary<Tuple<StreetSegment, int>,
@@ -100,13 +92,13 @@ namespace Transidious
 
         public int AssociatedID => line.id;
 
-        public List<Vector3> CurrentPositions => overlapAwarePositions ?? positions;
+        public List<Vector2> CurrentPositions => overlapAwarePositions ?? positions;
 
         public List<float> CurrentWidths => overlapAwareWidths;
         
         public Distance distance => Distance.FromMeters(length);
 
-        public void UpdateMesh(Mesh mesh, List<Vector3> newPositions, List<float> newWidths)
+        public void UpdateMesh(Mesh mesh, List<Vector2> newPositions, List<float> newWidths)
         {
             this.mesh = mesh;
             overlapAwarePositions = newPositions;
@@ -276,8 +268,7 @@ namespace Transidious
             Initialize(map.GetMapObject<Line>((int)route.LineID),
                        map.GetMapObject<Stop>((int)route.BeginStopID),
                        map.GetMapObject<Stop>((int)route.EndStopID),
-                       route.Positions?.Select(
-                            v => new Vector3(v.X, v.Y, 0f)).ToList(),
+                       route.Positions?.Select(v => v.Deserialize()).ToList(),
                        false);
 
             for (var i = 0; i < route.PathSegmentInfoMap.Count; ++i)

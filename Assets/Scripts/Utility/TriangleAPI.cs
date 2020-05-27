@@ -13,7 +13,7 @@ namespace Transidious
 {
     public class PSLG
     {
-        public List<Vector3> vertices;
+        public List<Vector2> vertices;
         public List<int[]> segments;
         public List<PSLG> holes;
         public List<int> boundaryMarkersForPolygons;
@@ -23,14 +23,14 @@ namespace Transidious
 
         public PSLG(float z = 0)
         {
-            vertices = new List<Vector3>();
+            vertices = new List<Vector2>();
             segments = new List<int[]>();
             holes = new List<PSLG>();
             boundaryMarkersForPolygons = new List<int>();
             this.z = z;
         }
 
-        public PSLG(List<Vector3> vertices) : this()
+        public PSLG(List<Vector2> vertices) : this()
         {
             this.AddVertexLoop(vertices);
         }
@@ -139,7 +139,7 @@ namespace Transidious
                 var end = boundaryMarkersForPolygons[i + 1];
                 var verts = vertices.GetRange(start, end - start).ToArray();
 
-                Utility.DrawLine(verts, 1f, outlineColor, true);
+                Utility.DrawLine(verts, 1f, outlineColor, Map.Layer(MapLayer.Foreground), true);
             }
 
             foreach (var hole in holes)
@@ -180,10 +180,6 @@ namespace Transidious
                 {
                     return false;
                 }
-                if (!IsValidFloat(vert.z))
-                {
-                    return false;
-                }
             }
 
             foreach (var hole in holes)
@@ -197,12 +193,12 @@ namespace Transidious
             return true;
         }
 
-        bool IsSimple(IReadOnlyList<Vector3> vertices)
+        bool IsSimple(IReadOnlyList<Vector2> vertices)
         {
             return vertices.Distinct().Count() == vertices.Count;
         }
 
-        public void AddVertexLoop(List<Vector3> vertices)
+        public void AddVertexLoop(List<Vector2> vertices)
         {
             if (vertices.Count < 3)
             {
@@ -221,17 +217,17 @@ namespace Transidious
             segments.Add(new int[] { vertices.Count - 1 + segmentOffset, segmentOffset });
         }
 
-        public void AddOrderedVertices(Vector3[] vertices)
+        public void AddOrderedVertices(Vector2[] vertices)
         {
             if (vertices.Length < 3)
             {
                 return;
             }
 
-            AddVertexLoop(new List<Vector3>(vertices));
+            AddVertexLoop(new List<Vector2>(vertices));
         }
 
-        public void AddHole(List<Vector3> vertices)
+        public void AddHole(List<Vector2> vertices)
         {
             if (vertices.Count < 3)
                 return;
@@ -243,12 +239,12 @@ namespace Transidious
             holes.Add(hole);
         }
 
-        public void AddHole(Vector3[] vertices)
+        public void AddHole(Vector2[] vertices)
         {
             if (vertices.Length < 3)
                 return;
 
-            AddHole(new List<Vector3>(vertices));
+            AddHole(new List<Vector2>(vertices));
         }
 
         static readonly float SimplificationDistance = 0.001f;

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   modal: {fileID: 4378308304512550456}
-  _infoPanel: {fileID: 4237130314883558462}
-  _streetInfoPanel: {fileID: 8500057666464528128}
+  infoPanel: {fileID: 4237130314883558462}
+  streetInfoPanel: {fileID: 8500057666464528128}
 --- !u!1001 &1100964036217140001
 PrefabInstance:
   m_ObjectHideFlags: 0

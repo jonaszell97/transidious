@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 using Transidious.UI;
 
 namespace Transidious
@@ -16,11 +14,8 @@ namespace Transidious
         /// The info panel.
         public UIInfoPanel panel;
 
-        /// The resident list.
-        public UICitizenList residentList;
-
-        /// The current visitor list.
-        public UICitizenList visitorList;
+        /// The occupancy lists.
+        public UICitizenList[] occupancyLists;
 
 #if DEBUG
         private UIInfoPanel debugPanel;
@@ -31,8 +26,10 @@ namespace Transidious
             modal.Initialize();
             panel.Initialize();
 
-            residentList.Initialize("ui:building:residents");
-            visitorList.Initialize("ui:building:visitors");
+            for (var i = 0; i < (int) OccupancyKind._Last; ++i)
+            {
+                occupancyLists[i].Initialize($"ui:map_object:{(OccupancyKind)i}");
+            }
 
             var maxCharacters = 100;
             modal.titleInput.interactable = true;
@@ -101,56 +98,54 @@ namespace Transidious
             this.modal.SetTitle(building.name);
 
             string occupantsKey;
+            OccupancyKind occupancyKind;
+
             switch (building.type)
             {
             case Building.Type.Residential:
-            default:
                 occupantsKey = "ui:building:residents";
+                occupancyKind = OccupancyKind.Resident;
                 break;
             case Building.Type.Shop:
             case Building.Type.GroceryStore:
             case Building.Type.Hospital:
+            case Building.Type.Office:
+            case Building.Type.Industrial:
                 occupantsKey = "ui:building:workers";
+                occupancyKind = OccupancyKind.Worker;
                 break;
             case Building.Type.ElementarySchool:
             case Building.Type.HighSchool:
             case Building.Type.University:
                 occupantsKey = "ui:building:students";
+                occupancyKind = OccupancyKind.Student;
                 break;
-            case Building.Type.Stadium:
+            default:
                 occupantsKey = "ui:building:visitors";
+                occupancyKind = OccupancyKind.Visitor;
                 break;
             }
-
-            residentList.title.SetKey(occupantsKey);
 
             var occupantsItem = panel.GetItem("Occupants");
             occupantsItem.Key.SetKey(occupantsKey);
-            occupantsItem.Value.text = $"{building.ResidentCount} / {building.Capacity}";
+            occupantsItem.Value.text =
+                $"{building.GetOccupancyCount(occupancyKind)} / {building.GetCapacity(occupancyKind)}";
 
             this.panel.SetValue("Type", Translator.Get("ui:building:type:" + building.type.ToString()));
 
-            var residents = building.Residents;
-            var visitors = building.Visitors;
+            for (var i = 0; i < (int) OccupancyKind._Last; ++i)
+            {
+                var kind = (OccupancyKind) i;
+                var numOccupants = building.GetOccupancyCount(kind);
 
-            if (residents != null)
-            {
-                residentList.gameObject.SetActive(true);
-                residentList.SetCitizens(residents);
-            }
-            else
-            {
-                residentList.gameObject.SetActive(false);
-            }
-
-            if (visitors != null)
-            {
-                visitorList.gameObject.SetActive(true);
-                visitorList.SetCitizens(visitors);
-            }
-            else
-            {
-                visitorList.gameObject.SetActive(false);
+                if (numOccupants == 0)
+                {
+                    occupancyLists[i].gameObject.SetActive(false);
+                    continue;
+                }
+                
+                occupancyLists[i].gameObject.SetActive(true);
+                occupancyLists[i].SetCitizens(building.GetOccupants(kind));
             }
 
 #if DEBUG

@@ -150,14 +150,14 @@ namespace Transidious
                     streetType, 2, game.input.renderingDistance);
 
                 var mesh = MeshBuilder.CreateSmoothLine(
-                    new List<Vector3> { startPos, endPos },
+                    new List<Vector2> { startPos, endPos },
                     streetWidth, 10, 0f);
 
                 var meshFilter = inProgressStreetObj.GetComponent<MeshFilter>();
                 meshFilter.mesh = mesh;
 
                 var borderMesh = MeshBuilder.CreateSmoothLine(
-                    new List<Vector3> { startPos, endPos },
+                    new List<Vector2> { startPos, endPos },
                     streetWidth + StreetSegment.GetBorderWidth(streetType,
                         game.input.renderingDistance), 10, 0f);
 
@@ -286,7 +286,7 @@ namespace Transidious
 
             var street = game.loadedMap.CreateStreet("<new street>", streetType, false, 50, 2);
 
-            street.AddSegment(new List<Vector3> { startPos, endPos }, startIntersection, endIntersection);
+            street.AddSegment(new List<Vector2> { startPos, endPos }, startIntersection, endIntersection);
             street.CreateTextMeshes();
             street.segments.First().UpdateScale(game.input.renderingDistance);
             street.segments.First().UpdateTextScale(game.input.renderingDistance);

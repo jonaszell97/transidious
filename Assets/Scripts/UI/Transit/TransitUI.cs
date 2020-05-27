@@ -136,7 +136,7 @@ namespace Transidious
 
         void DrawLine(UILineListEntry entry)
         {
-            var worldPath = new List<Vector3>();
+            var worldPath = new List<Vector2>();
             foreach (var route in entry.line.routes)
             {
                 if (route.positions != null)

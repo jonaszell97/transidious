@@ -81,9 +81,11 @@ namespace Transidious
             for (var i = 0; i < childCount; ++i)
             {
                 var item = tf.GetChild(i);
-                var icon = item.GetChild(0).GetComponent<Image>();
-                var key = item.GetChild(1).GetComponent<UIText>();
-                var value = item.GetChild(2).GetComponent<TMP_Text>();
+
+                var itemChildCount = item.childCount;
+                var icon = itemChildCount > 0 ? item.GetChild(0).GetComponent<Image>() : null;
+                var key = itemChildCount > 1 ? item.GetChild(1).GetComponent<UIText>() : null;
+                var value = itemChildCount > 2 ? item.GetChild(2).GetComponent<TMP_Text>() : null;
 
                 items.Add(item.name, new Item() {
                     GameObject = item.gameObject,

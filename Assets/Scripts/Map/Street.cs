@@ -141,14 +141,14 @@ namespace Transidious
             if (seg.length < minWidth)
                 return null;
 
-            var pos = Vector3.zero;
+            var pos = Vector2.zero;
             var halfWidth = minWidth / 2f;
             var len = 0f;
             var middle = seg.length / 2f;
             var angle = 0f;
             var thresholdAngle = 7f;
             var isPositionUsable = false;
-            var direction = Vector3.zero;
+            var direction = Vector2.zero;
 
             for (int i = 1; i < seg.positions.Count; ++i)
             {
@@ -358,7 +358,7 @@ namespace Transidious
             }
         }
 
-        public StreetSegment AddSegment(List<Vector3> path,
+        public StreetSegment AddSegment(List<Vector2> path,
                                         StreetIntersection startIntersection,
                                         StreetIntersection endIntersection,
                                         int atPosition = -1,
@@ -398,7 +398,7 @@ namespace Transidious
 
         public void AddSegment(Serialization.StreetSegment seg)
         {
-            var newSeg = AddSegment(seg.Positions.Select(v => (Vector3)v.Deserialize()).ToList(),
+            var newSeg = AddSegment(seg.Positions.Select(v => v.Deserialize()).ToList(),
                                     map.GetMapObject<StreetIntersection>((int)seg.StartIntersectionID),
                                     map.GetMapObject<StreetIntersection>((int)seg.EndIntersectionID),
                                     -1, false,
@@ -463,7 +463,7 @@ namespace Transidious
                 MapObject = base.ToProtobuf(),
                 DisplayName = displayName ?? string.Empty,
                 Lit = lit,
-                Maxspeed = (uint)maxspeed.KPH,
+                Maxspeed = (uint)maxspeed.RealTimeKPH,
                 Lanes = (uint)lanes,
                 Type = (Serialization.Street.Types.Type)type,
             };
@@ -475,8 +475,8 @@ namespace Transidious
         public static Street Deserialize(Serialization.Street street, Map map)
         {
             var s = map.CreateStreet(street.MapObject.Name, (Type)street.Type, street.Lit,
-                                           (int)street.Maxspeed,
-                                           (int)street.Lanes, (int)street.MapObject.Id);
+                                     (int)street.Maxspeed,
+                                     (int)street.Lanes, (int)street.MapObject.Id);
 
             s.Deserialize(street.MapObject);
 

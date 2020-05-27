@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 namespace Transidious
 {
@@ -153,7 +154,8 @@ namespace Transidious
         }
 
         public static GameObject DrawLine(Vector3[] points, float lineWidth,
-                                          Color c, bool loop = false)
+                                          Color c, bool loop = false,
+                                          bool arrow = false)
         {
             if (!DrawingEnabled)
             {
@@ -176,9 +178,48 @@ namespace Transidious
             line.endColor = c;
             line.material = GameController.instance.GetUnlitMaterial(c);
             line.loop = loop;
-
             line.SetPositions(points);
+            
+            if (arrow)
+            {
+                DrawArrow(points[points.Length - 1], points.Last(), lineWidth, c);
+            }
 
+            return obj;
+        }
+
+        public static GameObject DrawLine(Vector2[] points, float lineWidth,
+                                          Color c, float z, bool loop = false,
+                                          bool arrow = false)
+        {
+            if (!DrawingEnabled)
+            {
+                return null;
+            }
+
+            var obj = new GameObject();
+            obj.name = "DebugLine";
+            obj.transform.position = new Vector3(0, 0, Map.Layer(MapLayer.Foreground, 9));
+
+            LineRenderer line = obj.GetComponent<LineRenderer>();
+            if (line == null)
+                line = obj.AddComponent<LineRenderer>();
+
+            line.useWorldSpace = false;
+            line.startWidth = lineWidth;
+            line.endWidth = lineWidth;
+            line.positionCount = points.Length;
+            line.startColor = c;
+            line.endColor = c;
+            line.material = GameController.instance.GetUnlitMaterial(c);
+            line.loop = loop;
+            line.SetPositions(points.Select(v => v.WithZ(z)).ToArray());
+
+            if (arrow)
+            {
+                DrawArrow(points[points.Length - 1], points.Last(), lineWidth, c);
+            }
+            
             return obj;
         }
 

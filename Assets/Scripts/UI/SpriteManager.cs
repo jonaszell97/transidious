@@ -45,13 +45,7 @@ namespace Transidious
                 return sprite;
             }
 
-            var tex = (Texture2D)Resources.Load(name);
-            if (tex == null)
-            {
-                return null;
-            }
-
-            sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+            sprite = Resources.Load<Sprite>(name);
             if (sprite != null)
             {
                 otherSprites.Add(name, sprite);

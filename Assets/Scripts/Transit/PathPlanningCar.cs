@@ -378,6 +378,23 @@ namespace Transidious.PathPlanning
 
             return seg.GetTravelTime(Distance.FromMeters(totalLength));
         }
+
+        public float DistanceFromStart
+        {
+            get
+            {
+                if (!partialStart)
+                {
+                    return 0f;
+                }
+
+                var sim = GameController.instance.sim.trafficSim;
+                var path = sim.StreetPathBuilder.GetPath(driveSegment.segment,
+                    sim.GetDefaultLane(driveSegment.segment, driveSegment.backward));
+
+                return path.GetDistanceFromStart(startPos);
+            }
+        }
         
         public override float GetCost(PathPlanningOptions options)
         {
@@ -420,8 +437,8 @@ namespace Transidious.PathPlanning
         public override TimeSpan EstimateDuration(PathPlanningOptions options)
         {
             var trafficSim = GameController.instance.sim.trafficSim;
-            var length = trafficSim.GetIntersectionLength(intersection, from.segment, to.segment);
-            
+            var length = trafficSim.StreetPathBuilder.GetIntersectionPath(intersection, from.segment, to.segment).Length;
+
             return Distance.FromMeters(length) / from.segment.AverageSpeed;
         }
         
@@ -447,7 +464,7 @@ namespace Transidious.PathPlanning
     {
         public MapObjectKind Kind => MapObjectKind.StreetSegment;
         public StreetSegment street;
-        public Vector3 pos;
+        public Vector2 pos;
         public int prevIdx;
 
         public IEnumerable<IRoute> Routes
@@ -656,7 +673,7 @@ namespace Transidious.PathPlanning
         
         public void DebugDraw()
         {
-            var positions = new List<Vector3>();
+            var positions = new List<Vector2>();
             foreach (var step in Steps)
             {
                 var c = Color.black;
@@ -665,8 +682,8 @@ namespace Transidious.PathPlanning
                 if (step is WalkStep)
                 {
                     var walk = step as WalkStep;
-                    positions.Add(new Vector3(walk.from.x, walk.from.y, 0f));
-                    positions.Add(new Vector3(walk.to.x, walk.to.y, 0f));
+                    positions.Add(new Vector2(walk.from.x, walk.from.y));
+                    positions.Add(new Vector2(walk.to.x, walk.to.y));
                     c = Color.green;
                 }
                 else if (step is PublicTransitStep transitStep)
@@ -676,7 +693,7 @@ namespace Transidious.PathPlanning
 
                     foreach (var route in transitStep.routes)
                     {
-                        positions.AddRange(route.positions);
+                        positions.AddRange(route.positions.Select(v => (Vector2)v));
                         route.line.SetTransparency(.5f);
                     }
                 }
@@ -695,7 +712,7 @@ namespace Transidious.PathPlanning
 
                 if (positions.Count != 0)
                 {
-                    Utility.DrawLine(positions.ToArray(), width, c);
+                    Utility.DrawLine(positions.ToArray(), width, c, Map.Layer(MapLayer.Foreground));
                     positions.Clear();
                 }
             }
@@ -1008,7 +1025,7 @@ namespace Transidious.PathPlanning
                 openSet.Remove(current);
                 closedSet.Add(current);
 
-                if (_router.IsHub(current))
+                if (_router?.IsHub(current) ?? false)
                 {
                     Debug.Log("using hub!");
                     var neighbor = _router.FindClosestHubInDirection(current.Location, goal.Location);
@@ -1133,16 +1150,16 @@ namespace Transidious.PathPlanning
             return new PathPlanningResult(options, time, new PlannedPath(new PathStep[] { walkStep }));
         }
 
-        public Tuple<Vector3, Math.PointPosition> GetPositionOnLane(PointOnStreet pointOnStreet, Vector2 loc)
+        public Tuple<Vector2, Math.PointPosition> GetPositionOnLane(PointOnStreet pointOnStreet, Vector2 loc)
         {
             var street = pointOnStreet.street;
             var closestPtAndPosFrom = street.GetClosestPointAndPosition(loc);
-            var positions = GameController.instance.sim.trafficSim.GetPath(
-                street, closestPtAndPosFrom.Item2 == Math.PointPosition.Right
+            var positions = GameController.instance.sim.trafficSim.StreetPathBuilder.GetPath(
+                street, (closestPtAndPosFrom.Item2 == Math.PointPosition.Right || street.OneWay)
                     ? street.RightmostLane 
                     : street.LeftmostLane);
 
-            return StreetSegment.GetClosestPointAndPosition(loc, positions);
+            return StreetSegment.GetClosestPointAndPosition(loc, positions.Points);
         }
 
         IMapObject FindNearestParkingLot(Vector2 pos)
@@ -1152,7 +1169,7 @@ namespace Transidious.PathPlanning
                 if (f.type != NaturalFeature.Type.Parking)
                     return false;
 
-                return f.VisitorCount < f.Capacity;
+                return f.HasCapacity(OccupancyKind.ParkingCitizen);
             });
 
             Debug.Assert(found, "no parking lot found");

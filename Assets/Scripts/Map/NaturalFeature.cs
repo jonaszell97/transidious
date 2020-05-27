@@ -26,6 +26,7 @@ namespace Transidious
 
         public Type type;
         public Mesh mesh;
+        public int Capacity;
 
         public void UpdateMesh(Map map)
         {
@@ -65,6 +66,17 @@ namespace Transidious
             this.type = type;
             this.mesh = mesh;
             this.Capacity = GetDefaultCapacity();
+        }
+
+        public override int GetCapacity(OccupancyKind kind)
+        {
+            if ((type != Type.Parking && kind == OccupancyKind.Visitor)
+                || (type == Type.Parking && kind == OccupancyKind.ParkingCitizen))
+            {
+                return Capacity;
+            }
+
+            return 0;
         }
 
         public override Color GetColor()
@@ -203,10 +215,11 @@ namespace Transidious
             {
                 return;
             }
-            
-            if (MainUI.instance.featureModal.feature == this)
+
+            var modal = MainUI.instance.featureModal;
+            if (modal.modal.Active && modal.feature == this)
             {
-                MainUI.instance.featureModal.modal.Disable();
+                modal.modal.Disable();
                 return;
             }
 

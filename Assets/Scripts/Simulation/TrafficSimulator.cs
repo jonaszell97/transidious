@@ -21,38 +21,59 @@ namespace Transidious
 
         public class DrivingCar
         {
+            /// The active path this car belongs to.
             public ActivePath path;
-            public Car car;
-            public StreetSegment segment;
-            public bool backward;
-            public DrivingCar next;
-            public DrivingCar prev;
-            public int lane;
-            public float distanceFromStart;
-            public TrafficLight waitingForTrafficLight;
             
+            /// The car model.
+            public Car car;
+
+            /// Whether or not this car was newly spawned.
+            public bool newlySpawned = true;
+
+            /// The segment this car is currently driving on.
+            public StreetSegment segment;
+            
+            /// Whether or not the car is driving backwards wrt to the direction of the segment.
+            public bool backward;
+            
+            /// The next car on the same segment or intersection.
+            public DrivingCar next;
+            
+            /// The previous car on the same segment or intersection.
+            public DrivingCar prev;
+            
+            /// The lane the car is driving on.
+            public int lane;
+            
+            /// The distance from the start of the segment or intersection.
+            public float distanceFromStart;
+
+            /// The red traffic light this car is waiting on.
+            public TrafficLight waitingForTrafficLight;
+
+            /// The next segment on the path (following an intersection).
             public StreetSegment nextSegment;
+            
+            /// The next intersection on the path.
             public StreetIntersection nextIntersection;
+            
+            /// The type of the next turn.
             public TurnType? nextTurn;
+            
+            /// The lane of the next step on the path.
             public int nextLane;
 
             public Velocity CurrentVelocity => path.CurrentVelocity;
 
-            public Vector2 CurrentDirection => path.CurrentDirection;
-
-            public float Acceleration => car.Acceleration;
+            public float Acceleration => car.Acceleration.MPS2;
 
             public Vector2 CurrentPosition => path.transform.position;
 
             public float Length => path.Bounds.size.y;
 
-            public float DistanceToNextCar => next != null
-                ? (next.CurrentPosition - CurrentPosition).magnitude - next.Length * .5f - Length * .5f 
-                : 0f;
-
             public float DistanceToIntersection => DistanceToGoal;
 
-            public float DistanceToGoal => path.PathFollowingHelper.threshold - path.PathFollowingHelper.progress;
+            public float DistanceToGoal => path.PathFollowingHelper.Threshold - path.PathFollowingHelper.Progress;
 
             public bool Turning => path.currentStep is TurnStep;
         }
@@ -79,8 +100,11 @@ namespace Transidious
                 var firstCar = GetDrivingCars(car.nextSegment)[car.nextLane];
                 if (firstCar != null)
                 {
+                    var intersectionPath = StreetPathBuilder.GetIntersectionPath(
+                        car.nextIntersection, car.segment, car.nextSegment);
+
                     var distance = car.DistanceToIntersection
-                                   + GetIntersectionLength(car.nextIntersection, car.segment, car.nextSegment)
+                                   + intersectionPath.Length
                                    + firstCar.distanceFromStart;
                     
                     return Tuple.Create(firstCar, distance);
@@ -117,6 +141,9 @@ namespace Transidious
         /// List of all traffic lights.
         public Dictionary<int, TrafficLight> trafficLights;
 
+        /// Build for street paths.
+        public StreetPathBuilder StreetPathBuilder;
+
         /// List of computed paths on a street, from stop line to stop line. One for each lane.
         Dictionary<StreetSegment, Vector3[][]> computedPaths;
 
@@ -131,13 +158,7 @@ namespace Transidious
         public bool displayPathMetrics;
 #endif
 
-        public float CurrentTrafficFactor
-        {
-            get
-            {
-                return GetTrafficFactor(sim.GameTime.Hour);
-            }
-        }
+        public float CurrentTrafficFactor => GetTrafficFactor(sim.GameTime.Hour);
 
         void Awake()
         {
@@ -146,6 +167,7 @@ namespace Transidious
             this.computedPaths = new Dictionary<StreetSegment, Vector3[][]>();
             this.computedIntersectionPaths = new Dictionary<StreetIntersection, Vector3[][][][]>();
             this.intersectionPathLengths = new Dictionary<StreetIntersection, float[][]>();
+            StreetPathBuilder = new StreetPathBuilder();
         }
 
         void Start()
@@ -165,7 +187,7 @@ namespace Transidious
 #endif
         }
 
-        public float GetTrafficFactor(int hour)
+        private static float GetTrafficFactor(int hour)
         {
             switch (hour)
             {
@@ -215,20 +237,7 @@ namespace Transidious
             return lane >= (seg.street.lanes / 2);
         }
 
-        public float GetDistanceFromStart(StreetSegment seg, Vector3 pos, int lane)
-        {
-            var dist = Mathf.Min(seg.GetDistanceFromStart(pos), seg.length);
-            if (IsRightLane(seg, lane))
-            {
-                return dist;
-            }
-            else
-            {
-                return seg.length - dist;
-            }
-        }
-
-        DrivingCar[] GetDrivingCars(StreetSegment seg)
+        public DrivingCar[] GetDrivingCars(StreetSegment seg)
         {
             if (!drivingCars.TryGetValue(seg.id, out DrivingCar[] cars))
             {
@@ -239,12 +248,12 @@ namespace Transidious
             return cars;
         }
 
-        DrivingCar GetDrivingCars(StreetSegment seg, int lane)
+        public DrivingCar GetDrivingCars(StreetSegment seg, int lane)
         {
             return GetDrivingCars(seg)[lane];
         }
 
-        DrivingCar[] GetCarsOnIntersection(StreetIntersection intersection)
+        public DrivingCar[] GetCarsOnIntersection(StreetIntersection intersection)
         {
             if (!drivingCars.TryGetValue(intersection.id, out DrivingCar[] cars))
             {
@@ -255,7 +264,7 @@ namespace Transidious
             return cars;
         }
         
-        DrivingCar GetFirstCarOnIntersection(StreetIntersection intersection, StreetSegment from, StreetSegment to)
+        public DrivingCar GetFirstCarOnIntersection(StreetIntersection intersection, StreetSegment from, StreetSegment to)
         {
             var cars = GetCarsOnIntersection(intersection);
             var fromIdx = intersection.RelativePosition(from);
@@ -276,19 +285,6 @@ namespace Transidious
 
         public class PathSegmentInfo
         {
-            [System.Serializable]
-            public struct Serializable
-            {
-                public int segmentID;
-                public int lane;
-                public int offset;
-                public int length;
-                public bool partialStart;
-                public bool partialEnd;
-                public bool backward;
-                public SerializableVector2 direction;
-            }
-
             public StreetSegment segment;
             public int lane;
             public int offset;
@@ -297,36 +293,6 @@ namespace Transidious
             public bool partialEnd;
             public bool backward;
             public Vector2 direction;
-
-            public Serializable Serialize()
-            {
-                Debug.Assert(length > 1);
-
-                return new Serializable
-                {
-                    segmentID = segment.id,
-                    lane = lane,
-                    offset = offset,
-                    length = length,
-                    partialStart = partialStart,
-                    partialEnd = partialEnd,
-                    backward = backward,
-                    direction = new SerializableVector2(direction),
-                };
-            }
-
-            public PathSegmentInfo(Serializable data)
-            {
-                segment = GameController.instance.loadedMap.GetMapObject<StreetSegment>(
-                    data.segmentID);
-                lane = data.lane;
-                offset = data.offset;
-                length = data.length;
-                partialStart = data.partialStart;
-                partialEnd = data.partialEnd;
-                backward = data.backward;
-                direction = data.direction.ToVector();
-            }
 
             public PathSegmentInfo(Serialization.Route.Types.PathSegmentInfo data)
             {
@@ -347,16 +313,15 @@ namespace Transidious
             }
         }
 
-        public List<Vector3> GetCompletePath(PathPlanningResult result,
+        public List<Vector2> GetCompletePath(PathPlanningResult result,
                                              List<PathSegmentInfo> crossedSegments = null)
         {
-            var path = new List<Vector3>();
-
+            var path = new List<Vector2>();
             foreach (var step in result.path.Steps)
             {
                 StreetSegment nextSegment;
                 GetStepPath(step, out nextSegment, out bool backward, out bool finalStep, out int lane,
-                            out List<Vector3> positions, out bool partialStart, out bool partialEnd,
+                            out List<Vector2> positions, out bool partialStart, out bool partialEnd,
                             out Vector2 direction);
 
                 if (positions != null)
@@ -383,371 +348,24 @@ namespace Transidious
             return path;
         }
 
-        public Vector3[] GetPath(StreetSegment seg, int lane)
+        public void EnterStreetSegment(DrivingCar newCar,
+                                       Car car, StreetSegment seg,
+                                       float distanceFromStart, int lane,
+                                       ActivePath path, PathStep nextStep)
         {
-            if (!computedPaths.TryGetValue(seg, out Vector3[][] paths))
-            {
-                paths = ComputePaths(seg);
-                computedPaths.Add(seg, paths);
-            }
+            Logger.Log(Logger.LogType.TrafficSim, $"[{newCar.GetHashCode()}] Entering segment {seg.name}");
 
-            return paths[lane];
-        }
-
-        static Tuple<Vector3, Vector3> GetOffsetPoints(StreetSegment seg, int lane, Vector3 p0, Vector3 p1)
-        {
-            var lanes = seg.street.lanes;
-            var halfLanes = lanes / 2;
-            var offset = seg.GetStreetWidth(RenderingDistance.Near) / lanes;
-            var isLeftLane = lane < halfLanes;
-
-            int laneOffset = seg.LanePositionFromMiddle(lane, true);
-
-            var currentOffset = offset * laneOffset;
-            if (isLeftLane)
-            {
-                currentOffset = -currentOffset;
-            }
-
-            return GetOffsetPoints(p0, p1, currentOffset, out Vector3 _);
-        }
-
-        static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
-                                                       float currentOffset, out Vector3 perpendicular)
-        {
-            var dir = p1 - p0;
-            var perpendicular2d = -Vector2.Perpendicular(new Vector2(dir.x, dir.y)).normalized;
-            perpendicular = new Vector3(perpendicular2d.x, perpendicular2d.y, 0f);
-
-            p0 = p0 + (perpendicular * currentOffset);
-            p1 = p1 + (perpendicular * currentOffset);
-
-            return new Tuple<Vector3, Vector3>(p0, p1);
-        }
-
-        static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
-                                                       float currentOffset, Vector3 prevPerpendicular,
-                                                       out Vector3 perpendicular)
-        {
-            var dir = p1 - p0;
-            var perpendicular2d = -Vector2.Perpendicular(new Vector2(dir.x, dir.y)).normalized;
-            perpendicular = new Vector3(perpendicular2d.x, perpendicular2d.y, 0f);
-
-            var mid = (perpendicular + prevPerpendicular).normalized;
-            perpendicular = mid;
-
-            p0 = p0 + (mid * currentOffset);
-            p1 = p1 + (mid * currentOffset);
-
-            return new Tuple<Vector3, Vector3>(p0, p1);
-        }
-
-        static List<Vector3> ComputePath(StreetSegment seg, int lane, float offset)
-        {
-            var segPositions = seg.drivablePositions;
-
-            var lanes = seg.street.lanes;
-            var halfLanes = lanes / 2;
-            var isLeftLane = lane < halfLanes;
-            var laneOffset = seg.LanePositionFromMiddle(lane, true);
-
-            var currentOffset = offset * laneOffset;
-            if (isLeftLane)
-            {
-                currentOffset = -currentOffset;
-            }
-
-            var positions = new List<Vector3>();
-            var perpendicular = Vector3.zero;
-
-            for (int j = 1; j < segPositions.Count; ++j)
-            {
-                Vector3 p0 = segPositions[j - 1];
-                Vector3 p1 = segPositions[j];
-
-                if (j == 1)
-                {
-                    var offsetPoints = GetOffsetPoints(p0, p1, currentOffset, out perpendicular);
-                    positions.Add(offsetPoints.Item1);
-                    positions.Add(offsetPoints.Item2);
-                }
-                else
-                {
-                    var offsetPoints = GetOffsetPoints(p0, p1, currentOffset, perpendicular,
-                                                       out perpendicular);
-
-                    positions.Add(offsetPoints.Item2);
-                }
-            }
-
-            return positions;
-        }
-
-        Vector3[][] ComputePaths(StreetSegment seg)
-        {
-            var paths = new Vector3[seg.street.lanes][];
-            var lanes = seg.street.lanes;
-            var halfLanes = lanes / 2;
-            var offset = seg.GetStreetWidth(RenderingDistance.Near) / lanes;
-            var segPositions = seg.drivablePositions;
-
-            var positions = new List<Vector3>();
-            for (int lane = 0; lane < lanes; ++lane)
-            {
-                var isLeftLane = lane < halfLanes;
-                var laneOffset = seg.LanePositionFromMiddle(lane, true);
-
-                var currentOffset = offset * laneOffset;
-                if (isLeftLane)
-                {
-                    currentOffset = -currentOffset;
-                }
-
-                var perpendicular = Vector3.zero;
-                for (int j = 1; j < segPositions.Count; ++j)
-                {
-                    Vector3 p0 = segPositions[j - 1];
-                    Vector3 p1 = segPositions[j];
-
-                    if (j == 1)
-                    {
-                        var offsetPoints = GetOffsetPoints(p0, p1, currentOffset, out perpendicular);
-                        positions.Add(offsetPoints.Item1);
-                        positions.Add(offsetPoints.Item2);
-                    }
-                    else
-                    {
-                        var offsetPoints = GetOffsetPoints(p0, p1, currentOffset, perpendicular,
-                                                           out perpendicular);
-
-                        positions.Add(offsetPoints.Item2);
-                    }
-                }
-
-                paths[lane] = positions.ToArray();
-                positions.Clear();
-            }
-
-            return paths;
-        }
-
-        public Vector3[] GetPath(StreetIntersection intersection,
-                                 StreetSegment from, StreetSegment to,
-                                 int lane)
-        {
-            if (!computedIntersectionPaths.TryGetValue(intersection, out Vector3[][][][] paths))
-            {
-                paths = ComputeIntersectionPaths(intersection);
-            }
-
-            return paths[intersection.RelativePosition(from)]
-                [from.LanePositionFromMiddle(lane) - 1]
-                [intersection.RelativePosition(to)];
-        }
-
-        public float GetIntersectionLength(StreetIntersection intersection, StreetSegment from, StreetSegment to)
-        {
-            if (!computedIntersectionPaths.TryGetValue(intersection, out Vector3[][][][] paths))
-            {
-                ComputeIntersectionPaths(intersection);
-            }
-
-            return intersectionPathLengths[intersection][intersection.RelativePosition(from)]
-                [intersection.RelativePosition(to)];
-        }
-
-        public Vector3[][][][] ComputeIntersectionPaths(StreetIntersection intersection)
-        {
-            var paths = new Vector3[intersection.NumIntersectingStreets][][][];
-            var lengths = new float[intersection.NumIntersectingStreets][];
-            
-            var currentPath = new List<Vector3>();
-
-            foreach (var from in intersection.IncomingStreets)
-            {
-                var fromLanes = from.street.lanes;
-                var fromLanesPerDirection = from.LanesPerDirection;
-
-                var idx = intersection.RelativePosition(from);
-                ref var fromPaths = ref paths[idx];
-                fromPaths = new Vector3[fromLanesPerDirection][][];
-
-                ref var fromLengths = ref lengths[idx];
-                fromLengths = new float[intersection.NumIntersectingStreets];
-
-                var endsHere = from.endIntersection == intersection;
-
-                int fromLane = fromLanesPerDirection;
-                if (from.IsOneWay)
-                {
-                    --fromLane;
-                    Debug.Assert(endsHere, "invalid one-way street!");
-                }
-                else if (!endsHere)
-                {
-                    --fromLane;
-                }
-
-                while (true)
-                {
-                    idx = from.LanePositionFromMiddle(fromLane) - 1;
-                    ref var toPaths = ref fromPaths[idx];
-                    toPaths = new Vector3[intersection.NumIntersectingStreets][];
-
-                    var i = 0;
-                    foreach (var to in intersection.OutgoingStreets)
-                    {
-                        var uturn = false;
-                        if (from == to)
-                        {
-                            if (endsHere && !from.StartUTurnAllowed)
-                            {
-                                continue;
-                            }
-                            if (!endsHere && !from.EndUTurnAllowed)
-                            {
-                                continue;
-                            }
-
-                            uturn = true;
-                        }
-                        
-                        var toLanes = to.street.lanes;
-                        var toLanesHalf = to.LanesPerDirection;
-
-                        int toLane;
-                        var distanceFromMiddle = from.LanePositionFromMiddle(fromLane);
-
-                        if (uturn)
-                        {
-                            toLane = endsHere ? fromLane : from.MirrorLane(fromLane);
-                        }
-                        else if (from.LanesPerDirection == to.LanesPerDirection)
-                        {
-                            // Use equivalent lane
-                            if (to.IsOneWay)
-                            {
-                                toLane = distanceFromMiddle - 1;
-                            }
-                            else
-                            {
-                                toLane = toLanesHalf + distanceFromMiddle - 1;
-                            }
-                        }
-                        else
-                        {
-                            // Use rightmost lane
-                            toLane = to.RightmostLane;
-                        }
-
-                        Vector2 p0_A, p1_A, p0_B, p1_B;
-                        var incomingPath = GetPath(from, fromLane);
-
-                        if (endsHere)
-                        {
-                            p0_A = incomingPath[incomingPath.Length - 2];
-                            p1_A = incomingPath[incomingPath.Length - 1];
-                        }
-                        else
-                        {
-                            p0_A = incomingPath[1];
-                            p1_A = incomingPath[0];
-                        }
-
-                        if (to.startIntersection == intersection)
-                        {
-                            var outgoingPath = GetPath(to, toLane);
-
-                            p0_B = outgoingPath[0];
-                            p1_B = outgoingPath[1];
-                        }
-                        else
-                        {
-                            var outgoingPath = GetPath(to, to.MirrorLane(toLane));
-
-                            p0_B = outgoingPath[outgoingPath.Length - 1];
-                            p1_B = outgoingPath[outgoingPath.Length - 2];
-                        }
-
-                        // If the streets are almost parallel, an intersection point 
-                        // might not make sense.
-                        if (uturn)
-                        {
-                            var controlPt1 = p1_A + (p1_A - p0_A).normalized * 5f;
-                            var controlPt2 = p0_B + (p0_B - p1_B).normalized * 5f;
-
-                            MeshBuilder.AddCubicBezierCurve(currentPath,
-                                p1_A, p0_B, controlPt1, controlPt2, 8, false);
-                        }
-                        else if (!Math.EquivalentAngles(p0_A, p1_A, p0_B, p1_B, 10f))
-                        {
-                            var intPt = Math.GetIntersectionPoint(
-                                p0_A, p1_A, p0_B, p1_B, out bool found);
-
-                            Debug.Assert(found, "streets do not intersect!");
-
-                            MeshBuilder.AddQuadraticBezierCurve(
-                                currentPath, p1_A, p0_B, intPt, 8, false);
-                        }
-                        else
-                        {
-                            // currentPath.Add(p1_A);
-
-                            var dir = p0_B - p1_A;
-                            currentPath.Add(p1_A + (dir * .25f));
-                            currentPath.Add(p1_A + (dir * .75f));
-
-                            // currentPath.Add(p0_B);
-                        }
-
-                        idx = intersection.RelativePosition(to);
-                        toPaths[idx] = currentPath.ToArray();
-                        fromLengths[idx] = Math.PathLength(currentPath);
-
-                        currentPath.Clear();
-                    }
-
-                    if (!endsHere || from.IsOneWay)
-                    {
-                        --fromLane;
-                        if (fromLane < 0)
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        ++fromLane;
-                        if (fromLane == fromLanes)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-
-            computedIntersectionPaths.Add(intersection, paths);
-            intersectionPathLengths.Add(intersection, lengths);
-
-            return paths;
-        }
-
-        public DrivingCar EnterStreetSegment(Car car, StreetSegment seg,
-                                             Vector3 pos, int lane,
-                                             ActivePath path)
-        {
-            var distanceFromStart = GetDistanceFromStart(seg, pos, lane);
-            var newCar = new DrivingCar
-            {
-                path = path,
-                car = car,
-                segment = seg,
-                distanceFromStart = distanceFromStart,
-                lane = lane
-            };
+            newCar.distanceFromStart = distanceFromStart;
+            newCar.segment = seg;
+            newCar.car = car;
+            newCar.lane = lane;
+            newCar.path = path;
+            newCar.nextIntersection = null;
+            newCar.nextSegment = null;
+            newCar.nextTurn = null;
+            newCar.nextLane = 0;
 
             var cars = GetDrivingCars(seg);
-
             var firstCar = cars[lane];
             if (firstCar == null)
             {
@@ -775,19 +393,30 @@ namespace Transidious
                 newCar.prev = firstCar;
             }
 
-            if (path.nextStep is TurnStep turnStep)
+            if (nextStep is TurnStep turnStep)
             {
                 newCar.nextIntersection = turnStep.intersection;
                 newCar.nextSegment = turnStep.to.segment;
                 newCar.nextTurn = GetTurnType(newCar.segment, newCar.nextSegment, newCar.nextIntersection);
                 newCar.nextLane = GetDefaultLane(newCar.nextSegment, turnStep.to.backward);
             }
+        }
 
+        public DrivingCar EnterStreetSegment(Car car, StreetSegment seg,
+                                             float distanceFromStart, int lane,
+                                             ActivePath path, PathStep nextStep)
+        {
+            var newCar = new DrivingCar();
+            newCar.newlySpawned = true;
+
+            EnterStreetSegment(newCar, car, seg, distanceFromStart, lane, path, nextStep);
             return newCar;
         }
 
         public void ExitStreetSegment(StreetSegment seg, DrivingCar car)
         {
+            Logger.Log(Logger.LogType.TrafficSim, $"[{car.GetHashCode()}] Exiting segment {seg.name}");
+
             var cars = GetDrivingCars(seg);
             if (car.prev == null)
             {
@@ -853,9 +482,12 @@ namespace Transidious
 
         public void EnterIntersection(DrivingCar drivingCar, StreetIntersection intersection)
         {
+            Logger.Log(Logger.LogType.TrafficSim, $"[{drivingCar.GetHashCode()}] Entering intersection {intersection.name}");
+
             var firstCar = GetFirstCarOnIntersection(intersection, drivingCar.segment, drivingCar.nextSegment);
             drivingCar.next = null;
             drivingCar.prev = null;
+            drivingCar.distanceFromStart = 0f;
 
             if (firstCar != null)
             {
@@ -868,16 +500,13 @@ namespace Transidious
 
         public void ExitIntersection(DrivingCar car, StreetIntersection intersection)
         {
+            Logger.Log(Logger.LogType.TrafficSim, $"[{car.GetHashCode()}] Exiting intersection {intersection.name}");
+
+            // FIXME: Technically, this should never happen. No idea why it sometimes does though.
             if (car.next != null)
             {
-                GameController.instance.EnterPause();
-                GameController.instance.input.SetCameraPosition(car.CurrentPosition);
-                GameController.instance.input.SetZoomLevel(InputController.minZoom);
-                car.path.citizen.ActivateModal();
-                return;
+                car.next.prev = car.prev;
             }
-            
-            Debug.Assert(car.next == null, "only last car can exit intersection!");
 
             if (car.prev == null)
             {
@@ -904,7 +533,7 @@ namespace Transidious
 
         public void GetStepPath(PathStep step, out StreetSegment segment,
                                 out bool backward, out bool finalStep,
-                                out int lane, out List<Vector3> positions,
+                                out int lane, out List<Vector2> positions,
                                 out bool partialStart, out bool partialEnd,
                                 out Vector2 direction)
         {
@@ -913,144 +542,30 @@ namespace Transidious
             partialEnd = false;
             direction = new Vector2();
 
-            if (step is DriveStep)
+            if (step is DriveStep driveStep)
             {
-                var drive = step as DriveStep;
-
-                segment = drive.driveSegment.segment;
-                backward = drive.driveSegment.backward;
+                segment = driveStep.driveSegment.segment;
+                backward = driveStep.driveSegment.backward;
                 lane = GetDefaultLane(segment, backward);
 
-                positions = GetPath(segment, lane).ToList();
-                if (backward)
-                {
-                    positions.Reverse();
-                }
+                positions = StreetPathBuilder.GetPath(segment, lane).Points.ToList();
             }
-            else if (step is PartialDriveStep)
+            else if (step is PartialDriveStep partialDriveStep)
             {
-                var drive = step as PartialDriveStep;
-                finalStep = drive.partialEnd;
-
-                partialStart = drive.partialStart;
-                partialEnd = drive.partialEnd;
-
-                segment = drive.driveSegment.segment;
-                backward = drive.driveSegment.backward;
+                segment = partialDriveStep.driveSegment.segment;
+                backward = partialDriveStep.driveSegment.backward;
                 lane = GetDefaultLane(segment, backward);
 
-                var path = GetPath(segment, lane);
-                if (backward)
-                {
-                    path = path.Reverse().ToArray();
-                }
-
-                var minIdx = 0;
-                Vector3 startPos;
-
-                if (partialStart)
-                {
-                    var startDistance = ((Vector3)drive.startPos - path[0]).sqrMagnitude;
-                    for (int i = 0; i < path.Length; ++i)
-                    {
-                        var pt = path[i];
-                        var dist = (pt - path[0]).sqrMagnitude;
-                        var cmp = dist.CompareTo(startDistance);
-
-                        if (cmp > 0)
-                        {
-                            minIdx = i;
-                            break;
-                        }
-                        else if (cmp == 0)
-                        {
-                            minIdx = i + 1;
-                            break;
-                        }
-                    }
-
-                    startPos = drive.startPos;
-                }
-                else
-                {
-                    startPos = path.First();
-                }
-
-                var maxIdx = path.Length;
-                Vector3 endPos;
-
-                if (partialEnd)
-                {
-                    var endDistance = ((Vector3)drive.endPos - path[0]).sqrMagnitude;
-                    for (int i = 0; i < path.Length; ++i)
-                    {
-                        var pt = path[i];
-                        var dist = (pt - path[0]).sqrMagnitude;
-                        var cmp = dist.CompareTo(endDistance);
-
-                        if (cmp >= 0)
-                        {
-                            maxIdx = i;
-                            break;
-                        }
-                    }
-
-                    endPos = drive.endPos;
-                }
-                else
-                {
-                    endPos = path.Last();
-                }
-                
-                positions = new List<Vector3>();
-
-                // This can happen when the the start and end position are the first position on
-                // the street, which is technically still a valid path since an intersection will be
-                // crossed.
-                if (startPos.Equals(endPos))
-                {
-                    if (startPos.Equals(path.First()))
-                    {
-                        partialStart = false;
-                        partialEnd = true;
-                        direction = (path[1] - startPos).normalized;
-                    }
-                    else
-                    {
-                        Debug.Assert(startPos.Equals(path.Last()));
-                        partialStart = true;
-                        partialEnd = false;
-                        direction = (endPos - path[path.Length - 2]).normalized;
-                    }
-
-                    // FIXME is there a better fix for this? Seems a tad hacky
-                    positions.Add(startPos);
-                    positions.Add(startPos + (Vector3)(direction * .001f));
-
-                    return;
-                }
-
-                if (partialStart)
-                {
-                    positions.Add(startPos);
-                }
-
-                for (int i = minIdx; i < maxIdx; ++i)
-                {
-                    positions.Add(path[i]);
-                }
-
-                if (partialEnd)
-                {
-                    positions.Add(endPos);
-                }
+                positions = StreetPathBuilder.GetPath(segment, lane).Points.ToList();
             }
             else if (step is TurnStep turnStep)
             {
                 segment = null;
                 backward = false;
                 lane = GetDefaultLane(turnStep.from.segment, turnStep.from.backward);
-                positions = GetIntersectionPath(turnStep, lane);
+
+                positions = new List<Vector2>();
+                StreetPathBuilder.GetStepPath(turnStep).AddPoints(positions, 5);
             }
             else
             {
@@ -1059,11 +574,6 @@ namespace Transidious
                 positions = null;
                 lane = 0;
             }
-        }
-
-        public List<Vector3> GetIntersectionPath(TurnStep step, int lane)
-        {
-            return GetPath(step.intersection, step.from.segment, step.to.segment, lane).ToList();
         }
 
         float sStar(float s0, float T, float v, float deltaV, float a)
@@ -1565,9 +1075,12 @@ namespace Transidious
         float GetNextCarTerm(DrivingCar car, Tuple<DrivingCar, float> nextCarAndDistance, float v_alpha, float a)
         {
             // Net distance to next vehicle.
-            float s_alpha = Mathf.Max(car.Length * 0.5f, 
-                nextCarAndDistance.Item2 - car.Length * 0.5f - nextCarAndDistance.Item1.Length * .5f);
+            float s_alpha = nextCarAndDistance.Item2;
+            Debug.Assert(s_alpha >= 0f, $"negative distance to next car {s_alpha}");
 
+            // float s_alpha = Mathf.Max(car.Length * 0.5f, 
+            //     nextCarAndDistance.Item2 - car.Length * 0.5f - nextCarAndDistance.Item1.Length * .5f);
+            
             // Approaching rate.
             float deltaV = v_alpha - nextCarAndDistance.Item1.CurrentVelocity.RealTimeMPS;
 
@@ -1640,16 +1153,16 @@ namespace Transidious
             var sum = k1;
             var cnt = 1;
 
-            for (int i = 0; i < order - 2; ++i)
-            {
-                k2 = RungeKutta_k2(car, 1f, yn, k2);
-                sum += 2 * k2;
-                cnt += 2;
-            }
-
-            var k3 = RungeKutta_k3(car, 1f, yn, k2);
-            sum += k3;
-            cnt += 1;
+            // for (int i = 0; i < order - 2; ++i)
+            // {
+            //     k2 = RungeKutta_k2(car, 1f, yn, k2);
+            //     sum += 2 * k2;
+            //     cnt += 2;
+            // }
+            //
+            // var k3 = RungeKutta_k3(car, 1f, yn, k2);
+            // sum += k3;
+            // cnt += 1;
 
             var acceleration = sum / cnt;
             var velocity = yn + acceleration;
@@ -1738,13 +1251,7 @@ namespace Transidious
                     txt = path.transform.GetChild(0).GetComponent<TMP_Text>();
                 }
 
-                if (path._drivingState.drivingCar.Turning)
-                {
-                    txt.text = "";
-                    continue;
-                }
-
-                var dc = path._drivingState.drivingCar;
+                var dc = path._drivingCar;
                 var pos = 0;
                 var n = 0;
 
@@ -1761,11 +1268,6 @@ namespace Transidious
                 {
                     current = current.next;
                     ++n;
-                }
-
-                if (pos == 1)
-                {
-                    Debug.Assert(dc == GetDrivingCars(dc.segment)[dc.lane], "not first");
                 }
 
                 txt.text = pos + " / " + n;

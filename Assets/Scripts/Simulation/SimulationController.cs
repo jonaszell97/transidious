@@ -427,7 +427,7 @@ namespace Transidious
         {
             var driver = citizens[c.DriverId];
             var car = new Car(this, driver, c.Color?.Deserialize() ?? RNG.RandomColor,
-                              (int)c.CarModel, c.Id);
+                              (int)c.CarModel, c.Id, (int)c.BehaviourID);
 
             if (c.ParkingLotID != 0)
             {
@@ -479,7 +479,7 @@ namespace Transidious
             foreach (var building in buildings)
             {
                 var distance = (building.centroid - pos).sqrMagnitude;
-                if (distance < minDistance && (ignoreOccupancy || building.ResidentCount < building.Capacity))
+                if (distance < minDistance && (ignoreOccupancy || building.HasCapacity(OccupancyKind.Resident)))
                 {
                     minDistance = distance;
                     closestBuilding = building;

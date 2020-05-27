@@ -286,4 +286,60 @@ namespace Transidious
             return Velocity.FromMPS(v.MPS / f);
         }
     }
+    
+    public struct Acceleration
+    {
+        /// The internal acceleration (in meters per second^2).
+        private float _mps2;
+
+        public static Acceleration zero => new Acceleration {_mps2 = 0};
+
+        /// Create a velocity from real-time mps^2.
+        public static Acceleration FromRealTimeMPS2(float mps2)
+        {
+            return new Acceleration {_mps2 = mps2 / SimulationController.BaseSpeedMultiplier};
+        }
+
+        /// Create a velocity from game-time mps^2.
+        public static Acceleration FromMPS2(float mps2)
+        {
+            return new Acceleration {_mps2 = mps2};
+        }
+
+        /// Return the velocity in mps.
+        public float MPS2 => _mps2;
+
+        /// Return the real-time velocity in mps.
+        public float RealTimeMPS2 => _mps2 * SimulationController.BaseSpeedMultiplier;
+
+        /// Calculate the distance driven at velocity v over interval t.
+        public static Velocity operator *(Acceleration a, TimeSpan t)
+        {
+            return Velocity.FromMPS(a.MPS2 * (float)t.TotalSeconds);
+        }
+        
+        /// Add two accelerations.
+        public static Acceleration operator +(Acceleration v1, Acceleration v2)
+        {
+            return Acceleration.FromMPS2(v1.MPS2 + v2.MPS2);
+        }
+        
+        /// Subtract two accelerations.
+        public static Acceleration operator -(Acceleration v1, Acceleration v2)
+        {
+            return Acceleration.FromMPS2(v1.MPS2 - v2.MPS2);
+        }
+        
+        /// Multiply the acceleration.
+        public static Acceleration operator *(Acceleration v, float f)
+        {
+            return Acceleration.FromMPS2(v.MPS2 * f);
+        }
+        
+        /// Divide the acceleration.
+        public static Acceleration operator /(Acceleration v, float f)
+        {
+            return Acceleration.FromMPS2(v.MPS2 / f);
+        }
+    }
 }

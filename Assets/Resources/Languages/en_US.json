@@ -73,6 +73,10 @@
         },
 
         {
+            "key": "ui:citizen:age",
+            "text": "Age"
+        },
+        {
             "key": "ui:citizen:happiness",
             "text": "Happiness"
         },
@@ -113,7 +117,7 @@
             "text": "Retired"
         },
         {
-            "key": "ui:citizen:occupation:Kindergarden",
+            "key": "ui:citizen:occupation:Kindergardener",
             "text": "Kindergardener"
         },
         {
@@ -267,6 +271,31 @@
         },
 
         {
+            "key": "ui:map_object:Resident",
+            "text": "Resident"
+        },
+        {
+            "key": "ui:map_object:Worker",
+            "text": "Worker"
+        },
+        {
+            "key": "ui:map_object:Customer",
+            "text": "Customer"
+        },
+        {
+            "key": "ui:map_object:Student",
+            "text": "Student"
+        },
+        {
+            "key": "ui:map_object:Visitor",
+            "text": "Visitor"
+        },
+        {
+            "key": "ui:map_object:ParkingCitizen",
+            "text": "Parking"
+        },
+
+        {
             "key": "ui:building:occupants",
             "text": "Occupants"
         },
@@ -276,6 +305,10 @@
         },
         {
             "key": "ui:building:workers",
+            "text": "Workers"
+        },
+        {
+            "key": "ui:building:customers",
             "text": "Workers"
         },
         {
@@ -325,6 +358,18 @@
         {
             "key": "ui:building:type:GroceryStore",
             "text": "Grocery Store"
+        },
+        {
+            "key": "ui:building:type:Hotel",
+            "text": "Hotel"
+        },
+        {
+            "key": "ui:building:type:Church",
+            "text": "Church"
+        },
+        {
+            "key": "ui:building:type:Sight",
+            "text": "Sight"
         },
         {
             "key": "ui:building:area",

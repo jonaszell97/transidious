@@ -39,7 +39,7 @@ namespace Transidious
             uvs.Add(new Vector2(1, 0));
         }
 
-        public static void AddQuadraticBezierCurve(List<Vector3> points,
+        public static void AddQuadraticBezierCurve(List<Vector2> points,
                                                    Vector2 startPt, Vector2 endPt,
                                                    Vector2 controlPt,
                                                    int segments = 15,
@@ -66,7 +66,7 @@ namespace Transidious
                 points.Add(endPt);
         }
 
-        public static void AddCubicBezierCurve(List<Vector3> points,
+        public static void AddCubicBezierCurve(List<Vector2> points,
                                                Vector2 startPt, Vector2 endPt,
                                                Vector2 controlPt1, Vector2 controlPt2,
                                                int segments = 15,
@@ -98,7 +98,7 @@ namespace Transidious
                 points.Add(endPt);
         }
 
-        public static int AddSmoothIntersection(IReadOnlyList<Vector3> positions,
+        public static int AddSmoothIntersection(IReadOnlyList<Vector2> positions,
                                                 int i,
                                                 List<Vector3> vertices,
                                                 List<int> triangles,
@@ -257,7 +257,7 @@ namespace Transidious
             }
         }
 
-        static void CreateSmoothLine_AddQuad(IReadOnlyList<Vector3> positions,
+        static void CreateSmoothLine_AddQuad(IReadOnlyList<Vector2> positions,
                                             int i,
                                             float startWidth,
                                             float endWidth,
@@ -276,9 +276,9 @@ namespace Transidious
                                             ref int connectionOffset,
                                             ref int quads)
         {
-            var p0 = Vector3.zero;
-            var p1 = positions[i - 1];
-            var p2 = positions[i];
+            Vector3 p0 = Vector3.zero;
+            Vector3 p1 = positions[i - 1];
+            Vector3 p2 = positions[i];
 
             if (p1.Equals(Vector3.positiveInfinity) || p2.Equals(Vector3.positiveInfinity) || p2.Equals(p1))
             {
@@ -355,7 +355,6 @@ namespace Transidious
 
             if (quads > 1)
             {
-                //AddCirclePart(vertices, triangles, uv, p1, endWidth, line, 10, z);
                 connectionOffset = AddSmoothIntersection(positions, i, vertices, triangles, uv,
                                                          endWidth, cornerVertices,
                                                          z, useZ, connectionOffset,
@@ -368,7 +367,7 @@ namespace Transidious
             }
         }
 
-        public static void CreateSmoothLine(IReadOnlyList<Vector3> positions,
+        public static void CreateSmoothLine(IReadOnlyList<Vector2> positions,
                                             float width,
                                             bool startCap,
                                             bool endCap,
@@ -416,7 +415,7 @@ namespace Transidious
             }
         }
 
-        static void CreateSmoothLine(IReadOnlyList<Vector3> positions,
+        static void CreateSmoothLine(IReadOnlyList<Vector2> positions,
                                      IReadOnlyList<float> widths,
                                      bool startCap,
                                      bool endCap,
@@ -467,7 +466,7 @@ namespace Transidious
             }
         }
 
-        public static Mesh CreateSmoothLine(IReadOnlyList<Vector3> positions, float width,
+        public static Mesh CreateSmoothLine(IReadOnlyList<Vector2> positions, float width,
                                             int cornerVertices = 5, float z = 0f,
                                             PolygonCollider2D collider = null,
                                             bool startCap = true, bool endCap = true,
@@ -491,7 +490,7 @@ namespace Transidious
             return mesh;
         }
 
-        public static Mesh CreateSmoothLine(IReadOnlyList<Vector3> positions,
+        public static Mesh CreateSmoothLine(IReadOnlyList<Vector2> positions,
                                             IReadOnlyList<float> widths,
                                             int cornerVertices = 5, float z = 0f,
                                             PolygonCollider2D collider = null,
@@ -518,13 +517,13 @@ namespace Transidious
             return mesh;
         }
 
-        static void AddColliderPart(IReadOnlyList<Vector3> positions,
+        static void AddColliderPart(IReadOnlyList<Vector2> positions,
                                     Vector2[] colliderPath, int i,
                                     float startWidth, float endWidth,
                                     float offset)
         {
-            var p0 = positions[i - 1];
-            var p1 = positions[i];
+            Vector3 p0 = positions[i - 1];
+            Vector3 p1 = positions[i];
 
             if (p0.Equals(Vector3.positiveInfinity) || p1.Equals(Vector3.positiveInfinity))
             {
@@ -570,7 +569,7 @@ namespace Transidious
             }
         }
 
-        public static void CreateLineCollider(IReadOnlyList<Vector3> positions,
+        public static void CreateLineCollider(IReadOnlyList<Vector2> positions,
                                               IReadOnlyList<float> widths,
                                               PolygonCollider2D collider,
                                               float offset = 0f)
@@ -581,7 +580,7 @@ namespace Transidious
             collider.SetPath(prevPathCount, colliderPath);
         }
 
-        public static Vector2[] CreateLineCollider(IReadOnlyList<Vector3> positions,
+        public static Vector2[] CreateLineCollider(IReadOnlyList<Vector2> positions,
                                                    IReadOnlyList<float> widths,
                                                    float offset = 0f)
         {
@@ -599,7 +598,7 @@ namespace Transidious
             return colliderPath.Where(v => !v.Equals(Vector2.positiveInfinity)).ToArray();
         }
 
-        public static void CreateLineCollider(IReadOnlyList<Vector3> positions,
+        public static void CreateLineCollider(IReadOnlyList<Vector2> positions,
                                               float width,
                                               PolygonCollider2D collider,
                                               float offset = 0f)
@@ -610,7 +609,7 @@ namespace Transidious
             collider.SetPath(prevPathCount, colliderPath);
         }
 
-        public static Vector2[] CreateLineCollider(IReadOnlyList<Vector3> positions,
+        public static Vector2[] CreateLineCollider(IReadOnlyList<Vector2> positions,
                                                    float width,
                                                    float offset = 0f)
         {
@@ -627,8 +626,8 @@ namespace Transidious
 
         static LineRenderer tmpRenderer;
 
-        public static Mesh CreateBakedLineMesh(IReadOnlyList<Vector3> positions,
-                                               float width,
+        public static Mesh CreateBakedLineMesh(IReadOnlyList<Vector2> positions,
+                                               float width, float z,
                                                PolygonCollider2D collider = null,
                                                int cornerVerts = 5, int capVerts = 5)
         {
@@ -651,7 +650,7 @@ namespace Transidious
             }
 
             tmpRenderer.positionCount = positions.Count;
-            tmpRenderer.SetPositions(positions.ToArray());
+            tmpRenderer.SetPositions(positions.Select(v => v.WithZ(z)).ToArray());
 
             tmpRenderer.numCornerVertices = cornerVerts;
             tmpRenderer.numCapVertices = capVerts;
@@ -673,7 +672,7 @@ namespace Transidious
             return mesh;
         }
 
-        public static AnimationCurve GetWidthCurve(IReadOnlyList<float> widths, IReadOnlyList<Vector3> positions)
+        public static AnimationCurve GetWidthCurve(IReadOnlyList<float> widths, IReadOnlyList<Vector2> positions)
         {
             var totalDistance = 0f;
             var distances = new float[positions.Count];
@@ -722,7 +721,7 @@ namespace Transidious
             return curve;
         }
 
-        public static Mesh CreateBakedLineMesh(IReadOnlyList<Vector3> positions,
+        public static Mesh CreateBakedLineMesh(IReadOnlyList<Vector2> positions,
                                                IReadOnlyList<float> widths,
                                                PolygonCollider2D collider = null,
                                                int cornerVerts = 5, int capVerts = 5)
@@ -756,26 +755,26 @@ namespace Transidious
             return mesh;
         }
 
-        static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
+        static Tuple<Vector2, Vector2> GetOffsetPoints(Vector2 p0, Vector2 p1,
                                                        float currentOffsetStart,
                                                        float currentOffsetEnd,
-                                                       out Vector3 perpendicular)
+                                                       out Vector2 perpendicular)
         {
             var dir = p1 - p0;
             var perpendicular2d = -Vector2.Perpendicular(new Vector2(dir.x, dir.y)).normalized;
-            perpendicular = new Vector3(perpendicular2d.x, perpendicular2d.y, 0f);
+            perpendicular = new Vector2(perpendicular2d.x, perpendicular2d.y);
 
             p0 = p0 + (perpendicular * currentOffsetStart);
             p1 = p1 + (perpendicular * currentOffsetEnd);
 
-            return new Tuple<Vector3, Vector3>(p0, p1);
+            return new Tuple<Vector2, Vector2>(p0, p1);
         }
 
-        static Tuple<Vector3, Vector3> GetOffsetPoints(Vector3 p0, Vector3 p1,
+        static Tuple<Vector2, Vector2> GetOffsetPoints(Vector2 p0, Vector2 p1,
                                                        float currentOffsetStart,
                                                        float currentOffsetEnd,
-                                                       Vector3 prevPerpendicular,
-                                                       out Vector3 perpendicular)
+                                                       Vector2 prevPerpendicular,
+                                                       out Vector2 perpendicular)
         {
             var dir = p1 - p0;
             var perpendicular2d = -Vector2.Perpendicular(new Vector2(dir.x, dir.y)).normalized;
@@ -787,20 +786,20 @@ namespace Transidious
             p0 = p0 + (mid * currentOffsetStart);
             p1 = p1 + (mid * currentOffsetEnd);
 
-            return new Tuple<Vector3, Vector3>(p0, p1);
+            return new Tuple<Vector2, Vector2>(p0, p1);
         }
 
-        public static List<Vector3> GetOffsetPath(IReadOnlyList<Vector3> segPositions, float offset)
+        public static List<Vector2> GetOffsetPath(IReadOnlyList<Vector2> segPositions, float offset)
         {
             Debug.Assert(segPositions.Count != 1, "can't offset a path of length 1!");
 
-            var positions = new List<Vector3>();
-            var perpendicular = Vector3.zero;
+            var positions = new List<Vector2>();
+            var perpendicular = Vector2.zero;
 
             for (int j = 1; j < segPositions.Count; ++j)
             {
-                Vector3 p0 = segPositions[j - 1];
-                Vector3 p1 = segPositions[j];
+                Vector2 p0 = segPositions[j - 1];
+                Vector2 p1 = segPositions[j];
 
                 if (j == 1)
                 {
@@ -826,19 +825,19 @@ namespace Transidious
             return pt + (offset * perpendicular2d);
         }
 
-        public static List<Vector3> GetOffsetPath(IReadOnlyList<Vector3> segPositions,
+        public static List<Vector2> GetOffsetPath(IReadOnlyList<Vector2> segPositions,
                                                   IReadOnlyList<float> offsets)
         {
             Debug.Assert(segPositions.Count != 1, "can't offset a path of length 1!");
             Debug.Assert(segPositions.Count == offsets.Count, "offset count doesn't match!");
 
-            var positions = new List<Vector3>();
-            var perpendicular = Vector3.zero;
+            var positions = new List<Vector2>();
+            var perpendicular = Vector2.zero;
 
             for (int j = 1; j < segPositions.Count; ++j)
             {
-                Vector3 p0 = segPositions[j - 1];
-                Vector3 p1 = segPositions[j];
+                Vector2 p0 = segPositions[j - 1];
+                Vector2 p1 = segPositions[j];
 
                 if (j == 1)
                 {
@@ -1019,35 +1018,6 @@ namespace Transidious
             return newPositions;
         }
 
-        public static List<Vector3> RemoveDetailByDistance(IReadOnlyList<Vector3> positions,
-                                                           float minDistance = 5f)
-        {
-            if (positions.Count <= 2)
-            {
-                return positions.ToList();
-            }
-
-            float dist = 0f;
-            var newPositions = new List<Vector3>(positions.Count);
-            for (int i = 1; i < positions.Count; ++i)
-            {
-                var p1 = positions[i];
-                var p0 = positions[i - 1];
-
-                var currDist = (p1 - p0).magnitude;
-                dist += currDist;
-
-                if (dist >= minDistance)
-                {
-                    newPositions.Add(p0);
-                    dist = 0;
-                }
-            }
-
-            newPositions.Add(positions.Last());
-            return newPositions;
-        }
-
         public static List<Vector2> RemoveDetailByDistance(IReadOnlyList<Vector2> positions,
                                                            float minDistance = 5f)
         {
@@ -1132,7 +1102,7 @@ namespace Transidious
             return msh;
         }
 
-        public static Mesh PointsToMesh(Vector3[] points)
+        public static Mesh PointsToMesh(Vector2[] points)
         {
             var pslg = new PSLG();
             pslg.AddOrderedVertices(points);

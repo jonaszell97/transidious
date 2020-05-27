@@ -76,10 +76,10 @@ namespace Transidious
             this.feature = feature;
             this.modal.SetTitle(feature.name);
 
-            this.panel.SetValue("Occupants", feature.VisitorCount + " / " + feature.Capacity);
+            var visitors = feature.GetOccupants(OccupancyKind.Visitor);
+            this.panel.SetValue("Occupants", (visitors?.Count ?? 0) + " / " + feature.Capacity);
             this.panel.SetValue("Type", Translator.Get("ui:feature:type:" + feature.type.ToString()));
 
-            var visitors = feature.Visitors;
             if (visitors != null)
             {
                 visitorList.gameObject.SetActive(true);

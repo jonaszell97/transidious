@@ -20,7 +20,7 @@ namespace Transidious
     {
         internal string name;
         internal List<IMapObject> stops;
-        internal List<Vector3> completePath;
+        internal List<Vector2> completePath;
         internal List<int> paths;
         internal List<List<TrafficSimulator.PathSegmentInfo>> streetSegments;
     }

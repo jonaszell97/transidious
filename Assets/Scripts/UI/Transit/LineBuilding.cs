@@ -95,7 +95,7 @@ namespace Transidious
         /// <summary>
         /// The path between the previous stop and the current cursor position.
         /// </summary>
-        protected List<Vector3> temporaryPath;
+        protected List<Vector2> temporaryPath;
 
         /// <summary>
         /// Game object used to render the path between stops that were added to the line.
@@ -361,7 +361,7 @@ namespace Transidious
             {
                 name = Translator.Get("tooltip:new_line", game.GetSystemName(type)),
                 stops = new List<IMapObject>(),
-                completePath = new List<Vector3>(),
+                completePath = new List<Vector2>(),
                 paths = new List<int>(),
                 streetSegments = new List<List<TrafficSimulator.PathSegmentInfo>>(),
             };
@@ -542,8 +542,9 @@ namespace Transidious
                     = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
+            var z = Map.Layer(MapLayer.TransitLines);
             var color = Colors.GetDefaultSystemColor(transitType);
-            var mesh = MeshBuilder.CreateSmoothLine(currentLine.completePath, 1.25f, 10);
+            var mesh = MeshBuilder.CreateSmoothLine(currentLine.completePath, 1.25f, 10, z);
             var renderer = existingPathMesh.GetComponent<MeshRenderer>();
             var filter = existingPathMesh.GetComponent<MeshFilter>();
 
@@ -573,8 +574,9 @@ namespace Transidious
                     = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
+            var z = Map.Layer(MapLayer.TransitLines);
             var color = Colors.GetDefaultSystemColor(transitType);
-            var mesh = MeshBuilder.CreateSmoothLine(temporaryPath, 1.25f, 10);
+            var mesh = MeshBuilder.CreateSmoothLine(temporaryPath, 1.25f, 10, z);
             var renderer = plannedPathMesh.GetComponent<MeshRenderer>();
             var filter = plannedPathMesh.GetComponent<MeshFilter>();
 

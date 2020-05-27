@@ -59,7 +59,8 @@ namespace Transidious
 
             // Energy & Work
             panel.AddProgressItem("Energy", "ui:citizen:energy", "Sprites/WIP");
-            panel.AddProgressItem("RemainingWork", "ui:citizen:remaining_work", "Sprites/WIP");
+            var workItem = panel.AddProgressItem("RemainingWork", "ui:citizen:remaining_work", "Sprites/WIP");
+            workItem.ProgressBar.ReverseGradient = true;
 
 #if DEBUG
             _debugPanel = Instantiate(ResourceManager.instance.infoPanelCardPrefab, panel.transform.parent)
@@ -68,17 +69,27 @@ namespace Transidious
             _debugPanel.Initialize();
 
             _debugPanel.AddItem("Distance From Start", "Distance From Start", "");
+            _debugPanel.AddItem("Step", "Step", "");
 
+            _debugPanel.AddItem("Distance To Next", "Distance To Next", "");
+            _debugPanel.AddItem("Distance To Intersection", "Distance To Intersection", "");
+            _debugPanel.AddItem("Velocity", "Velocity", "");
+            
             _debugPanel.AddClickableItem("Next Car", "Next Car", Color.white, () =>
             {
                 if (!(citizen.activePath?.IsDriving) ?? false)
                     return;
 
-                var next = GameController.instance.sim.trafficSim.GetNextCar(
-                    citizen.activePath._drivingState.drivingCar);
+                // var next = GameController.instance.sim.trafficSim.GetNextCar(
+                //     citizen.activePath._drivingState.drivingCar);
+                var next = citizen.activePath._drivingCar.next;
                 if (next != null)
                 {
-                    GameController.instance.input.MoveTowards(next.Item1.CurrentPosition);
+                    GameController.instance.input.MoveTowards(next.CurrentPosition);
+                }
+                else
+                {
+                    Debug.Log("No next car");
                 }
             });
 
@@ -87,10 +98,14 @@ namespace Transidious
                 if (!(citizen.activePath?.IsDriving) ?? false)
                     return;
 
-                var prev = citizen.activePath._drivingState.drivingCar.prev;
+                var prev = citizen.activePath._drivingCar.prev;
                 if (prev != null)
                 {
                     GameController.instance.input.MoveTowards(prev.CurrentPosition);
+                }
+                else
+                {
+                    Debug.Log("No prev car");
                 }
             });
             
@@ -212,8 +227,29 @@ namespace Transidious
             }
 
             if (citizen.activePath?.IsDriving ?? false)
+            {
                 this._debugPanel.SetValue("Distance From Start",
-                $"{citizen.activePath._drivingState.drivingCar.distanceFromStart:n2} m");
+                    $"{citizen.activePath._drivingCar.distanceFromStart:n2} m");
+
+                this._debugPanel.SetValue("Distance To Intersection",
+                    $"{citizen.activePath._drivingCar.DistanceToIntersection:n2} m");
+                
+                this._debugPanel.SetValue("Velocity",
+                    $"{citizen.activePath._drivingCar.CurrentVelocity.RealTimeMPS:n2} m/s");
+
+                if (citizen.activePath._drivingCar.next != null)
+                {
+                    this._debugPanel.SetValue("Distance To Next",
+                        $"{citizen.activePath._drivingCar.next.distanceFromStart - citizen.activePath._drivingCar.distanceFromStart:n2} m");
+                }
+                else
+                {
+                    this._debugPanel.SetValue("Distance To Next", "-");
+                }
+
+                this._debugPanel.SetValue("Step",
+                    citizen.activePath.currentStep?.GetType().Name ?? "None");
+            }
         }
 
         public void SetCitizen(Citizen citizen)

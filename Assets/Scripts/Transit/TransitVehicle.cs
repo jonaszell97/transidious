@@ -20,7 +20,7 @@ namespace Transidious
         public int CurrentRoute { get; private set; }
         
         /// The path following component.
-        private PathFollowingObject _pathFollow;
+        private PointsFollower _pathFollow;
 
         /// The vehicle capacity.
         public int Capacity { get; private set; }
@@ -184,8 +184,8 @@ namespace Transidious
                 current = current.Next;
             }
 
-            this._pathFollow = new PathFollowingObject(
-                sim, this.gameObject, route.positions, Velocity,
+            this._pathFollow = new PointsFollower(
+                this.gameObject, route.positions, Velocity,
                 () =>
                 {
                     var diff = sim.GameTime - expectedArrival;

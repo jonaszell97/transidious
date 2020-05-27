@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 using Transidious;
@@ -52,387 +53,263 @@ namespace Transidious
             /// A straight line segment.
             StraightLine,
 
+            /// A line segment with several points.
+            Line,
+
             /// A cubic bezier curve.
             CubicBezier,
-        }
 
-        [System.Serializable]
-        public struct SerializablePathSegment
-        {
-            public Kind kind;
-            public SerializableVector3 p0, p1, p2, p3;
-            public float length;
+            /// A quadratic bezier curve.
+            QuadraticBezier,
         }
 
         public Kind kind;
-        public Vector3 p0, p1, p2, p3;
-        public float length;
+        public readonly Vector2[] Points;
+        public float Length;
 
-        public float Angle => Math.PointAngleDeg(p0, p3);
+        public float Angle => Math.PointAngleDeg(Points.First(), Points.Last());
 
-        public Vector3 Direction
-        {
-            get
-            {
-                return p3 - p0;
-            }
-        }
+        public Vector2 Direction => Points.Last() - Points.First();
 
-        public bool IsVertical
-        {
-            get
-            {
-                if (kind != Kind.StraightLine)
-                {
-                    return false;
-                }
+        public Vector2 StartDirection => (PointAt(.01f) - Points.First()).normalized;
 
-                return Direction.x.Equals(0);
-            }
-        }
+        public bool IsVertical => kind == Kind.StraightLine && Direction.x.Equals(0);
 
-        public bool IsHorizontal
-        {
-            get
-            {
-                if (kind != Kind.StraightLine)
-                {
-                    return false;
-                }
-
-                return Direction.y.Equals(0);
-            }
-        }
+        public bool IsHorizontal => kind == Kind.StraightLine && Direction.y.Equals(0);
 
         public PathSegment(PathSegment seg)
         {
             this.kind = seg.kind;
-            this.p0 = seg.p0;
-            this.p1 = seg.p1;
-            this.p2 = seg.p2;
-            this.p3 = seg.p3;
-            this.length = seg.length;
+            this.Points = seg.Points;
+            this.Length = seg.Length;
         }
 
-        public PathSegment(Vector3 begin, Vector3 end)
+        public PathSegment(Vector2 begin, Vector2 end)
         {
             this.kind = Kind.StraightLine;
-            this.p0 = begin;
-            this.p1 = new Vector3();
-            this.p2 = new Vector3();
-            this.p3 = end;
-            this.length = (end - begin).magnitude;
+            this.Points = new [] { begin, end };
+            this.Length = (end - begin).magnitude;
         }
 
-        public PathSegment(Vector3 begin, Vector3 cp1, Vector3 cp2, Vector3 end)
+        public PathSegment(IReadOnlyList<Vector2> points)
+        {
+            if (points.Count == 2)
+            {
+                this.kind = Kind.StraightLine;
+                this.Points = new [] { points[0], points[1] };
+                this.Length = (points[1] - points[0]).magnitude;
+                
+                return;
+            }
+
+            this.kind = Kind.Line;
+            this.Points = points.ToArray();
+            this.Length = 0f;
+
+            for (int i = 1; i < points.Count; ++i)
+            {
+                this.Length += (points[i - 1] - points[i]).magnitude;
+            }
+        }
+
+        public PathSegment(Vector2[] points, float length = 0f)
+        {
+            this.kind = Kind.Line;
+            this.Points = points;
+            this.Length = length;
+
+            if (length.Equals(0f))
+            {
+                for (int i = 1; i < points.Length; ++i)
+                {
+                    this.Length += (points[i - 1] - points[i]).magnitude;
+                }
+            }
+        }
+
+        public PathSegment(Vector2 begin, Vector2 cp1, Vector2 cp2, Vector2 end)
         {
             this.kind = Kind.CubicBezier;
-            this.p0 = begin;
-            this.p1 = cp1;
-            this.p2 = cp2;
-            this.p3 = end;
-            this.length = Math.cubicBezierLength(begin, cp1, cp2, end);
+            this.Points = new[] { begin, cp1, cp2, end };
+            this.Length = Math.CubicBezierLength(begin, cp1, cp2, end);
         }
 
-        public SerializablePathSegment Serialize()
+        public PathSegment(Vector2 begin, Vector2 cp, Vector2 end)
         {
-            return new SerializablePathSegment
-            {
-                kind = kind,
-                p0 = new SerializableVector3(p0),
-                p1 = new SerializableVector3(p1),
-                p2 = new SerializableVector3(p2),
-                p3 = new SerializableVector3(p3),
-                length = length
-            };
+            this.kind = Kind.QuadraticBezier;
+            this.Points = new[] { begin, cp, end };
+            this.Length = Math.QuadraticBezierLength(begin, cp, end);
         }
 
-        public static PathSegment Deserialize(SerializablePathSegment seg)
+        /// A point at the specified offset on the path [0..1].
+        public Vector2 PointAt(float offset)
         {
-            return new PathSegment
+            if (offset >= 1f)
             {
-                kind = seg.kind,
-                p0 = seg.p0.ToVector(),
-                p1 = seg.p1.ToVector(),
-                p2 = seg.p2.ToVector(),
-                p3 = seg.p3.ToVector(),
-                length = seg.length
-            };
+                return Points.Last();
+            }
+
+            switch (kind)
+            {
+                case Kind.StraightLine:
+                    return Points[0] + (Points[1] - Points[0]) * offset;
+                case Kind.Line:
+                {
+                    var neededLen = offset * Length;
+                    var sum = 0f;
+
+                    for (var i = 1; i < Points.Length; ++i)
+                    {
+                        var dir = (Points[i] - Points[i - 1]);
+                        var len = dir.magnitude;
+                        if (sum + len > neededLen)
+                        {
+                            return Points[i - 1] + (dir.normalized * (neededLen - sum));
+                        }
+
+                        sum += len;
+                    }
+
+                    Debug.LogError("point is not on line");
+                    return Points.Last();
+                }
+                case Kind.CubicBezier:
+                    return Math.CubicBezierPoint(offset, Points[0], Points[1], Points[2], Points[3]);
+                case Kind.QuadraticBezier:
+                    return Math.QuadraticBezierPoint(offset, Points[0], Points[1], Points[2]);
+                default:
+                    Debug.LogError("invalid path kind");
+                    return default;
+            }
+        }
+
+        public float GetDistanceFromStart(Vector2 pt)
+        {
+            switch (kind)
+            {
+                case Kind.StraightLine:
+                    return (pt - Points[0]).magnitude;
+                case Kind.Line:
+                {
+                    for (var i = 1; i < Points.Length; ++i)
+                    {
+                        if (!Math.PointOnLine(Points[i - 1], Points[i], pt))
+                        {
+                            continue;
+                        }
+
+                        return (pt - Points[i - 1]).magnitude;
+                    }
+
+                    Debug.LogError("point is not on line");
+                    return default;
+                }
+                case Kind.CubicBezier:
+                case Kind.QuadraticBezier:
+                    Debug.LogError("not supported for bezier curves");
+                    return default;
+                default:
+                    Debug.LogError("invalid path kind");
+                    return default;
+            }
+        }
+
+        public void AddPoints(List<Vector2> result, int bezierSegments)
+        {
+            switch (kind)
+            {
+                case Kind.StraightLine:
+                case Kind.Line:
+                    result.AddRange(Points);
+                    break;
+                case Kind.CubicBezier:
+                {
+                    var step = 1f / bezierSegments;
+                    for (var t = 0f; t <= 1f; t += step)
+                    {
+                        result.Add(Math.CubicBezierPoint(t, Points[0], Points[1], Points[2], Points[3]));
+                    }
+                    
+                    return;
+                }
+                case Kind.QuadraticBezier:
+                {
+                    var step = 1f / bezierSegments;
+                    for (var t = 0f; t <= 1f; t += step)
+                    {
+                        result.Add(Math.QuadraticBezierPoint(t, Points[0], Points[1], Points[2]));
+                    }
+                    
+                    return;
+                }
+                default:
+                    Debug.LogError("invalid path kind");
+                    return;
+            }
         }
     }
 
     public class Path
     {
-        [System.Serializable]
-        public struct SerializedPath
-        {
-            public List<PathSegment.SerializablePathSegment> segments;
-            public float length;
-            public float width;
-        }
+        public readonly List<PathSegment> Segments;
+        public readonly float Length;
 
-        public readonly List<PathSegment> segments;
-        public readonly float length;
-        public float width = 0.05f;
-
-        public Path(Path path) : this(new List<PathSegment>(path.segments))
+        public Path(Path path) : this(new List<PathSegment>(path.Segments))
         {
 
         }
 
-        public Path(List<PathSegment> segments, float length, float width)
+        public Path(List<PathSegment> segments, float length)
         {
-            this.segments = segments;
-            this.length = length;
-            this.width = width;
+            this.Segments = segments;
+            this.Length = length;
+        }
+
+        public Path(PathSegment singleSegment)
+        {
+            this.Segments = new List<PathSegment> { singleSegment };
+            this.Length = singleSegment.Length;
         }
 
         public Path(List<PathSegment> segments)
         {
-            this.segments = segments;
-            this.length = segments.Aggregate(0.0f, (sum, seg) => sum += seg.length);
+            this.Segments = segments;
+            this.Length = segments.Aggregate(0.0f, (sum, seg) => sum += seg.Length);
         }
 
-        public Path(Vector3 begin, Vector3 end)
+        public Path(List<Vector2> points)
         {
-            this.segments = new List<PathSegment> { new PathSegment(begin, end) };
-            this.length = (end - begin).magnitude;
-        }
-
-        public float BeginAngle
-        {
-            get
+            this.Segments = new List<PathSegment>
             {
-                return segments[0].Angle;
-            }
-        }
-
-        public float EndAngle
-        {
-            get
-            {
-                return segments[segments.Count - 1].Angle;
-            }
-        }
-
-        public Vector3 Start
-        {
-            get { return segments.First().p0; }
-        }
-
-        public Vector3 End
-        {
-            get { return segments.Last().p3; }
-        }
-
-        public Mesh CreateMesh(float z = 0f)
-        {
-            var positions = new List<Vector3>();
-            foreach (PathSegment seg in segments)
-            {
-                positions.Add(seg.p0);
-            }
-
-            positions.Add(segments.Last().p3);
-            return MeshBuilder.CreateSmoothLine(positions, width, 10, z);
-
-            /*
-            var triangles = new List<int>();
-            var normals = new List<Vector3>();
-            var uv = new List<Vector2>();
-
-            foreach (PathSegment seg in segments)
-            {
-                switch (seg.kind)
-                {
-                    case PathSegment.Kind.StraightLine:
-                        Vector3 line = seg.p0 - seg.p3;
-                        Vector3 normal = new Vector3(-line.y, line.x, 0.0f).normalized;
-
-                        Vector3 bl = seg.p3 - width * normal;
-                        Vector3 tl = seg.p3 + width * normal;
-                        Vector3 tr = seg.p0 + width * normal;
-                        Vector3 br = seg.p0 - width * normal;
-
-                        bl.z = z;
-                        tl.z = z;
-                        tr.z = z;
-                        br.z = z;
-
-                        MeshBuilder.AddQuad(vertices, triangles, normals,
-                                            uv, bl, tr, br, tl);
-
-                        break;
-                    case PathSegment.Kind.CubicBezier:
-                        break;
-                }
-            }
-
-            return new Mesh
-            {
-                vertices = vertices.ToArray(),
-                triangles = triangles.ToArray(),
-                normals = normals.ToArray(),
-                uv = uv.ToArray(),
-            };*/
-        }
-
-        public Mesh CreateJoints()
-        {
-            var vertices = new List<Vector3>();
-            var triangles = new List<int>();
-            var normals = new List<Vector3>();
-            var uv = new List<Vector2>();
-            var first = true;
-
-            foreach (PathSegment seg in segments)
-            {
-                if (first)
-                {
-                    first = false;
-                    continue;
-                }
-
-                switch (seg.kind)
-                {
-                    case PathSegment.Kind.StraightLine:
-                        var center = seg.p0;
-                        var radius = width;
-
-                        Vector3 bl = new Vector3(center.x - radius, center.y - radius);
-                        Vector3 tl = new Vector3(center.x - radius, center.y + radius);
-                        Vector3 tr = new Vector3(center.x + radius, center.y + radius);
-                        Vector3 br = new Vector3(center.x + radius, center.y - radius);
-
-                        MeshBuilder.AddQuad(vertices, triangles, normals,
-                                            uv, bl, tr, br, tl);
-
-                        break;
-                    case PathSegment.Kind.CubicBezier:
-                        break;
-                }
-            }
-
-            return new Mesh
-            {
-                vertices = vertices.ToArray(),
-                triangles = triangles.ToArray(),
-                normals = normals.ToArray(),
-                uv = uv.ToArray(),
+                new PathSegment(points)
             };
+
+            this.Length = this.Segments[0].Length;
         }
 
-        public void AdjustStart(Vector3 start, bool keepHorizontal = true,
-                                bool keepVertical = true)
+        public Path(Vector2 begin, Vector2 end)
         {
-            PathSegment startSegment = segments.First();
-            Vector3 diff = start - startSegment.p0;
-
-            if ((keepHorizontal && startSegment.IsHorizontal)
-                || (keepVertical && startSegment.IsVertical))
-            {
-                startSegment.p0 = start;
-                startSegment.p3 += diff;
-                segments[0] = startSegment;
-
-                // Propagate changes to other segments.
-                if (segments.Count > 1)
-                {
-                    PathSegment seg = segments[1];
-                    seg.p0 = startSegment.p3;
-
-                    segments[1] = seg;
-                }
-            }
-            else
-            {
-                startSegment.p0 = start;
-                segments[0] = startSegment;
-            }
+            this.Segments = new List<PathSegment> { new PathSegment(begin, end) };
+            this.Length = (end - begin).magnitude;
         }
 
-        public void AdjustEnd(Vector3 end, bool keepHorizontal = true,
-                               bool keepVertical = true)
+        public List<Vector2> GetPoints(int bezierSegments = 5)
         {
-            PathSegment endSegment = segments.Last();
-            Vector3 diff = end - endSegment.p3;
-
-            if ((keepHorizontal && endSegment.IsHorizontal)
-                || (keepVertical && endSegment.IsVertical))
+            var result = new List<Vector2>();
+            foreach (var seg in Segments)
             {
-                endSegment.p3 = end;
-                endSegment.p0 += diff;
-                segments[segments.Count - 1] = endSegment;
-
-                // Propagate changes to other segments.
-                if (segments.Count > 1)
-                {
-                    PathSegment seg = segments[segments.Count - 2];
-                    seg.p0 = endSegment.p3;
-
-                    segments[segments.Count - 2] = seg;
-                }
-            }
-            else
-            {
-                endSegment.p3 = end;
-                segments[segments.Count - 1] = endSegment;
-            }
-        }
-
-        public void RemoveStartAngle(Vector3 adjustment)
-        {
-            var first = segments.First();
-            if ((first.Angle % 90).Equals(0))
-            {
-                return;
+                seg.AddPoints(result, bezierSegments);
             }
 
-            PathSegment newStart = new PathSegment(first.p0, first.p0 + adjustment);
-            first.p0 = newStart.p3;
-
-            segments.Insert(0, newStart);
-            segments[1] = first;
+            return result;
         }
 
-        public void RemoveEndAngle(Vector3 adjustment)
-        {
-            var last = segments.Last();
-            if ((last.Angle % 90).Equals(0))
-            {
-                return;
-            }
+        public float BeginAngle => Segments[0].Angle;
 
-            PathSegment newEnd = new PathSegment(last.p3 + adjustment, last.p3);
-            last.p3 = newEnd.p0;
+        public float EndAngle => Segments[Segments.Count - 1].Angle;
 
-            segments.Add(newEnd);
-            segments[segments.Count - 2] = last;
-        }
+        public Vector2 Start => Segments.First().Points[0];
 
-        public SerializedPath Serialize()
-        {
-            return new SerializedPath
-            {
-                segments = segments.Select(s => s.Serialize()).ToList(),
-                length = length,
-                width = width,
-            };
-        }
-
-        public static Path Deserialize(SerializedPath path)
-        {
-            if (path.segments == null)
-            {
-                return null;
-            }
-
-            return new Path
-            (
-                path.segments.Select(PathSegment.Deserialize).ToList(),
-                path.length,
-                path.width
-            );
-        }
+        public Vector2 End => Segments.Last().Points.Last();
     }
 }

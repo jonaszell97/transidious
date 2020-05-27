@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,7 +34,7 @@ namespace Transidious
 
         public Type type;
         public Rect collisionRect;
-        public List<Citizen> inhabitants;
+        public byte[] Capacities;
 
         public void Initialize(Map map, Type type,
                                StreetSegment street, string numberStr,
@@ -52,10 +53,16 @@ namespace Transidious
             this.type = type;
             this.street = street;
             this.number = numberStr;
-            this.Capacity = GetDefaultCapacity(type, area);
             this.number = numberStr;
             this.mesh = mesh;
             this.name = name;
+
+            InitializeCapacities();
+        }
+
+        public override int GetCapacity(OccupancyKind kind)
+        {
+            return Capacities[(int) kind];
         }
 
         public void UpdateStreet(Map map)
@@ -72,7 +79,81 @@ namespace Transidious
             return GetDefaultCapacity(type, area);
         }
 
-        public static int GetDefaultCapacity(Type type, float area)
+        public void InitializeCapacities()
+        {
+            Capacities = new byte[(int)OccupancyKind.ParkingCitizen + 1];
+
+            switch (type)
+            {
+                case Type.Residential:
+                {
+                    var capacity = (byte) GetDefaultCapacity();
+                    Capacities[(int) OccupancyKind.Resident] = capacity;
+                    Capacities[(int) OccupancyKind.Visitor] = capacity;
+
+                    break;
+                }
+                case Type.Shop:
+                case Type.GroceryStore:
+                {
+                    var capacity = (byte) GetDefaultCapacity();
+                    Capacities[(int) OccupancyKind.Worker] = (byte) (capacity / 2);
+                    Capacities[(int) OccupancyKind.Customer] = capacity;
+
+                    break;
+                }
+                case Type.Office:
+                case Type.Industrial:
+                {
+                    var capacity = (byte) GetDefaultCapacity();
+                    Capacities[(int) OccupancyKind.Worker] = capacity;
+
+                    break;
+                }
+                case Type.ElementarySchool:
+                case Type.HighSchool:
+                case Type.University:
+                {
+                    var capacity = (byte) GetDefaultCapacity();
+                    Capacities[(int) OccupancyKind.Student] = capacity;
+
+                    break;
+                }
+                case Type.Hospital:
+                {
+                    var capacity = (byte) GetDefaultCapacity();
+                    Capacities[(int) OccupancyKind.Worker] = (byte) (capacity / 2);
+                    Capacities[(int) OccupancyKind.Visitor] = capacity;
+
+                    break;
+                }
+                case Type.Stadium:
+                case Type.Airport:
+                case Type.Hotel:
+                case Type.Church:
+                {
+                    var capacity = (byte) GetDefaultCapacity();
+                    Capacities[(int) OccupancyKind.Worker] = (byte) (capacity / 3);
+                    Capacities[(int) OccupancyKind.Customer] = capacity;
+
+                    break;
+                }
+                case Type.Leisure:
+                case Type.Sight:
+                {
+                    var capacity = (byte) GetDefaultCapacity();
+                    Capacities[(int) OccupancyKind.Visitor] = capacity;
+
+                    break;
+                }
+                case Type.Other:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private static int GetDefaultCapacity(Type type, float area)
         {
             switch (type)
             {
@@ -141,11 +222,6 @@ namespace Transidious
 
         public static Color GetColor(Type type, MapDisplayMode mode = MapDisplayMode.Day)
         {
-            // if (type == Type.Other)
-            // {
-            //     return Color.red;
-            // }
-
             switch (mode)
             {
             default:
@@ -266,9 +342,10 @@ namespace Transidious
                 return;
             }
 
-            if (MainUI.instance.buildingModal.building == this)
+            var modal = MainUI.instance.buildingModal;
+            if (modal.modal.Active && modal.building == this)
             {
-                MainUI.instance.buildingModal.modal.Disable();
+                modal.modal.Disable();
                 return;
             }
 

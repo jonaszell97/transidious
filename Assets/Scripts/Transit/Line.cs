@@ -179,7 +179,7 @@ namespace Transidious
         }
 
         /// Add a stop to the end of this line.
-        public Route AddRoute(Stop begin, Stop end, List<Vector3> positions, bool oneWay, bool isBackRoute)
+        public Route AddRoute(Stop begin, Stop end, List<Vector2> positions, bool oneWay, bool isBackRoute)
         {
             GameObject routeObject = GameObject.Instantiate(GameController.instance.loadedMap.routePrefab);
             Route route = routeObject.GetComponent<Route>();
@@ -258,22 +258,26 @@ namespace Transidious
             var neededVehiclesExact = (float) (lineDuration.TotalSeconds / interval.TotalSeconds);
             var neededVehicles = (int)Mathf.Ceil(neededVehiclesExact);
 
-            if (!Game.ImportingMap)
+#if DEBUG
+            if (Game.ImportingMap)
             {
-                var departure = earliestDeparture;
-                TransitVehicle next = null;
-
-                for (var i = 0; i < neededVehicles; ++i)
-                {
-                    var v = sim.CreateVehicle(this, next);
-                    vehicles.Add(v);
-
-                    departure = departure.Add(interval).Add(AverageStopDuration);
-                    next = v;
-                }
-
-                vehicles.First().Next = next;
+                return;
             }
+#endif
+            
+            var departure = earliestDeparture;
+            TransitVehicle next = null;
+
+            for (var i = 0; i < neededVehicles; ++i)
+            {
+                var v = sim.CreateVehicle(this, next);
+                vehicles.Add(v);
+
+                departure = departure.Add(interval).Add(AverageStopDuration);
+                next = v;
+            }
+
+            vehicles.First().Next = next;
 
             // var totalTravelTime = TimeSpan.Zero;
             //
@@ -313,20 +317,13 @@ namespace Transidious
                 {
                     routeDistance = cumulativeLengths[currentRoute++];
                 }
-
-                var diff = requiredDistance - routeDistance;
-                var vehicle = vehicles[vehicles.Count - 1 - i];
-
-#if DEBUG
-                if (GameController.instance.ImportingMap)
-                {
-                    continue;
-                }
-#endif
-
+                
                 var distanceToStop = cumulativeLengths[currentRoute] - requiredDistance;
                 routes[currentRoute].endStop.SetSchedule(this, new ContinuousSchedule(
                     earliestDeparture.Add(Distance.FromMeters(distanceToStop) / AverageSpeed), interval));
+
+                var diff = requiredDistance - routeDistance;
+                var vehicle = vehicles[vehicles.Count - 1 - i];
 
                 diffs[vehicles.Count - i - 1] = diff;
                 vehicle.SetStartingRoute(currentRoute);
@@ -337,9 +334,6 @@ namespace Transidious
             {
                 v.StartDrive(v.CurrentRoute, diffs[n++]);
             }
-
-            // The first vehicle has to start manually, the others will follow automatically.
-            // vehicles.First().StartDrive();
         }
 
         public new Serialization.Line ToProtobuf()

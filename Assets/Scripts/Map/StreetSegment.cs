@@ -58,25 +58,15 @@ namespace Transidious
             /// The length of this lane.
             public Distance length => Distance.FromMeters(segment.length);
 
-            /// The positions of this lane.
-            public Vector3[] path
-            {
-                get
-                {
-                    var traffiSim = GameController.instance.sim.trafficSim;
-                    return traffiSim.GetPath(segment, laneNumber);
-                }
-            }
-
             /// The positions of this segment.
-            public List<Vector3> positions
+            public List<Vector2> positions
             {
                 get
                 {
                     if (forward)
                         return segment.positions;
 
-                    var cpy = new List<Vector3>(segment.positions);
+                    var cpy = new List<Vector2>(segment.positions);
                     cpy.Reverse();
 
                     return cpy;
@@ -84,14 +74,14 @@ namespace Transidious
             }
 
             /// The drivable positions of this segment.
-            public List<Vector3> drivablePositions
+            public List<Vector2> drivablePositions
             {
                 get
                 {
                     if (forward)
                         return segment.drivablePositions;
 
-                    var cpy = new List<Vector3>(segment.drivablePositions);
+                    var cpy = new List<Vector2>(segment.drivablePositions);
                     cpy.Reverse();
 
                     return cpy;
@@ -133,8 +123,8 @@ namespace Transidious
         /// <summary>
         /// The path of this street segment.
         /// </summary>
-        public List<Vector3> positions;
-        public List<Vector3> drivablePositions;
+        public List<Vector2> positions;
+        public List<Vector2> drivablePositions;
 
         /// List of distances from the start to this position.
         public List<float> cumulativeDistances;
@@ -179,6 +169,9 @@ namespace Transidious
         /// The flags.
         public Flags flags = Flags.None;
 
+        /// The number of cars that can park on the side of the road.
+        public int Capacity;
+
         /// Whether or not this street is onw-way only.
         public bool IsOneWay
         {
@@ -212,10 +205,12 @@ namespace Transidious
                 }
             }
         }
+
+        public bool IsRiver => street.type == Street.Type.River;
         
         public Distance distance => Distance.FromMeters(length);
         
-        public void Initialize(Street street, int position, List<Vector3> positions,
+        public void Initialize(Street street, int position, List<Vector2> positions,
                                StreetIntersection startIntersection,
                                StreetIntersection endIntersection,
                                bool isOneWay = false,
@@ -293,8 +288,20 @@ namespace Transidious
             Capacity = (int)Mathf.Floor(length / 15f) * 2;
         }
 
+        public override int GetCapacity(OccupancyKind kind)
+        {
+            if (kind == OccupancyKind.ParkingCitizen)
+            {
+                return Capacity;
+            }
+
+            return 0;
+        }
+
         void UpdateDrivablePositions()
         {
+            const float sqrThresholdDist = 2.5f * 2.5f;
+
             // Skip positions that are in front of the start stop line.
             int i = 1;
             while (i < positions.Count && cumulativeDistances[i] <= BeginStopLineDistance)
@@ -309,17 +316,33 @@ namespace Transidious
                 --iLast;
             }
 
-            drivablePositions = new List<Vector3>();
+            drivablePositions = new List<Vector2>();
 
             // Include stop line positions.
             drivablePositions.Add(GetStartStopLinePosition());
 
+            float dist;
             for (int j = i; j <= iLast; ++j)
             {
+                if (j == i)
+                {
+                    dist = (drivablePositions[0] - positions[j]).sqrMagnitude;
+                    if (dist <= sqrThresholdDist)
+                    {
+                        continue;
+                    }
+                }
+
                 drivablePositions.Add(positions[j]);
             }
 
-            drivablePositions.Add(GetEndStopLinePosition());
+            var endStopLinePos = GetEndStopLinePosition();
+
+            dist = (drivablePositions.Last() - endStopLinePos).sqrMagnitude;
+            if (dist > sqrThresholdDist || drivablePositions.Count < 2)
+            {
+                drivablePositions.Add(endStopLinePos);
+            }
         }
 
         public int LanePositionFromMiddle(int lane, bool ignoreOneWay = false)
@@ -391,16 +414,17 @@ namespace Transidious
             }
         }
 
-        public Tuple<Vector3, Math.PointPosition> GetClosestPointAndPosition(Vector3 pos)
+        public Tuple<Vector2, Math.PointPosition> GetClosestPointAndPosition(Vector2 pos)
         {
-            return GetClosestPointAndPosition(pos, drivablePositions);
+            var result = GetClosestPointAndPosition(pos, drivablePositions);
+            return Tuple.Create((Vector2) result.Item1, result.Item2);
         }
 
-        public static Tuple<Vector3, Math.PointPosition>
-        GetClosestPointAndPosition(Vector3 pos, IReadOnlyList<Vector3> positions)
+        public static Tuple<Vector2, Math.PointPosition>
+        GetClosestPointAndPosition(Vector2 pos, IReadOnlyList<Vector2> positions)
         {
             var minDist = float.PositiveInfinity;
-            var minPt = Vector3.zero;
+            var minPt = Vector2.zero;
             var minIdx = 0;
 
             for (int i = 1; i < positions.Count; ++i)
@@ -420,18 +444,16 @@ namespace Transidious
             }
 
             var pointPos = Math.GetPointPosition(positions[minIdx - 1], positions[minIdx], pos);
-            return new Tuple<Vector3, Math.PointPosition>(minPt, pointPos);
+            return new Tuple<Vector2, Math.PointPosition>(minPt, pointPos);
         }
 
-        public int GetClosestPoint(Vector3 pos)
+        public int GetClosestPoint(Vector2 pos)
         {
             return GetClosestPoint(pos, drivablePositions);
         }
 
-        public static int GetClosestPoint(Vector3 pos, IReadOnlyList<Vector3> positions)
+        public static int GetClosestPoint(Vector2 pos, IReadOnlyList<Vector2> positions)
         {
-            pos.z = 0f;
-
             var minDist = float.PositiveInfinity;
             var minIdx = -1;
 
@@ -475,7 +497,7 @@ namespace Transidious
             return cumulativeDist + (closestPt - pos).magnitude;
         }
 
-        public float GetDistanceFromStartStopLine(Vector2 pos, IReadOnlyList<Vector3> offsetPositions)
+        public float GetDistanceFromStartStopLine(Vector2 pos, IReadOnlyList<Vector2> offsetPositions)
         {
             var closestIdx = GetClosestPoint(pos, offsetPositions);
             Vector2 closestPt = offsetPositions[closestIdx];
@@ -494,7 +516,7 @@ namespace Transidious
             return length - GetDistanceFromStartStopLine(pos) - BeginStopLineDistance - EndStopLineDistance;
         }
 
-        public Vector3 GetOffsetPointFromStart(float distance)
+        public Vector2 GetOffsetPointFromStart(float distance)
         {
             if (distance > length)
             {
@@ -523,7 +545,7 @@ namespace Transidious
             return p0 + ((distance - cumulativeDistances[i - 1]) * dir);
         }
 
-        public Vector3 GetOffsetPointFromEnd(float distance)
+        public Vector2 GetOffsetPointFromEnd(float distance)
         {
             if (distance > length)
             {
@@ -552,12 +574,12 @@ namespace Transidious
             return p0 + ((distance - (length - cumulativeDistances[i + 1])) * dir);
         }
 
-        public Vector3 GetStartStopLinePosition()
+        public Vector2 GetStartStopLinePosition()
         {
             return GetOffsetPointFromStart(BeginStopLineDistance);
         }
 
-        public Vector3 GetEndStopLinePosition()
+        public Vector2 GetEndStopLinePosition()
         {
             return GetOffsetPointFromEnd(EndStopLineDistance);
         }
@@ -795,7 +817,7 @@ namespace Transidious
                 _tmpRenderer.enabled = false;
             }
 
-            var z = IsBridge ? .1f : 0f;
+            var z = IsBridge ? .1f : (street.type == Street.Type.River ? -.1f : 0f);
 
             _tmpRenderer.positionCount = positions.Count;
             _tmpRenderer.SetPositions(positions.Select(v => new Vector3(v.x, v.y, z)).ToArray());
@@ -865,7 +887,7 @@ namespace Transidious
             UpdateBorderColor(GetBorderColor(mode));
         }
 
-        Tuple<Mesh, Mesh> GetTramTrackMesh(Vector3[] path, bool isRightLane)
+        Tuple<Mesh, Mesh> GetTramTrackMesh(Vector2[] path, bool isRightLane)
         {
             var trackDistance = 1.2f;
             var trackWidth = 0.15f;
@@ -900,6 +922,7 @@ namespace Transidious
         void GetIntersectionMeshes(StreetIntersection intersection,
                                    List<Mesh> trackMeshes)
         {
+            /*
             var trafficSim = street.map.Game.sim.trafficSim;
             foreach (var s in intersection.intersectingStreets)
             {
@@ -929,10 +952,12 @@ namespace Transidious
                     s.UpdateTramTracks(leftMeshes.Item1, leftMeshes.Item2);
                 }
             }
+            */
         }
 
         void CreateTramTrackMesh()
         {
+            /*
             var trafficSim = street.map.Game.sim.trafficSim;
 
             // Create tracks for right lane.
@@ -967,6 +992,7 @@ namespace Transidious
 
             var renderer = tramTrackMeshObj.GetComponent<MeshRenderer>();
             renderer.material = GameController.instance.GetUnlitMaterial(GetBorderColor());
+            */
         }
 
         void UpdateTramTracks(Mesh trackRight, Mesh trackLeft)
@@ -1197,11 +1223,12 @@ namespace Transidious
 
                 endIntersection.ActivateModal();
                 return;
-            } 
-            
-            if (MainUI.instance.streetModal.segment == this)
+            }
+
+            var modal = MainUI.instance.streetModal;
+            if (modal.modal.Active && modal.segment == this)
             {
-                MainUI.instance.streetModal.modal.Disable();
+                modal.modal.Disable();
                 return;
             }
 

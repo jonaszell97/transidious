@@ -635,15 +635,16 @@ namespace Transidious
 
             foreach (var b in game.loadedMap.buildings)
             {
-                if (b.type != Building.Type.Residential || b.ResidentCount == 0)
+                var residentCount = b.GetOccupancyCount(OccupancyKind.Resident);
+                if (b.type != Building.Type.Residential || residentCount == 0)
                 {
                     continue;
                 }
 
-                maxOccupants = System.Math.Max(maxOccupants, b.ResidentCount * populationMultiplier);
+                maxOccupants = System.Math.Max(maxOccupants, residentCount * populationMultiplier);
 
                 var radius = Mathf.Min((b.centroid - b.collisionRect.center).magnitude * radiusMultiplier, 250f);
-                buildings.Add(Tuple.Create(b.centroid, b.ResidentCount * populationMultiplier, radius));
+                buildings.Add(Tuple.Create(b.centroid, residentCount * populationMultiplier, radius));
             }
 
             if (buildings.Count == 0)

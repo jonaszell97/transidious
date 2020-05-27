@@ -103,6 +103,7 @@ message Car {
     Vector2 position = 4;
     Color color = 5;
     uint32 parkingLotID = 6;
+    uint32 behaviourID = 7;
 }
 
 message Citizen {

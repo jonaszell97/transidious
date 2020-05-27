@@ -612,11 +612,7 @@ namespace Transidious
 
             done = true;
 
-            if (!AssetDatabase.IsValidFolder($"Assets/Resources/Maps/{map.name}/Backgrounds"))
-            {
-                UnityEngine.SceneManagement.SceneManager.LoadScene("LoadBackground");
-            }
-            else if (loadGame)
+            if (loadGame)
             {
                 UnityEngine.SceneManagement.SceneManager.LoadScene("MainGame");
             }
@@ -822,15 +818,15 @@ namespace Transidious
             return positions;
         }
 
-        List<Vector3> GetWayPositions(Way way)
+        List<Vector2> GetWayPositions(Way way)
         {
-            var positions = new List<Vector3>();
+            var positions = new List<Vector2>();
             GetWayPositions(way, positions);
 
             return positions;
         }
 
-        void GetWayPositions(Way way, List<Vector3> positions, float z = 0)
+        void GetWayPositions(Way way, List<Vector2> positions, float z = 0)
         {
             foreach (var nodeId in way.Nodes)
             {
@@ -924,10 +920,10 @@ namespace Transidious
                 }
 
                 var closestPtAndPos = street.GetClosestPointAndPosition(loc);
-                var positions = GameController.instance.sim.trafficSim.GetPath(
+                var positions = GameController.instance.sim.trafficSim.StreetPathBuilder.GetPath(
                     street, (closestPtAndPos.Item2 == Math.PointPosition.Right || street.IsOneWay)
                         ? street.RightmostLane
-                        : street.LeftmostLane);
+                        : street.LeftmostLane).Points;
 
                 closestPtAndPos = StreetSegment.GetClosestPointAndPosition(loc, positions);
                 loc = closestPtAndPos.Item1;
@@ -977,13 +973,13 @@ namespace Transidious
                 }
 
                 int i = 0;
-                List<Vector3> wayPositions = null;
-                List<Vector3> currentPositions = null;
+                List<Vector2> wayPositions = null;
+                List<Vector2> currentPositions = null;
 
                 if (type != TransitType.Bus)
                 {
-                    wayPositions = new List<Vector3>();
-                    currentPositions = new List<Vector3>();
+                    wayPositions = new List<Vector2>();
+                    currentPositions = new List<Vector2>();
                     
                     foreach (var member in members)
                     {
@@ -1585,15 +1581,18 @@ namespace Transidious
             var trafficLights = trafficLightInfo[intersection];
             var segments = intersection.IncomingStreets.Where(s => trafficLights.Contains(s));
             var numTrafficLights = segments.Count();
-            intersection.numTrafficLights = numTrafficLights;
-
-            var greenPhase = 0;
-            foreach (var s in segments)
+            if (numTrafficLights > 1)
             {
-                var tl = new TrafficLight(numTrafficLights, greenPhase++);
-                GameController.instance.sim.trafficSim.trafficLights.Add(tl.Id, tl);
+                intersection.numTrafficLights = numTrafficLights;
 
-                s.SetTrafficLight(intersection, tl);
+                var greenPhase = 0;
+                foreach (var s in segments)
+                {
+                    var tl = new TrafficLight(numTrafficLights, greenPhase++);
+                    GameController.instance.sim.trafficSim.trafficLights.Add(tl.Id, tl);
+
+                    s.SetTrafficLight(intersection, tl);
+                }
             }
 
             if (visualizeIntersections)
@@ -1601,28 +1600,11 @@ namespace Transidious
 
             assigned.Add(intersection);
             return false;
-
-            /*
-                    Pattern: Double One-Way Road x Double One-Way Road
-                           
-                        |  |  |
-                        |     |
-                        |  |  |
-                 -------       -------
-                             
-                 -- -- -       -- -- - 
-                             
-                 -------       -------
-                        |  |  |
-                        |     |
-                        |  |  |
-                         
-                    No Turn allowed
-            */
         }
 
         class PartialStreet
         {
+            internal Way way;
             internal string name;
             internal Street.Type type;
             internal bool lit;
@@ -1642,11 +1624,11 @@ namespace Transidious
                                  Dictionary<StreetIntersection, List<StreetSegment>> trafficLights,
                                  HashSet<PartialStreet> streetSet)
         {
-            var segPositionsStream = data.positions.Select(n => (Vector3)this.Project(n));
+            var segPositionsStream = data.positions.Select(Project);
             var segPositions = MeshBuilder.RemoveDetailByDistance(
                 segPositionsStream.ToArray(), 2.5f);
 
-            segPositions = MeshBuilder.RemoveDetailByAngle(segPositions, 5f);
+            // segPositions = MeshBuilder.RemoveDetailByAngle(segPositions, 3f);
             removedVerts += data.positions.Count - segPositions.Count;
 
             var startIntersection = map.streetIntersectionMap[Project(data.start.position)];
@@ -1678,13 +1660,126 @@ namespace Transidious
             if (exportType == MapExportType.Mesh)
             {
                 exporter.RegisterMesh(seg, (PSLG)null,
-                    (int)Map.Layer(MapLayer.Buildings),
+                    (int)Map.Layer(street.type == Street.Type.River ? MapLayer.Rivers : MapLayer.Streets),
                     Color.black);
             }
 
             streetSet.Remove(data);
-
             return seg;
+        }
+
+        int CombineAdjacentStreets(List<PartialStreet> candidates,
+                                   Dictionary<Node, RawIntersection> intersections,
+                                   Dictionary<Node, int> nodeCount,
+                                   HashSet<PartialStreet> removed)
+        {
+            var mergedSmallStreets = 0;
+            foreach (var street in candidates)
+            {
+                // If this street has an intersection with only one other street, we may be able to combine the two.
+                bool canCombineStart = nodeCount[street.positions.First()] == 2 
+                   && intersections.ContainsKey(street.positions.First());
+                bool canCombineEnd = nodeCount[street.positions.Last()] == 2 
+                   && intersections.ContainsKey(street.positions.Last());
+
+                if (!canCombineStart && !canCombineEnd)
+                {
+                    continue;
+                }
+
+                var intersection = canCombineStart ? street.start : street.end;
+                var oppositeIntersection = canCombineStart ? street.end : street.start;
+
+                if (intersection.intersectingStreets.Count != 2)
+                {
+                    continue;
+                }
+
+                // Get the combination candidate.
+                PartialStreet otherStreet = intersection.intersectingStreets[0] == street
+                    ? intersection.intersectingStreets[1]
+                    : intersection.intersectingStreets[0];
+
+                // Don't combine one-way with two-way streets.
+                if (street.oneway != otherStreet.oneway)
+                {
+                    continue;
+                }
+                
+                Debug.Assert(!removed.Contains(street) && !removed.Contains(otherStreet));
+                
+                bool endsHere = street.end == intersection;
+                Debug.Assert(endsHere || street.start == intersection);
+
+                bool otherEndsHere = otherStreet.end == intersection;
+                Debug.Assert(otherEndsHere || otherStreet.start == intersection);
+
+                // Utility.DrawLine(otherStreet.positions.Select(v => (Vector3)Project(v)).ToArray(), 2f, Color.blue);
+
+                if (otherEndsHere)
+                {
+                    RawIntersection newEnd;
+
+                    //   street      otherStreet
+                    // -----------   -----------
+                    // - - - -  -> I <-  - - - - 
+                    // -----------   -----------
+                    if (endsHere)
+                    {
+                        street.positions.Reverse();
+                        newEnd = street.start;
+                    }
+                    //   street      otherStreet
+                    // -----------   -----------
+                    // - - - -  <- I <-  - - - - 
+                    // -----------   -----------
+                    else
+                    {
+                        newEnd = street.end;
+                    }
+
+                    otherStreet.positions.AddRange(street.positions);
+                    otherStreet.end = newEnd;
+                }
+                else
+                {
+                    RawIntersection newStart;
+                    
+                    //   street      otherStreet
+                    // -----------   -----------
+                    // - - - -  <- I ->  - - - - 
+                    // -----------   -----------
+                    if (!endsHere)
+                    {
+                        street.positions.Reverse();
+                        newStart = street.end;
+                    }
+                    //   street      otherStreet
+                    // -----------   -----------
+                    // - - - -  -> I ->  - - - - 
+                    // -----------   -----------
+                    else
+                    {
+                        newStart = street.start;
+                    }
+                    
+                    otherStreet.positions.InsertRange(0, street.positions);
+                    otherStreet.start = newStart;
+                }
+
+                // Debug.Log($"Combined {street.way.Geo.Id} with {otherStreet.way.Geo.Id} => {otherStreet.positions.Count}");
+                // Utility.DrawLine(otherStreet.positions.Select(v => (Vector3)Project(v)).ToArray(), 2f, Color.red);
+
+                oppositeIntersection.intersectingStreets.Remove(street);
+                oppositeIntersection.intersectingStreets.Add(otherStreet);
+
+                removed.Add(street);
+
+                intersections.Remove(intersection.position);
+                ++mergedSmallStreets;
+            }
+
+            return mergedSmallStreets;
         }
 
         IEnumerator LoadStreets()
@@ -1693,9 +1788,12 @@ namespace Transidious
             var partialStreets = new List<PartialStreet>();
             var nodeCount = new Dictionary<Node, int>();
             var intersections = new Dictionary<Node, RawIntersection>();
+            var combinationCandidates = new List<PartialStreet>();
+            var startAndEndPositions = new HashSet<Node>();
 
             foreach (var street in streets)
             {
+                var positions = new List<Node>();
                 var tags = street.Item1.Geo.Tags;
                 var streetName = tags.GetValue("name");
 
@@ -1704,7 +1802,6 @@ namespace Transidious
                     streetName = street.Item1.Geo.Id.ToString() ?? (namelessStreets++).ToString();
                 }
 
-                var positions = new List<Node>();
                 foreach (var pos in street.Item1.Nodes)
                 {
                     var node = FindNode(pos);
@@ -1727,13 +1824,17 @@ namespace Transidious
                     }
                 }
 
-                ++nodeCount[positions.First()];
-                ++nodeCount[positions.Last()];
+                startAndEndPositions.Add(positions.First());
+                startAndEndPositions.Add(positions.Last());
 
-                int.TryParse(tags.GetValue("maxspeed"), out int maxspeed);
+                if (!int.TryParse(tags.GetValue("maxspeed"), out int maxspeed))
+                {
+                    maxspeed = 0;
+                }
 
                 var ps = new PartialStreet
                 {
+                    way = street.Item1,
                     name = streetName,
                     type = street.Item2,
                     lit = tags.Contains("lit", "yes"),
@@ -1755,9 +1856,10 @@ namespace Transidious
                 }
             }
 
+            // Create intersections.
             foreach (var node in nodeCount)
             {
-                if (node.Value > 1)
+                if (node.Value > 1 || startAndEndPositions.Contains(node.Key))
                 {
                     intersections.Add(node.Key, new RawIntersection
                     {
@@ -1774,7 +1876,7 @@ namespace Transidious
                 var startInter = intersections[startPos];
                 var startIdx = 0;
                 var roundabout = street.isRoundabout ||
-                    street.positions.First() == street.positions.Last();
+                    street.positions.First().Equals(street.positions.Last());
 
                 for (int i = 1; i < street.positions.Count; ++i)
                 {
@@ -1789,6 +1891,7 @@ namespace Transidious
                     {
                         ps = new PartialStreet
                         {
+                            way = street.way,
                             name = street.name,
                             type = street.type,
                             lit = street.lit,
@@ -1805,6 +1908,15 @@ namespace Transidious
                         ps = street;
                         ps.start = startInter;
                         ps.end = endInter;
+                    }
+    
+                    // Check if we may be able to combine this street with an adjacent one.
+                    bool canCombineStart = nodeCount[street.positions.First()] == 2;
+                    bool canCombineEnd = nodeCount[street.positions.Last()] == 2;
+                    
+                    if (canCombineStart || canCombineEnd)
+                    {
+                        combinationCandidates.Add(ps);
                     }
 
                     streetSet.Add(ps);
@@ -1833,6 +1945,11 @@ namespace Transidious
                 }
             }
 
+            // Try to combine adjacent streets.
+            var removed = new HashSet<PartialStreet>();
+            var combineAdjacentStreets = CombineAdjacentStreets(combinationCandidates, intersections, nodeCount, removed);
+            Debug.Log($"Combined {combineAdjacentStreets} adjacent streets");
+
             var removedVerts = 0;
             var startingStreetCandidates = new HashSet<string>();
             var trafficLights = new Dictionary<StreetIntersection, List<StreetSegment>>();
@@ -1842,14 +1959,13 @@ namespace Transidious
                 // Check for streets that start at this intersection.
                 foreach (var ps in inter.Value.intersectingStreets)
                 {
-                    if (!startingStreetCandidates.Add(ps.name) && !ps.isRoundabout)
-                    {
-                        // startingStreetCandidates.Remove(ps.name);
-                    }
+                    startingStreetCandidates.Add(ps.name);
                 }
 
                 foreach (var startSeg in inter.Value.intersectingStreets)
                 {
+                    Debug.Assert(!removed.Contains(startSeg));
+                    
                     // This street was already built.
                     if (!startingStreetCandidates.Contains(startSeg.name) || !streetSet.Contains(startSeg))
                     {
@@ -1886,6 +2002,8 @@ namespace Transidious
 
                         foreach (var nextSeg in nextInter.intersectingStreets)
                         {
+                            Debug.Assert(!removed.Contains(nextSeg));
+
                             if (nextSeg.name != currSeg.name || !streetSet.Contains(nextSeg))
                             {
                                 continue;
@@ -2025,7 +2143,7 @@ namespace Transidious
                     //Debug.Log("loading natural feature '" + featureName + "'...");
 
                     PSLG pslg = null;
-                    Vector3[] wayPositionsArr = null;
+                    Vector2[] wayPositionsArr = null;
 
                     if (rel != null)
                     {
@@ -2046,12 +2164,8 @@ namespace Transidious
 
                         wayPositionsArr = wayPositions.ToArray();
 
-                        outlinePositions = new Vector2[][]
-                        {
-                            wayPositionsArr.Select(v => (Vector2)v).ToArray(),
-                        };
-
                         area = Math.GetAreaOfPolygon(wayPositionsArr);
+                        outlinePositions = new [] { wayPositionsArr };
                         centroid = Math.GetCentroid(wayPositionsArr);
                     }
 
@@ -2538,7 +2652,7 @@ namespace Transidious
                     }
                     else
                     {
-                        var wayPositions = new List<Vector3>();
+                        var wayPositions = new List<Vector2>();
                         foreach (var nodeId in way.Nodes)
                         {
                             var node = FindNode(nodeId);
