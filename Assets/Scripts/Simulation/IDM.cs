@@ -10,9 +10,83 @@ namespace Transidious
     {
         public class IntersectionStatus
         {
-            /// The occupation status. Each bit represents one of the intersection paths, uniquely identified by
+            /// Base mask that adds one to every path.
+            private static readonly ulong _baseMask = 0b0001_0001_0001_0001_0001_0001_0001_0001;
+
+            /// Cached masks.
+            private static Dictionary<Tuple<StreetSegment, StreetSegment>, ulong> _maskCache;
+
+            /// Initialize the cache.
+            public static void Initialize()
+            {
+                _maskCache = new Dictionary<Tuple<StreetSegment, StreetSegment>, ulong>();
+            }
+
+            /// The occupation status. Every four bits represent one of the intersection paths, uniquely identified by
             /// StreetIntersection.GetIndexForIntersectionPath.
-            public uint OccupationStatus;
+            public ulong OccupationStatus { get; private set; }
+
+            /// Number of occupying cars.
+            private int _occupyingCars;
+
+            /// Calculate the opaque mask for the paths blocked by an intersection crossing.
+            private static ulong GetMask(StreetIntersection intersection, StreetSegment from, StreetSegment to)
+            {
+                var key = Tuple.Create(from, to);
+                if (_maskCache.TryGetValue(key, out var mask))
+                {
+                    return mask;
+                }
+
+                mask = _baseMask;
+
+                var offset = intersection.GetIndexForIntersectionPath(from, to);
+                mask &= ~(1ul << (offset * 4));
+
+                _maskCache.Add(key, mask);
+                return mask;
+            }
+
+            /// Whether or not the path at offset is blocked.
+            public bool IsBlocked(int offset)
+            {
+                const ulong mask = 0b1111;
+                return (OccupationStatus & (mask << (offset * 4))) != 0;
+            }
+
+            /// Try to block the intersection with the given mask. Return true on success.
+            public bool TryBlock(StreetIntersection intersection, StreetSegment from, StreetSegment to)
+            {
+                if (_occupyingCars == 16)
+                {
+                    return false;
+                }
+
+                var mask = GetMask(intersection, from, to);
+                Block(mask);
+
+                return true;
+            }
+
+            /// Try to block the intersection with the given mask. Return true on success.
+            private void Block(ulong mask)
+            {
+                OccupationStatus += mask;
+                ++_occupyingCars;
+            }
+
+            /// Unblock the intersection with the given mask.
+            public void Unblock(StreetIntersection intersection, StreetSegment from, StreetSegment to)
+            {
+                Unblock(GetMask(intersection, from, to));
+            }
+
+            /// Unblock the intersection with the given mask.
+            private void Unblock(ulong mask)
+            {
+                OccupationStatus -= mask;
+                --_occupyingCars;
+            }
         }
 
         /// Minimum spacing: the minimum desired net distance. A car can't move if 
@@ -64,6 +138,8 @@ namespace Transidious
             {
                 IntersectionOccupation.Add(intersection, new IntersectionStatus());
             }
+
+            IntersectionStatus.Initialize();
         }
 
         /// (Re-)Initialize the IDM state.
@@ -256,15 +332,6 @@ namespace Transidious
             }
         }
 
-        /// Check which intersections will be blocked by the car's next turn.
-        private uint GetIntersectionBlockingMask(int offset)
-        {
-            var result = ~0u;
-            // result &= ~(1u << offset);
-
-            return result;
-        }
-
         /// Check and update the occupation status of the intersection we're approaching.
         private void CheckIntersectionStatus(float v, out float s, out float deltaV, out float s0)
         {
@@ -299,39 +366,34 @@ namespace Transidious
             var status = IntersectionOccupation[intersection];
 
             // The intersection is blocked.
-            if ((status.OccupationStatus & (1 << offset)) != 0)
+            if (status.IsBlocked(offset))
             {
                 return true;
             }
 
             // The intersection is free again, mark it as blocked for other cars and go.
-            var mask = GetIntersectionBlockingMask(offset);
-            status.OccupationStatus |= mask;
-            _blockingIntersection = true;
+            if (!status.TryBlock(intersection, _car.Segment, _car.NextSegment))
+            {
+                return true;
+            }
 
+            _blockingIntersection = true;
             return false;
         }
 
         /// Notify other cars that we exited an intersection.
         public void UnblockIntersection()
         {
-            var offset = _car.NextIntersection.GetIndexForIntersectionPath(_car.Segment, _car.NextSegment);
-            var mask = GetIntersectionBlockingMask(offset);
             var status = IntersectionOccupation[_car.NextIntersection];
 
             // Unblock the intersection.
-            status.OccupationStatus &= ~mask;
+            status.Unblock(_car.NextIntersection, _car.Segment, _car.NextSegment);
             _blockingIntersection = false;
         }
 
         /// Calculate the busy road term for the car.
         private float GetBusyRoadTerm(SimulationController sim, float a, float v)
         {
-            if (GameController.instance.mainUI.citizenModal.citizen == _car.Path.citizen)
-            {
-                int i = 3;
-            }
-
             // Net distance to the next car.
             float s;
 

@@ -450,8 +450,8 @@ namespace Transidious
                     }
                     case PathStep.Type.Turn:
                     {
-                        trafficSim.ExitIntersection(_drivingCar, ((TurnStep)finishedStep).intersection);
                         idm.UnblockIntersection();
+                        trafficSim.ExitIntersection(_drivingCar, ((TurnStep)finishedStep).intersection);
                         break;
                     }
                     default:

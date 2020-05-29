@@ -100,7 +100,7 @@ namespace UI
         private void UpdateFrequentChanges()
         {
             _infoPanel.SetValue("OccupationMask",
-                "0b" + Convert.ToString(IDM.IntersectionOccupation[intersection].OccupationStatus, 2));
+                "0b" + Convert.ToString((long)IDM.IntersectionOccupation[intersection].OccupationStatus, 2));
         }
 
 #if DEBUG
