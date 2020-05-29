@@ -75,8 +75,6 @@ namespace Transidious
         private PathFollower _pathFollowingHelper;
         public PathFollower PathFollowingHelper => _pathFollowingHelper;
 
-        public Vector2 CurrentDirection => _pathFollowingHelper?.Direction ?? Vector2.zero;
-
         /// The time to wait until.
         private DateTime? _waitUntil;
 
@@ -262,6 +260,10 @@ namespace Transidious
         {
             this.onDone?.Invoke();
             citizen.activePath = null;
+
+            onDone = null;
+            _currentStep = int.MaxValue;
+
             ResourceManager.instance.Reclaim(this);
 
 #if DEBUG
@@ -294,17 +296,12 @@ namespace Transidious
             _pathFollowingHelper = null;
             _currentStepProgress = 0f;
             transitVehicle = null;
+            _drivingCar = null;
 
-            if (!IsDrivingStep(currentStep) || !IsDrivingStep(nextStep))
+            if (_spriteRenderer != null)
             {
-                _drivingCar = null;
-                if (_spriteRenderer != null)
-                {
-                    _spriteRenderer.enabled = false;
-                    // _boxCollider2D.enabled = false;
-                }
+                _spriteRenderer.enabled = false;
             }
-            
 
             if (++_currentStep < path.path.Steps.Length)
             {
@@ -313,6 +310,45 @@ namespace Transidious
             else
             {
                 PathDone();
+            }
+        }
+
+        /// Whether or not we can safely abort this path right now.
+        public bool Abortable => !IsDriving || idm.Abortable;
+
+        public void Abort(bool reclaim)
+        {
+            Debug.Assert(Abortable, "can't abort this path right now!");
+
+            if (_drivingCar != null)
+            {
+                if (_drivingCar.Turning)
+                {
+                    trafficSim.ExitIntersection(_drivingCar, _drivingCar.NextIntersection);
+                }
+                else
+                {
+                    trafficSim.ExitStreetSegment(_drivingCar.Segment, _drivingCar);
+                }
+            }
+
+            _waitUntil = null;
+            _pathFollowingHelper = null;
+            _currentStepProgress = 0f;
+            _drivingCar = null;
+            _currentStep = int.MaxValue;
+            onDone = null;
+            transitVehicle = null;
+
+            if (_spriteRenderer != null)
+            {
+                _spriteRenderer.enabled = false;
+            }
+
+            if (reclaim)
+            {
+                citizen.activePath = null;
+                ResourceManager.instance.Reclaim(this);
             }
         }
 
@@ -344,6 +380,8 @@ namespace Transidious
 
         void InitWalk(WalkStep step)
         {
+            Debug.Assert(_drivingCar == null);
+
             // FIXME use actual walking path.
             var path = new PathSegment(step.from, step.to);
 
@@ -407,11 +445,12 @@ namespace Transidious
                             }
                         }
 
-                        trafficSim.ExitStreetSegment(_drivingCar.segment, _drivingCar);
+                        trafficSim.ExitStreetSegment(_drivingCar.Segment, _drivingCar);
                         break;
                     }
                     case PathStep.Type.Turn:
                     {
+                        idm.ExitIntersection();
                         trafficSim.ExitIntersection(_drivingCar, ((TurnStep)finishedStep).intersection);
                         break;
                     }
@@ -462,7 +501,7 @@ namespace Transidious
                             trafficSim.GetDefaultLane(driveSegment.segment,
                                 driveSegment.backward), this, nextStep);
 
-                        _drivingCar.backward = driveSegment.backward;
+                        _drivingCar.Backward = driveSegment.backward;
                         idm.Reset(_drivingCar, CurrentVelocity);
 
                         break;
@@ -481,10 +520,8 @@ namespace Transidious
             UpdateSprite($"Sprites/car{(int)car.model}", car.color);
 
             // Update starting position.
-            if (_drivingCar == null)
-            {
-                transform.SetPositionInLayer(completePath.Start);
-            }
+            Debug.Assert(_drivingCar == null);
+            transform.SetPositionInLayer(completePath.Start);
 
             // Inform traffic sim that a car is entering the intersection.
             _drivingCar = trafficSim.EnterStreetSegment(car, firstStep.driveSegment.segment, 
@@ -493,7 +530,7 @@ namespace Transidious
                                                             firstStep.driveSegment.backward), this,
                                                         nextStep);
 
-            _drivingCar.backward = firstStep.driveSegment.backward;
+            _drivingCar.Backward = firstStep.driveSegment.backward;
 
             // (Re-)initialize IDM.
             if (idm == null)
@@ -501,75 +538,13 @@ namespace Transidious
                 idm = new IDM();
             }
 
-            idm.Reset(_drivingCar, Velocity.zero);
-        }
-
-        bool WouldOvertakeIllegally(TrafficSimulator.DrivingCar dc, float elapsedTime)
-        {
-            if (dc.next == null)
-            {
-                return false;
-            }
-
-            return dc.distanceFromStart + (elapsedTime * _pathFollowingHelper.Velocity.RealTimeMPS)
-                   >= dc.next.distanceFromStart;
+            idm.Initialize(_drivingCar, Velocity.zero);
         }
 
         void UpdateDrivingState()
         {
             var sim = trafficSim.sim;
             idm.Update(sim, _pathFollowingHelper);
-
-            /*
-            var elapsedTime = Time.deltaTime * sim.SpeedMultiplier;
-            _drivingState.timeSinceLastUpdate += elapsedTime;
-
-            if (_drivingState.timeSinceLastUpdate >= TrafficSimulator.VelocityUpdateInterval
-            || WouldOvertakeIllegally(drivingCar, elapsedTime))
-            {
-                // if (citizen.Name == "Samiyah Voe")
-                // {
-                //     Debug.Break();
-                // }
-
-                _pathFollowingHelper.Velocity = sim.trafficSim.GetCarVelocity(drivingCar, 1f);
-
-                // Must be updated after the velocity calculation.
-                _drivingState.timeSinceLastUpdate = 0f;
-                _currentVelocity = _pathFollowingHelper.Velocity;
-            }
-
-            if (drivingCar.waitingForTrafficLight != null)
-            {
-                if (drivingCar.waitingForTrafficLight.MustStop)
-                {
-                    return;
-                }
-
-                drivingCar.waitingForTrafficLight = null;
-            }
-
-            var prevDistance = drivingCar.distanceFromStart;
-            var diff = _pathFollowingHelper.Update(elapsedTime);
-
-#if DEBUG
-            if (drivingCar.next != null && (drivingCar.distanceFromStart + diff >= drivingCar.next.distanceFromStart))
-            {
-                // if (citizen.Name == "Alexis Parke")
-                // {
-                //     Debug.Break();
-                //     sim.trafficSim.GetCarVelocity(drivingCar, 1f);
-                // }
-
-                Debug.LogError($"[{citizen.Name}] GOTCHA");
-            }
-#endif
-            
-            // Only update if we didn't complete the current step.
-            if (drivingCar.distanceFromStart.Equals(prevDistance))
-            {
-                drivingCar.distanceFromStart += diff;
-            }*/
         }
 
         /**

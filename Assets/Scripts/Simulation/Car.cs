@@ -95,14 +95,16 @@ namespace Transidious
             Sedan3 = 3,
             Sedan4 = 4,
             Sports = 5,
+            Pickup = 6,
         }
 
         static readonly Tuple<float, CarModel>[] _carModelDistribution =
         {
-            Tuple.Create(.27f, CarModel.Sedan1),
-            Tuple.Create(.22f, CarModel.Sedan2),
-            Tuple.Create(.23f, CarModel.Sedan3),
-            Tuple.Create(.23f, CarModel.Sedan4),
+            Tuple.Create(.22f, CarModel.Sedan1),
+            Tuple.Create(.17f, CarModel.Sedan2),
+            Tuple.Create(.18f, CarModel.Sedan3),
+            Tuple.Create(.18f, CarModel.Sedan4),
+            Tuple.Create(.20f, CarModel.Pickup),
             Tuple.Create(.05f, CarModel.Sports),
         };
 
@@ -138,6 +140,7 @@ namespace Transidious
                         return Velocity.FromRealTimeKPH(120f);
                     case CarModel.Sedan3:
                     case CarModel.Sedan4:
+                    case CarModel.Pickup:
                         return Velocity.FromRealTimeKPH(80f);
                     case CarModel.Sports:
                         return Velocity.FromRealTimeKPH(200f);
@@ -158,6 +161,8 @@ namespace Transidious
                     case CarModel.Sedan3:
                     case CarModel.Sedan4:
                         return Acceleration.FromRealTimeMPS2(2.5f);
+                    case CarModel.Pickup:
+                        return Acceleration.FromRealTimeMPS2(2f);
                     case CarModel.Sports:
                         return Acceleration.FromRealTimeMPS2(8f);
                 }

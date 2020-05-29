@@ -74,6 +74,8 @@ namespace Transidious
             _debugPanel.AddItem("Distance To Next", "Distance To Next", "");
             _debugPanel.AddItem("Distance To Intersection", "Distance To Intersection", "");
             _debugPanel.AddItem("Velocity", "Velocity", "");
+            _debugPanel.AddItem("NextTurn", "Next Turn", "");
+            _debugPanel.AddItem("QueuePos", "Queue Position", "");
             
             _debugPanel.AddClickableItem("Next Car", "Next Car", Color.white, () =>
             {
@@ -82,7 +84,7 @@ namespace Transidious
 
                 // var next = GameController.instance.sim.trafficSim.GetNextCar(
                 //     citizen.activePath._drivingState.drivingCar);
-                var next = citizen.activePath._drivingCar.next;
+                var next = citizen.activePath._drivingCar.Next;
                 if (next != null)
                 {
                     GameController.instance.input.MoveTowards(next.CurrentPosition);
@@ -98,7 +100,7 @@ namespace Transidious
                 if (!(citizen.activePath?.IsDriving) ?? false)
                     return;
 
-                var prev = citizen.activePath._drivingCar.prev;
+                var prev = citizen.activePath._drivingCar.Prev;
                 if (prev != null)
                 {
                     GameController.instance.input.MoveTowards(prev.CurrentPosition);
@@ -229,22 +231,33 @@ namespace Transidious
             if (citizen.activePath?.IsDriving ?? false)
             {
                 this._debugPanel.SetValue("Distance From Start",
-                    $"{citizen.activePath._drivingCar.distanceFromStart:n2} m");
+                    $"{citizen.activePath._drivingCar.DistanceFromStart:n2} m");
 
                 this._debugPanel.SetValue("Distance To Intersection",
                     $"{citizen.activePath._drivingCar.DistanceToIntersection:n2} m");
                 
                 this._debugPanel.SetValue("Velocity",
                     $"{citizen.activePath._drivingCar.CurrentVelocity.RealTimeMPS:n2} m/s");
+                
+                _debugPanel.SetValue("QueuePos", citizen.activePath.idm.CurrentQueuePosition.ToString());
 
-                if (citizen.activePath._drivingCar.next != null)
+                if (citizen.activePath._drivingCar.Next != null)
                 {
                     this._debugPanel.SetValue("Distance To Next",
-                        $"{citizen.activePath._drivingCar.next.distanceFromStart - citizen.activePath._drivingCar.distanceFromStart:n2} m");
+                        $"{citizen.activePath._drivingCar.Next.DistanceFromStart - citizen.activePath._drivingCar.DistanceFromStart:n2} m");
                 }
                 else
                 {
                     this._debugPanel.SetValue("Distance To Next", "-");
+                }
+                
+                if (citizen.activePath._drivingCar.NextTurn != null)
+                {
+                    this._debugPanel.SetValue("NextTurn", citizen.activePath._drivingCar.NextTurn.Value.ToString());
+                }
+                else
+                {
+                    this._debugPanel.SetValue("NextTurn", "-");
                 }
 
                 this._debugPanel.SetValue("Step",

@@ -1713,7 +1713,7 @@ PrefabInstance:
     - target: {fileID: 5287185505245174272, guid: 8e3ff855e7ea34cdd995207225aa57e2,
         type: 3}
       propertyPath: renderStreetOrder
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5287185505245174272, guid: 8e3ff855e7ea34cdd995207225aa57e2,
         type: 3}

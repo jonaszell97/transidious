@@ -829,8 +829,15 @@ namespace Transidious
             {
                 if (activePath != null)
                 {
+                    // Check if we can safely abort the current path.
+                    if (!activePath.Abortable)
+                    {
+                        return;
+                    }
+
                     // We completely missed the previous event, apply a penalty.
                     SetHappiness(happiness - currentEvent.PenaltyForMissing);
+                    activePath.Abort(false);
                 }
 
                 UpdateDailySchedule(currentTime, newDay);

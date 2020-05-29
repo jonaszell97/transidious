@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using DrivingCar = Transidious.TrafficSimulator.DrivingCar;
 
@@ -7,26 +8,49 @@ namespace Transidious
     /// Intelligent driver model (https://en.wikipedia.org/wiki/Intelligent_driver_model)
     public class IDM
     {
+        public class IntersectionStatus
+        {
+            /// The occupation status. Each bit represents one of the intersection paths, uniquely identified by
+            /// StreetIntersection.GetIndexForIntersectionPath.
+            public uint OccupationStatus;
+
+            /// The number of cars waiting to cross the intersection.
+            public int WaitingCars;
+
+            /// The number of cars that have passed the intersection since the last reset.
+            public int PassedCars;
+        }
+
         /// Minimum spacing: the minimum desired net distance. A car can't move if 
         /// the distance from the car in the front is not at least s0. (in m)
         private static readonly float s0_car = 1f;
         private static readonly float s0_intersection = 3.5f;
 
-        /// Exponent.
+        /// Exponent for free road term.
         private static readonly float delta = 4f;
 
-        /// Velocity update interval in seconds.
+        /// Velocity update interval (in seconds).
         private static readonly float VelocityUpdateInterval = 0.4f;
 
-        /// Maximum distance a car must be away from an intersection to check for other cars.
+        /// Maximum distance a car must be away from an intersection to check for other cars (in meters).
         private static readonly float IntersectionCheckThreshold = 30f;
 
-        /// Max stopping time that is acceptable for emergency braking.
+        /// Max stopping time that is acceptable for emergency braking (in seconds).
         /// (https://www.tandfonline.com/doi/pdf/10.1080/16484142.2007.9638118)
         private static readonly float MaxSafeStoppingTime = 1.5f;
 
+        /// Map of intersection occupation statuses.
+        public static Dictionary<StreetIntersection, IntersectionStatus> IntersectionOccupation;
+
         /// The car this class is modeling.
         private DrivingCar _car;
+        
+        /// The traffic light we're waiting for.
+        private TrafficLight _waitingForTrafficLight;
+
+        /// Our position in the intersection wait queue.
+        private int _intersectionQueuePosition = -1;
+        public int CurrentQueuePosition => _intersectionQueuePosition;
 
         /// The current velocity.
         private Velocity _currentVelocity;
@@ -37,13 +61,32 @@ namespace Transidious
         /// Reference to the car's driving behaviour.
         private Car.DrivingBehaviour _behaviour;
 
+        /// Initialize static values.
+        public static void Initialize()
+        {
+            IntersectionOccupation = new Dictionary<StreetIntersection, IntersectionStatus>();
+
+            foreach (var intersection in GameController.instance.loadedMap.streetIntersections)
+            {
+                IntersectionOccupation.Add(intersection, new IntersectionStatus());
+            }
+        }
+
+        /// (Re-)Initialize the IDM state.
+        public void Initialize(DrivingCar car, Velocity velocity)
+        {
+            Debug.Assert(_intersectionQueuePosition == -1);
+            Reset(car, velocity);
+        }
+
         /// Reset the IDM state.
         public void Reset(DrivingCar car, Velocity velocity)
         {
             _car = car;
             _currentVelocity = velocity;
             _timeSinceLastUpdate = 1000f;
-            _behaviour = car.car.Behaviour;
+            _behaviour = car.Car.Behaviour;
+            _waitingForTrafficLight = null;
         }
 
         /// Update the car's velocity and position if necessary.
@@ -52,46 +95,49 @@ namespace Transidious
             var elapsedTime = Time.deltaTime * sim.SpeedMultiplier;
             _timeSinceLastUpdate += elapsedTime;
 
-            float delta;
+            float distanceDelta;
             if (_timeSinceLastUpdate >= VelocityUpdateInterval)
             {
                 var newParams = CalculateUpdatedParameters(sim, elapsedTime);
                 _currentVelocity = newParams.Item1;
-                delta = newParams.Item2;
+                distanceDelta = newParams.Item2;
 
                 _timeSinceLastUpdate = 0f;
                 pathFollower.Velocity = _currentVelocity;
             }
             else
             {
-                delta = elapsedTime * _currentVelocity.RealTimeMPS;
+                distanceDelta = elapsedTime * _currentVelocity.RealTimeMPS;
             }
 
-            if (delta.Equals(0f) || WouldOvertakeIllegally(delta))
+            if (distanceDelta.Equals(0f) || WouldOvertakeIllegally(distanceDelta))
             {
                 return;
             }
 
             // Update the car's position.
-            var prevDistance = _car.distanceFromStart;
-            pathFollower.UpdatePosition(delta);
+            var prevDistance = _car.DistanceFromStart;
+            pathFollower.UpdatePosition(distanceDelta);
 
             // Only update if we didn't complete the driving step.
-            if (prevDistance.Equals(_car.distanceFromStart))
+            if (prevDistance.Equals(_car.DistanceFromStart))
             {
-                _car.distanceFromStart += delta;
+                _car.DistanceFromStart += distanceDelta;
             }
         }
+
+        /// Whether or not the drive can be safely aborted right now without messing up something.
+        public bool Abortable => _intersectionQueuePosition == -1;
 
         /// Whether or not the car would illegally overtake the next car with this movement.
         private bool WouldOvertakeIllegally(float delta)
         {
-            if (_car.next == null)
+            if (_car.Next == null)
             {
                 return false;
             }
 
-            return _car.distanceFromStart + delta >= _car.next.distanceFromStart;
+            return _car.DistanceFromStart + delta >= _car.Next.DistanceFromStart;
         }
 
         /// Calculate the car's new velocity and position.
@@ -144,25 +190,26 @@ namespace Transidious
         {
             // The current speed limit.
             float speedLimit;
-            if (_car.nextIntersection != null && _car.DistanceToIntersection <= IntersectionCheckThreshold)
+            if (_car.NextIntersection != null && _car.DistanceToIntersection <= IntersectionCheckThreshold)
             {
-                speedLimit = _car.nextSegment.street.MaxSpeed.RealTimeMPS;
+                speedLimit = _car.NextSegment.street.MaxSpeed.RealTimeMPS;
             }
             else
             {
-                speedLimit = _car.segment.street.MaxSpeed.RealTimeMPS;
+                speedLimit = _car.Segment.street.MaxSpeed.RealTimeMPS;
             }
 
             // The desired velocity on a free road.
-            float v0 = Mathf.Min(_car.car.MaxVelocity.RealTimeMPS, speedLimit) * _behaviour.SpeedLimitFactor;
+            float v0 = Mathf.Min(_car.Car.MaxVelocity.RealTimeMPS, speedLimit) * _behaviour.SpeedLimitFactor;
 
             // The car's maximum acceleration.
-            float a = _car.car.Acceleration.RealTimeMPS2;
+            float a = _car.Car.Acceleration.RealTimeMPS2;
 
             // Free road term.
             float freeRoadTerm;
             if (v >= v0)
             {
+                // Don't decelerate too harshly in case of a new speed limit.
                 freeRoadTerm = v / v0;
             }
             else
@@ -205,9 +252,136 @@ namespace Transidious
             }
         }
 
+        /// Check which intersections will be blocked by the car's next turn.
+        private uint GetIntersectionBlockingMask(int offset)
+        {
+            var result = ~0u;
+            // result &= ~(1u << offset);
+
+            return result;
+        }
+
+        /// Check and update the occupation status of the intersection we're approaching.
+        private void CheckIntersectionStatus(float v, out float s, out float deltaV, out float s0)
+        {
+            // If the car in front of this one has a lower priority, swap the queue positions.
+            if (_car.Next != null)
+            {
+                var nextIdm = _car.Next.Path.idm;
+                if (nextIdm._intersectionQueuePosition > _intersectionQueuePosition)
+                {
+                    Utility.Swap(ref _intersectionQueuePosition, ref nextIdm._intersectionQueuePosition);
+                }
+            }
+
+            var waitForNextCar = _car.Next != null && _car.Next.Path.idm._intersectionQueuePosition == -1;
+            if (!waitForNextCar && _intersectionQueuePosition != 0 && IsIntersectionOccupied())
+            {
+                s = _car.DistanceToIntersection;
+                deltaV = v;
+                s0 = s0_intersection;
+
+                return;
+            }
+
+            // If there is no leading car, pretend there is one really far away.
+            s = 1000f;
+            deltaV = 0f;
+
+            // No minimum spacing is needed for an unoccupied intersection.
+            s0 = 0f;
+        }
+
+        /// Check and update the occupation status of the intersection we're approaching.
+        private bool IsIntersectionOccupied()
+        {
+            if (_car.DistanceToIntersection >= IntersectionCheckThreshold)
+            {
+                return false;
+            }
+
+            var intersection = _car.NextIntersection;
+            var offset = intersection.GetIndexForIntersectionPath(_car.Segment, _car.NextSegment);
+            var status = IntersectionOccupation[intersection];
+
+            // The intersection is blocked.
+            if ((status.OccupationStatus & (1 << offset)) != 0)
+            {
+                // We were already waiting for this intersection, so nothing changed.
+                if (_intersectionQueuePosition == -1)
+                {
+                    _intersectionQueuePosition = status.WaitingCars++;
+                }
+
+                return true;
+            }
+
+            var mask = GetIntersectionBlockingMask(offset);
+
+            // We were waiting for this intersection to be unoccupied, so update the status for other cars.
+            if (_intersectionQueuePosition != -1)
+            {
+                // Check if we are next.
+                if (status.PassedCars == _intersectionQueuePosition)
+                {
+                    status.OccupationStatus |= mask;
+                    _intersectionQueuePosition = 0;
+                    return false;
+                }
+
+                // We still need to wait.
+                return true;
+            }
+
+            // Enqueue this car.
+            _intersectionQueuePosition = status.WaitingCars++;
+
+            if (_intersectionQueuePosition == 0)
+            {
+                status.OccupationStatus |= mask;
+                return false;
+            }
+
+            return true;
+        }
+
+        /// Notify other cars that we exited an intersection.
+        public void ExitIntersection()
+        {
+            if (_intersectionQueuePosition != 0)
+            {
+                Debug.Assert(_intersectionQueuePosition == -1);
+                return;
+            }
+
+            _intersectionQueuePosition = -1;
+
+            var offset = _car.NextIntersection.GetIndexForIntersectionPath(_car.Segment, _car.NextSegment);
+            var mask = GetIntersectionBlockingMask(offset);
+            var status = IntersectionOccupation[_car.NextIntersection];
+
+            status.OccupationStatus &= ~mask;
+            ++status.PassedCars;
+
+            // No cars currently waiting, reset status.
+            if (status.PassedCars == status.WaitingCars)
+            {
+                status.WaitingCars = 0;
+                status.PassedCars = 0;
+            }
+
+            // Sanity checks.
+            Debug.Assert(status.WaitingCars >= 0);
+            Debug.Assert(status.WaitingCars != 0 || status.OccupationStatus == 0);
+        }
+
         /// Calculate the busy road term for the car.
         private float GetBusyRoadTerm(SimulationController sim, float a, float v)
         {
+            if (GameController.instance.mainUI.citizenModal.citizen == _car.Path.citizen)
+            {
+                int _ = 021;
+            }
             // Net distance to the next car.
             float s;
 
@@ -218,10 +392,10 @@ namespace Transidious
             float s0;
 
             // Check if this car is waiting for a traffic light.
-            if (_car.waitingForTrafficLight != null)
+            if (_waitingForTrafficLight != null)
             {
                 // Check if the traffic light is green again.
-                if (_car.waitingForTrafficLight.CurrentPhase != TrafficLight.Status.Green)
+                if (_waitingForTrafficLight.CurrentPhase != TrafficLight.Status.Green)
                 {
                     s = _car.DistanceToIntersection;
                     deltaV = v;
@@ -229,33 +403,40 @@ namespace Transidious
                 }
                 else
                 {
-                    _car.waitingForTrafficLight = null;
-                    s = 1000f;
-                    deltaV = 0f;
-                    s0 = 0f;
+                    _waitingForTrafficLight = null;
+                    
+                    // The intersection might still be occupied.
+                    CheckIntersectionStatus(v, out s, out deltaV, out s0);
                 }
             }
-            // Check if there is a next car on the road.
-            else if (_car.next != null)
+            // Check if this car is waiting for an intersection to be unoccupied.
+            else if (_car.NextIntersection != null)
             {
-                // Calculate distance between midpoints.
-                s = _car.next.distanceFromStart - _car.distanceFromStart;
+                CheckIntersectionStatus(v, out s, out deltaV, out s0);
+            }
+            else
+            {
+                // If there is no leading car, pretend there is one really far away.
+                s = 1000f;
+                deltaV = 0f;
+                s0 = 0f;
+            }
 
-                // Account for car length.
-                s = Mathf.Max(0f, s - (_car.car.Length.Meters * .5f) - (_car.next.car.Length.Meters * .5f));
-
-                // Velocity difference.
-                deltaV = v - _car.next.CurrentVelocity.RealTimeMPS;
-                
-                // Minimum spacing.
+            // Check if there is a leading car we need to pay attention to.
+            var leadingCar = GetNextCar(sim);
+            if (leadingCar != null && leadingCar.Item2 < s)
+            {
+                // We found a leading car.
+                s = leadingCar.Item2;
+                deltaV = v - leadingCar.Item1.CurrentVelocity.RealTimeMPS;
                 s0 = s0_car;
             }
-            // Check if there is an intersection we need to wait for.
-            else if (_car.nextIntersection != null)
+            // Check if there is a traffic light to pay attention to.
+            else if (_car.NextIntersection != null)
             {
-                var tl = _car.backward
-                    ? _car.segment.startTrafficLight
-                    : _car.segment.endTrafficLight;
+                var tl = _car.Backward
+                    ? _car.Segment.startTrafficLight
+                    : _car.Segment.endTrafficLight;
 
                 // Check if there is a traffic light we must wait for.
                 if (!_car.Turning && tl != null && MustStop(v, tl))
@@ -264,38 +445,8 @@ namespace Transidious
                     s = _car.DistanceToIntersection;
                     deltaV = v;
                     s0 = s0_intersection;
-                    _car.waitingForTrafficLight = tl;
+                    _waitingForTrafficLight = tl;
                 }
-                // TODO Check if another car is approaching the intersection and has the right of way.
-                // Otherwise, check for a leading car on the next intersection or segment.
-                else
-                {
-                    // Check if there is a leading car on the next segment after the intersection.
-                    var leadingCar = GetNextCar(sim);
-                    if (leadingCar != null)
-                    {
-                        // We found a leading car.
-                        s = leadingCar.Item2;
-                        deltaV = v - leadingCar.Item1.CurrentVelocity.RealTimeMPS;
-                        s0 = s0_car;
-                    }
-                    else
-                    {
-                        // If there is no leading car, pretend there is one really far away.
-                        s = 1000f;
-                        deltaV = 0f;
-
-                        // No minimum spacing is needed for an unoccupied intersection.
-                        s0 = 0f;
-                    }
-                }
-            }
-            else
-            {
-                // If there is no leading car, pretend there is one really far away.
-                s = 1000f;
-                deltaV = 0f;
-                s0 = 0f;
             }
 
             // Sanity checks.
@@ -308,6 +459,17 @@ namespace Transidious
         /// Return the next car on an intersection or the next segment, along with the distance to it.
         private Tuple<DrivingCar, float> GetNextCar(SimulationController sim)
         {
+            if (_car.Next != null)
+            {
+                // Calculate distance between midpoints.
+                var s = _car.Next.DistanceFromStart - _car.DistanceFromStart;
+
+                // Account for car length.
+                s = Mathf.Max(0f, s - (_car.Car.Length.Meters * .5f) - (_car.Next.Car.Length.Meters * .5f));
+
+                return Tuple.Create(_car.Next, s);
+            }
+
             // Ignore if the intersection is too far away.
             if (_car.DistanceToIntersection >= IntersectionCheckThreshold)
             {
@@ -320,34 +482,34 @@ namespace Transidious
             float distance;
 
             // Check if there is a car on the intersection we're approaching.
-            if (!_car.Turning && _car.nextIntersection != null)
+            if (!_car.Turning && _car.NextIntersection != null)
             {
-                firstCar = trafficSim.GetFirstCarOnIntersection(_car.nextIntersection, _car.segment, _car.nextSegment);
+                firstCar = trafficSim.GetFirstCarOnIntersection(_car.NextIntersection, _car.Segment, _car.NextSegment);
                 if (firstCar != null)
                 {
-                    distance = _car.DistanceToIntersection + firstCar.distanceFromStart;
+                    distance = _car.DistanceToIntersection + firstCar.DistanceFromStart;
                     return Tuple.Create(firstCar, distance);
                 }
             }
 
             // Check if there is a car on the next street segment.
-            if (_car.nextSegment == null)
+            if (_car.NextSegment == null)
             {
                 return null;
             }
 
-            firstCar = trafficSim.GetDrivingCars(_car.nextSegment, _car.nextLane);
+            firstCar = trafficSim.GetDrivingCars(_car.NextSegment, _car.NextLane);
             if (firstCar == null)
             {
                 return null;
             }
 
             var intersectionPath = trafficSim.StreetPathBuilder.GetIntersectionPath(
-                _car.nextIntersection, _car.segment, _car.nextSegment);
+                _car.NextIntersection, _car.Segment, _car.NextSegment);
 
             distance = _car.DistanceToIntersection
                            + intersectionPath.Length
-                           + firstCar.distanceFromStart;
+                           + firstCar.DistanceFromStart;
             
             return Tuple.Create(firstCar, distance);
         }

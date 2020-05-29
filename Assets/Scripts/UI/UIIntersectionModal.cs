@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using Transidious;
@@ -28,6 +29,9 @@ namespace UI
             modal.Initialize();
 
             _infoPanel.Initialize();
+            _infoPanel.AddItem("OccupationMask", "Occupation Mask");
+            _infoPanel.AddItem("WaitingCars", "Waiting Cars");
+            _infoPanel.AddItem("PassedCars", "Passed Cars");
             _infoPanel.AddClickableItem("Paths", "Show Intersection Paths", Color.white, () =>
             {
                 var builder = GameController.instance.sim.trafficSim.StreetPathBuilder;
@@ -55,7 +59,9 @@ namespace UI
             modal.SetTitle($"Intersection {intersection.Id}");
 
             var existing = _intersectingStreetList.childCount - 1;
-            for (var i = existing; i < intersection.intersectingStreets.Count; ++i)
+            var i = existing;
+            
+            for (; i < intersection.intersectingStreets.Count; ++i)
             {
                 var inst = Instantiate(_intersectingStreetItemPrefab, _intersectingStreetList, false);
                 inst.name = $"IntersectingStreetItem {i}";
@@ -76,13 +82,39 @@ namespace UI
                 });
             }
 
-            for (var i = 0; i < intersection.intersectingStreets.Count; ++i)
+            for (i = 0; i < intersection.intersectingStreets.Count; ++i)
             {
                 var txt = _intersectingStreetList.GetChild(i + 1).GetComponent<TMP_Text>();
+                txt.gameObject.SetActive(true);
+
                 var seg = intersection.intersectingStreets[i];
-                
                 txt.text = $"{intersection.RelativePosition(seg)}: {seg.name}, angle {intersection.GetAngle(seg):n0}°";
             }
+
+            for (; i < existing; ++i)
+            {
+                _intersectingStreetList.GetChild(i + 1).gameObject.SetActive(false);
+            }
+            
+            UpdateFrequentChanges();
         }
+
+        private void UpdateFrequentChanges()
+        {
+            _infoPanel.SetValue("OccupationMask",
+                "0b" + Convert.ToString(IDM.IntersectionOccupation[intersection].OccupationStatus, 2));
+            _infoPanel.SetValue("WaitingCars", IDM.IntersectionOccupation[intersection].WaitingCars.ToString());
+            _infoPanel.SetValue("PassedCars", IDM.IntersectionOccupation[intersection].PassedCars.ToString());
+        }
+
+#if DEBUG
+        private void Update()
+        {
+            if (modal.Active)
+            {
+                UpdateFrequentChanges();
+            }
+        }
+#endif
     }
 }

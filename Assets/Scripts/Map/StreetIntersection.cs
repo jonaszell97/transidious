@@ -377,64 +377,6 @@ namespace Transidious
                 intersectingStreets[i] = seg;
                 relativePositions.Add(seg, i);
             }
-            
-            /*var numSlots = intersectingStreets.Count;
-            var uneven = numSlots % 2 != 0;
-            
-            if (numSlots != 3)
-            {
-                for (int i = 0; i < numSlots; ++i)
-                {
-                    relativePositions.Add(intersectingStreets[i], i);
-                }
-
-                return;
-            }
-
-            var minAngle = float.PositiveInfinity;
-            var iMin = 0;
-            var jMin = 0;
-
-            for (var i = 0; i < 3; ++i)
-            {
-                for (var j = 0; j < 3; ++j)
-                {
-                    if (i == j)
-                        continue;
-
-                    var seg = intersectingStreets[i];
-                    var oppositeSeg = intersectingStreets[j];
-
-                    var angle = Math.NormalizeAngle(streetAngles[seg]);
-                    var oppositeAngle = Math.NormalizeAngle(streetAngles[oppositeSeg]);
-
-                    var angleDiff = Mathf.Abs(angle - oppositeAngle);
-                    if (angleDiff < minAngle)
-                    {
-                        minAngle = angleDiff;
-                        iMin = i;
-                        jMin = j;
-                    }
-                }
-            }
-
-            relativePositions[intersectingStreets[iMin]] = 1;
-            relativePositions[intersectingStreets[jMin]] = 3;
-
-            if (iMin != 0 && jMin != 0)
-            {
-                relativePositions[intersectingStreets[0]] = 0;
-            }
-            else if (iMin != 1 && jMin != 1)
-            {
-                relativePositions[intersectingStreets[1]] = 0;
-            }
-            else if (iMin != 2 && jMin != 2)
-            {
-                relativePositions[intersectingStreets[2]] = 0;
-            }
-
-            emptySlot = 2;*/
         }
 
         public StreetSegment GetStreetAtSlot(int slot)
@@ -446,6 +388,15 @@ namespace Transidious
             }
 
             return null;
+        }
+
+        /// Return a unique index for every intersection path.
+        public int GetIndexForIntersectionPath(StreetSegment from, StreetSegment to)
+        {
+            var fromPos = RelativePosition(from);
+            var toPos = RelativePosition(to);
+
+            return (fromPos * intersectingStreets.Count) + toPos;
         }
 
 #if DEBUG

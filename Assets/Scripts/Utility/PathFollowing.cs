@@ -221,10 +221,6 @@ namespace Transidious
 
         public void MoveToStep(int step)
         {
-            if (Path.Segments.Count <= step)
-            {
-                Debug.Break();
-            }
             Debug.Assert(Path.Segments.Count > step, "invalid step!");
 
             var seg = Path.Segments[step];
