@@ -191,14 +191,16 @@ namespace Transidious
                     return (pt - Points[0]).magnitude;
                 case Kind.Line:
                 {
+                    var sum = 0f;
                     for (var i = 1; i < Points.Length; ++i)
                     {
                         if (!Math.PointOnLine(Points[i - 1], Points[i], pt))
                         {
+                            sum += (Points[i - 1] - Points[i]).magnitude;
                             continue;
                         }
 
-                        return (pt - Points[i - 1]).magnitude;
+                        return sum + (pt - Points[i - 1]).magnitude;
                     }
 
                     Debug.LogError("point is not on line");

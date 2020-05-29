@@ -450,8 +450,8 @@ namespace Transidious
                     }
                     case PathStep.Type.Turn:
                     {
-                        idm.ExitIntersection();
                         trafficSim.ExitIntersection(_drivingCar, ((TurnStep)finishedStep).intersection);
+                        idm.UnblockIntersection();
                         break;
                     }
                     default:
@@ -507,7 +507,16 @@ namespace Transidious
                         break;
                     }
                     case PathStep.Type.Turn:
-                    { 
+                    {
+                        if (!idm.BlockingIntersection)
+                        {
+                            GameController.instance.EnterPause();
+                            GameController.instance.input.MoveTowards(transform.position);
+                            GameController.instance.input.SetZoomLevel(InputController.minZoom);
+                            citizen.ActivateModal();
+                        }
+                        Debug.Assert(idm.BlockingIntersection, "entering unblocked intersection!");
+
                         trafficSim.EnterIntersection(_drivingCar, ((TurnStep)next).intersection);
                         idm.Reset(_drivingCar, CurrentVelocity);
 

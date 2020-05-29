@@ -30,8 +30,6 @@ namespace UI
 
             _infoPanel.Initialize();
             _infoPanel.AddItem("OccupationMask", "Occupation Mask");
-            _infoPanel.AddItem("WaitingCars", "Waiting Cars");
-            _infoPanel.AddItem("PassedCars", "Passed Cars");
             _infoPanel.AddClickableItem("Paths", "Show Intersection Paths", Color.white, () =>
             {
                 var builder = GameController.instance.sim.trafficSim.StreetPathBuilder;
@@ -103,8 +101,6 @@ namespace UI
         {
             _infoPanel.SetValue("OccupationMask",
                 "0b" + Convert.ToString(IDM.IntersectionOccupation[intersection].OccupationStatus, 2));
-            _infoPanel.SetValue("WaitingCars", IDM.IntersectionOccupation[intersection].WaitingCars.ToString());
-            _infoPanel.SetValue("PassedCars", IDM.IntersectionOccupation[intersection].PassedCars.ToString());
         }
 
 #if DEBUG

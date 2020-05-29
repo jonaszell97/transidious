@@ -97,6 +97,16 @@ namespace Transidious
             return new Vector2(x, y);
         }
 
+        public static float MaxAbs(float v1, float v2)
+        {
+            return Mathf.Abs(v1) >= Mathf.Abs(v2) ? v1 : v2;
+        }
+
+        public static float MinAbs(float v1, float v2)
+        {
+            return Mathf.Abs(v1) <= Mathf.Abs(v2) ? v1 : v2;
+        }
+
         public static float PointAngleDeg(Vector3 p0, Vector3 p3)
         {
             return PointAngleRad(p0, p3) * Mathf.Rad2Deg;
@@ -371,7 +381,7 @@ namespace Transidious
             var angle2 = NormalizeAngle(PointAngleDeg(B1, B2));
 
             var angleDiff = Mathf.Abs(angle1 - angle2);
-            return angleDiff <= tolerance;
+            return angleDiff <= tolerance || 180f - angleDiff <= tolerance;
         }
 
         public static Color ApplyTransparency(Color rgb, float a)

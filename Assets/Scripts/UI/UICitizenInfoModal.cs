@@ -75,8 +75,8 @@ namespace Transidious
             _debugPanel.AddItem("Distance To Intersection", "Distance To Intersection", "");
             _debugPanel.AddItem("Velocity", "Velocity", "");
             _debugPanel.AddItem("NextTurn", "Next Turn", "");
-            _debugPanel.AddItem("QueuePos", "Queue Position", "");
-            
+            _debugPanel.AddItem("Blocking", "Blocking Intersection", "");
+
             _debugPanel.AddClickableItem("Next Car", "Next Car", Color.white, () =>
             {
                 if (!(citizen.activePath?.IsDriving) ?? false)
@@ -239,8 +239,8 @@ namespace Transidious
                 this._debugPanel.SetValue("Velocity",
                     $"{citizen.activePath._drivingCar.CurrentVelocity.RealTimeMPS:n2} m/s");
                 
-                _debugPanel.SetValue("QueuePos", citizen.activePath.idm.CurrentQueuePosition.ToString());
-
+                _debugPanel.SetValue("Blocking", citizen.activePath.idm.BlockingIntersection.ToString());
+                
                 if (citizen.activePath._drivingCar.Next != null)
                 {
                     this._debugPanel.SetValue("Distance To Next",
