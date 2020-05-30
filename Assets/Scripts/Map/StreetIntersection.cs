@@ -157,43 +157,270 @@ namespace Transidious
         }
     }
 
+    public class IntersectionPattern
+    {
+        public enum Type
+        {
+            /// A two-way by two-way intersection.
+            TwoWayByTwoWay,
+
+            /// A double-one-way by two-way intersection.
+            DoubleOneWayByTwoWay,
+
+            /// A double-one-way by double-one-way intersection.
+            DoubleOneWayByDoubleOneWay,
+        }
+
+        /// The last assigned id.
+        private static int _lastAssignedID;
+
+        /// The ID of this pattern.
+        public int ID;
+
+        /// Pattern type.
+        public readonly Type PatternType;
+
+        /// The streets that are part of this pattern.
+        private StreetSegment[] _segments;
+
+        /// Private C'tor.
+        private IntersectionPattern(Map map, Type type)
+        {
+            this.ID = ++_lastAssignedID;
+            this.PatternType = type;
+            map.IntersectionPatterns.Add(ID, this);
+        }
+
+        /// Private C'tor.
+        private IntersectionPattern(Map map, Type type, int id)
+        {
+            this.ID = id;
+            this.PatternType = type;
+            map.IntersectionPatterns.Add(ID, this);
+        }
+
+        /// Initialize with deserialized segment IDs.
+        public void Initialize(Serialization.IntersectionPattern pattern, Map map)
+        {
+            _segments = pattern.SegmentIDs.Select(id => map.GetMapObject<StreetSegment>(id)).ToArray();
+        }
+
+        /*
+                Pattern: Two-Way Road x Two-Way Road
+                
+                            R4
+                        |   |   |
+                        |   |   |
+                        | Y |   |
+                 -------         -------
+                                 X
+             R1  -------         ------- R3
+                       X            
+                 -------         -------
+                        |   | Y |
+                        |   |   |
+                        |   |   |
+                            R2
+
+                Traffic lights:
+                    X: R1, R3
+                    Y: R2, R4
+        */
+        public enum TwoWayByTwoWayStreets
+        {
+            R1 = 0, R3, R2, R4
+        }
+
+        public static IntersectionPattern CreateTwoWayByTwoWay(Map map, StreetSegment R1, StreetSegment R3,
+                                                               StreetSegment R2, StreetSegment R4)
+        {
+            return new IntersectionPattern(map, Type.TwoWayByTwoWay)
+            {
+                _segments = new[] {R1, R3, R2, R4},
+            };
+        }
+
+        public StreetSegment GetStreet(TwoWayByTwoWayStreets n)
+        {
+            Debug.Assert(PatternType == Type.TwoWayByTwoWay);
+            return _segments[(int) n];
+        }
+
+        /*
+                Pattern: Double One-Way Road x Two-Way Road
+
+                            R4
+                        |    |    |
+                        |    |    |
+                        | Y  |    |
+                 -------    ---    -------
+             R3B   <--             X <--   R3A
+                 -------     |     -------
+                        |   R5    |
+                 -------     |     ------- 
+             R1A   --> X             -->   R1B
+                 -------           -------
+                        |    |  Y |
+                        |    |    |
+                        |    |    |
+                            R2
+
+                Traffic lights:
+                    X: R1A, R3A
+                    Y: R2, R4
+        */
+        public enum DoubleOneWayByTwoWayStreets
+        {
+            R1A = 0, R1B, R2, R4, R3A, R3B
+        }
+
+        public static IntersectionPattern CreateDoubleOneWayByTwoWay(Map map, StreetSegment R1A, StreetSegment R1B,
+                                                                     StreetSegment R2, StreetSegment R4,
+                                                                     StreetSegment R3A, StreetSegment R3B)
+        {
+            return new IntersectionPattern(map, Type.DoubleOneWayByTwoWay)
+            {
+                _segments = new[] {R1A, R1B, R2, R4, R3A, R3B},
+            };
+        }
+        
+        public StreetSegment GetStreet(DoubleOneWayByTwoWayStreets n)
+        {
+            Debug.Assert(PatternType == Type.DoubleOneWayByTwoWay);
+            return _segments[(int) n];
+        }
+        
+        /*
+                Pattern: Double One-Way Road x Double One-Way Road
+                
+                         R4A   R2B
+                        | | | | A |
+                        | V | | | |
+                        |   | |   |
+                 -------  Y ---    -------
+             R3B   <--      <R8    X <--   R3A
+                 -------    |-| A  -------
+                        | R5| |R6 |
+                 -------  V |-|    ------- 
+             R1A   --> X    R7>      -->   R1B
+                 -------    --- Y  -------
+                        |   | |   |
+                        | | | | A |
+                        | V | | | |
+                         R4B   R2A
+
+                Traffic lights:
+                    X: R1A (end), R3A (end)
+                    Y: R2A (end), R4A (end)
+        */
+        public enum DoubleOneWayByDoubleOneWayStreets
+        {
+            R1A = 0, R1B, R2A, R2B, R3A, R3B, R4A, R4B, R5, R6, R7, R8,
+        }
+        
+        public static IntersectionPattern CreateDoubleOneWayByDoubleOneWay(Map map, StreetSegment R1A, StreetSegment R1B,
+                                                                           StreetSegment R2A, StreetSegment R2B,
+                                                                           StreetSegment R3A, StreetSegment R3B,
+                                                                           StreetSegment R4A, StreetSegment R4B,
+                                                                           StreetSegment R5, StreetSegment R6,
+                                                                           StreetSegment R7, StreetSegment R8)
+        {
+            return new IntersectionPattern(map, Type.DoubleOneWayByDoubleOneWay)
+            {
+                _segments = new[] {R1A, R1B, R2A, R2B, R3A, R3B, R4A, R4B, R5, R6, R7, R8},
+            };
+        }
+        
+        public StreetSegment GetStreet(DoubleOneWayByDoubleOneWayStreets n)
+        {
+            Debug.Assert(PatternType == Type.DoubleOneWayByDoubleOneWay);
+            return _segments[(int) n];
+        }
+
+        public Serialization.IntersectionPattern Serialize()
+        {
+            var result = new Serialization.IntersectionPattern
+            {
+                ID = ID,
+                Type = (Serialization.IntersectionPattern.Types.Type)PatternType,
+            };
+
+            result.SegmentIDs.AddRange(_segments.Select(s => s?.id ?? 0));
+            return result;
+        }
+
+        public static IntersectionPattern Deserialize(Serialization.IntersectionPattern pattern, Map map)
+        {
+            var result = new IntersectionPattern(map, (Type)pattern.Type, pattern.ID);
+            return result;
+        }
+    }
+
     public class StreetIntersection : StaticMapObject, IStop
     {
         /// Position of the intersection.
-        public Vector3 position => centroid;
+        public Vector3 Position => centroid;
 
         /// Intersecting streets.
-        public List<StreetSegment> intersectingStreets;
+        public List<StreetSegment> IntersectingStreets;
 
         /// Angles of intersecting streets.
-        Dictionary<StreetSegment, float> streetAngles;
+        private Dictionary<StreetSegment, float> _streetAngles;
 
         /// Relative positions of intersecting streets; clockwise and paired based on
         /// traffic light placement.
-        Dictionary<StreetSegment, int> relativePositions;
+        private Dictionary<StreetSegment, int> _relativePositions;
 
-        /// The empty slot in this intersection, or -1 if there is none.
-        public int emptySlot = -1;
-
-        /// Whether or not this intersection has traffic lights.
-        public bool hasTrafficLights;
-
-        public int numTrafficLights;
-
-        public int NumIntersectingStreets
+        /// The intersection pattern, or null if the pattern is unknown.
+        private IntersectionPattern _pattern;
+        public IntersectionPattern Pattern
         {
-            get
+            get => _pattern;
+            set
             {
-                if (relativePositions == null)
-                {
-                    CalculateRelativePositions();
-                }
-                if (emptySlot != -1)
-                {
-                    return intersectingStreets.Count + 1;
-                }
+                _pattern = value;
 
-                return intersectingStreets.Count;
+                if (value?.PatternType == IntersectionPattern.Type.TwoWayByTwoWay)
+                {
+                    var R1 = value.GetStreet(IntersectionPattern.TwoWayByTwoWayStreets.R1);
+                    var R2 = value.GetStreet(IntersectionPattern.TwoWayByTwoWayStreets.R2);
+                    var R3 = value.GetStreet(IntersectionPattern.TwoWayByTwoWayStreets.R3);
+                    var R4 = value.GetStreet(IntersectionPattern.TwoWayByTwoWayStreets.R4);
+
+                    IntersectingStreets.Clear();
+                    if (R1 != null)
+                        IntersectingStreets.Add(R1);
+                    if (R2 != null)
+                        IntersectingStreets.Add(R2);
+                    if (R3 != null)
+                        IntersectingStreets.Add(R3);
+                    if (R4 != null)
+                        IntersectingStreets.Add(R4);
+
+                    if (_relativePositions == null)
+                    {
+                        _relativePositions = new Dictionary<StreetSegment, int>();
+                        if (R1 != null)
+                            _relativePositions.Add(R1, 0);
+                        if (R2 != null)
+                            _relativePositions.Add(R2, 1);
+                        if (R3 != null)
+                            _relativePositions.Add(R3, 2);
+                        if (R4 != null)
+                            _relativePositions.Add(R4, 3);
+                    }
+                    else
+                    {
+                        if (R1 != null)
+                            _relativePositions[R1] = 0;
+                        if (R2 != null)
+                            _relativePositions[R2] = 1;
+                        if (R3 != null)
+                            _relativePositions[R3] = 2;
+                        if (R4 != null)
+                            _relativePositions[R4] = 3;
+                    }
+                }
             }
         }
 
@@ -204,8 +431,8 @@ namespace Transidious
             this.id = id;
             this.name = "";
             this.centroid = pos;
-            this.intersectingStreets = new List<StreetSegment>();
-            this.streetAngles = new Dictionary<StreetSegment, float>();
+            this.IntersectingStreets = new List<StreetSegment>();
+            this._streetAngles = new Dictionary<StreetSegment, float>();
         }
 
         public new Serialization.StreetIntersection ToProtobuf()
@@ -213,6 +440,7 @@ namespace Transidious
             return new Serialization.StreetIntersection
             {
                 MapObject = base.ToProtobuf(),
+                PatternID = Pattern?.ID ?? 0,
             };
         }
 
@@ -221,21 +449,26 @@ namespace Transidious
             var obj = map.CreateIntersection(inter.MapObject.Centroid.Deserialize(), (int)inter.MapObject.Id);
             obj.Deserialize(inter.MapObject);
 
+            if (inter.PatternID != 0)
+            {
+                obj._pattern = map.IntersectionPatterns[inter.PatternID];
+            }
+
             return obj;
         }
 
         public void DeleteSegment(StreetSegment seg)
         {
-            intersectingStreets.Remove(seg);
+            IntersectingStreets.Remove(seg);
         }
 
-        public Vector2 Location => position;
+        public Vector2 Location => Position;
 
         public IEnumerable<IRoute> Routes
         {
             get
             {
-                return intersectingStreets.Select(s => s as IRoute);
+                return IntersectingStreets.Select(s => s as IRoute);
             }
         }
 
@@ -246,19 +479,19 @@ namespace Transidious
                 case StreetIntersection intersection:
                     return intersection == this;
                 case PointOnStreet pos:
-                    return intersectingStreets.Contains(pos.street);
+                    return IntersectingStreets.Contains(pos.street);
             }
 
             return false;
         }
 
-        public bool uTurnAllowed => intersectingStreets.Count == 1;
+        public bool uTurnAllowed => IntersectingStreets.Count == 1;
 
         public IEnumerable<StreetSegment> IncomingStreets
         {
             get
             {
-                return intersectingStreets.Where(s => !s.IsOneWay || s.endIntersection == this);
+                return IntersectingStreets.Where(s => !s.IsOneWay || s.endIntersection == this);
             }
         }
 
@@ -266,23 +499,23 @@ namespace Transidious
         {
             get
             {
-                return intersectingStreets.Where(s => !s.IsOneWay || s.startIntersection == this);
+                return IntersectingStreets.Where(s => !s.IsOneWay || s.startIntersection == this);
             }
         }
 
         public float GetAngle(StreetSegment seg)
         {
-            return streetAngles[seg];
+            return _streetAngles[seg];
         }
 
         public int RelativePosition(StreetSegment seg)
         {
-            if (relativePositions == null || !relativePositions.ContainsKey(seg))
+            if (_relativePositions == null || !_relativePositions.ContainsKey(seg))
             {
                 CalculateRelativePositions();
             }
 
-            return relativePositions[seg];
+            return _relativePositions[seg];
         }
 
         public Vector3 GetNextPosition(StreetSegment seg)
@@ -315,75 +548,62 @@ namespace Transidious
         public Vector3 GetOffsetPosition(StreetSegment seg, float offset)
         {
             var nextPos = GetNextPosition(seg);
-            var vec = (nextPos - position).normalized;
+            var vec = (nextPos - Position).normalized;
 
-            return position + vec * offset;
-        }
-
-        void SetTrafficLight(StreetSegment seg, TrafficLight tl)
-        {
-            if (this == seg.startIntersection)
-            {
-                seg.startTrafficLight = tl;
-            }
-            else
-            {
-                Debug.Assert(this == seg.endIntersection, "street does not intersect here");
-                seg.endTrafficLight = tl;
-            }
+            return Position + vec * offset;
         }
 
         public void AddIntersectingStreet(StreetSegment seg)
         {
-            intersectingStreets.Add(seg);
+            IntersectingStreets.Add(seg);
         }
 
         public void CalculateRelativePositions()
         {
-            if (relativePositions == null)
+            if (_relativePositions == null)
             {
-                relativePositions = new Dictionary<StreetSegment, int>();
+                _relativePositions = new Dictionary<StreetSegment, int>();
             }
             else
             {
-                relativePositions.Clear();
-                streetAngles.Clear();
+                _relativePositions.Clear();
+                _streetAngles.Clear();
             }
 
-            var baseSegment = intersectingStreets[0];
-            relativePositions.Add(baseSegment, 0);
+            var baseSegment = IntersectingStreets[0];
+            _relativePositions.Add(baseSegment, 0);
 
-            var angles = new Tuple<StreetSegment, float>[intersectingStreets.Count - 1];
+            var angles = new Tuple<StreetSegment, float>[IntersectingStreets.Count - 1];
             var baseDirection = baseSegment.RelativeDirection(this);
 
-            streetAngles.Add(baseSegment, Math.DirectionalAngleRad(baseDirection, baseDirection) * Mathf.Rad2Deg);
+            _streetAngles.Add(baseSegment, Math.DirectionalAngleRad(baseDirection, baseDirection) * Mathf.Rad2Deg);
 
-            for (var i = 1; i < intersectingStreets.Count; ++i)
+            for (var i = 1; i < IntersectingStreets.Count; ++i)
             {
-                var otherSegment = intersectingStreets[i];
+                var otherSegment = IntersectingStreets[i];
                 var otherDirection = otherSegment.RelativeDirection(this);
 
                 var angle = Math.DirectionalAngleRad(baseDirection, otherDirection);
-                streetAngles.Add(otherSegment, angle * Mathf.Rad2Deg);
+                _streetAngles.Add(otherSegment, angle * Mathf.Rad2Deg);
 
                 angles[i - 1] = Tuple.Create(otherSegment, angle);
             }
 
             Array.Sort(angles, (v1, v2) => v1.Item2.CompareTo(v2.Item2));
 
-            for (var i = 1; i < intersectingStreets.Count; ++i)
+            for (var i = 1; i < IntersectingStreets.Count; ++i)
             {
                 var (seg, _) = angles[i - 1];
-                intersectingStreets[i] = seg;
-                relativePositions.Add(seg, i);
+                IntersectingStreets[i] = seg;
+                _relativePositions.Add(seg, i);
             }
         }
 
         public StreetSegment GetStreetAtSlot(int slot)
         {
-            foreach (var seg in intersectingStreets)
+            foreach (var seg in IntersectingStreets)
             {
-                if (relativePositions[seg] == slot)
+                if (_relativePositions[seg] == slot)
                     return seg;
             }
 
@@ -395,15 +615,16 @@ namespace Transidious
         {
             var fromPos = RelativePosition(from);
             var toPos = RelativePosition(to);
+            var n = Pattern?.PatternType == IntersectionPattern.Type.TwoWayByTwoWay ? 4 : IntersectingStreets.Count;
 
-            return (fromPos * intersectingStreets.Count) + toPos;
+            return (fromPos * n) + toPos;
         }
 
 #if DEBUG
         public void CreateTrafficLightSprites()
         {
             var map = SaveManager.loadedMap;
-            foreach (var seg in intersectingStreets)
+            foreach (var seg in IntersectingStreets)
             {
                 var tl = seg.GetTrafficLight(this);
                 if (tl == null) 
@@ -427,6 +648,60 @@ namespace Transidious
             var modal = MainUI.instance.intersectionModal;
             modal.SetIntersection(this);
             modal.modal.Enable();
+        }
+
+        private List<LineRenderer> _paths;
+
+        public void RenderPaths()
+        {
+            if (_paths == null)
+            {
+                _paths = new List<LineRenderer>();
+            }
+            else
+            {
+                _paths.Clear();
+            }
+
+            var builder = GameController.instance.sim.trafficSim.StreetPathBuilder;
+            var points = new List<Vector2>();
+
+            foreach (var incoming in IncomingStreets)
+            {
+                foreach (var outgoing in OutgoingStreets)
+                {
+                    var path = builder.GetIntersectionPath(this, incoming, outgoing);
+                    path.AddPoints(points, 5);
+
+                    var obj = Utility.DrawLine(points.ToArray(), 1f, Color.green, Map.Layer(MapLayer.Foreground), false, true);
+                    _paths.Add(obj.GetComponent<LineRenderer>());
+                    
+                    points.Clear();
+                }
+            }
+        }
+
+        public void UpdateOccupation(ulong mask)
+        {
+            if (_paths == null)
+                return;
+
+            var i = 0;
+            foreach (var incoming in IncomingStreets)
+            {
+                foreach (var outgoing in OutgoingStreets)
+                {
+                    var offset = GetIndexForIntersectionPath(incoming, outgoing);
+                    var isOccupied = (mask & (0b1111ul << (offset * 4))) != 0;
+
+                    var color = isOccupied ? Color.red : Color.green;
+                    _paths[i].material = GameController.instance.GetUnlitMaterial(color);
+                    _paths[i].startColor = color;
+                    _paths[i].endColor = color;
+
+                    ++i;
+                }
+            }
         }
 #endif
     }

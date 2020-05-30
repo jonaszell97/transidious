@@ -313,6 +313,7 @@ namespace Transidious
 
             var obj = new GameObject {name = "DebugText"};
             obj.transform.position = new Vector3(pos.x, pos.y, Map.Layer(MapLayer.Foreground, 9));
+            obj.transform.SetParent(GameController.instance.loadedMap.canvas.transform);
 
             var txt = obj.AddComponent<TMPro.TextMeshProUGUI>();
             txt.text = text;

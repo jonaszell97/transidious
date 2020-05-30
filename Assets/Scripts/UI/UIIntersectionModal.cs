@@ -30,24 +30,10 @@ namespace UI
 
             _infoPanel.Initialize();
             _infoPanel.AddItem("OccupationMask", "Occupation Mask");
+            _infoPanel.AddItem("Pattern", "Pattern");
             _infoPanel.AddClickableItem("Paths", "Show Intersection Paths", Color.white, () =>
             {
-                var builder = GameController.instance.sim.trafficSim.StreetPathBuilder;
-                var points = new List<Vector2>();
-
-                foreach (var incoming in intersection.IncomingStreets)
-                {
-                    foreach (var outgoing in intersection.OutgoingStreets)
-                    {
-                        var path = builder.GetIntersectionPath(intersection, incoming, outgoing);
-                        path.AddPoints(points, 5);
-
-                        var color = RNG.RandomColor;
-                        Utility.DrawLine(points.ToArray(), 1f, color, Map.Layer(MapLayer.Foreground), false, true);
-
-                        points.Clear();
-                    }
-                }
+                intersection.RenderPaths();
             });
         }
 
@@ -59,7 +45,7 @@ namespace UI
             var existing = _intersectingStreetList.childCount - 1;
             var i = existing;
             
-            for (; i < intersection.intersectingStreets.Count; ++i)
+            for (; i < intersection.IntersectingStreets.Count; ++i)
             {
                 var inst = Instantiate(_intersectingStreetItemPrefab, _intersectingStreetList, false);
                 inst.name = $"IntersectingStreetItem {i}";
@@ -67,7 +53,7 @@ namespace UI
                 var n = i;
                 inst.GetComponent<Button>().onClick.AddListener(() =>
                 {
-                    var seg = this.intersection.intersectingStreets[n];
+                    var seg = this.intersection.IntersectingStreets[n];
                     var startPos = seg.positions.Count / 2;
                     var endPos = startPos < seg.positions.Count - 1 ? startPos + 1 : startPos - 1;
                     var dir = (seg.positions[endPos] - seg.positions[startPos]);
@@ -80,12 +66,12 @@ namespace UI
                 });
             }
 
-            for (i = 0; i < intersection.intersectingStreets.Count; ++i)
+            for (i = 0; i < intersection.IntersectingStreets.Count; ++i)
             {
                 var txt = _intersectingStreetList.GetChild(i + 1).GetComponent<TMP_Text>();
                 txt.gameObject.SetActive(true);
 
-                var seg = intersection.intersectingStreets[i];
+                var seg = intersection.IntersectingStreets[i];
                 txt.text = $"{intersection.RelativePosition(seg)}: {seg.name}, angle {intersection.GetAngle(seg):n0}°";
             }
 
@@ -93,7 +79,8 @@ namespace UI
             {
                 _intersectingStreetList.GetChild(i + 1).gameObject.SetActive(false);
             }
-            
+
+            _infoPanel.SetValue("Pattern", intersection.Pattern?.PatternType.ToString() ?? "-");
             UpdateFrequentChanges();
         }
 

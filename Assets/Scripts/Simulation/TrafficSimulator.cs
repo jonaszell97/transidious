@@ -259,7 +259,10 @@ namespace Transidious
         {
             if (!drivingCars.TryGetValue(intersection.id, out DrivingCar[] cars))
             {
-                cars = new DrivingCar[intersection.intersectingStreets.Count * intersection.intersectingStreets.Count];
+                var n = intersection.Pattern?.PatternType == IntersectionPattern.Type.TwoWayByTwoWay
+                    ? 4 : intersection.IntersectingStreets.Count;
+
+                cars = new DrivingCar[n * n];
                 drivingCars.Add(intersection.id, cars);
             }
 
@@ -271,7 +274,7 @@ namespace Transidious
             var cars = GetCarsOnIntersection(intersection);
             var fromIdx = intersection.RelativePosition(from);
             var toIdx = intersection.RelativePosition(to);
-            var idx = fromIdx * intersection.intersectingStreets.Count + toIdx;
+            var idx = fromIdx * intersection.IntersectingStreets.Count + toIdx;
             return cars[idx];
         }
 
@@ -281,7 +284,7 @@ namespace Transidious
             var cars = GetCarsOnIntersection(intersection);
             var fromIdx = intersection.RelativePosition(from);
             var toIdx = intersection.RelativePosition(to);
-            var idx = fromIdx * intersection.intersectingStreets.Count + toIdx;
+            var idx = fromIdx * intersection.IntersectingStreets.Count + toIdx;
             cars[idx] = car;
         }
 
@@ -438,7 +441,7 @@ namespace Transidious
 
         TurnType GetTurnType(StreetSegment from, StreetSegment to, StreetIntersection intersection)
         {
-            var numIntersectingStreets = intersection.intersectingStreets.Count;
+            var numIntersectingStreets = intersection.IntersectingStreets.Count;
 
             // The car makes a U-Turn at the intersection
             if (numIntersectingStreets == 1 || from == to)

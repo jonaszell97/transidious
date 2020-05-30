@@ -488,7 +488,7 @@ namespace Transidious.PathPlanning
             if (goal is StreetIntersection)
             {
                 var intersection = goal as StreetIntersection;
-                foreach (var s in intersection.intersectingStreets)
+                foreach (var s in intersection.IntersectingStreets)
                 {
                     if (s == street)
                         return true;

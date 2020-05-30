@@ -1090,7 +1090,8 @@ namespace Transidious
         bool CheckTwoWayXTwoWayIntersection(
             StreetIntersection intersection,
             HashSet<StreetIntersection> assigned,
-            Dictionary<StreetIntersection, List<StreetSegment>> trafficLightInfo)
+            Dictionary<StreetIntersection, List<StreetSegment>> trafficLightInfo,
+            bool createTrafficLights)
         {
             /*
                 Pattern: Two-Way Road x Two-Way Road
@@ -1114,35 +1115,15 @@ namespace Transidious
                     Y: R2, R4
             */
 
-            if (intersection.intersectingStreets.Count != 4 && intersection.intersectingStreets.Count != 3)
+            if (intersection.IntersectingStreets.Count != 4 && intersection.IntersectingStreets.Count != 3)
             {
                 return false;
             }
             
-            var R1 = intersection.intersectingStreets[0];
-            var R2 = intersection.intersectingStreets[1];
-            var R3 = intersection.intersectingStreets[2];
-            var R4 = intersection.intersectingStreets.TryGet(3);
-            
-            if (trafficLightInfo.TryGetValue(intersection, out var trafficLights))
-            {
-                if (!trafficLights.Contains(R1))
-                {
-                    R1 = null;
-                }
-                if (!trafficLights.Contains(R2))
-                {
-                    R2 = null;
-                }
-                if (!trafficLights.Contains(R3))
-                {
-                    R3 = null;
-                }
-                if (!trafficLights.Contains(R4))
-                {
-                    R4 = null;
-                }
-            }
+            var R1 = intersection.IntersectingStreets[0];
+            var R2 = intersection.IntersectingStreets[1];
+            var R3 = intersection.IntersectingStreets[2];
+            var R4 = intersection.IntersectingStreets.TryGet(3);
 
             // Find the combination with minimum angle.
             var all = new[] {R1, R2, R3, R4};
@@ -1185,8 +1166,18 @@ namespace Transidious
                 }
             }
 
-            var hasX = R1 != null || R3 != null;
-            var hasY = R2 != null || R4 != null;
+            bool hasX = false, hasY = false;
+            if (createTrafficLights && trafficLightInfo.TryGetValue(intersection, out var trafficLights))
+            {
+                if (trafficLights.Contains(R1) || trafficLights.Contains(R3))
+                {
+                    hasX = true;
+                }
+                if (trafficLights.Contains(R2) || trafficLights.Contains(R4))
+                {
+                    hasY = true;
+                }
+            }
 
             if (hasX)
             {
@@ -1207,9 +1198,10 @@ namespace Transidious
             }
 
             assigned.Add(intersection);
-            
+            intersection.Pattern = IntersectionPattern.CreateTwoWayByTwoWay(map, R1, R3, R2, R4);
+
             if (visualizeIntersections)
-                Utility.DrawCircle(intersection.position, 8f, 3f, Color.blue);
+                Utility.DrawCircle(intersection.Position, 8f, 3f, Color.blue);
             
             return true;
         }
@@ -1245,7 +1237,7 @@ namespace Transidious
 
             bool IsValidIntersection(StreetIntersection si)
             {
-                if (si.intersectingStreets.Count != 4)
+                if (si.IntersectingStreets.Count != 4)
                 {
                     return false;
                 }
@@ -1303,11 +1295,11 @@ namespace Transidious
 
             var R1A = intersection.IncomingStreets.First(s => s.OneWay && s != connector);
             var R1B = intersection.OutgoingStreets.First(s => s.OneWay && s != connector);
-            var R2  = intersection.intersectingStreets.First(s => s != R1A && s != R1B && s != connector);
+            var R2  = intersection.IntersectingStreets.First(s => s != R1A && s != R1B && s != connector);
 
             var R3A = otherIntersection.IncomingStreets.First(s => s.OneWay && s != connector);
             var R3B = otherIntersection.OutgoingStreets.First(s => s.OneWay && s != connector);
-            var R4  = otherIntersection.intersectingStreets.First(s => s != R3A && s != R3B && s != connector);
+            var R4  = otherIntersection.IntersectingStreets.First(s => s != R3A && s != R3B && s != connector);
 
             if (trafficLightInfo.TryGetValue(intersection, out var trafficLights))
             {
@@ -1354,6 +1346,10 @@ namespace Transidious
                 R4?.SetTrafficLight(otherIntersection, tl);
             }
 
+            var pattern = IntersectionPattern.CreateDoubleOneWayByTwoWay(map, R1A, R1B, R2, R4, R3A, R3B);
+            intersection.Pattern = pattern;
+            otherIntersection.Pattern = pattern;
+
             float minX = float.PositiveInfinity, minY = float.PositiveInfinity;
             float maxX = 0f, maxY = 0f;
 
@@ -1361,10 +1357,10 @@ namespace Transidious
             {
                 assigned.Add(i);
 
-                minX = Mathf.Min(minX, i.position.x);
-                minY = Mathf.Min(minY, i.position.y);
-                maxX = Mathf.Max(maxX, i.position.x);
-                maxY = Mathf.Max(maxY, i.position.y);
+                minX = Mathf.Min(minX, i.Position.x);
+                minY = Mathf.Min(minY, i.Position.y);
+                maxX = Mathf.Max(maxX, i.Position.x);
+                maxY = Mathf.Max(maxY, i.Position.y);
             }
 
             if (visualizeIntersections)
@@ -1407,7 +1403,7 @@ namespace Transidious
 
             bool IsValidIntersection(StreetIntersection si)
             {
-                if (si.intersectingStreets.Count < 3)
+                if (si.IntersectingStreets.Count < 3)
                 {
                     return false;
                 }
@@ -1417,7 +1413,7 @@ namespace Transidious
                     return false;
                 }
 
-                if (!si.intersectingStreets.All(s => s.OneWay))
+                if (!si.IntersectingStreets.All(s => s.OneWay))
                 {
                     return false;
                 }
@@ -1538,17 +1534,27 @@ namespace Transidious
                 R4A?.SetTrafficLight(intersection, tl);
             }
 
+            var R1B = intersections[0].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
+            var R2B = intersections[1].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
+            var R3B = intersections[2].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
+            var R4B = intersections[3].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
+            
+            var pattern =
+                IntersectionPattern.CreateDoubleOneWayByDoubleOneWay(map, R1A, R1B, R2A, R2B, R3A, R3B, R4A, R4B, 
+                    connectors[0], connectors[1], connectors[2], connectors[3]);
+
             float minX = float.PositiveInfinity, minY = float.PositiveInfinity;
             float maxX = 0f, maxY = 0f;
 
             foreach (var i in intersections)
             {
                 assigned.Add(i);
+                i.Pattern = pattern;
 
-                minX = Mathf.Min(minX, i.position.x);
-                minY = Mathf.Min(minY, i.position.y);
-                maxX = Mathf.Max(maxX, i.position.x);
-                maxY = Mathf.Max(maxY, i.position.y);
+                minX = Mathf.Min(minX, i.Position.x);
+                minY = Mathf.Min(minY, i.Position.y);
+                maxX = Mathf.Max(maxX, i.Position.x);
+                maxY = Mathf.Max(maxY, i.Position.y);
             }
 
             if (visualizeIntersections)
@@ -1572,7 +1578,7 @@ namespace Transidious
                 return true;
             }
 
-            if (CheckTwoWayXTwoWayIntersection(intersection, assigned, trafficLightInfo))
+            if (CheckTwoWayXTwoWayIntersection(intersection, assigned, trafficLightInfo, true))
             {
                 return true;
             }
@@ -1583,8 +1589,6 @@ namespace Transidious
             var numTrafficLights = segments.Count();
             if (numTrafficLights > 1)
             {
-                intersection.numTrafficLights = numTrafficLights;
-
                 var greenPhase = 0;
                 foreach (var s in segments)
                 {
@@ -1596,7 +1600,7 @@ namespace Transidious
             }
 
             if (visualizeIntersections)
-                Utility.DrawCircle(intersection.position, 8f, 3f, Color.yellow);
+                Utility.DrawCircle(intersection.Position, 8f, 3f, Color.yellow);
 
             assigned.Add(intersection);
             return false;
@@ -2034,6 +2038,7 @@ namespace Transidious
             {
                 if (!trafficLights.ContainsKey(inter) || assigned.Contains(inter))
                 {
+                    CheckTwoWayXTwoWayIntersection(inter, assigned, trafficLights, false);
                     continue;
                 }
 

@@ -97,6 +97,7 @@ namespace Transidious
 
             result.Streets.AddRange(map.streets.Select(b => b.ToProtobuf()));
             result.StreetIntersections.AddRange(map.streetIntersections.Select(b => b.ToProtobuf()));
+            result.IntersectionPatterns.AddRange(map.IntersectionPatterns.Select(pair => pair.Value.Serialize()));
             result.TrafficLights.AddRange(map.TrafficLights.Select(tl => tl.Value.Serialize()));
 
             result.BoundaryPositions.AddRange(map.boundaryPositions?.Select(v => v.ToProtobuf()));
@@ -362,6 +363,12 @@ namespace Transidious
                 }
             }
 
+            // Deserialize intersection patterns without their segments.
+            foreach (var pattern in serializedMap.IntersectionPatterns)
+            {
+                IntersectionPattern.Deserialize(pattern, map);
+            }
+
             // Deserialize raw intersections without their intersecting streets.
             foreach (var inter in serializedMap.StreetIntersections)
             {
@@ -394,6 +401,12 @@ namespace Transidious
                 {
                     yield return null;
                 }
+            }
+
+            // Initialize patterns.
+            foreach (var pattern in serializedMap.IntersectionPatterns)
+            {
+                map.IntersectionPatterns[pattern.ID].Initialize(pattern, map);
             }
 
             // Connect buildings to their streets.

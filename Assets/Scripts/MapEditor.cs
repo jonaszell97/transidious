@@ -222,12 +222,12 @@ namespace Transidious
             if (selectedStreetSegment != null)
             {
                 // Attach to start intersection.
-                if (selectedStreetSegment.startIntersection?.position.Equals(startPos) ?? false)
+                if (selectedStreetSegment.startIntersection?.Position.Equals(startPos) ?? false)
                 {
                     startIntersection = selectedStreetSegment.startIntersection;
                 }
                 // Attach to end intersection.
-                else if (selectedStreetSegment.endIntersection?.position.Equals(startPos) ?? false)
+                else if (selectedStreetSegment.endIntersection?.Position.Equals(startPos) ?? false)
                 {
                     startIntersection = selectedStreetSegment.endIntersection;
                 }
@@ -261,12 +261,12 @@ namespace Transidious
             if (hoveredStreetSegment != null)
             {
                 // Attach to start intersection.
-                if (hoveredStreetSegment.startIntersection?.position.Equals(endPos) ?? false)
+                if (hoveredStreetSegment.startIntersection?.Position.Equals(endPos) ?? false)
                 {
                     endIntersection = hoveredStreetSegment.startIntersection;
                 }
                 // Attach to end intersection.
-                else if (hoveredStreetSegment.endIntersection?.position.Equals(endPos) ?? false)
+                else if (hoveredStreetSegment.endIntersection?.Position.Equals(endPos) ?? false)
                 {
                     endIntersection = hoveredStreetSegment.endIntersection;
                 }

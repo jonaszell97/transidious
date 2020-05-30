@@ -141,13 +141,13 @@ namespace Transidious
 
                     if (!_map.FindClosest<StreetIntersection>(out var intersection, pos, inter =>
                     {
-                        var distance = (pos - (Vector2)inter.position).magnitude;
+                        var distance = (pos - (Vector2)inter.Position).magnitude;
                         if (distance >= _hubSpacing * .5f)
                         {
                             return false;
                         }
                         
-                        return inter.intersectingStreets.Any(s => s.street.type == Street.Type.Highway
+                        return inter.IntersectingStreets.Any(s => s.street.type == Street.Type.Highway
                                                                   || s.street.type == Street.Type.Primary
                                                                   || s.street.type == Street.Type.Secondary
                                                                   || s.street.type == Street.Type.Tertiary);

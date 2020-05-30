@@ -97,6 +97,9 @@ namespace Transidious
         /// Map of streets indexed by position.
         public Dictionary<Vector3, StreetIntersection> streetIntersectionMap;
 
+        /// Map of intersection patterns.
+        public Dictionary<int, IntersectionPattern> IntersectionPatterns;
+
         /// List of all public transit stops.
         public List<Stop> transitStops;
 
@@ -171,6 +174,7 @@ namespace Transidious
             this.streetSegments = new List<StreetSegment>();
             this.streetIntersections = new List<StreetIntersection>();
             this.streetIntersectionMap = new Dictionary<Vector3, StreetIntersection>();
+            this.IntersectionPatterns = new Dictionary<int, IntersectionPattern>();
             this.transitRoutes = new List<Route>();
             this.transitStops = new List<Stop>();
             this.transitLines = new List<Line>();
@@ -1187,7 +1191,7 @@ namespace Transidious
             {
                 pt = new Vector2(RNG.Next(minX, maxX), RNG.Next(minY, maxY));
             }
-            else if (previousStop.Item4.intersectingStreets.Count == 1)
+            else if (previousStop.Item4.IntersectingStreets.Count == 1)
             {
                 var attempts = 0;
                 var loc = previousStop.Item1.location;
@@ -1244,11 +1248,11 @@ namespace Transidious
                 }
             }
             else {
-                var rnd = RNG.Next((float) 0, previousStop.Item4.intersectingStreets.Count - 1);
+                var rnd = RNG.Next((float) 0, previousStop.Item4.IntersectingStreets.Count - 1);
                 var i = 0;
                 street = null;
                 
-                foreach (var s in previousStop.Item4.intersectingStreets)
+                foreach (var s in previousStop.Item4.IntersectingStreets)
                 {
                     if (s == previousStop.Item3)
                     {

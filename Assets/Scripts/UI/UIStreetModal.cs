@@ -31,7 +31,7 @@ namespace UI
             
             infoPanel.AddClickableItem("Start Intersection", "Start Intersection", Color.white, () =>
             {
-                GameController.instance.input.MoveTowards(segment.startIntersection.position, 0f, () =>
+                GameController.instance.input.MoveTowards(segment.startIntersection.Position, 0f, () =>
                 {
                     segment.startIntersection.ActivateModal();
                 });
@@ -39,7 +39,7 @@ namespace UI
             
             infoPanel.AddClickableItem("End Intersection", "End Intersection", Color.white, () =>
             {
-                GameController.instance.input.MoveTowards(segment.endIntersection.position, 0f, () =>
+                GameController.instance.input.MoveTowards(segment.endIntersection.Position, 0f, () =>
                 {
                     segment.endIntersection.ActivateModal();
                 });

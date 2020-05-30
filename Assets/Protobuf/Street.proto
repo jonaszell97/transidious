@@ -5,9 +5,22 @@ option csharp_namespace = "Transidious.Serialization";
 
 import "Common.proto";
 
+message IntersectionPattern {
+    enum Type {
+        TwoWayByTwoWay = 0;
+        DoubleOneWayByTwoWay = 1;
+        DoubleOneWayByDoubleOneWay = 2;
+    }
+
+    int32 ID = 1;
+    Type type = 2;
+    repeated int32 segmentIDs = 3;
+}
+
 message StreetIntersection {
     MapObject mapObject = 1;
     Vector2 position = 2;
+    int32 patternID = 3;
 }
 
 message TrafficLight {

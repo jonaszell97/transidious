@@ -11,15 +11,20 @@ namespace Transidious
         public class IntersectionStatus
         {
             /// Base mask that adds one to every path.
-            private static readonly ulong _baseMask = 0b0001_0001_0001_0001_0001_0001_0001_0001;
+            private static readonly ulong _baseMask
+                = 0b0001_0001_0001_0001_0001_0001_0001_0001_0001_0001_0001_0001_0001_0001_0001_0001;
 
             /// Cached masks.
             private static Dictionary<Tuple<StreetSegment, StreetSegment>, ulong> _maskCache;
+
+            /// Masks for a two-way by two-way intersection.
+            private static ulong[][] _twoWayByTwoWayMasks;
 
             /// Initialize the cache.
             public static void Initialize()
             {
                 _maskCache = new Dictionary<Tuple<StreetSegment, StreetSegment>, ulong>();
+                InitTwoWayByTwoWayMasks();
             }
 
             /// The occupation status. Every four bits represent one of the intersection paths, uniquely identified by
@@ -29,34 +34,171 @@ namespace Transidious
             /// Number of occupying cars.
             private int _occupyingCars;
 
+            /// Calculate the occupation mask for a two-way by two-way intersection.
+            private static void InitTwoWayByTwoWayMasks()
+            {
+                int GetOffsetFor(int from, int to)
+                {
+                    return from * 4 + to;
+                }
+
+                _twoWayByTwoWayMasks = new ulong[4][];
+
+                for (var from = 0; from < 4; ++from)
+                {
+                    _twoWayByTwoWayMasks[from] = new ulong[4];
+                    for (var to = 0; to < 4; ++to)
+                    {
+                        var mask = _baseMask;
+
+                        // Never block the path itself.
+                        mask &= ~(1ul << (GetOffsetFor(from, to) * 4));
+
+                        int straight, left, right;
+                        switch (from)
+                        {
+                            case 0:
+                                straight = 2;
+                                left = 3;
+                                right = 1;
+                                break;
+                            case 2:
+                                straight = 0;
+                                left = 1;
+                                right = 3;
+                                break;
+                            case 1:
+                                straight = 3;
+                                left = 0;
+                                right = 2;
+                                break;
+                            default:
+                                Debug.Assert(@from == 3);
+                                straight = 1;
+                                left = 2;
+                                right = 0;
+                                break;
+                        }
+
+                        // Never block any turns from the same street.
+                        mask &= ~(1ul << (GetOffsetFor(from, right) * 4));
+                        mask &= ~(1ul << (GetOffsetFor(from, left) * 4));
+                        mask &= ~(1ul << (GetOffsetFor(from, from) * 4));
+
+                        // Car is going straight
+                        if (to == straight)
+                        {
+                            // Don't block the straight path in the other direction.
+                            mask &= ~(1ul << (GetOffsetFor(to, from) * 4));
+
+                            // Don't block right turns from the other direction.
+                            mask &= ~(1ul << (GetOffsetFor(straight, left) * 4));
+
+                            // Don't block U-turns from the side directions.
+                            mask &= ~(1ul << (GetOffsetFor(left, left) * 4));
+                            mask &= ~(1ul << (GetOffsetFor(right, right) * 4));
+                        }
+                        // Car is turning right
+                        else if (to == right)
+                        {
+                            // Don't block the straight path in the other direction.
+                            mask &= ~(1ul << (GetOffsetFor(to, from) * 4));
+
+                            // Don't block right turns from the straight and left directions.
+                            mask &= ~(1ul << (GetOffsetFor(straight, left) * 4));
+                            mask &= ~(1ul << (GetOffsetFor(left, from) * 4));
+
+                            // Don't block U-turns from the left and straight directions.
+                            mask &= ~(1ul << (GetOffsetFor(left, left) * 4));
+                            mask &= ~(1ul << (GetOffsetFor(straight, straight) * 4));
+                        }
+                        // Car is turning left
+                        else if (to == left)
+                        {
+                            // Don't block right turn from the left side.
+                            mask &= ~(1ul << (GetOffsetFor(left, from) * 4));
+
+                            // Don't block U-turns from the right and straight directions.
+                            mask &= ~(1ul << (GetOffsetFor(right, right) * 4));
+                            mask &= ~(1ul << (GetOffsetFor(straight, straight) * 4));
+                        }
+                        // Car is u-turning
+                        else
+                        {
+                            Debug.Assert(to == from);
+                            
+                            // Don't block the straight path in the side directions.
+                            mask &= ~(1ul << (GetOffsetFor(left, right) * 4));
+                            mask &= ~(1ul << (GetOffsetFor(right, left) * 4));
+
+                            // Don't block right turns from the right direction.
+                            mask &= ~(1ul << (GetOffsetFor(right, straight) * 4));
+                            
+                            // Don't block left turns from the left direction.
+                            mask &= ~(1ul << (GetOffsetFor(left, straight) * 4));
+
+                            // Don't block U-turns from any directions.
+                            mask &= ~(1ul << (GetOffsetFor(left, left) * 4));
+                            mask &= ~(1ul << (GetOffsetFor(right, right) * 4));
+                            mask &= ~(1ul << (GetOffsetFor(straight, straight) * 4));
+                        }
+
+                        _twoWayByTwoWayMasks[from][to] = mask;
+                    }
+                }
+            }
+
             /// Calculate the opaque mask for the paths blocked by an intersection crossing.
             private static ulong GetMask(StreetIntersection intersection, StreetSegment from, StreetSegment to)
             {
+                if (intersection.IntersectingStreets.Count > 4)
+                {
+                    return ~0ul;
+                }
+
                 var key = Tuple.Create(from, to);
                 if (_maskCache.TryGetValue(key, out var mask))
                 {
                     return mask;
                 }
 
-                mask = _baseMask;
+                if (intersection.Pattern?.PatternType == IntersectionPattern.Type.TwoWayByTwoWay)
+                {
+                    var fromIdx = intersection.RelativePosition(from);
+                    var toIdx = intersection.RelativePosition(to);
+                    mask = _twoWayByTwoWayMasks[fromIdx][toIdx];
+                }
+                else
+                {
+                    mask = _baseMask;
 
-                var offset = intersection.GetIndexForIntersectionPath(from, to);
-                mask &= ~(1ul << (offset * 4));
+                    // Never block the path itself.
+                    mask &= ~(1ul << (intersection.GetIndexForIntersectionPath(from, to) * 4));
+                }
 
                 _maskCache.Add(key, mask);
                 return mask;
             }
 
             /// Whether or not the path at offset is blocked.
-            public bool IsBlocked(int offset)
+            public bool IsBlocked(StreetIntersection intersection, StreetSegment from, StreetSegment to)
             {
                 const ulong mask = 0b1111;
+                if (intersection.IntersectingStreets.Count > 4)
+                {
+                    return OccupationStatus != 0;
+                }
+
+                var offset = intersection.GetIndexForIntersectionPath(from, to);
                 return (OccupationStatus & (mask << (offset * 4))) != 0;
             }
 
             /// Try to block the intersection with the given mask. Return true on success.
             public bool TryBlock(StreetIntersection intersection, StreetSegment from, StreetSegment to)
             {
+                // Technically this is more restrictive than it needs to be because every path can store up to
+                // 16 queued cars, but right now I can't think of an efficient way to find out whether any of the
+                // additions would overflow.
                 if (_occupyingCars == 16)
                 {
                     return false;
@@ -64,6 +206,10 @@ namespace Transidious
 
                 var mask = GetMask(intersection, from, to);
                 Block(mask);
+
+#if DEBUG
+                intersection.UpdateOccupation(OccupationStatus);
+#endif
 
                 return true;
             }
@@ -79,6 +225,10 @@ namespace Transidious
             public void Unblock(StreetIntersection intersection, StreetSegment from, StreetSegment to)
             {
                 Unblock(GetMask(intersection, from, to));
+
+#if DEBUG
+                intersection.UpdateOccupation(OccupationStatus);
+#endif
             }
 
             /// Unblock the intersection with the given mask.
@@ -362,11 +512,10 @@ namespace Transidious
             }
 
             var intersection = _car.NextIntersection;
-            var offset = intersection.GetIndexForIntersectionPath(_car.Segment, _car.NextSegment);
             var status = IntersectionOccupation[intersection];
 
             // The intersection is blocked.
-            if (status.IsBlocked(offset))
+            if (status.IsBlocked(intersection, _car.Segment, _car.NextSegment))
             {
                 return true;
             }

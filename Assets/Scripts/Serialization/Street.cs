@@ -25,32 +25,38 @@ namespace Transidious.Serialization {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CgxTdHJlZXQucHJvdG8SGVRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24aDENv",
-            "bW1vbi5wcm90byKDAQoSU3RyZWV0SW50ZXJzZWN0aW9uEjcKCW1hcE9iamVj",
-            "dBgBIAEoCzIkLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTWFwT2JqZWN0",
-            "EjQKCHBvc2l0aW9uGAIgASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
-            "bi5WZWN0b3IyImkKDFRyYWZmaWNMaWdodBIKCgJJRBgBIAEoBRIOCgZzdGF0",
-            "dXMYAiABKAUSGAoQdGltZVRvTmV4dFN3aXRjaBgDIAEoAhIPCgdyZWRUaW1l",
-            "GAQgASgCEhIKCmdyZWVuUGhhc2UYBSABKAUiswIKDVN0cmVldFNlZ21lbnQS",
-            "NwoJbWFwT2JqZWN0GAEgASgLMiQuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
-            "bi5NYXBPYmplY3QSNQoJcG9zaXRpb25zGAIgAygLMiIuVHJhbnNpZGlvdXMu",
-            "U2VyaWFsaXphdGlvbi5WZWN0b3IyEhsKE3N0YXJ0SW50ZXJzZWN0aW9uSUQY",
-            "AyABKA0SGQoRZW5kSW50ZXJzZWN0aW9uSUQYBCABKA0SFQoNaGFzVHJhbVRy",
-            "YWNrcxgFIAEoCBIcChRvY2N1cGllZFBhcmtpbmdTcG90cxgGIAEoBRIbChNz",
-            "dGFydFRyYWZmaWNMaWdodElEGAcgASgFEhkKEWVuZFRyYWZmaWNMaWdodElE",
-            "GAggASgFEg0KBWZsYWdzGAkgASgFIugCCgZTdHJlZXQSNwoJbWFwT2JqZWN0",
-            "GAEgASgLMiQuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5NYXBPYmplY3QS",
-            "EwoLZGlzcGxheU5hbWUYAiABKAkSNAoEdHlwZRgDIAEoDjImLlRyYW5zaWRp",
-            "b3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0LlR5cGUSOgoIc2VnbWVudHMYBCAD",
-            "KAsyKC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlN0cmVldFNlZ21lbnQS",
-            "CwoDbGl0GAUgASgIEg4KBm9uZXdheRgGIAEoCBIQCghtYXhzcGVlZBgHIAEo",
-            "DRINCgVsYW5lcxgIIAEoDSJgCgRUeXBlEgsKB1ByaW1hcnkQABINCglTZWNv",
-            "bmRhcnkQARIMCghUZXJ0aWFyeRACEg8KC1Jlc2lkZW50aWFsEAMSCAoETGlu",
-            "axAEEggKBFBhdGgQBRIJCgVSaXZlchAGQhyqAhlUcmFuc2lkaW91cy5TZXJp",
-            "YWxpemF0aW9uYgZwcm90bzM="));
+            "bW1vbi5wcm90byLOAQoTSW50ZXJzZWN0aW9uUGF0dGVybhIKCgJJRBgBIAEo",
+            "BRJBCgR0eXBlGAIgASgOMjMuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5J",
+            "bnRlcnNlY3Rpb25QYXR0ZXJuLlR5cGUSEgoKc2VnbWVudElEcxgDIAMoBSJU",
+            "CgRUeXBlEhIKDlR3b1dheUJ5VHdvV2F5EAASGAoURG91YmxlT25lV2F5QnlU",
+            "d29XYXkQARIeChpEb3VibGVPbmVXYXlCeURvdWJsZU9uZVdheRACIpYBChJT",
+            "dHJlZXRJbnRlcnNlY3Rpb24SNwoJbWFwT2JqZWN0GAEgASgLMiQuVHJhbnNp",
+            "ZGlvdXMuU2VyaWFsaXphdGlvbi5NYXBPYmplY3QSNAoIcG9zaXRpb24YAiAB",
+            "KAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjISEQoJcGF0",
+            "dGVybklEGAMgASgFImkKDFRyYWZmaWNMaWdodBIKCgJJRBgBIAEoBRIOCgZz",
+            "dGF0dXMYAiABKAUSGAoQdGltZVRvTmV4dFN3aXRjaBgDIAEoAhIPCgdyZWRU",
+            "aW1lGAQgASgCEhIKCmdyZWVuUGhhc2UYBSABKAUiswIKDVN0cmVldFNlZ21l",
+            "bnQSNwoJbWFwT2JqZWN0GAEgASgLMiQuVHJhbnNpZGlvdXMuU2VyaWFsaXph",
+            "dGlvbi5NYXBPYmplY3QSNQoJcG9zaXRpb25zGAIgAygLMiIuVHJhbnNpZGlv",
+            "dXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyEhsKE3N0YXJ0SW50ZXJzZWN0aW9u",
+            "SUQYAyABKA0SGQoRZW5kSW50ZXJzZWN0aW9uSUQYBCABKA0SFQoNaGFzVHJh",
+            "bVRyYWNrcxgFIAEoCBIcChRvY2N1cGllZFBhcmtpbmdTcG90cxgGIAEoBRIb",
+            "ChNzdGFydFRyYWZmaWNMaWdodElEGAcgASgFEhkKEWVuZFRyYWZmaWNMaWdo",
+            "dElEGAggASgFEg0KBWZsYWdzGAkgASgFIugCCgZTdHJlZXQSNwoJbWFwT2Jq",
+            "ZWN0GAEgASgLMiQuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5NYXBPYmpl",
+            "Y3QSEwoLZGlzcGxheU5hbWUYAiABKAkSNAoEdHlwZRgDIAEoDjImLlRyYW5z",
+            "aWRpb3VzLlNlcmlhbGl6YXRpb24uU3RyZWV0LlR5cGUSOgoIc2VnbWVudHMY",
+            "BCADKAsyKC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlN0cmVldFNlZ21l",
+            "bnQSCwoDbGl0GAUgASgIEg4KBm9uZXdheRgGIAEoCBIQCghtYXhzcGVlZBgH",
+            "IAEoDRINCgVsYW5lcxgIIAEoDSJgCgRUeXBlEgsKB1ByaW1hcnkQABINCglT",
+            "ZWNvbmRhcnkQARIMCghUZXJ0aWFyeRACEg8KC1Jlc2lkZW50aWFsEAMSCAoE",
+            "TGluaxAEEggKBFBhdGgQBRIJCgVSaXZlchAGQhyqAhlUcmFuc2lkaW91cy5T",
+            "ZXJpYWxpemF0aW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetIntersection), global::Transidious.Serialization.StreetIntersection.Parser, new[]{ "MapObject", "Position" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.IntersectionPattern), global::Transidious.Serialization.IntersectionPattern.Parser, new[]{ "ID", "Type", "SegmentIDs" }, null, new[]{ typeof(global::Transidious.Serialization.IntersectionPattern.Types.Type) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetIntersection), global::Transidious.Serialization.StreetIntersection.Parser, new[]{ "MapObject", "Position", "PatternID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.TrafficLight), global::Transidious.Serialization.TrafficLight.Parser, new[]{ "ID", "Status", "TimeToNextSwitch", "RedTime", "GreenPhase" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.StreetSegment), global::Transidious.Serialization.StreetSegment.Parser, new[]{ "MapObject", "Positions", "StartIntersectionID", "EndIntersectionID", "HasTramTracks", "OccupiedParkingSpots", "StartTrafficLightID", "EndTrafficLightID", "Flags" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Street), global::Transidious.Serialization.Street.Parser, new[]{ "MapObject", "DisplayName", "Type", "Segments", "Lit", "Oneway", "Maxspeed", "Lanes" }, null, new[]{ typeof(global::Transidious.Serialization.Street.Types.Type) }, null)
@@ -60,6 +66,197 @@ namespace Transidious.Serialization {
 
   }
   #region Messages
+  public sealed partial class IntersectionPattern : pb::IMessage<IntersectionPattern> {
+    private static readonly pb::MessageParser<IntersectionPattern> _parser = new pb::MessageParser<IntersectionPattern>(() => new IntersectionPattern());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<IntersectionPattern> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[0]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public IntersectionPattern() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public IntersectionPattern(IntersectionPattern other) : this() {
+      iD_ = other.iD_;
+      type_ = other.type_;
+      segmentIDs_ = other.segmentIDs_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public IntersectionPattern Clone() {
+      return new IntersectionPattern(this);
+    }
+
+    /// <summary>Field number for the "ID" field.</summary>
+    public const int IDFieldNumber = 1;
+    private int iD_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int ID {
+      get { return iD_; }
+      set {
+        iD_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 2;
+    private global::Transidious.Serialization.IntersectionPattern.Types.Type type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.IntersectionPattern.Types.Type Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "segmentIDs" field.</summary>
+    public const int SegmentIDsFieldNumber = 3;
+    private static readonly pb::FieldCodec<int> _repeated_segmentIDs_codec
+        = pb::FieldCodec.ForInt32(26);
+    private readonly pbc::RepeatedField<int> segmentIDs_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<int> SegmentIDs {
+      get { return segmentIDs_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as IntersectionPattern);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(IntersectionPattern other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (ID != other.ID) return false;
+      if (Type != other.Type) return false;
+      if(!segmentIDs_.Equals(other.segmentIDs_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (ID != 0) hash ^= ID.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
+      hash ^= segmentIDs_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (ID != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(ID);
+      }
+      if (Type != 0) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Type);
+      }
+      segmentIDs_.WriteTo(output, _repeated_segmentIDs_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (ID != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ID);
+      }
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
+      size += segmentIDs_.CalculateSize(_repeated_segmentIDs_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(IntersectionPattern other) {
+      if (other == null) {
+        return;
+      }
+      if (other.ID != 0) {
+        ID = other.ID;
+      }
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
+      segmentIDs_.Add(other.segmentIDs_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            ID = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Type = (global::Transidious.Serialization.IntersectionPattern.Types.Type) input.ReadEnum();
+            break;
+          }
+          case 26:
+          case 24: {
+            segmentIDs_.AddEntriesFrom(input, _repeated_segmentIDs_codec);
+            break;
+          }
+        }
+      }
+    }
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the IntersectionPattern message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      public enum Type {
+        [pbr::OriginalName("TwoWayByTwoWay")] TwoWayByTwoWay = 0,
+        [pbr::OriginalName("DoubleOneWayByTwoWay")] DoubleOneWayByTwoWay = 1,
+        [pbr::OriginalName("DoubleOneWayByDoubleOneWay")] DoubleOneWayByDoubleOneWay = 2,
+      }
+
+    }
+    #endregion
+
+  }
+
   public sealed partial class StreetIntersection : pb::IMessage<StreetIntersection> {
     private static readonly pb::MessageParser<StreetIntersection> _parser = new pb::MessageParser<StreetIntersection>(() => new StreetIntersection());
     private pb::UnknownFieldSet _unknownFields;
@@ -68,7 +265,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -87,6 +284,7 @@ namespace Transidious.Serialization {
     public StreetIntersection(StreetIntersection other) : this() {
       mapObject_ = other.mapObject_ != null ? other.mapObject_.Clone() : null;
       position_ = other.position_ != null ? other.position_.Clone() : null;
+      patternID_ = other.patternID_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -117,6 +315,17 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "patternID" field.</summary>
+    public const int PatternIDFieldNumber = 3;
+    private int patternID_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int PatternID {
+      get { return patternID_; }
+      set {
+        patternID_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as StreetIntersection);
@@ -132,6 +341,7 @@ namespace Transidious.Serialization {
       }
       if (!object.Equals(MapObject, other.MapObject)) return false;
       if (!object.Equals(Position, other.Position)) return false;
+      if (PatternID != other.PatternID) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -140,6 +350,7 @@ namespace Transidious.Serialization {
       int hash = 1;
       if (mapObject_ != null) hash ^= MapObject.GetHashCode();
       if (position_ != null) hash ^= Position.GetHashCode();
+      if (PatternID != 0) hash ^= PatternID.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -161,6 +372,10 @@ namespace Transidious.Serialization {
         output.WriteRawTag(18);
         output.WriteMessage(Position);
       }
+      if (PatternID != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(PatternID);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -174,6 +389,9 @@ namespace Transidious.Serialization {
       }
       if (position_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
+      }
+      if (PatternID != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(PatternID);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -197,6 +415,9 @@ namespace Transidious.Serialization {
           Position = new global::Transidious.Serialization.Vector2();
         }
         Position.MergeFrom(other.Position);
+      }
+      if (other.PatternID != 0) {
+        PatternID = other.PatternID;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -223,6 +444,10 @@ namespace Transidious.Serialization {
             input.ReadMessage(Position);
             break;
           }
+          case 24: {
+            PatternID = input.ReadInt32();
+            break;
+          }
         }
       }
     }
@@ -237,7 +462,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -478,7 +703,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -829,7 +1054,7 @@ namespace Transidious.Serialization {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[3]; }
+      get { return global::Transidious.Serialization.StreetReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

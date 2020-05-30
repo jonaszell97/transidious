@@ -248,11 +248,6 @@ namespace Transidious
 
                 foreach (var to in intersection.OutgoingStreets)
                 {
-                    if (from.name == "Charlottenburger Ufer, Segment #2" &&
-                        to.name == "Charlottenburger Ufer, Segment #1")
-                    {
-                        Debug.Break();
-                    }
                     var toLane = GetDefaultLane(to, to.endIntersection == intersection);
                     var uturn = from == to;
 

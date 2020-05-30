@@ -39,6 +39,7 @@ message Map {
     Vector2 backgroundSize = 16;
 
     repeated TrafficLight trafficLights = 17;
+    repeated IntersectionPattern intersectionPatterns = 18;
 }
 
 message Expense {
