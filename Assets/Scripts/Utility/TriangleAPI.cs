@@ -128,6 +128,7 @@ namespace Transidious
             }
         }
 
+        public Rect BoundingRect => Math.GetBoundingRect(vertices);
         public Vector2 Centroid => Math.GetCentroid(vertices);
 
 #if DEBUG
@@ -314,7 +315,31 @@ namespace Transidious
             return offset;
         }
 
-        public bool IsPointInPolygon(Vector3 point)
+        public bool IsPointInPolygonAndNotInHole(Vector2 point)
+        {
+            var polys = 0;
+            var holes = 0;
+
+            foreach (var loop in VertexLoops)
+            {
+                if (Math.IsPointInPolygon(point, loop))
+                {
+                    ++polys;
+                }
+            }
+
+            foreach (var hole in Holes)
+            {
+                if (Math.IsPointInPolygon(point, hole))
+                {
+                    ++holes;
+                }
+            }
+
+            return polys > holes;
+        }
+
+        public bool IsPointInPolygon(Vector2 point)
         {
             int j = segments.Count - 1;
             bool oddNodes = false;
@@ -333,14 +358,14 @@ namespace Transidious
             return oddNodes;
         }
 
-        public Vector3 GetPointInPolygon()
+        public Vector2 GetPointInPolygon()
         {
             float topMost = vertices[0].y;
             float bottomMost = vertices[0].y;
             float leftMost = vertices[0].x;
             float rightMost = vertices[0].x;
 
-            foreach (Vector3 vertex in vertices)
+            foreach (Vector2 vertex in vertices)
             {
                 if (vertex.y > topMost)
                     topMost = vertex.y;
@@ -352,18 +377,18 @@ namespace Transidious
                     rightMost = vertex.x;
             }
 
-            Vector3 point;
+            Vector2 point;
 
             int whileCount = 0;
             do
             {
-                point = new Vector3(RNG.Next(leftMost, rightMost),
+                point = new Vector2(RNG.Next(leftMost, rightMost),
                                     RNG.Next(bottomMost, topMost));
 
                 if (whileCount++ > 10000)
                 {
                     string polygonstring = "";
-                    foreach (Vector3 vertex in vertices)
+                    foreach (Vector2 vertex in vertices)
                     {
                         polygonstring += vertex + ", ";
                     }
@@ -376,7 +401,7 @@ namespace Transidious
             return point;
         }
 
-        public Vector3 GetPointInHole(PSLG hole)
+        public Vector2 GetPointInHole(PSLG hole)
         {
             // 10 Get point in hole
             // 20 Is the point in a polygon that the hole is not in
@@ -393,7 +418,7 @@ namespace Transidious
 
             int whileCount = 0;
 
-            Vector3 point;
+            Vector2 point;
             bool isPointGood;
             do
             {
@@ -433,7 +458,7 @@ namespace Transidious
                 if (whileCount++ > 10000)
                 {
                     string holestring = "";
-                    foreach (Vector3 vertex in hole.vertices)
+                    foreach (Vector2 vertex in hole.vertices)
                     {
                         holestring += vertex + ", ";
                     }

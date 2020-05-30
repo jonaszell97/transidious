@@ -1090,9 +1090,142 @@ namespace Transidious
         bool CheckTwoWayXTwoWayIntersection(
             StreetIntersection intersection,
             HashSet<StreetIntersection> assigned,
-            Dictionary<StreetIntersection, List<StreetSegment>> trafficLightInfo,
-            bool createTrafficLights)
+            Dictionary<StreetIntersection, List<StreetSegment>> trafficLightInfo)
         {
+            /*
+                Pattern: Two-Way Road x Two-Way Road
+                
+                            R4
+                        |   |   |
+                        |   |   |
+                        | Y |   |
+                 -------         -------
+                                 X
+             R1  -------         ------- R3
+                       X            
+                 -------         -------
+                        |   | Y |
+                        |   |   |
+                        |   |   |
+                            R2
+
+                Traffic lights:
+                    X: R1, R3
+                    Y: R2, R4
+            */
+
+            if (intersection.IntersectingStreets.Count != 4 && intersection.IntersectingStreets.Count != 3)
+            {
+                return false;
+            }
+
+            var R1 = intersection.IntersectingStreets[0];
+            var R2 = intersection.IntersectingStreets[1];
+            var R3 = intersection.IntersectingStreets[2];
+            var R4 = intersection.IntersectingStreets.TryGet(3);
+
+            intersection.Pattern = IntersectionPattern.CreateTwoWayByTwoWay(map, R1, R3, R2, R4);
+            
+            if (trafficLightInfo.TryGetValue(intersection, out var trafficLights))
+            {
+                if (!trafficLights.Contains(R1))
+                {
+                    R1 = null;
+                }
+                if (!trafficLights.Contains(R2))
+                {
+                    R2 = null;
+                }
+                if (!trafficLights.Contains(R3))
+                {
+                    R3 = null;
+                }
+                if (!trafficLights.Contains(R4))
+                {
+                    R4 = null;
+                }
+            }
+
+            // Find the combination with minimum angle.
+            var all = new[] {R1, R2, R3, R4};
+            if (all.Count(r => r != null) <= 1)
+            {
+                return false;
+            }
+
+            var minAngle = float.PositiveInfinity;
+            var minPair = new Tuple<StreetSegment, StreetSegment>(null, null);
+
+            foreach (var seg in all)
+            {
+                if (seg == null)
+                    continue;
+                
+                var dir = seg.RelativeDirection(intersection);
+                foreach (var other in all)
+                {
+                    if (seg == other || other == null)
+                        continue;
+
+                    var otherDir = other.RelativeDirection(intersection);
+                    var angle = Mathf.Abs(Mathf.PI - Math.DirectionalAngleRad(dir, otherDir));
+
+                    if (angle < minAngle)
+                    {
+                        minAngle = angle;
+                        minPair = Tuple.Create(seg, other);
+                    }
+                }
+            }
+
+            R1 = minPair.Item1;
+            R3 = minPair.Item2;
+            R2 = all.FirstOrDefault(s => s != R1 && s != R3);
+            R4 = all.FirstOrDefault(s => s != R1 && s != R2 && s != R3);
+
+            if (R2 == null && R4 == null)
+            {
+                if (minAngle * Mathf.Rad2Deg >= 40f)
+                {
+                    R2 = R3;
+                    R3 = null;
+                }
+            }
+
+            var hasX = R1 != null || R3 != null;
+            var hasY = R2 != null || R4 != null;
+
+            if (hasX)
+            {
+                var tl = new TrafficLight(hasY ? 2 : 1, 0);
+                GameController.instance.sim.trafficSim.trafficLights.Add(tl.Id, tl);
+                
+                R1?.SetTrafficLight(intersection, tl);
+                R3?.SetTrafficLight(intersection, tl);
+            }
+            
+            if (hasY)
+            {
+                var tl = new TrafficLight(hasX ? 2 : 1, hasX ? 1 : 0);
+                GameController.instance.sim.trafficSim.trafficLights.Add(tl.Id, tl);
+
+                R2?.SetTrafficLight(intersection, tl);
+                R4?.SetTrafficLight(intersection, tl);
+            }
+
+            assigned.Add(intersection);
+
+            if (visualizeIntersections)
+                Utility.DrawCircle(intersection.Position, 8f, 3f, Color.blue);
+            
+            return true;
+        }
+
+        bool CheckTwoWayXTwoWayIntersectionNoTrafficLights(StreetIntersection intersection,
+                                                           HashSet<StreetIntersection> assigned)
+        {
+            Debug.Assert(intersection.Pattern == null);
+            
             /*
                 Pattern: Two-Way Road x Two-Way Road
                 
@@ -1165,38 +1298,7 @@ namespace Transidious
                     R3 = null;
                 }
             }
-
-            bool hasX = false, hasY = false;
-            if (createTrafficLights && trafficLightInfo.TryGetValue(intersection, out var trafficLights))
-            {
-                if (trafficLights.Contains(R1) || trafficLights.Contains(R3))
-                {
-                    hasX = true;
-                }
-                if (trafficLights.Contains(R2) || trafficLights.Contains(R4))
-                {
-                    hasY = true;
-                }
-            }
-
-            if (hasX)
-            {
-                var tl = new TrafficLight(hasY ? 2 : 1, 0);
-                GameController.instance.sim.trafficSim.trafficLights.Add(tl.Id, tl);
-                
-                R1?.SetTrafficLight(intersection, tl);
-                R3?.SetTrafficLight(intersection, tl);
-            }
             
-            if (hasY)
-            {
-                var tl = new TrafficLight(hasX ? 2 : 1, hasX ? 1 : 0);
-                GameController.instance.sim.trafficSim.trafficLights.Add(tl.Id, tl);
-
-                R2?.SetTrafficLight(intersection, tl);
-                R4?.SetTrafficLight(intersection, tl);
-            }
-
             assigned.Add(intersection);
             intersection.Pattern = IntersectionPattern.CreateTwoWayByTwoWay(map, R1, R3, R2, R4);
 
@@ -1211,6 +1313,8 @@ namespace Transidious
             HashSet<StreetIntersection> assigned,
             Dictionary<StreetIntersection, List<StreetSegment>> trafficLightInfo)
         {
+            Debug.Assert(intersection.Pattern == null);
+
             /*
                 Pattern: Double One-Way Road x Two-Way Road
 
@@ -1268,7 +1372,8 @@ namespace Transidious
             // Find the other intersection.
             StreetIntersection otherIntersection = null;
             StreetSegment connector = null;
-            
+
+            var minDist = float.PositiveInfinity;
             foreach (var outgoing in intersection.OutgoingStreets)
             {
                 var candidate = outgoing.GetOppositeIntersection(intersection);
@@ -1277,18 +1382,16 @@ namespace Transidious
                     continue;
                 }
 
-                connector = outgoing;
-                otherIntersection = candidate;
-
-                break;
+                var dist = (candidate.Location - intersection.Location).sqrMagnitude;
+                if (dist < minDist)
+                {
+                    connector = outgoing;
+                    otherIntersection = candidate;
+                    minDist = dist;
+                }
             }
 
-            if (otherIntersection == null)
-            {
-                return false;
-            }
-
-            if (connector.OneWay)
+            if (otherIntersection == null || connector.OneWay)
             {
                 return false;
             }
@@ -1300,6 +1403,10 @@ namespace Transidious
             var R3A = otherIntersection.IncomingStreets.First(s => s.OneWay && s != connector);
             var R3B = otherIntersection.OutgoingStreets.First(s => s.OneWay && s != connector);
             var R4  = otherIntersection.IntersectingStreets.First(s => s != R3A && s != R3B && s != connector);
+
+            var pattern = IntersectionPattern.CreateDoubleOneWayByTwoWay(map, R1A, R1B, R2, R4, R3A, R3B);
+            intersection.Pattern = pattern;
+            otherIntersection.Pattern = pattern;
 
             if (trafficLightInfo.TryGetValue(intersection, out var trafficLights))
             {
@@ -1327,28 +1434,21 @@ namespace Transidious
             
             var hasX = R1A != null || R3A != null;
             var hasY = R2  != null || R4  != null;
-            
-            if (hasX)
+
+            if (hasX && hasY)
             {
-                var tl = new TrafficLight(hasY ? 2 : 1, 0);
+                var tl = new TrafficLight(2, 0);
                 GameController.instance.sim.trafficSim.trafficLights.Add(tl.Id, tl);
                 
                 R1A?.SetTrafficLight(intersection, tl);
                 R3A?.SetTrafficLight(otherIntersection, tl);
-            }
-            
-            if (hasY)
-            {
-                var tl = new TrafficLight(hasX ? 2 : 1, hasX ? 1 : 0);
+                
+                tl = new TrafficLight(2, 1);
                 GameController.instance.sim.trafficSim.trafficLights.Add(tl.Id, tl);
 
                 R2?.SetTrafficLight(intersection, tl);
                 R4?.SetTrafficLight(otherIntersection, tl);
             }
-
-            var pattern = IntersectionPattern.CreateDoubleOneWayByTwoWay(map, R1A, R1B, R2, R4, R3A, R3B);
-            intersection.Pattern = pattern;
-            otherIntersection.Pattern = pattern;
 
             float minX = float.PositiveInfinity, minY = float.PositiveInfinity;
             float maxX = 0f, maxY = 0f;
@@ -1377,6 +1477,8 @@ namespace Transidious
             HashSet<StreetIntersection> assigned,
             Dictionary<StreetIntersection, List<StreetSegment>> trafficLightInfo)
         {
+            Debug.Assert(intersection.Pattern == null);
+
             /*
                 Pattern: Double One-Way Road x Double One-Way Road
                 
@@ -1483,6 +1585,15 @@ namespace Transidious
             var R2A = intersections[1].IncomingStreets.FirstOrDefault(s => !connectors.Contains(s));
             var R3A = intersections[2].IncomingStreets.FirstOrDefault(s => !connectors.Contains(s));
             var R4A = intersections[3].IncomingStreets.FirstOrDefault(s => !connectors.Contains(s));
+            
+            var R1B = intersections[0].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
+            var R2B = intersections[1].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
+            var R3B = intersections[2].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
+            var R4B = intersections[3].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
+
+            var pattern =
+                IntersectionPattern.CreateDoubleOneWayByDoubleOneWay(map, R1A, R1B, R2A, R2B, R3A, R3B, R4A, R4B, 
+                    connectors[0], connectors[1], connectors[2], connectors[3]);
 
             if (trafficLightInfo.TryGetValue(intersections[0], out var trafficLights))
             {
@@ -1534,15 +1645,6 @@ namespace Transidious
                 R4A?.SetTrafficLight(intersection, tl);
             }
 
-            var R1B = intersections[0].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
-            var R2B = intersections[1].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
-            var R3B = intersections[2].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
-            var R4B = intersections[3].OutgoingStreets.FirstOrDefault(s => !connectors.Contains(s));
-            
-            var pattern =
-                IntersectionPattern.CreateDoubleOneWayByDoubleOneWay(map, R1A, R1B, R2A, R2B, R3A, R3B, R4A, R4B, 
-                    connectors[0], connectors[1], connectors[2], connectors[3]);
-
             float minX = float.PositiveInfinity, minY = float.PositiveInfinity;
             float maxX = 0f, maxY = 0f;
 
@@ -1578,7 +1680,7 @@ namespace Transidious
                 return true;
             }
 
-            if (CheckTwoWayXTwoWayIntersection(intersection, assigned, trafficLightInfo, true))
+            if (CheckTwoWayXTwoWayIntersection(intersection, assigned, trafficLightInfo))
             {
                 return true;
             }
@@ -2038,12 +2140,19 @@ namespace Transidious
             {
                 if (!trafficLights.ContainsKey(inter) || assigned.Contains(inter))
                 {
-                    CheckTwoWayXTwoWayIntersection(inter, assigned, trafficLights, false);
                     continue;
                 }
 
                 inter.CalculateRelativePositions();
                 CheckIntersectionPattern(inter, assigned, trafficLights);
+            }
+
+            foreach (var inter in map.streetIntersections)
+            {
+                if (!assigned.Contains(inter))
+                {
+                    CheckTwoWayXTwoWayIntersectionNoTrafficLights(inter, assigned);
+                }
             }
 
             if (visualizeIntersections)
@@ -2215,6 +2324,7 @@ namespace Transidious
                     if (pslg != null)
                     {
                         exporter.RegisterMesh(f, pslg, f.GetLayer(),  f.GetColor());
+                        f.VisualCenter = Polylabel.GetVisualCenter(pslg, 1f);
                     }
                     else if (wayPositionsArr != null)
                     {
@@ -2746,7 +2856,7 @@ namespace Transidious
                 }
 
                 var b = map.CreateBuilding(type, outlinePositions, GetBuildingName(building, area),
-                                         "", area, centroid);
+                                           "", area, centroid);
 
                 if (outlinePositions != null)
                 {
@@ -2759,6 +2869,11 @@ namespace Transidious
                 if (building.pslg != null)
                 {
                     exporter.RegisterMesh(b, building.pslg, b.GetLayer(), b.GetColor());
+                    b.VisualCenter = Polylabel.GetVisualCenter(building.pslg, 1f);
+                }
+                else
+                {
+                    b.VisualCenter = b.Centroid;
                 }
 
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)

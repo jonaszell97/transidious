@@ -24,6 +24,8 @@ namespace Transidious
 
         public TrafficLight(int numTrafficLights, int greenPhase)
         {
+            Debug.Assert(numTrafficLights > 1);
+
             this._timeToNextSwitch = greenPhase == 0
                 ? DefaultGreenTime
                 : greenPhase * (DefaultRedTime + DefaultYellowTime)

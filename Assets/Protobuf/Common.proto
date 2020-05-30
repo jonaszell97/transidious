@@ -58,4 +58,5 @@ message MapObject {
     repeated Outline outlinePositions = 5;
     float area = 6;
     Vector2 centroid = 7;
+    Vector2 visualCenter = 8;
 }

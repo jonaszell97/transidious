@@ -401,6 +401,28 @@ namespace Priority_Queue
         /// Returns true if successful; false if queue was empty
         /// O(log n)
         /// </summary>
+        public bool TryDequeue(out TItem first, out TPriority priority)
+        {
+            if (_queue.Count > 0)
+            {
+                lock (_queue)
+                {
+                    if (_queue.Count > 0)
+                    {
+                        SimpleNode node = _queue.Dequeue();
+                        first = node.Data;
+                        priority = node.Priority;
+                        RemoveFromNodeCache(node);
+                        return true;
+                    }
+                }
+            }
+
+            first = default;
+            priority = default;
+            return false;
+        }
+        
         public bool TryDequeue(out TItem first)
         {
             if (_queue.Count > 0)
@@ -416,8 +438,8 @@ namespace Priority_Queue
                     }
                 }
             }
-            
-            first = default(TItem);
+
+            first = default;
             return false;
         }
 

@@ -630,7 +630,7 @@ namespace Transidious
                    return CrossingType.None;
                }
 
-                return CrossingType.Upward;
+               return CrossingType.Upward;
             }
 
             // Rule #2: a downward edge excludes its starting endpoint, and includes its final endpoint
@@ -1060,6 +1060,144 @@ namespace Transidious
             }
 
             return result;
+        }
+    }
+
+    /// https://github.com/mapbox/polylabel
+    public static class Polylabel
+    {
+        private struct Cell
+        {
+            /// The cell rect.
+            public Rect Rect;
+
+            /// The cell distance.
+            public float D;
+
+            /// The cell max.
+            public float Max;
+
+            /// The cell center.
+            public Vector2 Center => Rect.center;
+
+            /// Cell size.
+            public float Size => Rect.width;
+
+            /// Cell coordinates.
+            public float x => Rect.x;
+            public float y => Rect.y;
+
+            /// C'tor.
+            public Cell(float x, float y, float size, PSLG polygon, Vector2[][] outlines)
+            {
+                this.Rect = new Rect(x, y, size, size);
+                this.D = DistanceToPoly(Rect.center, polygon, outlines);
+                this.Max = D + (size * .5f * Mathf.Sqrt(2f));
+            }
+        }
+
+        private static float DistanceToPoly(Vector2 pt, PSLG polygon, Vector2[][] outlines)
+        {
+            var minDist = float.PositiveInfinity;
+            foreach (var outline in outlines)
+            {
+                for (var i = 0; i < outline.Length; ++i)
+                {
+                    var p0 = outline[i];
+                    var p1 = outline[i == outline.Length - 1 ? 0 : i + 1];
+                    var closestPt = Math.NearestPointOnLine(p0, p1, pt);
+                    var dist = (closestPt - pt).sqrMagnitude;
+
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                    }
+                }
+            }
+
+            minDist = Mathf.Sqrt(minDist);
+            return polygon.IsPointInPolygonAndNotInHole(pt) ? minDist : -minDist;
+        }
+
+        public static Vector2 GetVisualCenter(PSLG polygon, float precision, bool visualize = false)
+        {
+            // Priority queue for cells.
+            var queue = new Priority_Queue.SimplePriorityQueue<Cell, float>();
+
+            // 1. Generate initial square cells that fully cover the polygon (with cell size equal to either width or
+            // height, whichever is lower). Calculate distance from the center of each cell to the outer polygon, using
+            // negative value if the point is outside the polygon (detected by ray-casting).
+            var outlines = polygon.Outlines;
+            var boundingRect = polygon.BoundingRect;
+            var initialCellSize = Mathf.Min(boundingRect.width, boundingRect.height);
+            var initialCellsX = (int)Mathf.Ceil(boundingRect.width / initialCellSize);
+            var initialCellsY = (int)Mathf.Ceil(boundingRect.height / initialCellSize);
+
+            // 2. Put the cells into a priority queue sorted by the maximum potential distance from a point inside a
+            // cell, defined as a sum of the distance from the center and the cell radius
+            // (equal to cell_size * sqrt(2) / 2).
+            Cell? centroidCell = null;
+            var centroid = polygon.Centroid;
+
+            for (var x = 0; x < initialCellsX; ++x)
+            {
+                for (var y = 0; y < initialCellsY; ++y)
+                {
+                    var cell = new Cell(
+                        boundingRect.x + x * initialCellSize,
+                        boundingRect.y + y * initialCellSize,
+                        initialCellSize, polygon, outlines);
+
+                    queue.Enqueue(cell, -cell.Max);
+
+                    if (cell.Rect.Contains(centroid))
+                    {
+                        centroidCell = cell;
+                    }
+                }
+            }
+
+            // 3. Calculate the distance from the centroid of the polygon and pick it as the first "best so far".
+            Debug.Assert(centroidCell != null);
+            var best = centroidCell.Value.D;
+            var bestCenter = centroidCell.Value.Center;
+
+            // 4. Pull out cells from the priority queue one by one. If a cell's distance is better than the current
+            // best, save it as such. Then, if the cell potentially contains a better solution that the current best
+            // (cell_max - best_dist > precision), split it into 4 children cells and put them in the queue.
+            while (queue.TryDequeue(out Cell cell))
+            {
+                if (cell.D > best)
+                {
+                    best = cell.D;
+                    bestCenter = cell.Center;
+                }
+
+                if (visualize)
+                {
+                    Utility.DrawRect(cell.Rect, .5f, Color.red);
+                }
+
+                if (cell.Max - best <= precision)
+                {
+                    continue;
+                }
+
+                var splitCellSize = cell.Size * .5f;
+                var cell0 = new Cell(cell.x, cell.y, splitCellSize, polygon, outlines);
+                var cell1 = new Cell(cell.x + splitCellSize, cell.y, splitCellSize, polygon, outlines);
+                var cell2 = new Cell(cell.x, cell.y + splitCellSize, splitCellSize, polygon, outlines);
+                var cell3 = new Cell(cell.x + splitCellSize, cell.y + splitCellSize, splitCellSize, polygon, outlines);
+
+                queue.Enqueue(cell0, -cell0.Max);
+                queue.Enqueue(cell1, -cell1.Max);
+                queue.Enqueue(cell2, -cell2.Max);
+                queue.Enqueue(cell3, -cell3.Max);
+            }
+
+            // 5. Stop the algorithm when we have exhausted the queue and return the best cell's center as the pole of
+            // inaccessibility. It will be guaranteed to be a global optimum within the given precision.
+            return bestCenter;
         }
     }
 }

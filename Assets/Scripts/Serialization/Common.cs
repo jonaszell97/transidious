@@ -36,14 +36,15 @@ namespace Transidious.Serialization {
             "cmlhbGl6YXRpb24uVmVjdG9yMiJ/CgRNZXNoEjQKCHZlcnRpY2VzGAEgAygL",
             "MiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IzEhEKCXRyaWFu",
             "Z2xlcxgCIAMoDRIuCgJ1dhgDIAMoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6",
-            "YXRpb24uVmVjdG9yMiKkAgoJTWFwT2JqZWN0EgoKAmlkGAEgASgNEgwKBG5h",
+            "YXRpb24uVmVjdG9yMiLeAgoJTWFwT2JqZWN0EgoKAmlkGAEgASgNEgwKBG5h",
             "bWUYAiABKAkSEwoLdW5pcXVlVGlsZVgYAyABKAUSEwoLdW5pcXVlVGlsZVkY",
             "BCABKAUSRgoQb3V0bGluZVBvc2l0aW9ucxgFIAMoCzIsLlRyYW5zaWRpb3Vz",
             "LlNlcmlhbGl6YXRpb24uTWFwT2JqZWN0Lk91dGxpbmUSDAoEYXJlYRgGIAEo",
             "AhI0CghjZW50cm9pZBgHIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
-            "b24uVmVjdG9yMhpHCgdPdXRsaW5lEjwKEG91dGxpbmVQb3NpdGlvbnMYASAD",
-            "KAsyIi5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLlZlY3RvcjJCHKoCGVRy",
-            "YW5zaWRpb3VzLlNlcmlhbGl6YXRpb25iBnByb3RvMw=="));
+            "b24uVmVjdG9yMhI4Cgx2aXN1YWxDZW50ZXIYCCABKAsyIi5UcmFuc2lkaW91",
+            "cy5TZXJpYWxpemF0aW9uLlZlY3RvcjIaRwoHT3V0bGluZRI8ChBvdXRsaW5l",
+            "UG9zaXRpb25zGAEgAygLMiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5W",
+            "ZWN0b3IyQhyqAhlUcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -54,7 +55,7 @@ namespace Transidious.Serialization {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Color), global::Transidious.Serialization.Color.Parser, new[]{ "R", "G", "B", "A" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Mesh2D), global::Transidious.Serialization.Mesh2D.Parser, new[]{ "Vertices", "Triangles", "Uv" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Mesh), global::Transidious.Serialization.Mesh.Parser, new[]{ "Vertices", "Triangles", "Uv" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapObject), global::Transidious.Serialization.MapObject.Parser, new[]{ "Id", "Name", "UniqueTileX", "UniqueTileY", "OutlinePositions", "Area", "Centroid" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapObject.Types.Outline), global::Transidious.Serialization.MapObject.Types.Outline.Parser, new[]{ "OutlinePositions" }, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapObject), global::Transidious.Serialization.MapObject.Parser, new[]{ "Id", "Name", "UniqueTileX", "UniqueTileY", "OutlinePositions", "Area", "Centroid", "VisualCenter" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.MapObject.Types.Outline), global::Transidious.Serialization.MapObject.Types.Outline.Parser, new[]{ "OutlinePositions" }, null, null, null)})
           }));
     }
     #endregion
@@ -1370,6 +1371,7 @@ namespace Transidious.Serialization {
       outlinePositions_ = other.outlinePositions_.Clone();
       area_ = other.area_;
       centroid_ = other.centroid_ != null ? other.centroid_.Clone() : null;
+      visualCenter_ = other.visualCenter_ != null ? other.visualCenter_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1454,6 +1456,17 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "visualCenter" field.</summary>
+    public const int VisualCenterFieldNumber = 8;
+    private global::Transidious.Serialization.Vector2 visualCenter_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Vector2 VisualCenter {
+      get { return visualCenter_; }
+      set {
+        visualCenter_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MapObject);
@@ -1474,6 +1487,7 @@ namespace Transidious.Serialization {
       if(!outlinePositions_.Equals(other.outlinePositions_)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Area, other.Area)) return false;
       if (!object.Equals(Centroid, other.Centroid)) return false;
+      if (!object.Equals(VisualCenter, other.VisualCenter)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1487,6 +1501,7 @@ namespace Transidious.Serialization {
       hash ^= outlinePositions_.GetHashCode();
       if (Area != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Area);
       if (centroid_ != null) hash ^= Centroid.GetHashCode();
+      if (visualCenter_ != null) hash ^= VisualCenter.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1525,6 +1540,10 @@ namespace Transidious.Serialization {
         output.WriteRawTag(58);
         output.WriteMessage(Centroid);
       }
+      if (visualCenter_ != null) {
+        output.WriteRawTag(66);
+        output.WriteMessage(VisualCenter);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1551,6 +1570,9 @@ namespace Transidious.Serialization {
       }
       if (centroid_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Centroid);
+      }
+      if (visualCenter_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(VisualCenter);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1584,6 +1606,12 @@ namespace Transidious.Serialization {
           Centroid = new global::Transidious.Serialization.Vector2();
         }
         Centroid.MergeFrom(other.Centroid);
+      }
+      if (other.visualCenter_ != null) {
+        if (visualCenter_ == null) {
+          VisualCenter = new global::Transidious.Serialization.Vector2();
+        }
+        VisualCenter.MergeFrom(other.VisualCenter);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1625,6 +1653,13 @@ namespace Transidious.Serialization {
               Centroid = new global::Transidious.Serialization.Vector2();
             }
             input.ReadMessage(Centroid);
+            break;
+          }
+          case 66: {
+            if (visualCenter_ == null) {
+              VisualCenter = new global::Transidious.Serialization.Vector2();
+            }
+            input.ReadMessage(VisualCenter);
             break;
           }
         }

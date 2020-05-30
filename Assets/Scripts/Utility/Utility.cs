@@ -128,6 +128,15 @@ namespace Transidious
             return obj;
         }
 
+        public static GameObject DrawRect(Rect rect, float lineWidth, Color c)
+        {
+            return DrawRect(new Vector2(rect.x,              rect.y),
+                            new Vector2(rect.x,              rect.y + rect.height),
+                            new Vector2(rect.x + rect.width, rect.y + rect.height),
+                            new Vector2(rect.x + rect.width, rect.y),
+                            lineWidth, c);
+        }
+
         public static GameObject DrawRect(Vector2 bl, Vector2 tl,
                                           Vector2 tr, Vector2 br,
                                           float lineWidth, Color c)

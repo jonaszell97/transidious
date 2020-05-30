@@ -68,6 +68,7 @@ namespace Transidious
         bool Active { get; }
 
         Vector2 Centroid { get; }
+        Vector2 VisualCenter { get; }
         Transform transform { get; }
         Vector2[][] outlinePositions { get; }
 
@@ -101,6 +102,7 @@ namespace Transidious
         public Vector2[][] outlinePositions { get; set; }
         public float area;
         public Vector2 centroid;
+        public Vector2 VisualCenter { get; set; }
 
         public int Id
         {
@@ -177,6 +179,7 @@ namespace Transidious
             this.kind = kind;
             this.area = area;
             this.centroid = centroid.HasValue ? centroid.Value : Vector2.zero;
+            this.VisualCenter = this.centroid;
         }
 
         public void Hide() { }
@@ -198,6 +201,7 @@ namespace Transidious
                 UniqueTileY = uniqueTile?.y ?? -1,
                 Area = area,
                 Centroid = centroid.ToProtobuf(),
+                VisualCenter = VisualCenter.ToProtobuf(),
             };
 
             if (outlinePositions != null)
@@ -223,6 +227,7 @@ namespace Transidious
             this.name = obj.Name;
             this.area = obj.Area;
             this.centroid = obj.Centroid.Deserialize();
+            this.VisualCenter = obj.VisualCenter.Deserialize();
 
             if (obj.UniqueTileX != -1)
             {
@@ -277,6 +282,7 @@ namespace Transidious
         public new Renderer renderer;
         public new Collider2D collider;
         public Vector2 centroid;
+        public Vector2 VisualCenter { get; set; }
         public Vector2[][] outlinePositions { get; }
 
         protected void Initialize(MapObjectKind kind, int id, Vector2 centroid)
@@ -286,6 +292,7 @@ namespace Transidious
             this.centroid = centroid;
             this.renderer = GetComponent<Renderer>();
             this.collider = GetComponent<Collider2D>();
+            this.VisualCenter = this.centroid;
         }
 
         public int Id
@@ -455,6 +462,7 @@ namespace Transidious
                 Name = name,
                 UniqueTileX = uniqueTile?.x ?? -1,
                 UniqueTileY = uniqueTile?.y ?? -1,
+                VisualCenter = VisualCenter.ToProtobuf(),
             };
 
             if (outlinePositions != null)
@@ -478,6 +486,7 @@ namespace Transidious
         {
             this.id = (int)obj.Id;
             this.name = obj.Name;
+            this.VisualCenter = obj.VisualCenter.Deserialize();
 
             if (obj.UniqueTileX != -1)
             {
