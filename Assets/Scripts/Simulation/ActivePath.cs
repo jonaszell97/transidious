@@ -184,7 +184,14 @@ namespace Transidious
                 _pathFollowingHelper?.Update(Time.deltaTime * trafficSim.sim.SpeedMultiplier);
             }
 
-            citizen.currentPosition = transform.position;
+            if (transitVehicle != null)
+            {
+                citizen.currentPosition = transitVehicle.transform.position;
+            }
+            else
+            {
+                citizen.currentPosition = transform.position;
+            }
 
             if (_currentStep >= path.path.Steps.Length)
             {

@@ -2329,6 +2329,7 @@ namespace Transidious
                     else if (wayPositionsArr != null)
                     {
                         exporter.RegisterMesh(f, wayPositionsArr, f.GetLayer(), f.GetColor());
+                        f.VisualCenter = Polylabel.GetVisualCenter(wayPositionsArr, 1f);
                     }
                 }
                 catch (Exception e)

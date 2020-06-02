@@ -56,9 +56,6 @@ namespace Transidious
         /// The total length of the line.
         public float length;
         
-        public TimeSpan stopDuration;
-        public TimeSpan endOfLineWaitTime;
-        
         /// Total weekly passengers on the line.
         public int weeklyPassengers;
 
@@ -99,7 +96,6 @@ namespace Transidious
         {
             get
             {
-                return TimeSpan.Zero;
                 switch (type)
                 {
                     default:
@@ -146,7 +142,6 @@ namespace Transidious
                 color = color,
             };
 
-            this.stopDuration = AverageStopDuration;
             this.routes = new List<Route>();
             this.stops = new List<Stop>();
             this.vehicles = new List<TransitVehicle>();
@@ -213,9 +208,6 @@ namespace Transidious
                 begin.AddIncomingRoute(backRoute);
             }
 
-            begin.wasModified = true;
-            end.wasModified = true;
-
             return route;
         }
 
@@ -264,76 +256,84 @@ namespace Transidious
                 return;
             }
 #endif
-            
-            var departure = earliestDeparture;
+
             TransitVehicle next = null;
 
-            for (var i = 0; i < neededVehicles; ++i)
+            int i;
+            for (i = 0; i < neededVehicles; ++i)
             {
                 var v = sim.CreateVehicle(this, next);
                 vehicles.Add(v);
-
-                departure = departure.Add(interval).Add(AverageStopDuration);
                 next = v;
             }
 
+            vehicles.First().First = true;
             vehicles.First().Next = next;
+            vehicles.First().StartDrive();
 
-            // var totalTravelTime = TimeSpan.Zero;
-            //
-            // for (var i = 0; i < routes.Count; ++i)
-            // {
-            //     var route = routes[i];
-            //     if (i == 0)
-            //     {
-            //         route.beginStop.SetSchedule(this, new ContinuousSchedule(firstDeparture, interval));
-            //     }
-            //
-            //     totalTravelTime += route.distance / AverageSpeed;
-            //
-            //     if (i != routes.Count - 1)
-            //     {
-            //         route.endStop.SetSchedule(this, new ContinuousSchedule(
-            //             firstDeparture.Add(totalTravelTime), interval));
-            //     }
-            //     
-            //     totalTravelTime += stopDuration;
-            // }
+            foreach (var stop in stops)
+            {
+                if (stop.oppositeStop != null)
+                    continue;
+
+                const float threshold = 100f*100f;
+                var minDist = float.PositiveInfinity;
+                Stop minStop = null;
+
+                foreach (var otherStop in stops)
+                {
+                    if (stop == otherStop || otherStop.oppositeStop != null)
+                        continue;
+
+                    var dist = (stop.Location - otherStop.Location).sqrMagnitude;
+                    if (dist < minDist && dist <= threshold)
+                    {
+                        minDist = dist;
+                        minStop = otherStop;
+                    }
+                }
+
+                if (minStop != null)
+                {
+                    stop.oppositeStop = minStop;
+                    minStop.oppositeStop = stop;
+                }
+            }
 
             // Equally space the vehicles along the route.
-            var lengthMeters = distance.Meters;
-            var spacing = lengthMeters / neededVehicles;
-            var currentRoute = 0;
+            // var lengthMeters = distance.Meters;
+            // var spacing = lengthMeters / neededVehicles;
+            // var currentRoute = 0;
 
-            routes[0].beginStop.SetSchedule(this, new ContinuousSchedule(earliestDeparture, interval));
-
-            var diffs = new float[vehicles.Count];
-            for (var i = 0; i < vehicles.Count; ++i)
-            {
-                var requiredDistance = i * spacing;
-
-                var routeDistance = currentRoute == 0 ? 0 : cumulativeLengths[currentRoute - 1];
-                while (cumulativeLengths[currentRoute] < requiredDistance)
-                {
-                    routeDistance = cumulativeLengths[currentRoute++];
-                }
-                
-                var distanceToStop = cumulativeLengths[currentRoute] - requiredDistance;
-                routes[currentRoute].endStop.SetSchedule(this, new ContinuousSchedule(
-                    earliestDeparture.Add(Distance.FromMeters(distanceToStop) / AverageSpeed), interval));
-
-                var diff = requiredDistance - routeDistance;
-                var vehicle = vehicles[vehicles.Count - 1 - i];
-
-                diffs[vehicles.Count - i - 1] = diff;
-                vehicle.SetStartingRoute(currentRoute);
-            }
-
-            var n = 0;
-            foreach (var v in vehicles)
-            {
-                v.StartDrive(v.CurrentRoute, diffs[n++]);
-            }
+            // routes[0].beginStop.SetSchedule(this, new ContinuousSchedule(earliestDeparture, interval));
+            //
+            // var diffs = new float[vehicles.Count];
+            // for (var i = 0; i < vehicles.Count; ++i)
+            // {
+            //     var requiredDistance = i * spacing;
+            //
+            //     var routeDistance = currentRoute == 0 ? 0 : cumulativeLengths[currentRoute - 1];
+            //     while (cumulativeLengths[currentRoute] < requiredDistance)
+            //     {
+            //         routeDistance = cumulativeLengths[currentRoute++];
+            //     }
+            //     
+            //     var distanceToStop = cumulativeLengths[currentRoute] - requiredDistance;
+            //     routes[currentRoute].endStop.SetSchedule(this, new ContinuousSchedule(
+            //         earliestDeparture.Add(Distance.FromMeters(distanceToStop) / AverageSpeed), interval));
+            //
+            //     var diff = requiredDistance - routeDistance;
+            //     var vehicle = vehicles[vehicles.Count - 1 - i];
+            //
+            //     diffs[vehicles.Count - i - 1] = diff;
+            //     vehicle.SetStartingRoute(currentRoute);
+            // }
+            //
+            // var n = 0;
+            // foreach (var v in vehicles)
+            // {
+            //     v.StartDrive(v.CurrentRoute, diffs[n++]);
+            // }
         }
 
         public new Serialization.Line ToProtobuf()

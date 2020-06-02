@@ -255,23 +255,23 @@ class DefaultArea : Area
             Tag<"leisure", "track">
         ], [.Way, .Relation]>,
 
-        // NaturalFeatureInfo<.River, [
-        //     Tag<"natural", "water">,
-        //     Tag<"water", "river">
-        // ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.River, [
+            Tag<"natural", "water">,
+            Tag<"water", "river">
+        ], [.Way, .Relation]>,
 
-        // NaturalFeatureInfo<.River, [
-        //     Tag<"waterway", "river">
-        // ], [.Way, .Relation]>,
-        // NaturalFeatureInfo<.River, [
-        //     Tag<"waterway", "riverbank">
-        // ], [.Way, .Relation]>,
-        // NaturalFeatureInfo<.River, [
-        //     Tag<"waterway", "stream">
-        // ], [.Way, .Relation]>,
-        // NaturalFeatureInfo<.River, [
-        //     Tag<"waterway", "canal">
-        // ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.River, [
+            Tag<"waterway", "river">
+        ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.River, [
+            Tag<"waterway", "riverbank">
+        ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.River, [
+            Tag<"waterway", "stream">
+        ], [.Way, .Relation]>,
+        NaturalFeatureInfo<.River, [
+            Tag<"waterway", "canal">
+        ], [.Way, .Relation]>,
 
         NaturalFeatureInfo<.Lake, [
             Tag<"natural", "water">
@@ -440,20 +440,10 @@ def Berlin : DefaultArea {
 
 
 
-def Mitte : DefaultArea {
-    nodeFile = "Deutschland/Berlin"
 
-    boundary = BoundaryInfo<"Mitte", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "9">
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "9">
-    ]>
-}
 
 def Spandau : DefaultArea {
-    nodeFile = "Deutschland/Berlin"
+    nodeFile = "Berlin"
 
     boundary = BoundaryInfo<"Spandau", [
         Tag<"type", "boundary">,
@@ -671,17 +661,6 @@ def Fuerteventura : DefaultArea {
     ]>
 }
 
-def CharlottenburgWilmersdorf : DefaultArea {
-    country = "Deutschland"
-    boundary = BoundaryInfo<"Charlottenburg-Wilmersdorf", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "9">,
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "9">,
-    ]>
-}
-
 def Charlottenburg : DefaultArea {
     country = "Deutschland"
     boundary = BoundaryInfo<"Charlottenburg", [
@@ -690,5 +669,26 @@ def Charlottenburg : DefaultArea {
     ], [
         Tag<"boundary", "administrative">,
         Tag<"admin_level", "10">,
+    ]>
+}
+
+def Mitte : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"Mitte", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "10">,
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "10">,
+    ]>
+}
+def CharlottenburgWilmersdorf : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"CharlottenburgWilmersdorf", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "9">,
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "9">,
     ]>
 }

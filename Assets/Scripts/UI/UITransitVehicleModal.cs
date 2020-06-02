@@ -1,7 +1,7 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
+using Transidious.UI;
 
 namespace Transidious
 {
@@ -16,10 +16,14 @@ namespace Transidious
         /// The info panel.
         public UIInfoPanel panel;
 
+        /// The passenger list.
+        public UICitizenList passengerList;
+
         public void Initialize()
         {
             modal.Initialize();
             panel.Initialize();
+            passengerList.Initialize("ui:transit:passengers");
             
             modal.titleInput.interactable = false;
             modal.onClose.AddListener(() =>
@@ -42,6 +46,10 @@ namespace Transidious
                         vehicle.Next.ActivateModal();
                     });
             });
+
+            panel.AddItem("DistanceFromStart", "Distance From Start");
+            panel.AddItem("DistanceToNextStop", "Distance To Next Stop");
+            panel.AddItem("TimeToNextStop", "Time To Next Stop");
 #endif
         }
 
@@ -58,6 +66,38 @@ namespace Transidious
             {
                 vehicle.NextStop.ActivateModal();
             };
+
+            UpdatePassengers();
+        }
+
+        private void UpdatePassengers()
+        {
+            if (vehicle.Passengers.Count == 0)
+            {
+                passengerList.gameObject.SetActive(false);
+                return;
+            }
+
+            var passengers = new List<Citizen>();
+            var destinations = new Dictionary<Citizen, Stop>();
+
+            foreach (var pair in vehicle.Passengers)
+            {
+                foreach (var wc in pair.Value)
+                {
+                    passengers.Add(wc.path.citizen);
+                    destinations.Add(wc.path.citizen, pair.Key);
+                }
+            }
+
+            if (passengers.Count == 0)
+            {
+                passengerList.gameObject.SetActive(false);
+                return;
+            }
+
+            passengerList.gameObject.SetActive(true);
+            passengerList.SetCitizens(passengers, c => destinations[c].Name);
         }
 
         public void SetVehicle(TransitVehicle vehicle)
@@ -76,6 +116,9 @@ namespace Transidious
             if (vehicle != null)
             {
                 panel.SetValue("DistanceToNext", $"{vehicle.DistanceToNext.TotalMinutes:n2} min");
+                panel.SetValue("TimeToNextStop", $"{vehicle.TimeToNextStop.TotalMinutes:n2} min");
+                panel.SetValue("DistanceFromStart", $"{vehicle.DistanceFromStartOfLine.Meters:n2} m");
+                panel.SetValue("DistanceToNextStop", $"{vehicle.DistanceFromNextStop.Meters:n2} m");
             }
         }
 #endif

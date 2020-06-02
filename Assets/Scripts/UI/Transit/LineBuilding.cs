@@ -524,8 +524,6 @@ namespace Transidious
             existingPathMesh?.SetActive(false);
 
             this.EndLineCreation();
-
-            // game.transitEditor.InitOverlappingRoutes();
             game.transitEditor.CheckOverlappingRoutes(crossedStreets);
 
             var modal = MainUI.instance.lineModal;
@@ -809,7 +807,7 @@ namespace Transidious
             return nextStop;
         }
 
-        protected virtual new IMapObject AddStop(IMapObject nextStop)
+        protected new virtual IMapObject AddStop(IMapObject nextStop)
         {
             nextStop = base.AddStop(nextStop);
 

@@ -1,5 +1,84 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1910558700824616758
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2820791891895347100}
+  - component: {fileID: 5396771011209830305}
+  - component: {fileID: 4420926801473788976}
+  m_Layer: 0
+  m_Name: Grid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &2820791891895347100
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1910558700824616758}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 895039796025502491}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &5396771011209830305
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1910558700824616758}
+  m_Mesh: {fileID: 0}
+--- !u!23 &4420926801473788976
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1910558700824616758}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: e50573cd85960425bbd7da968a4603b1, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
 --- !u!1 &5733694688799658288
 GameObject:
   m_ObjectHideFlags: 0
@@ -86,6 +165,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2207890491199942807}
+  - {fileID: 2820791891895347100}
   - {fileID: 247483900375424226}
   - {fileID: 3478187293302234580}
   - {fileID: 970611484883172400}
@@ -125,6 +205,8 @@ MonoBehaviour:
   transitRoutes: []
   canvas: {fileID: 9009150387208353036}
   heatmap: {fileID: 247483900375424230}
+  grid: {fileID: 5396771011209830305}
+  gridMaterial: {fileID: 2100000, guid: e50573cd85960425bbd7da968a4603b1, type: 2}
   mapTilePrefab: {fileID: 1060823748927563579, guid: 892d51f03ca52426492b071554cf9e27,
     type: 3}
   multiMeshPrefab: {fileID: 61026142767662235, guid: f49e2519502aa4eb5b9f49aefff1410f,
@@ -185,7 +267,7 @@ PrefabInstance:
     - target: {fileID: 1255794042421996672, guid: a8a8aebbab21c4fd5b304e5c60fe714b,
         type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 1255794042421996672, guid: a8a8aebbab21c4fd5b304e5c60fe714b,
         type: 3}
@@ -266,7 +348,7 @@ PrefabInstance:
     - target: {fileID: 1255794042421996672, guid: a8a8aebbab21c4fd5b304e5c60fe714b,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1255794042421996672, guid: a8a8aebbab21c4fd5b304e5c60fe714b,
         type: 3}
@@ -357,7 +439,7 @@ PrefabInstance:
     - target: {fileID: 7849401189114550341, guid: 44c37f6c169ad4f0584f2bd2f186bf02,
         type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7849401189114550341, guid: 44c37f6c169ad4f0584f2bd2f186bf02,
         type: 3}

@@ -66,6 +66,30 @@ namespace Transidious
             
             debugPanel.Initialize();
             
+            debugPanel.AddClickableItem("Centroid", "Centroid", Color.white, () =>
+            {
+                Utility.DrawCircle(feature.Centroid, 2f, 2f, Color.red);
+            });
+
+            debugPanel.AddClickableItem("VisualCenter", "Visual Center", Color.white, () =>
+            {
+                Utility.DrawCircle(feature.VisualCenter, 2f, 2f, Color.blue);
+            });
+
+            debugPanel.AddClickableItem("CalcVisualCenter", "Calculate Visual Center", Color.white, () =>
+            {
+                var pslg = new PSLG();
+                pslg.AddOrderedVertices(feature.outlinePositions[0]);
+
+                for (var i = 1; i < feature.outlinePositions.Length; ++i)
+                {
+                    pslg.AddHole(feature.outlinePositions[i]);
+                }
+
+                var visualCenter = Polylabel.GetVisualCenter(pslg, 1f, true);
+                Utility.DrawCircle(visualCenter, 2f, 2f, Color.green);
+            });
+            
             debugPanel.AddItem("Area", "ui:feature:area");
             debugPanel.AddItem("Triangles", "Triangles");
 #endif

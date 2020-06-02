@@ -441,7 +441,6 @@ namespace Transidious
         public TransitVehicle CreateVehicle(Line line, TransitVehicle next)
         {
             var obj = Instantiate(transitVehiclePrefab, this.transform, false);
-            
             var vehicle = obj.GetComponent<TransitVehicle>();
             vehicle.Initialize(line, next);
 

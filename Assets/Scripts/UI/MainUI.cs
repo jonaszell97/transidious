@@ -23,6 +23,9 @@ namespace Transidious
         /// The main UI instance.
         public static MainUI instance;
 
+        /// Referene to the main camera.
+        public Camera mainCamera;
+
         /// Reference to the game controller.
         public GameController game;
 
@@ -295,6 +298,7 @@ namespace Transidious
         {
             instance = this;
             state = State.Default;
+            mainCamera = Camera.main;
             UITooltip.instance = tooltipInstance;
             UIInstruction.instance = instructionPanel;
         }
@@ -688,8 +692,8 @@ namespace Transidious
             scaleBar.SetActive(true);
             scaleText.gameObject.SetActive(true);
 
-            var maxX = Camera.main.ScreenToWorldPoint(new Vector3(100f, 0f, 0f)).x;
-            var minX = Camera.main.ScreenToWorldPoint(new Vector3(0f, 0f, 0f)).x;
+            var maxX = mainCamera.ScreenToWorldPoint(new Vector3(100f, 0f, 0f)).x;
+            var minX = mainCamera.ScreenToWorldPoint(new Vector3(0f, 0f, 0f)).x;
 
             var maxLength = maxX - minX;
             float scale;

@@ -586,13 +586,19 @@ namespace Transidious
             }
 
             // Check if there is a leading car we need to pay attention to.
-            var leadingCar = GetNextCar(sim);
-            if (leadingCar != null && leadingCar.Item2 < s)
+            bool checkLeadingCars = true;
+            if (_car.Next != null)
             {
-                // We found a leading car.
-                s = leadingCar.Item2;
-                deltaV = v - leadingCar.Item1.CurrentVelocity.RealTimeMPS;
+                // Calculate distance between midpoints.
+                s = _car.Next.DistanceFromStart - _car.DistanceFromStart;
+
+                // Account for car length.
+                s = Mathf.Max(0f, s - (_car.Car.Length.Meters * .5f) - (_car.Next.Car.Length.Meters * .5f));
+
+                deltaV = v - _car.Next.CurrentVelocity.RealTimeMPS;
                 s0 = s0_car;
+    
+                checkLeadingCars = false;
             }
             // Check if there is a traffic light to pay attention to.
             else if (_car.NextIntersection != null)
@@ -615,6 +621,21 @@ namespace Transidious
                     {
                         UnblockIntersection();
                     }
+
+                    checkLeadingCars = false;
+                }
+            }
+
+            // Check for cars on the next intersection or segment.
+            if (checkLeadingCars)
+            {
+                var leadingCar = GetNextCar(sim);
+                if (leadingCar != null && leadingCar.Item2 < s)
+                {
+                    // We found a leading car.
+                    s = leadingCar.Item2;
+                    deltaV = v - leadingCar.Item1.CurrentVelocity.RealTimeMPS;
+                    s0 = s0_car;
                 }
             }
 
@@ -628,17 +649,6 @@ namespace Transidious
         /// Return the next car on an intersection or the next segment, along with the distance to it.
         private Tuple<DrivingCar, float> GetNextCar(SimulationController sim)
         {
-            if (_car.Next != null)
-            {
-                // Calculate distance between midpoints.
-                var s = _car.Next.DistanceFromStart - _car.DistanceFromStart;
-
-                // Account for car length.
-                s = Mathf.Max(0f, s - (_car.Car.Length.Meters * .5f) - (_car.Next.Car.Length.Meters * .5f));
-
-                return Tuple.Create(_car.Next, s);
-            }
-
             if (_car.NextSegment == null)
             {
                 return null;

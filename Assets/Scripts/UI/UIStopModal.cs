@@ -43,6 +43,7 @@ namespace Transidious
             panel.AddItem("Waiting", "ui:transit:waiting_citizens", "", "Sprites/ui_citizen_head");
 
 #if DEBUG
+            panel.AddItem("OppositeStop", "Opposite Stop");
             panel.AddItem("schedule", "Schedule");
 #endif
 
@@ -83,7 +84,7 @@ namespace Transidious
             var time = GameController.instance.sim.GameTime;
             foreach (var line in stop.lineData)
             {
-                _lines.Add(Tuple.Create(line.Key, line.Value.schedule.GetNextDeparture(time), line.Value.nextDeparture));
+                _lines.Add(Tuple.Create(line.Key, line.Value.nextDeparture, line.Value.nextDeparture));
 
                 if (nextDepartures.Count < _lines.Count)
                 {
@@ -117,7 +118,6 @@ namespace Transidious
                     logo.SetLine(line.Item1, true);
 
                     var diff = (float)(line.Item2 - time).TotalMinutes;
-                    // var late = (float)(line.Item3 - line.Item2).TotalMinutes;
 
                     string text;
                     if (diff < 1)
@@ -158,7 +158,8 @@ namespace Transidious
             UpdateDepartures();
 
 #if DEBUG
-            panel.SetValue("schedule", stop.GetSchedule(stop.lineData.First().Key).ToString());
+            panel.SetValue("OppositeStop", stop.oppositeStop?.Name ?? "-");
+            panel.SetValue("schedule", stop.GetSchedule(stop.lineData.First().Key)?.ToString() ?? "-");
 #endif
         }
 

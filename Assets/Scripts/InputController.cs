@@ -902,6 +902,17 @@ namespace Transidious
                 }
             }
             
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F6))
+            {
+                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                var pos = controller.loadedMap.GetClosestStreet(clickedPos);
+
+                if (pos.street != null)
+                {
+                    Utility.DrawCircle(pos.pos, 3f, 3f, Color.red);
+                }
+            }
+            
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F7))
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -943,16 +954,10 @@ namespace Transidious
                     Debug.Log($"distance: {(from-to).magnitude}m");
                 }
             }
-
-            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F6))
+            
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F9))
             {
-                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                var pos = controller.loadedMap.GetClosestStreet(clickedPos);
-
-                if (pos.street != null)
-                {
-                    Utility.DrawCircle(pos.pos, 3f, 3f, Color.red);
-                }
+                controller.loadedMap.ToggleGrid();
             }
 
             if (debugClickTest && Input.GetMouseButtonDown(0))

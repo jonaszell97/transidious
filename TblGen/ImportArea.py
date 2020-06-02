@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 import platform
+import re
 import requests
 import subprocess
 import sys
@@ -122,10 +123,11 @@ if len(sys.argv) > 2:
 else:
     country = result['display_name'].split(', ')[-1]
 
+origSearchTerm = searchTerm
 if len(sys.argv) > 3:
     searchTerm = sys.argv[3]
 else:
-    searchTerm = searchTerm.replace(' ', '')
+    searchTerm = re.sub(r"[^a-zA-Z0-9]", "", searchTerm)
 
 polyResult = requests.get("http://polygons.openstreetmap.fr/get_poly.py", params={
     'id': id,
@@ -200,13 +202,13 @@ create_poly(background_poly, '../Resources/Poly/Backgrounds/%s.poly' % (searchTe
 
 ###
 
-scaled_verts = scale_polygon(10 * one_meter_scale, vertices)
-display_poly(vertices, 'r')
-display_poly(scaled_verts, 'g')
-display_poly(background_poly, 'b')
-plt.show()
+# scaled_verts = scale_polygon(10 * one_meter_scale, vertices)
+# display_poly(vertices, 'r')
+# display_poly(scaled_verts, 'g')
+# display_poly(background_poly, 'b')
+# plt.show()
 
-exit(0)
+# exit(0)
 
 ###
 
@@ -255,7 +257,7 @@ if index != -1:
 code = """\
 def {name} : DefaultArea {{
     country = "{country}"
-    boundary = BoundaryInfo<"{name}", [
+    boundary = BoundaryInfo<"{boundaryName}", [
         Tag<"type", "boundary">,
         {admin_level}
     ], [
@@ -263,7 +265,7 @@ def {name} : DefaultArea {{
         {admin_level}
     ]>
 }}\
-""".format(name=searchTerm, country=country, boundary=boundary,
+""".format(name=searchTerm, country=country, boundaryName=origSearchTerm, boundary=boundary,
            admin_level=admin_level)
 
 if tgContent[-1] != '\n':

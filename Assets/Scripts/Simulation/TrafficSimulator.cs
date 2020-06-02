@@ -550,7 +550,7 @@ namespace Transidious
                 backward = driveStep.driveSegment.backward;
                 lane = GetDefaultLane(segment, backward);
 
-                positions = StreetPathBuilder.GetPath(segment, lane).Points.ToList();
+                positions = StreetPathBuilder.GetStepPath(step).Points.ToList();
             }
             else if (step is PartialDriveStep partialDriveStep)
             {
@@ -558,7 +558,7 @@ namespace Transidious
                 backward = partialDriveStep.driveSegment.backward;
                 lane = GetDefaultLane(segment, backward);
 
-                positions = StreetPathBuilder.GetPath(segment, lane).Points.ToList();
+                positions = StreetPathBuilder.GetStepPath(step).Points.ToList();
             }
             else if (step is TurnStep turnStep)
             {

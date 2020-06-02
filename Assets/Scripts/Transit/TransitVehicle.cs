@@ -37,11 +37,11 @@ namespace Transidious
         /// The next transit vehicle on the same line.
         public TransitVehicle Next { get; set; }
 
+        /// Whether or not this is the first vehicle on the route.
+        public bool First;
+
         /// The time we should wait until departing to the next stop.
         private TimeSpan? _waitingTime;
-
-        /// The extra distance driven on the last route.
-        private float _extraDistanceDriven;
 
         /// The next stop on the line.
         public Stop NextStop
@@ -62,7 +62,7 @@ namespace Transidious
         }
 
         /// The distance (in meters) from the start of the line.
-        private Distance DistanceFromStartOfLine
+        public Distance DistanceFromStartOfLine
         {
             get
             {
@@ -76,8 +76,11 @@ namespace Transidious
             }
         }
 
+        public Distance DistanceFromNextStop => Distance.FromMeters(line.cumulativeLengths[CurrentRoute]) - DistanceFromStartOfLine;
+        public TimeSpan TimeToNextStop => DistanceFromNextStop / Velocity;
+
         /// The distance (in time) from the start of the line.
-        private TimeSpan TimeFromStartOfLine =>
+        public TimeSpan TimeFromStartOfLine =>
             (DistanceFromStartOfLine / line.AverageSpeed)
             + line.AverageStopDuration.Multiply(CurrentRoute);
 
@@ -174,30 +177,10 @@ namespace Transidious
 
             this.gameObject.SetActive(true);
             this.transform.SetPositionInLayer(route.positions.First());
-
-            var expectedArrival = route.endStop.NextDeparture(line, sim.GameTime);
-            var current = Next;
-
-            while (current.CurrentRoute == CurrentRoute)
-            {
-                expectedArrival = route.endStop.NextDeparture(line, expectedArrival.AddSeconds(1));
-                current = current.Next;
-            }
-
             this._pathFollow = new PointsFollower(
                 this.gameObject, route.positions, Velocity,
                 () =>
                 {
-                    var diff = sim.GameTime - expectedArrival;
-                    if (diff.TotalSeconds < 0f)
-                    {
-                        _waitingTime = diff;
-                    }
-                    else
-                    {
-                        _extraDistanceDriven = (line.AverageSpeed * diff).Meters;
-                    }
-
                     _pathFollow = null;
                     _waitingTime = line.AverageStopDuration;
                     CurrentRoute = (CurrentRoute + 1) % line.routes.Count;
@@ -226,12 +209,6 @@ namespace Transidious
             {
                 _pathFollow.SimulateProgressAbsolute(progress);
             }
-
-            if (_extraDistanceDriven > 0f)
-            {
-                _pathFollow.SimulateProgressAbsolute(_extraDistanceDriven);
-                _extraDistanceDriven = 0f;
-            }
         }
 
         void Update()
@@ -241,40 +218,40 @@ namespace Transidious
                 return;
             }
 
-            var speedMultiplier = sim.SpeedMultiplier;
-            for (var i = 0; i < speedMultiplier; ++i)
+            var delta = Time.deltaTime * sim.SpeedMultiplier;
+            if (_pathFollow != null)
             {
-                if (_pathFollow != null)
+                if (First || Next.NextStop != NextStop)
                 {
-                    _pathFollow.Update(Time.deltaTime);
-                    continue;
+                    NextStop.SetNextDeparture(line, sim.GameTime.Add(TimeToNextStop));
                 }
 
-                var extraTime = 0f;
-                if (_waitingTime.HasValue)
+                _pathFollow.Update(delta);
+                return;
+            }
+
+            if (_waitingTime.HasValue)
+            {
+                var waitingSeconds = (float) _waitingTime.Value.TotalSeconds;
+                waitingSeconds -= delta * SimulationController.BaseSpeedMultiplier;
+
+                if (waitingSeconds > 0f)
                 {
-                    var waitingSeconds = (float) _waitingTime.Value.TotalSeconds;
-                    waitingSeconds -= Time.deltaTime;
-
-                    if (waitingSeconds > 0f)
-                    {
-                        _waitingTime = TimeSpan.FromSeconds(waitingSeconds);
-                        continue;
-                    }
-
-                    extraTime = -waitingSeconds;
-                    _waitingTime = null;
-                }
-
-                var diff = (float) DistanceToNext.TotalMinutes - line.schedule.dayInterval;
-                if (diff < 0f)
-                {
+                    _waitingTime = TimeSpan.FromSeconds(waitingSeconds);
                     return;
                 }
 
-                StartDrive(CurrentRoute);
-                _pathFollow.Update(extraTime);
+                _waitingTime = null;
             }
+
+            var diff = (float) DistanceToNext.TotalMinutes - line.schedule.dayInterval;
+            if (!First && diff < 0f)
+            {
+                return;
+            }
+
+            StartDrive(CurrentRoute);
+            _pathFollow.Update(delta);
         }
 
         public void ActivateModal()

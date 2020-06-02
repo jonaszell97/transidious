@@ -127,6 +127,12 @@ namespace Transidious
         /// The heatmap covering the entire map.
         public Heatmap heatmap;
 
+        /// The line construction grid.
+        public MeshFilter grid;
+
+        /// The grid material.
+        public Material gridMaterial;
+
         /// Prefab for creating map tiles.
         public GameObject mapTilePrefab;
 
@@ -876,6 +882,51 @@ namespace Transidious
                 results.Sort((t1, t2) => t1.Item1.CompareTo(t2.Item1));
             }
 
+            return results.Select(t => t.Item2).ToArray();
+        }
+
+        public Stop[] GetStopsInRadius(Vector2 position, float radius)
+        {
+            if (radius < 0f)
+            {
+                radius = Mathf.Max(width, height) / 2f;
+            }
+
+            var minPos = new Vector2(Mathf.Max(position.x - radius, minX), Mathf.Max(position.y - radius, minY));
+            var maxPos = new Vector2(Mathf.Min(position.x + radius, maxX - 1f), Mathf.Min(position.y + radius, maxY - 1f));
+
+            var minTile = GetTile(minPos);
+            var maxTile = GetTile(maxPos);
+
+            var sqrDist = radius * radius;
+            var results = new List<Tuple<float, Stop>>();
+
+            for (var x = minTile.x; x <= maxTile.x; ++x)
+            {
+                for (var y = minTile.y; y <= maxTile.y; ++y)
+                {
+                    var tile = GetTile(x, y);
+                    foreach (var obj in tile.mapObjects.OfType<Stop>())
+                    {
+                        var dst = (obj.Centroid - position).sqrMagnitude;
+                        if (dst <= sqrDist)
+                        {
+                            results.Add(Tuple.Create(dst, obj));
+
+                            if (obj.oppositeStop != null)
+                            {
+                                dst = (obj.oppositeStop.Centroid - position).sqrMagnitude;
+                                if (dst > sqrDist)
+                                {
+                                    results.Add(Tuple.Create(dst, obj.oppositeStop));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            results.Sort((t1, t2) => t1.Item1.CompareTo(t2.Item1));
             return results.Select(t => t.Item2).ToArray();
         }
 
@@ -1931,58 +1982,27 @@ namespace Transidious
             {
                 this.UpdateVisibleTiles();
                 this.UpdateStreetNameScale(input.renderingDistance);
+
+                if (grid.gameObject.activeSelf)
+                {
+                    UpdateGridScale();
+                }
             });
 
             input.RegisterEventListener(InputEvent.Pan, _ =>
             {
                 this.UpdateVisibleTiles();
+                
+                if (grid.gameObject.activeSelf)
+                {
+                    UpdateGridPosition();
+                }
             });
 
             input.RegisterEventListener(InputEvent.ScaleChange, _ =>
             {
                 this.UpdateScale();
             });
-
-            // input.RegisterEventListener(InputEvent.DisplayModeChange, _ =>
-            // {
-            //     var mode = Game.displayMode;
-            //     switch (mode)
-            //     {
-            //     case MapDisplayMode.Day:
-            //         if (backgroundSpriteNight?.activeSelf ?? false)
-            //         {
-            //             backgroundSpriteNight.SetActive(false);
-            //             backgroundSpriteDay.SetActive(true);
-            //         }
-            //
-            //         break;
-            //     case MapDisplayMode.Night:
-            //         if (backgroundSpriteDay?.activeSelf ?? false)
-            //         {
-            //             backgroundSpriteDay.SetActive(false);
-            //             backgroundSpriteNight.SetActive(true);
-            //         }
-            //
-            //         break;
-            //     }
-            //
-            //     ResetBackgroundColor();
-            //     ResetBorderColor();
-            //
-            //     if (Game.Loading)
-            //     {
-            //         return;
-            //     }
-            //
-            //     foreach (var building in buildings)
-            //     {
-            //         building.UpdateColor(mode);
-            //     }
-            //     foreach (var seg in streetSegments)
-            //     {
-            //         seg.UpdateColor(mode);
-            //     }
-            // });
         }
 
         public IEnumerator FinalizeStreetMeshes(float thresholdTime = 50)
@@ -2040,6 +2060,141 @@ namespace Transidious
             }
 
             yield break;
+        }
+        
+        private static readonly float GridCellSize = 15f;
+        private Vector2 _baseGridTiling;
+        private float _gridScale = 1f;
+
+        public Vector2 GetNearestGridPt(Vector2 worldPos)
+        {
+            return new Vector2(Mathf.Round(worldPos.x / GridCellSize) * GridCellSize,
+                               Mathf.Round(worldPos.y / GridCellSize) * GridCellSize);
+        }
+
+        void InitializeGrid()
+        {
+            grid.transform.localScale = Vector3.one;
+
+            var layer = Layer(MapLayer.Foreground);
+            grid.transform.position = new Vector3(0f, 0f, layer);
+
+            var aspect = Camera.main.aspect;
+            var minOrthoSize = InputController.minZoom;
+            var halfHeight = minOrthoSize;
+            var halfWidth = aspect * halfHeight;
+
+            halfHeight = Mathf.Ceil(((halfHeight * 2f) / GridCellSize) + 2) * GridCellSize * .5f;
+            halfWidth = Mathf.Ceil(((halfWidth * 2f) / GridCellSize) + 2) * GridCellSize * .5f;
+
+            var mesh = new Mesh
+            {
+                vertices = new[]
+                {
+                    new Vector3(-halfWidth, -halfHeight, layer), 
+                    new Vector3(-halfWidth, halfHeight, layer),
+                    new Vector3(halfWidth, halfHeight, layer),
+                    new Vector3(halfWidth, -halfHeight, layer),
+                },
+                triangles = new[]
+                {
+                    0, 1, 2, 0, 2, 3
+                },
+                uv = new[]
+                {
+                    new Vector2(0f, 0f),
+                    new Vector2(0f, 1f),
+                    new Vector2(1f, 1f),
+                    new Vector2(1f, 0f),
+                },
+            };
+
+            var minTilingX = (halfWidth * 2f) / GridCellSize;
+            var minTilingY = (halfHeight * 2f) / GridCellSize;
+
+            grid.GetComponent<MeshFilter>().sharedMesh = mesh;
+
+            _baseGridTiling = new Vector2(minTilingX, minTilingY);
+            gridMaterial.SetTextureScale("_MainTex", _baseGridTiling);
+        }
+
+        void UpdateGridPosition()
+        {
+            var mainCamera = Camera.main;
+            Debug.Assert(mainCamera != null);
+
+            var cameraRectScreen = mainCamera.pixelRect;
+            Vector2 minPtWorld = mainCamera.ScreenToWorldPoint(cameraRectScreen.min);
+
+            var nearestGridPt = new Vector2(Mathf.Floor(minPtWorld.x / GridCellSize) * GridCellSize,
+                                            Mathf.Floor(minPtWorld.y / GridCellSize) * GridCellSize);
+
+            var neededPt = nearestGridPt + new Vector2(_baseGridTiling.x * _gridScale * GridCellSize * .5f,
+                                                       _baseGridTiling.y * _gridScale * GridCellSize * .5f);
+
+            grid.transform.SetPositionInLayer(neededPt);
+        }
+
+        void UpdateGridScale()
+        {
+            var mr = grid.GetComponent<MeshRenderer>();
+            var orthoSize = Camera.main.orthographicSize;
+            if (orthoSize >= 120f)
+            {
+                var percentage = (orthoSize - 120) / 60f;
+                if (percentage >= 1f)
+                {
+                    mr.enabled = false;
+                    return;
+                }
+
+                var c = gridMaterial.color;
+                gridMaterial.color = new Color(c.r, c.g, c.b, 1f - percentage);
+            }
+            else
+            {
+                var c = gridMaterial.color;
+                gridMaterial.color = new Color(c.r, c.g, c.b, 1f);
+            }
+
+            mr.enabled = true;
+
+            _gridScale = orthoSize / InputController.minZoom;
+            grid.transform.localScale = new Vector3(_gridScale, _gridScale, 1f);
+
+            var xFactor = _baseGridTiling.x * _gridScale;
+            var yFactor = _baseGridTiling.y * _gridScale;
+
+            gridMaterial.SetTextureScale("_MainTex", new Vector2(xFactor, yFactor));
+            UpdateGridPosition();
+        }
+
+        public void ToggleGrid()
+        {
+            if (grid.gameObject.activeSelf)
+            {
+                DisableGrid();
+            }
+            else
+            {
+                EnableGrid();
+            }
+        }
+
+        public void EnableGrid()
+        {
+            if (grid.sharedMesh == null)
+            {
+                InitializeGrid();
+            }
+
+            UpdateGridScale();
+            grid.gameObject.SetActive(true);
+        }
+
+        public void DisableGrid()
+        {
+            grid.gameObject.SetActive(false);
         }
     }
 }

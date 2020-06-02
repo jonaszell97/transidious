@@ -27,7 +27,7 @@ namespace Transidious.UI
             listItems = new List<Tuple<GameObject, Image, TMP_Text>>();
         }
 
-        public void SetCitizens(IEnumerable<Citizen> citizenEnum)
+        public void SetCitizens(IEnumerable<Citizen> citizenEnum, Func<Citizen, String> extraInfo = null)
         {
             citizens = citizenEnum.ToArray();
             
@@ -60,7 +60,15 @@ namespace Transidious.UI
                 }
 
                 var c = citizens[i];
-                item.Item3.text = c.Name;
+                if (extraInfo != null)
+                {
+                    item.Item3.text = $"{c.Name} ({extraInfo(c)})";
+                }
+                else
+                {
+                    item.Item3.text = c.Name;
+                }
+
                 item.Item1.SetActive(true);
             }
         }

@@ -79,35 +79,29 @@ namespace Transidious
             public Stop finalStop;
         }
 
+        /// Reference to the map.
         public Map map;
-        public Appearance appearance;
-
+        
+        /// The routes beginning at this stop.
         public List<Route> outgoingRoutes;
+
+        /// The routes ending or beginning at this stop.
         public List<Route> routes;
+
+        /// The 'opposite' stop of this one, i.e. the one on the other side of the street that logically belongs to
+        /// this one (only applicable to bus and tram lines).
+        public Stop oppositeStop;
+
+        /// Info about lines stopping here.
         public Dictionary<Line, LineData> lineData;
 
+        /// Citizens that are waiting at this stop.
         public Dictionary<Line, List<WaitingCitizen>> waitingCitizens;
 
-        int width = 1;
-        int height = 1;
-        public bool wasModified = false;
+        /// The stops current appearance type.
+        public Appearance appearance;
 
-        public float spacePerSlotVertical;
-        public float spacePerSlotHorizontal;
-
-        public GameObject spritePrefab;
-        
-        SpriteRenderer spriteRenderer;
-
-        Sprite circleSprite;
-        Sprite smallRectSprite;
-        Sprite largeRectSprite;
-        Vector3 direction;
-
-        public Vector2 location
-        {
-            get { return transform.position; }
-        }
+        public Vector2 location => transform.position;
 
         public void Initialize(Map map, string name, Vector3 position, int id)
         {
@@ -120,12 +114,6 @@ namespace Transidious
             this.routes = new List<Route>();
             this.lineData = new Dictionary<Line, LineData>();
             this.waitingCitizens = new Dictionary<Line, List<WaitingCitizen>>();
-
-            this.spriteRenderer = this.GetComponent<SpriteRenderer>();
-            this.circleSprite = Resources.Load("Sprites/stop_ring", typeof(Sprite)) as Sprite;
-            this.smallRectSprite = Resources.Load("Sprites/stop_small_rect", typeof(Sprite)) as Sprite;
-            this.largeRectSprite = Resources.Load("Sprites/stop_large_rect", typeof(Sprite)) as Sprite;
-
             this.transform.position = new Vector3(position.x, position.y,
                                                   Map.Layer(MapLayer.TransitStops));
         }
@@ -197,7 +185,8 @@ namespace Transidious
         public DateTime NextDeparture(Line line, DateTime after)
         {
             Debug.Assert(lineData.ContainsKey(line), "line does not stop here!");
-            return lineData[line].schedule.GetNextDeparture(after);
+            // return lineData[line].schedule.GetNextDeparture(after);
+            return lineData[line].nextDeparture;
         }
 
         public void SetNextDeparture(Line line, DateTime dep)
@@ -313,10 +302,8 @@ namespace Transidious
 
         void CreateCircleMesh()
         {
-            height = 1;
-            width = 1;
-
-            spriteRenderer.sprite = circleSprite;
+            var spriteRenderer = GetComponent<SpriteRenderer>();
+            spriteRenderer.sprite = SpriteManager.GetSprite("Sprites/stop_ring");
             spriteRenderer.drawMode = SpriteDrawMode.Simple;
             spriteRenderer.color = Color.white;
 
@@ -326,62 +313,49 @@ namespace Transidious
                 Destroy(collider);
             }
 
-            this.transform.rotation = new Quaternion();
-            this.transform.localScale = new Vector3(5f, 5f, 1f);
-            this.transform.position = new Vector3(transform.position.x,
-                                                  transform.position.y,
-                                                  Map.Layer(MapLayer.TransitStops));
+            var tf = transform;
+            tf.rotation = new Quaternion();
+            tf.localScale = Vector3.one;
+            tf.SetLayer(MapLayer.TransitStops);
 
             this.gameObject.AddComponent<CircleCollider2D>();
             this.appearance = Appearance.Circle;
         }
 
-        Vector3 VectorFromAngle(float theta)
+        void CreateSmallRectMesh()
         {
-            return new Vector3(Mathf.Cos(theta), Mathf.Sin(theta), 0f);
-        }
-
-        void CreateSmallRectMesh(Color color, Vector3 direction)
-        {
-            this.direction = direction;
-
-            spriteRenderer.sprite = smallRectSprite;
+            var spriteRenderer = GetComponent<SpriteRenderer>();
+            spriteRenderer.sprite = SpriteManager.GetSprite("Sprites/stop_rect");
             spriteRenderer.drawMode = SpriteDrawMode.Sliced;
-            // spriteRenderer.size = new Vector2(line.lineWidth * 5f, map.input.lineWidth * 2f);
-            spriteRenderer.color = color;
+            
+            var tf = transform;
+            // spriteRenderer.size = 
 
-            var quat = Quaternion.FromToRotation(new Vector3(1f, 0f, 0f), direction);
+            float? angle = null;
+            foreach (var route in routes)
+            {
+                Vector2 pt = route.endStop == this
+                    ? route.positions[route.positions.Count - 2]
+                    : route.positions[1];
 
-            // this.transform.position = transform.position + (direction.normalized * (map.input.lineWidth * 1.5f));
-            this.transform.rotation = quat;
-            this.transform.position = new Vector3(transform.position.x,
-                                                          transform.position.y,
-                                                          Map.Layer(MapLayer.TransitStops));
+                var deg = Math.DirectionalAngleDeg(pt, tf.position);
+                if (angle.HasValue)
+                {
+                    if (!angle.Value.Equals(deg))
+                    {
+                        angle = null;
+                        break;
+                    }
+                }
+                else
+                {
+                    angle = deg;
+                }
+            }
 
+            tf.localScale = Vector3.one;
+            tf.rotation = Quaternion.Euler(0f, 0f, angle ?? 0f);
             appearance = Appearance.SmallRect;
-        }
-
-        void CreateLargeRectMesh()
-        {
-            spriteRenderer.sprite = largeRectSprite;
-            spriteRenderer.drawMode = SpriteDrawMode.Sliced;
-            // spriteRenderer.size = new Vector2(GetSize(width), GetSize(height));
-            spriteRenderer.color = Color.white;
-
-            this.transform.rotation = new Quaternion();
-            this.transform.localScale = Vector3.one;
-            this.transform.position = new Vector3(transform.position.x,
-                                                          transform.position.y,
-                                                          Map.Layer(MapLayer.TransitStops));
-
-            if (width == 1 && height == 1)
-            {
-                this.appearance = Appearance.Circle;
-            }
-            else
-            {
-                this.appearance = Appearance.LargeRect;
-            }
         }
 
         bool SameDirection(float angle1, float angle2)
@@ -398,113 +372,16 @@ namespace Transidious
             return angle1.Equals(angle2);
         }
 
-        Vector2 GetPerpendicularVector(Vector2 v)
+        public void UpdateAppearance()
         {
-            return new Vector2(v.y, 0 - v.x);
-        }
-
-        public void UpdateMesh(bool force = false, bool fullUpdate = true)
-        {
-            if (!force && !wasModified)
-            {
-                return;
-            }
-
-            wasModified = false;
-
-            CreateCircleMesh();
-
-            /*
-            // Simplest case, only a single line stops at this stop.
-            if (lineData.Count == 0)
+            if (lineData.Count == 1)
             {
                 CreateCircleMesh();
             }
-            else if (lineData.Count == 1)
-            {
-                var keyValuePair = lineData.First();
-                var data = keyValuePair.Value;
-                var line = keyValuePair.Key;
-
-                if (data == null)
-                {
-                    CreateCircleMesh();
-                    return;
-                }
-
-                var inboundRoute = data.incomingRouteFromDepot;
-                var outboundRoute = data.outgoingRouteFromDepot;
-
-                if (inboundRoute == null && outboundRoute == null)
-                {
-                    return;
-                }
-                else if (inboundRoute == null)
-                {
-                    CreateSmallRectMesh(line.color, GetPerpendicularVector(outboundRoute.path.segments.First().Direction));
-                    return;
-                }
-                else if (outboundRoute == null)
-                {
-                    CreateSmallRectMesh(line.color, GetPerpendicularVector(inboundRoute.path.segments.Last().Direction));
-                    return;
-                }
-
-                var inboundVector = inboundRoute.path.segments.Last().Direction;
-                var outboundVector = outboundRoute.path.segments.First().Direction;
-
-                var angle = Math.Angle(inboundVector, outboundVector);
-                var mid = inboundVector.normalized + outboundVector.normalized;
-
-                if (angle >= 0)
-                {
-                    CreateSmallRectMesh(line.color, GetPerpendicularVector(mid));
-                }
-                else
-                {
-                    CreateSmallRectMesh(line.color, GetPerpendicularVector(mid * -1));
-                }
-
-                return;
-            }
             else
             {
-                UpdateSlotsToAssign();
-                CreateLargeRectMesh();
-
-                if (!fullUpdate)
-                {
-                    return;
-                }
-
-                var routesToUpdate = new HashSet<Route>();
-                var worklist = new HashSet<Stop> { this };
-
-                int i = 0;
-                while (worklist.Count != 0)
-                {
-                    var next = worklist.First();
-                    worklist.Remove(next);
-
-                    if (next != this)
-                    {
-                        next.UpdateMesh(false, false);
-                    }
-
-                    next.UpdateSlotAssignments(worklist, routesToUpdate);
-
-                    if (i++ > 1500)
-                    {
-                        throw new System.Exception("infinite loop");
-                    }
-                }
-
-                foreach (var route in routesToUpdate)
-                {
-                    route.UpdatePath();
-                }
+                CreateSmallRectMesh();
             }
-            */
         }
 
         public new Serialization.Stop ToProtobuf()
@@ -542,11 +419,6 @@ namespace Transidious
                     SetSchedule(line, ContinuousSchedule.Deserialize(sched.Schedule));
                 }
             }
-        }
-
-        void Awake()
-        {
-            this.spritePrefab = Resources.Load("Prefabs/SpritePrefab") as GameObject;
         }
 
         public void ActivateModal()

@@ -1119,6 +1119,14 @@ namespace Transidious
             return polygon.IsPointInPolygonAndNotInHole(pt) ? minDist : -minDist;
         }
 
+        public static Vector2 GetVisualCenter(Vector2[] polygon, float precision, bool visualize = false)
+        {
+            var pslg = new PSLG();
+            pslg.AddOrderedVertices(polygon);
+
+            return GetVisualCenter(pslg, precision, visualize);
+        }
+
         public static Vector2 GetVisualCenter(PSLG polygon, float precision, bool visualize = false)
         {
             // Priority queue for cells.
@@ -1158,7 +1166,12 @@ namespace Transidious
             }
 
             // 3. Calculate the distance from the centroid of the polygon and pick it as the first "best so far".
-            Debug.Assert(centroidCell != null);
+            if (centroidCell == null)
+            {
+                Debug.LogWarning("no centroid cell!");
+                return centroid;
+            }
+
             var best = centroidCell.Value.D;
             var bestCenter = centroidCell.Value.Center;
 

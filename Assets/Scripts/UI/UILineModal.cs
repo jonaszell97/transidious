@@ -26,6 +26,9 @@ namespace Transidious
         /// The line view stops that we have already created.
         private List<Tuple<GameObject, Image, Image, UILocationLink, Image, Transform>> lineViewStops;
 
+        /// Whether or not the line color was changed.
+        private bool _colorChanged;
+
         /// Prefab for line view stops.
         [SerializeField] private GameObject lineViewStopPrefab;
         
@@ -82,15 +85,22 @@ namespace Transidious
                 {
                     colorPicker.SetColor(selectedLine.color);
                 }
+                else if (tab == 2 && _colorChanged)
+                {
+                    UpdateLineView();
+                    _colorChanged = false;
+                }
             };
 
             colorPicker.Initialize();
             colorPicker.onChange.AddListener(c =>
             {
                 Route.DeactivateGradient();
-                
+
                 selectedLine.SetColor(c);
                 UpdateColor();
+
+                _colorChanged = true;
             });
 
 #if DEBUG
@@ -209,8 +219,6 @@ namespace Transidious
                 data.Item1.SetActive(true);
                 crossingLines.Clear();
             }
-            
-            
         }
 
         public void SetLine(Line line, Route route = null)
@@ -219,28 +227,6 @@ namespace Transidious
             modal.titleInput.text = line.name;
             
             UpdateColor();
-
-            // Stop closestStop;
-            // if (route)
-            // {
-            //     Vector2 mousePosWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            //     var startDistance = (route.beginStop.location - mousePosWorld).magnitude;
-            //     var endDistance = (route.endStop.location - mousePosWorld).magnitude;
-            //
-            //     if (startDistance <= endDistance)
-            //     {
-            //         closestStop = route.beginStop;
-            //     }
-            //     else
-            //     {
-            //         closestStop = route.endStop;
-            //     }
-            // }
-            // else
-            // {
-            //     closestStop = line.stops[line.stops.Count / 2];
-            // }
-
             UpdateLineView();
 
             var systemName = line.type.ToString().ToLower();
