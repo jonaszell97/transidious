@@ -18,9 +18,6 @@ namespace Transidious
         /// The happiness sprite.
         public Image happinessSprite;
 
-        /// The car sprite.
-        [SerializeField] Image carSprite;
-
         /// The schedule text.
         [SerializeField] TMP_Text scheduleText;
 
@@ -42,24 +39,21 @@ namespace Transidious
             
             // Age & Occupation
             panel.AddItem("Age", "ui:citizen:age", "", "Sprites/ui_calendar");
-            panel.AddItem("Occupation", "ui:citizen:occupation", "", "Sprites/ui_hardhat");
-            
+            panel.AddItem("Occupation", "ui:citizen:occupation", "", "Sprites/ui_hammer");
+
             // Current destination
-            var dest = panel.AddItem("Destination", "ui:citizen:destination", 
-                                     "", "Sprites/ui_destination");
-            carSprite = dest.Icon;
+            panel.AddItem("Destination", "ui:citizen:destination", "", "Sprites/ui_destination");
             
             // Money
             panel.AddItem("Money", "ui:citizen:money", "", "Sprites/ui_money");
 
             // Happiness
-            var hp = panel.AddProgressItem("Happiness", "ui:citizen:happiness", 
-                                           "Sprites/ui_happy");
+            var hp = panel.AddProgressItem("Happiness", "ui:citizen:happiness", "Sprites/ui_happy");
             happinessSprite = hp.Icon;
 
             // Energy & Work
-            panel.AddProgressItem("Energy", "ui:citizen:energy", "Sprites/WIP");
-            var workItem = panel.AddProgressItem("RemainingWork", "ui:citizen:remaining_work", "Sprites/WIP");
+            panel.AddProgressItem("Energy", "ui:citizen:energy", "Sprites/ui_energy");
+            var workItem = panel.AddProgressItem("RemainingWork", "ui:citizen:remaining_work", "Sprites/ui_work");
             workItem.ProgressBar.ReverseGradient = true;
 
 #if DEBUG
@@ -164,12 +158,6 @@ namespace Transidious
             var dst = citizen.CurrentDestination;
             if (citizen.activePath != null && dst != null)
             {
-                if (citizen.car != null)
-                {
-                    carSprite.color = citizen.car.color;
-                    carSprite.gameObject.SetActive(true);
-                }
-
                 this.panel.ShowItem("Destination");
 
                 var value = this.panel.GetValue("Destination");
@@ -202,7 +190,6 @@ namespace Transidious
             else
             {
                 this.panel.HideItem("Destination");
-                carSprite.gameObject.SetActive(false);
             }
 
             // scheduleText.text = citizen.currentEvent.DebugDescription;

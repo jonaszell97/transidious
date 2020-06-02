@@ -44,126 +44,98 @@ namespace Transidious
             Idle,
         }
 
-        /// <summary>
         /// Reference to the game controller.
-        /// </summary>
         protected GameController game;
 
-        /// <summary>
-        /// The current line creation state.
-        /// </summary>
-        protected CreationState _creationState;
-        public CreationState creationState
-        {
-            get
-            {
-                return _creationState;
-            }
-        }
+        /// Whether or not the game was already paused when we started line creation.
+        private bool _wasPaused;
 
-        /// <summary>
+        /// The current line creation state.
+        public CreationState creationState { get; protected set; }
+
         /// The transit type edited by this builder.
-        /// </summary>
         protected TransitType transitType;
 
-        /// <summary>
         /// Saved event flag for restoration.
-        /// </summary>
         protected MapObjectKind savedClickEvents;
         protected MapObjectKind savedHoverEvents;
 
-        /// <summary>
         /// ID of the snap settings needed for this line builder.
-        /// </summary>
         protected int snapSettingID;
 
-        /// <summary>
         /// IDs of the event listeners used by this line builder.
-        /// </summary>
         protected int[] eventListenerIDs;
 
-        /// <summary>
+        /// IDs of the keyboard event listeners used by this line builder.
+        protected int[] keyboardEventIDs;
+
         /// The line that is currently being created / edited.
-        /// </summary>
         protected TemporaryLine currentLine;
 
-        /// <summary>
         /// The previous stop on the line (can either be a Stop or a TemporaryStop).
-        /// </summary>
         protected IMapObject previousStop;
 
-        /// <summary>
         /// The path between the previous stop and the current cursor position.
-        /// </summary>
         protected List<Vector2> temporaryPath;
 
-        /// <summary>
+        /// List of created temp stops.
+        protected List<TemporaryStop> _temporaryStops;
+
         /// Game object used to render the path between stops that were added to the line.
-        /// </summary>
         protected GameObject existingPathMesh;
 
-        /// <summary>
         /// Game object used to render the path between the previous stop and the current cursor position.
-        /// </summary>
         protected GameObject plannedPathMesh;
 
-        /// <summary>
         /// The length of the line in km.
-        /// </summary>
         protected float length;
 
-        /// <summary>
         /// The current accumulated construction cost of the line.
-        /// </summary>
         protected decimal totalConstructionCost;
 
-        /// <summary>
         /// The current accumulated monthly cost of the line.
-        /// </summary>
         protected decimal totalMonthlyCost;
 
-        /// <summary>
         /// The cost of constructing a km of the line.
-        /// </summary>
         protected abstract decimal costPerKm { get; }
 
-        /// <summary>
         /// The monthly cost of operating a km of the line.
-        /// </summary>
         protected abstract decimal operatingCostPerKm { get; }
 
-        /// <summary>
         /// The cost of construction per stop.
-        /// </summary>
         protected abstract decimal costPerStop { get; }
 
-        /// <summary>
         /// The monthly cost of operating a stop.
-        /// </summary>
         protected abstract decimal operatingCostPerStop { get; }
 
         static bool confirmationPanelInitialized = false;
 
-        /// <summary>
         /// Protected c'tor.
-        /// </summary>
-        /// <param name="game"></param>
         protected LineBuilder(GameController game, TransitType transitType)
         {
             this.game = game;
-            this._creationState = CreationState.Idle;
+            this.creationState = CreationState.Idle;
             this.transitType = transitType;
+            _temporaryStops = new List<TemporaryStop>();
         }
 
-        /// <summary>
         /// Initialize the line builder. Needs to be called once before it can be used.
-        /// </summary>
-        public abstract void Initialize();
+        public virtual void Initialize()
+        {
+            var ui = game.mainUI;
+            ui.lineBuildingTrashButton.button.onClick.AddListener(() =>
+            {
+                ui.confirmPanel.Show("Are you sure you want to scrap this line?", () =>
+                {
+                    ui.transitUI.activeBuilder.EndLineCreation();
+                });
+            });
 
-        /// <summary>
+            ui.lineBuildingUndoButton.Disable();
+            ui.lineBuildingRedoButton.Disable();
+        }
+
         /// Enable the event listeners for a particular state.
-        /// </summary>
-        /// <param name="state"></param>
         public virtual void EnableListeners(CreationState state)
         {
             foreach (var id in eventListenerIDs)
@@ -172,10 +144,7 @@ namespace Transidious
             }
         }
 
-        /// <summary>
         /// Disable the event listeners for a particular state.
-        /// </summary>
-        /// <param name="state"></param>
         public virtual void DisableListeners(CreationState state)
         {
             foreach (var id in eventListenerIDs)
@@ -186,11 +155,42 @@ namespace Transidious
 
         public void StartLineCreation()
         {
+            _wasPaused = game.EnterPause(true);
+            game.mainUI.transitEditorPanel.SetActive(false);
+            game.mainUI.ShowLineBuildingPanel();
             this.Transition(CreationState.FirstStop);
         }
 
         public void EndLineCreation()
         {
+            if (!_wasPaused)
+            {
+                game.ExitPause(true);
+            }
+            else
+            {
+                game.UnblockPause();
+            }
+
+            foreach (var ts in _temporaryStops)
+            {
+                ts.Destroy();
+            }
+
+            _temporaryStops.Clear();
+            currentLine = null;
+            previousStop = null;
+            temporaryPath = null;
+
+            ResetPath();
+            plannedPathMesh?.SetActive(false);
+            existingPathMesh?.SetActive(false);
+            UIInstruction.Hide();
+
+            game.mainUI.transitEditorPanel.SetActive(true);
+            game.mainUI.transitUI.activeBuilder = null;
+            game.mainUI.ShowPanels();
+
             this.Transition(CreationState.Idle);
         }
 
@@ -297,7 +297,7 @@ namespace Transidious
                     break;
             }
 
-            this._creationState = state;
+            this.creationState = state;
         }
 
         protected void ShowConfirmationPanel()
@@ -351,6 +351,7 @@ namespace Transidious
 
             totalConstructionCost += costPerStop;
             totalMonthlyCost += operatingCostPerStop;
+            _temporaryStops.Add(stop);
 
             return stop;
         }
@@ -517,12 +518,7 @@ namespace Transidious
                 ++j;
             }
 
-            currentLine = null;
-            previousStop = null;
-
-            plannedPathMesh?.SetActive(false);
-            existingPathMesh?.SetActive(false);
-
+            _temporaryStops.Clear();
             this.EndLineCreation();
             game.transitEditor.CheckOverlappingRoutes(crossedStreets);
 
@@ -540,9 +536,8 @@ namespace Transidious
                     = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
-            var z = Map.Layer(MapLayer.TransitLines);
             var color = Colors.GetDefaultSystemColor(transitType);
-            var mesh = MeshBuilder.CreateSmoothLine(currentLine.completePath, 1.25f, 10, z);
+            var mesh = MeshBuilder.CreateSmoothLine(currentLine.completePath, 1.25f, 10, 0f);
             var renderer = existingPathMesh.GetComponent<MeshRenderer>();
             var filter = existingPathMesh.GetComponent<MeshFilter>();
 
@@ -572,9 +567,8 @@ namespace Transidious
                     = new Vector3(0, 0, Map.Layer(MapLayer.TemporaryLines));
             }
 
-            var z = Map.Layer(MapLayer.TransitLines);
             var color = Colors.GetDefaultSystemColor(transitType);
-            var mesh = MeshBuilder.CreateSmoothLine(temporaryPath, 1.25f, 10, z);
+            var mesh = MeshBuilder.CreateSmoothLine(temporaryPath, 1.25f, 10, 0f);
             var renderer = plannedPathMesh.GetComponent<MeshRenderer>();
             var filter = plannedPathMesh.GetComponent<MeshFilter>();
 
@@ -603,12 +597,13 @@ namespace Transidious
 
         public override void Initialize()
         {
+            base.Initialize();
+
             this.eventListenerIDs = new int[]
             {
                 game.input.RegisterEventListener(InputEvent.MouseEnter, (IMapObject obj) =>
                 {
-                    var street = obj as StreetSegment;
-                    if (street != null)
+                    if (obj is StreetSegment street)
                     {
                         this.OnMouseEnter(street);
                     }
@@ -620,8 +615,7 @@ namespace Transidious
 
                 game.input.RegisterEventListener(InputEvent.MouseOver, (IMapObject obj) =>
                 {
-                    var street = obj as StreetSegment;
-                    if (street != null)
+                    if (obj is StreetSegment street)
                     {
                         this.OnMouseOver(street);
                     }
@@ -637,8 +631,7 @@ namespace Transidious
 
                 game.input.RegisterEventListener(InputEvent.MouseDown, (IMapObject obj) =>
                 {
-                    var street = obj as StreetSegment;
-                    if (street != null)
+                    if (obj is StreetSegment street)
                     {
                         this.OnMouseDown(street);
                     }
@@ -647,6 +640,14 @@ namespace Transidious
                         this.OnMouseDown(obj);
                     }
                 }),
+            };
+
+            this.keyboardEventIDs = new[]
+            {
+                game.input.RegisterKeyboardEventListener(KeyCode.Escape, _ =>
+                {
+                    
+                }, false)
             };
         }
 

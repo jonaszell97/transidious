@@ -87,6 +87,9 @@ namespace Transidious
         /// </summary>
         public LineBuilder[] lineBuilders;
 
+        /// The currently active line builder.
+        public LineBuilder activeBuilder;
+
         /// <summary>
         /// The panel that is shown after completing a line.
         /// </summary>
@@ -114,6 +117,12 @@ namespace Transidious
                 var system = (TransitType)i;
                 button.gameObject.GetComponent<Button>().onClick.AddListener(() =>
                 {
+                    if (activeBuilder != null)
+                    {
+                        activeBuilder.EndLineCreation();
+                        activeBuilder = null;
+                    }
+
                     if (selectedTransitSystem.HasValue && selectedTransitSystem.Value == system)
                     {
                         this.HideTransitSystemOverviewPanel();
@@ -129,8 +138,11 @@ namespace Transidious
 
             createLineButton.onClick.AddListener(() =>
             {
+                Debug.Assert(selectedTransitSystem.HasValue);
                 this.HideTransitSystemOverviewPanel(false);
-                this.lineBuilders[(int)selectedTransitSystem.Value].StartLineCreation();
+
+                activeBuilder = lineBuilders[(int) selectedTransitSystem.Value];
+                activeBuilder.StartLineCreation();
             });
         }
 

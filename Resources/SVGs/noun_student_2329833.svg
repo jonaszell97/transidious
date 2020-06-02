@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0beta2 (2b71d25, 2019-12-03)"
+   sodipodi:docname="noun_student_2329833.svg"
+   id="svg20250"
+   version="1.1"
+   y="0px"
+   x="0px"
+   viewBox="0 0 64 64"
+   fill="#FFFFFF"
+   width="100px"
+   height="100px">
+  <metadata
+     id="metadata20256">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Student boy</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs20254" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg20250"
+     inkscape:window-maximized="0"
+     inkscape:window-y="23"
+     inkscape:window-x="0"
+     inkscape:cy="50"
+     inkscape:cx="4.2279412"
+     inkscape:zoom="2.72"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview20252"
+     inkscape:window-height="862"
+     inkscape:window-width="1536"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     inkscape:document-rotation="0"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <title
+     id="title20238">Student boy</title>
+  <g
+     inkscape:export-ydpi="271.07037"
+     inkscape:export-xdpi="271.07037"
+     inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/occupation_pupil_male.png"
+     id="g20248"
+     data-name="Student boy">
+    <circle
+       id="circle20240"
+       r="1.5"
+       cy="23.5"
+       cx="26.5" />
+    <circle
+       id="circle20242"
+       r="1.5"
+       cy="23.5"
+       cx="37.5" />
+    <path
+       id="path20244"
+       d="M35.54,30.29a1,1,0,0,0-1.42,0,2.75,2.75,0,0,1-1.19.71H31.07a2.75,2.75,0,0,1-1.19-.71,1,1,0,0,0-1.42,1.42,5,5,0,0,0,7.08,0A1,1,0,0,0,35.54,30.29Z" />
+    <path
+       id="path20246"
+       d="M55,51.71h0A17,17,0,0,0,40.42,36.18l.27-.2.1-.07a13.74,13.74,0,0,0,2-2A14,14,0,0,0,45.67,28H46a5,5,0,0,0,2-9.59v-7.5A5.92,5.92,0,0,0,42.09,5h-.63a3.37,3.37,0,0,0-2.15.75h0A5.33,5.33,0,0,0,34.63,3H25.75A9.76,9.76,0,0,0,16,12.75v5.66A5,5,0,0,0,18,28h.33a13.94,13.94,0,0,0,2.89,5.93,13.31,13.31,0,0,0,2,2l.1.06.28.21A17,17,0,0,0,9.05,51.7s0,0,0,0a.27.27,0,0,0,0,.12A.41.41,0,0,0,9,52c0,.17,0,.33,0,.41v.11A9,9,0,0,0,18,61H46a9.06,9.06,0,0,0,2.16-.26,7.76,7.76,0,0,0,.82-.25l.4-.15a7.43,7.43,0,0,0,.76-.35c.25-.13.49-.27.73-.42s.46-.32.68-.49a8.29,8.29,0,0,0,.93-.84c.2-.21.38-.42.55-.63s.33-.44.49-.67.16-.24.23-.37A9,9,0,0,0,55,52.49a.75.75,0,0,0,0-.15c0-.11,0-.22,0-.34A.93.93,0,0,0,55,51.71ZM46,25V20a3,3,0,0,1,0,6ZM18,25v1a3,3,0,0,1,0-6ZM30.13,58.12A3,3,0,0,1,28,59H18a6.88,6.88,0,0,1-1.29-.12,6.23,6.23,0,0,1-.62-.15,3.68,3.68,0,0,1-.47-.15,7.56,7.56,0,0,1-.71-.3L14.43,58l-.07,0a5.25,5.25,0,0,1-.49-.33c-.17-.12-.33-.25-.48-.38a4.38,4.38,0,0,1-.39-.36l-.1-.1c-.12-.14-.25-.28-.36-.43a3.79,3.79,0,0,1-.3-.4l-.13-.18c-.09-.14-.18-.29-.26-.44a5.6,5.6,0,0,1-.27-.55,4.34,4.34,0,0,1-.2-.5,1.83,1.83,0,0,1-.08-.25c0-.14-.08-.27-.11-.42a.19.19,0,0,1,0-.08,4.18,4.18,0,0,1-.1-.51.09.09,0,0,1,0,0H28a3,3,0,0,1,2.13,5.12ZM26,38h.79l.76.28.77.23h0c.42.12.84.21,1.27.29L24,43V38Zm4.85-1h-.11a11.94,11.94,0,0,1-6.27-2.59l-.08-.06A12.07,12.07,0,0,1,20,25V20H31.18a8.72,8.72,0,0,0,6.94-3.38q.27-.35.51-.72l0,0c0,.09.08.17.13.26s.1.2.16.3a4.35,4.35,0,0,0,.38.57,2.43,2.43,0,0,0,.14.2c.13.17.27.34.42.5l0,0a4.73,4.73,0,0,0,.46.44.08.08,0,0,0,0,0l.18.15a5.6,5.6,0,0,0,.49.36,6.25,6.25,0,0,0,1.27.69l.4.15a7.73,7.73,0,0,0,1.26.31V25a12.08,12.08,0,0,1-2.76,7.67,12.48,12.48,0,0,1-1.63,1.62l-.08.06a11.94,11.94,0,0,1-6.27,2.59h-.11A12.62,12.62,0,0,1,30.85,37ZM40,38v5l-5.6-4.2c.43-.08.85-.17,1.27-.29h0l.77-.23.76-.28H40ZM52.81,53.62h0a3.18,3.18,0,0,1-.18.6,3.23,3.23,0,0,1-.22.59,7.09,7.09,0,0,1-.6,1.08,4.41,4.41,0,0,1-.36.49,5,5,0,0,1-.37.42l-.12.13-.27.26-.22.18-.27.22c-.15.11-.3.22-.46.32a2.09,2.09,0,0,1-.29.16,2.93,2.93,0,0,1-.39.21,4.1,4.1,0,0,1-.48.21l-.42.16A7,7,0,0,1,46,59H36a3,3,0,0,1,0-6H52.93A6.18,6.18,0,0,1,52.81,53.62Z" />
+  </g>
+</svg>

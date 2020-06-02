@@ -1485,14 +1485,6 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1229635918, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1229635920, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
-      propertyPath: m_Color.a
-      value: 0.4392157
-      objectReference: {fileID: 0}
     - target: {fileID: 1433246244, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_AnchorMin.y
       value: 0
@@ -1611,46 +1603,6 @@ PrefabInstance:
     - target: {fileID: 723589493495033419, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2541352982584269373, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
-        type: 3}
-      propertyPath: m_Type
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 2541352982584269373, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
-        type: 3}
-      propertyPath: m_PixelsPerUnitMultiplier
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 2541352982584269373, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
-        type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2541352982584269373, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
-        type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 2100000, guid: b816c9ef6ef9a498b9e72b5d3b84b8ae, type: 2}
-    - target: {fileID: 4461650955346621922, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
-        type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4461650955346621922, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4461650955346621922, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4461650955346621922, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
-        type: 3}
-      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5136961418663048230, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
@@ -1773,13 +1725,52 @@ PrefabInstance:
       propertyPath: m_Name
       value: MainUI
       objectReference: {fileID: 0}
-    - target: {fileID: 8291273489514046190, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
+    - target: {fileID: 7078601072253041221, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
         type: 3}
-      propertyPath: m_IsActive
-      value: 0
+      propertyPath: m_CellSize.x
+      value: 400
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 2541352982584269373, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
+    - target: {fileID: 7078601072253041221, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
+        type: 3}
+      propertyPath: m_ConstraintCount
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7128565804830462902, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
+        type: 3}
+      propertyPath: systemIcons.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7128565804830462902, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
+        type: 3}
+      propertyPath: systemIcons.Array.data[0]
+      value: 
+      objectReference: {fileID: 21300000, guid: acccdf7aa3f404ca5bfd065446c93997,
+        type: 3}
+    - target: {fileID: 7128565804830462902, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
+        type: 3}
+      propertyPath: systemIcons.Array.data[1]
+      value: 
+      objectReference: {fileID: 21300000, guid: 50293c7056cb94cc38cb2035e164accf,
+        type: 3}
+    - target: {fileID: 7128565804830462902, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
+        type: 3}
+      propertyPath: systemIcons.Array.data[2]
+      value: 
+      objectReference: {fileID: 21300000, guid: 6d32028742c5246b39f45bfc3a72dbed,
+        type: 3}
+    - target: {fileID: 7128565804830462902, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
+        type: 3}
+      propertyPath: systemIcons.Array.data[3]
+      value: 
+      objectReference: {fileID: 21300000, guid: 133c309c235b0483ca305abb7593289d,
+        type: 3}
+    - target: {fileID: 7128565804830462902, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
+        type: 3}
+      propertyPath: systemIcons.Array.data[4]
+      value: 
+      objectReference: {fileID: 21300000, guid: 4e5a0a94d85434028ba9163425023975,
+        type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
 --- !u!114 &6152434682888075080 stripped
 MonoBehaviour:

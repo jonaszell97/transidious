@@ -33,9 +33,8 @@ namespace Transidious
             });
 
             panel.AddItem("Passengers", "ui:transit:passengers", "", "Sprites/ui_citizen_head");
-            
-            var ns = panel.AddItem("NextStop", "ui:transit:next_stop", 
-                                                            "", "Sprites/stop_ring");
+
+            var ns = panel.AddItem("NextStop", "ui:transit:next_stop", "", "Sprites/ui_bus_stop");
             ns.Value.gameObject.AddComponent<UILocationLink>();
 
 #if DEBUG

@@ -102,6 +102,9 @@ namespace Transidious
         /// The citizen's car (can be null).
         public Car car;
 
+        /// The citizen's icon.
+        public Sprite Icon;
+
         /// True iff this citizen has an education.
         public bool educated { get; private set; }
 
@@ -594,6 +597,7 @@ namespace Transidious
             }
 
             AssignWorkplace();
+            AssignIcon();
         }
 
         private static Tuple<float, Building.Type>[] _workplaces = new[]
@@ -670,6 +674,38 @@ namespace Transidious
 
             place.AddOccupant(OccupancyKind.Worker, this);
             pointsOfInterest.Add(poiType, place);
+        }
+
+        private static readonly string[] _occupationIcons = new[]
+        {
+            "athlete", "businessman", "callcenter", "detective", "doctor", "engineer", "farmer", "hunter", "judge",
+            "pastor", "police", "scientist", "scientist2", "teacher",
+        };
+
+        void AssignIcon()
+        {
+            string iconName;
+            switch (occupation)
+            {
+                case Occupation.ElementarySchoolStudent:
+                case Occupation.HighSchoolStudent:
+                    iconName = female ? "pupil_female" : "pupil_male";
+                    break;
+                case Occupation.UniversityStudent:
+                    iconName = "student";
+                    break;
+                case Occupation.Retired:
+                    iconName = female ? "retiree_female" : "retiree_male";
+                    break;
+                case Occupation.Unemployed:
+                    iconName = "generic2";
+                    break;
+                default:
+                    iconName = RNG.RandomElement(_occupationIcons);
+                    break;
+            }
+
+            this.Icon = SpriteManager.GetSprite($"Sprites/occupation_{iconName}");
         }
 
         public IMapObject GetPointOfInterest(params Citizen.PointOfInterest[] options)

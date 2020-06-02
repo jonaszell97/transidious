@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Transidious.UI;
 using UI;
 
 namespace Transidious
@@ -18,6 +19,7 @@ namespace Transidious
             TransitEditor,
             Data,
             Settings,
+            LineBuilding,
         }
 
         /// The main UI instance.
@@ -136,12 +138,23 @@ namespace Transidious
         /// </summary>
         public GameObject dataPanel;
 
+        /// The line building panel.
+        public GameObject lineBuildingPanel;
+
+        /// The line building redo button.
+        public UIIcon lineBuildingRedoButton;
+        
+        /// The line building undo button.
+        public UIIcon lineBuildingUndoButton;
+        
+        /// The line building trash button.
+        public UIIcon lineBuildingTrashButton;
+
         /**
          * Settings buttons
          */
         public Button consoleButton;
         public GameObject developerConsole;
-
 
         /**
          * Data buttons
@@ -171,6 +184,9 @@ namespace Transidious
         /// Reference to the tooltip instance.
         /// </summary>
         public UITooltip tooltipInstance;
+
+        /// The generic confirmation dialog.
+        public UIConfirmPanel confirmPanel;
 
         /**
          * Modals
@@ -518,7 +534,7 @@ namespace Transidious
             multiPanelAnimator.StartAnimation(duration);
         }
 
-        void ShowPanels()
+        public void ShowPanels()
         {
             if (state == State.Default || state == State.Transitioning)
             {
@@ -533,6 +549,7 @@ namespace Transidious
             this.transitEditorPanel.gameObject.SetActive(false);
             this.dataPanel.gameObject.SetActive(false);
             this.settingsPanel.gameObject.SetActive(false);
+            this.lineBuildingPanel.gameObject.SetActive(false);
 
             var duration = .3f;
 
@@ -615,6 +632,14 @@ namespace Transidious
             this.settingsPanel.gameObject.SetActive(true);
 
             HidePanels(State.Settings, 2);
+        }
+
+        public void ShowLineBuildingPanel()
+        {
+            this.lineBuildingPanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            this.lineBuildingPanel.gameObject.SetActive(true);
+
+            HidePanels(State.LineBuilding, 2);
         }
 
         public void ShowConstructionCost(decimal constructionCost = 0m, decimal monthlyCost = 0m)

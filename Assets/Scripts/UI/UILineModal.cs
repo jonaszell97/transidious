@@ -29,6 +29,9 @@ namespace Transidious
         /// Whether or not the line color was changed.
         private bool _colorChanged;
 
+        /// The system icons.
+        [SerializeField] Sprite[] systemIcons;
+
         /// Prefab for line view stops.
         [SerializeField] private GameObject lineViewStopPrefab;
         
@@ -231,7 +234,7 @@ namespace Transidious
 
             var systemName = line.type.ToString().ToLower();
             var system = infoPanel.GetItem("System");
-            system.Icon.sprite = SpriteManager.GetSprite($"Sprites/{systemName}_logo");
+            system.Icon.sprite = systemIcons[(int)line.type];
             system.Value.text = Translator.Get($"transit:{systemName}");
 
             infoPanel.SetValue("WeeklyPassengers", line.weeklyPassengers.ToString());

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0beta2 (2b71d25, 2019-12-03)"
+   sodipodi:docname="noun_building.svg"
+   id="svg2075"
+   version="1.1"
+   y="0px"
+   x="0px"
+   viewBox="0 0 64 64"
+   data-name="Layer 2"
+   fill="#FFFFFF"
+   width="100px"
+   height="100px">
+  <metadata
+     id="metadata2081">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Artboard 17</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs2079" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg2075"
+     inkscape:window-maximized="0"
+     inkscape:window-y="23"
+     inkscape:window-x="0"
+     inkscape:cy="50"
+     inkscape:cx="4.2279412"
+     inkscape:zoom="2.72"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview2077"
+     inkscape:window-height="862"
+     inkscape:window-width="1536"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     inkscape:document-rotation="0"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <title
+     id="title2053">Artboard 17</title>
+  <g
+     inkscape:export-ydpi="261.6889"
+     inkscape:export-xdpi="261.6889"
+     inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/ui_building.png"
+     id="g2654">
+    <path
+       d="M59,16a1,1,0,0,0-.55-.89l-14-7A1,1,0,0,0,43,9V54H41.5V3a1,1,0,0,0-1-1h-17a1,1,0,0,0-1,1V54H21V21.76a1,1,0,0,0-1-1H5.88a1,1,0,0,0-1,1V54H2v2H62V54H59ZM6.88,54V22.76H19V54ZM24.5,54V4h15V54ZM45,54V10.62l12,6V20H51a1,1,0,0,0-1,1v2h2V22h5v3H51a1,1,0,0,0-1,1v2h2V27h5v3H51a1,1,0,0,0-1,1v2h2V32h5v3H51a1,1,0,0,0-1,1v2h2V37h5v3H51a1,1,0,0,0-1,1v2h2V42h5v3H51a1,1,0,0,0-1,1v2h2V47h5v7Z"
+       id="path2055" />
+    <rect
+       x="9"
+       y="26"
+       width="8"
+       height="2"
+       id="rect2057" />
+    <rect
+       x="9"
+       y="30"
+       width="8"
+       height="2"
+       id="rect2059" />
+    <rect
+       x="9"
+       y="34"
+       width="8"
+       height="2"
+       id="rect2061" />
+    <rect
+       x="9"
+       y="38"
+       width="8"
+       height="2"
+       id="rect2063" />
+    <rect
+       x="9"
+       y="42"
+       width="8"
+       height="2"
+       id="rect2065" />
+    <rect
+       x="9"
+       y="46"
+       width="8"
+       height="2"
+       id="rect2067" />
+    <rect
+       x="27"
+       y="8"
+       width="2"
+       height="39"
+       id="rect2069" />
+    <rect
+       x="35"
+       y="8"
+       width="2"
+       height="39"
+       id="rect2071" />
+    <rect
+       x="31"
+       y="8"
+       width="2"
+       height="39"
+       id="rect2073" />
+  </g>
+</svg>

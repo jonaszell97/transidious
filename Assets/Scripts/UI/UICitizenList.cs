@@ -69,6 +69,7 @@ namespace Transidious.UI
                     item.Item3.text = c.Name;
                 }
 
+                item.Item2.sprite = c.Icon;
                 item.Item1.SetActive(true);
             }
         }

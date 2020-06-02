@@ -86,6 +86,9 @@ namespace Transidious
 
         /// Callback to be executed once the game is loaded.
         public UnityEvent onLoad;
+        
+        /// Whether or not pausing / unpausing is blocked.
+        private bool _pauseBlocked = false;
 
 #if DEBUG
         public string missionToLoad;
@@ -392,18 +395,41 @@ namespace Transidious
             }
         }
 
-        public void EnterPause()
+        public bool EnterPause(bool block = false)
         {
+            _pauseBlocked |= block;
+
+            if (status == GameStatus.Paused)
+            {
+                return true;
+            }
+
             this.status = GameStatus.Paused;
             mainUI.playPauseButton.GetComponent<Image>().sprite = SpriteManager.instance.playSprite;
             mainUI.simSpeedButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.6f);
+
+            return false;
         }
 
-        public void ExitPause()
+        public void ExitPause(bool unblock = false)
         {
+            if (unblock)
+            {
+                _pauseBlocked = false;
+            }
+            else if (_pauseBlocked)
+            {
+                return;
+            }
+
             this.status = GameStatus.Playing;
             mainUI.playPauseButton.GetComponent<Image>().sprite = SpriteManager.instance.pauseSprite;
             mainUI.simSpeedButton.GetComponent<Image>().color = new Color(1f, 1f, 1f, 1f);
+        }
+
+        public void UnblockPause()
+        {
+            _pauseBlocked = false;
         }
     }
 }

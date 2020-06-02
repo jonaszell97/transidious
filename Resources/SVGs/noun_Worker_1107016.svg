@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0beta2 (2b71d25, 2019-12-03)"
+   sodipodi:docname="noun_Worker_1107016.svg"
+   id="svg21993"
+   clip-rule="evenodd"
+   fill-rule="evenodd"
+   y="0px"
+   x="0px"
+   viewBox="0 0 281 288"
+   style="shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;"
+   version="1.1"
+   xml:space="preserve"
+   fill="#FFFFFF"
+   width="100px"
+   height="100px"><metadata
+     id="metadata21997"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><sodipodi:namedview
+     inkscape:current-layer="svg21993"
+     inkscape:window-maximized="0"
+     inkscape:window-y="23"
+     inkscape:window-x="0"
+     inkscape:cy="50"
+     inkscape:cx="4.2279412"
+     inkscape:zoom="2.72"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview21995"
+     inkscape:window-height="862"
+     inkscape:window-width="1536"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     inkscape:document-rotation="0"
+     bordercolor="#666666"
+     pagecolor="#ffffff" /><defs
+     id="defs21979"><style
+       id="style21977"
+       type="text/css">
+   
+    .fil0 {fill:#FFFFFF}
+   
+  </style></defs><g
+     inkscape:export-ydpi="245.97865"
+     inkscape:export-xdpi="245.97865"
+     inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/occupation_generic1.png"
+     id="g21991"><path
+       id="path21981"
+       d="M73 98c0,11 3,22 9,24 22,79 95,79 117,0 6,-2 9,-13 9,-24l-135 0z"
+       class="fil0" /><path
+       id="path21983"
+       d="M76 71c1,-29 16,-48 35,-58l6 37c1,6 10,5 9,-1l-6 -39c0,-13 41,-13 41,0l-7 39c-1,6 8,7 9,1l7 -36c19,9 33,28 34,57 12,2 12,21 -2,21l-124 0c-13,0 -14,-19 -2,-21z"
+       class="fil0" /><path
+       id="path21985"
+       d="M0 288c3,-13 14,-59 26,-68 6,-3 11,-6 17,-9 -7,26 -7,51 -3,77l-40 0zm238 -77c6,3 11,6 16,9 13,9 24,55 27,68l-41 0c5,-25 4,-52 -2,-77z"
+       class="fil0" /><path
+       id="path21987"
+       d="M56 205c7,-3 14,-5 22,-7 2,19 8,34 20,49 30,10 54,10 85,0 11,-15 18,-30 20,-49 7,2 15,4 22,7 8,27 9,56 4,83l-177 0c-5,-27 -4,-56 4,-83z"
+       class="fil0" /><path
+       id="path21989"
+       d="M89 195c33,-7 70,-7 103,0 -2,17 -8,32 -16,43 -24,7 -48,7 -71,0 -9,-11 -14,-26 -16,-43z"
+       class="fil0" /></g></svg>

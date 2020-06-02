@@ -117,6 +117,20 @@ namespace Transidious
             inputEventListeners[(int)e].Remove(id);
         }
 
+        public int[] RegisterKeyboardEventListener(KeyCode[] keys, KeyboardEventListener eventListener,
+                                                  bool enabled = true)
+        {
+            var ids = new int[keys.Length];
+
+            var i = 0;
+            foreach (var key in keys)
+            {
+                ids[i++] = RegisterKeyboardEventListener(key, eventListener, enabled);
+            }
+
+            return ids;
+        }
+
         public int RegisterKeyboardEventListener(KeyCode key, KeyboardEventListener eventListener,
                                                  bool enabled = true)
         {
