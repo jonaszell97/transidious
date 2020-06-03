@@ -24,6 +24,7 @@ namespace Transidious
         Pan,
         ScaleChange,
         DisplayModeChange,
+        ResolutionChange,
         _EventCount,
     }
 
@@ -40,6 +41,9 @@ namespace Transidious
 
     public class InputController : MonoBehaviour
     {
+        /// The main camera.
+        public static Camera mainCamera;
+
         public GameController controller;
         public RenderingDistance renderingDistance = RenderingDistance.Near;
 
@@ -644,6 +648,7 @@ namespace Transidious
 
             eventSystem = EventSystem.current;
             camera = Camera.main;
+            mainCamera = camera;
             aspectRatio = camera.aspect;
 
             UpdateRenderingDistance(camera.orthographicSize);
@@ -746,6 +751,7 @@ namespace Transidious
                 if (!_screenRes.Equals(Screen.currentResolution))
                 {
                     UpdateZoomLevels(controller.loadedMap);
+                    FireEvent(InputEvent.ResolutionChange);
                 }
             }
 #endif
@@ -972,6 +978,11 @@ namespace Transidious
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F9))
             {
                 controller.loadedMap.ToggleGrid();
+            }
+
+            if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F10))
+            {
+                controller.mainUI.highlightOverlay.Highlight(controller.mainUI.settingsIcons[2].gameObject, 5f, true);
             }
 
             if (debugClickTest && Input.GetMouseButtonDown(0))

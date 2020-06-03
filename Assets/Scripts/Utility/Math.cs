@@ -464,6 +464,30 @@ namespace Transidious
 
             return new Rect(minX, minY, maxX - minX, maxY - minY);
         }
+        
+        public static Rect RectTransformToScreenSpace(RectTransform transform, float scale = 1f)
+        {
+            var worldCorners = new Vector3[4];
+            transform.GetWorldCorners(worldCorners);
+
+            var cam = InputController.mainCamera;
+            var minPt = cam.WorldToScreenPoint(worldCorners[0]);
+            var maxPt = cam.WorldToScreenPoint(worldCorners[2]);
+
+            return new Rect(minPt * scale, (maxPt - minPt) * scale);
+        }
+        
+        public static Rect RectTransformToViewportSpace(RectTransform transform, float scale = 1f)
+        {
+            var worldCorners = new Vector3[4];
+            transform.GetWorldCorners(worldCorners);
+
+            var cam = InputController.mainCamera;
+            var minPt = cam.WorldToViewportPoint(worldCorners[0]);
+            var maxPt = cam.WorldToViewportPoint(worldCorners[2]);
+
+            return new Rect(minPt * scale, (maxPt - minPt) * scale);
+        }
 
         // Returns a new list of points representing the convex hull of
         // the given set of points. The convex hull excludes collinear points.

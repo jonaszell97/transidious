@@ -305,25 +305,10 @@ namespace Transidious
             if (!confirmationPanelInitialized)
             {
                 game.mainUI.transitUI.confirmLineCreationInfo.Initialize();
-                game.mainUI.transitUI.confirmLineCreationInfo.AddItem("num_stops", "ui:line:num_stops", "", new UIInfoPanel.IconSettings
-                {
-                    icon = SpriteManager.GetSprite("Sprites/stop_ring"),
-                });
-
-                game.mainUI.transitUI.confirmLineCreationInfo.AddItem("total_length", "ui:line:total_length", "", new UIInfoPanel.IconSettings
-                {
-                    icon = SpriteManager.GetSprite("Sprites/ui_length"),
-                });
-
-                game.mainUI.transitUI.confirmLineCreationInfo.AddItem("construction_cost", "ui:construction_cost", "", new UIInfoPanel.IconSettings
-                {
-                    icon = SpriteManager.GetSprite("Sprites/bulldozer"),
-                });
-
-                game.mainUI.transitUI.confirmLineCreationInfo.AddItem("monthly_cost", "ui:monthly_cost", "", new UIInfoPanel.IconSettings
-                {
-                    icon = SpriteManager.GetSprite("Sprites/money"),
-                });
+                game.mainUI.transitUI.confirmLineCreationInfo.AddItem("num_stops", "ui:line:num_stops", "", "Sprites/ui_bus_stop");
+                game.mainUI.transitUI.confirmLineCreationInfo.AddItem("total_length", "ui:line:total_length", "", "Sprites/ui_length");
+                game.mainUI.transitUI.confirmLineCreationInfo.AddItem("construction_cost", "ui:construction_cost", "", "Sprites/ui_bulldoze");
+                game.mainUI.transitUI.confirmLineCreationInfo.AddItem("monthly_cost", "ui:monthly_cost", "", "Sprites/ui_money");
 
                 confirmationPanelInitialized = true;
             }

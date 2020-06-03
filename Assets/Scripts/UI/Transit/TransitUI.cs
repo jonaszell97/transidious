@@ -120,7 +120,6 @@ namespace Transidious
                     if (activeBuilder != null)
                     {
                         activeBuilder.EndLineCreation();
-                        activeBuilder = null;
                     }
 
                     if (selectedTransitSystem.HasValue && selectedTransitSystem.Value == system)

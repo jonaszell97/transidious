@@ -43,10 +43,11 @@ namespace Transidious
         /// The instruction panel.
         public UIInstruction instructionPanel;
 
-        /// <summary>
         /// The greyed out overlay.
-        /// </summary>
         [SerializeField] GameObject overlay;
+
+        /// The highlighting overlay.
+        public UIHighlightOverlay highlightOverlay;
 
         /**
          * Date & Time Tab
@@ -326,6 +327,7 @@ namespace Transidious
             UpdateFinances();
 
             transitUI.Initialize();
+            highlightOverlay.Initialize();
         }
 
         public void ShowOverlay()
