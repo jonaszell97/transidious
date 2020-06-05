@@ -102,8 +102,14 @@ namespace Transidious
 
         public void Enable()
         {
-            if (_animator.IsAnimating || Active)
+            if (_animator.IsAnimating)
             {
+                return;
+            }
+
+            if (Active)
+            {
+                LoadTab(0);
                 return;
             }
 
@@ -151,6 +157,7 @@ namespace Transidious
         {
             if (SelectedTab == tab)
             {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(_tabs[tab]);
                 return;
             }
 
@@ -173,8 +180,6 @@ namespace Transidious
                             break;
                         }
                     }
-                    
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(c);
                 }
                 else
                 {
@@ -182,11 +187,13 @@ namespace Transidious
                     _tabBarButtons[i].GetComponent<Image>().color = new Color(1f, 1f, 1f, 100f / 255f);
                 }
             }
-            
+
             noDataAvailableMsg.gameObject.SetActive(!foundActive);
 
             SelectedTab = tab;
             onTabChange?.Invoke(tab);
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_tabs[tab]);
         }
     }
 }

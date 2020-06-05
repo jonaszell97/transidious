@@ -267,10 +267,14 @@ namespace Transidious
                 next = v;
             }
 
-            vehicles.First().First = true;
-            vehicles.First().Next = next;
-            vehicles.First().StartDrive();
+            var first = vehicles[0];
+            first.First = true;
+            first.Next = next;
 
+            first.InitializeNextDepartures();
+            first.StartDrive();
+
+            // Initialize opposite stops
             foreach (var stop in stops)
             {
                 if (stop.oppositeStop != null)
@@ -299,41 +303,6 @@ namespace Transidious
                     minStop.oppositeStop = stop;
                 }
             }
-
-            // Equally space the vehicles along the route.
-            // var lengthMeters = distance.Meters;
-            // var spacing = lengthMeters / neededVehicles;
-            // var currentRoute = 0;
-
-            // routes[0].beginStop.SetSchedule(this, new ContinuousSchedule(earliestDeparture, interval));
-            //
-            // var diffs = new float[vehicles.Count];
-            // for (var i = 0; i < vehicles.Count; ++i)
-            // {
-            //     var requiredDistance = i * spacing;
-            //
-            //     var routeDistance = currentRoute == 0 ? 0 : cumulativeLengths[currentRoute - 1];
-            //     while (cumulativeLengths[currentRoute] < requiredDistance)
-            //     {
-            //         routeDistance = cumulativeLengths[currentRoute++];
-            //     }
-            //     
-            //     var distanceToStop = cumulativeLengths[currentRoute] - requiredDistance;
-            //     routes[currentRoute].endStop.SetSchedule(this, new ContinuousSchedule(
-            //         earliestDeparture.Add(Distance.FromMeters(distanceToStop) / AverageSpeed), interval));
-            //
-            //     var diff = requiredDistance - routeDistance;
-            //     var vehicle = vehicles[vehicles.Count - 1 - i];
-            //
-            //     diffs[vehicles.Count - i - 1] = diff;
-            //     vehicle.SetStartingRoute(currentRoute);
-            // }
-            //
-            // var n = 0;
-            // foreach (var v in vehicles)
-            // {
-            //     v.StartDrive(v.CurrentRoute, diffs[n++]);
-            // }
         }
 
         public new Serialization.Line ToProtobuf()

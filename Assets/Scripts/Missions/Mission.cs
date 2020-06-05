@@ -95,8 +95,29 @@ namespace Transidious
                     occupation = o;
                 }
 
-                game.sim.CreateCitizen(c.firstName, c.lastName, c.age, c.birthday, c.female,
-                    occupation, c.money, c.educated, c.happiness);
+                var builder = CitizenBuilder.Create()
+                    .WithFirstName(c.firstName)
+                    .WithLastName(c.lastName);
+
+                if (c.age.HasValue)
+                    builder = builder.WithAge(c.age.Value);
+                
+                if (c.birthday.HasValue)
+                    builder = builder.WithBirthday(c.birthday.Value);
+                
+                if (c.female.HasValue)
+                    builder = builder.WithGender(c.female.Value);
+                
+                if (occupation.HasValue)
+                    builder = builder.WithOccupation(occupation.Value);
+                
+                if (c.money.HasValue)
+                    builder = builder.WithMoney(c.money.Value);
+                
+                if (c.happiness.HasValue)
+                    builder = builder.WithHappiness(c.happiness.Value);
+
+                _ = builder.Build();
 
                 if (FrameTimer.instance.FrameDuration >= 100f)
                 {

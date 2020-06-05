@@ -73,12 +73,12 @@ namespace Transidious
 
             _debugPanel.AddClickableItem("Next Car", "Next Car", Color.white, () =>
             {
-                if (!(citizen.activePath?.IsDriving) ?? false)
+                if (!(citizen.ActivePath?.IsDriving) ?? false)
                     return;
 
                 // var next = GameController.instance.sim.trafficSim.GetNextCar(
                 //     citizen.activePath._drivingState.drivingCar);
-                var next = citizen.activePath._drivingCar.Next;
+                var next = citizen.ActivePath._drivingCar.Next;
                 if (next != null)
                 {
                     GameController.instance.input.MoveTowards(next.CurrentPosition);
@@ -91,10 +91,10 @@ namespace Transidious
 
             _debugPanel.AddClickableItem("Prev Car", "Prev Car", Color.white, () =>
             {
-                if (!(citizen.activePath?.IsDriving) ?? false)
+                if (!(citizen.ActivePath?.IsDriving) ?? false)
                     return;
 
-                var prev = citizen.activePath._drivingCar.Prev;
+                var prev = citizen.ActivePath._drivingCar.Prev;
                 if (prev != null)
                 {
                     GameController.instance.input.MoveTowards(prev.CurrentPosition);
@@ -107,12 +107,12 @@ namespace Transidious
             
             _debugPanel.AddClickableItem("Preferences", "Preferences", Color.gray, () =>
             {
-                Utility.Dump(citizen.transitPreferences);
+                Utility.Dump(citizen.TransitPreferences);
             });
 
             _debugPanel.AddClickableItem("HappinessInfluences", "Happiness Influences", Color.gray, () =>
             {
-                foreach (var item in citizen.happinessInfluences)
+                foreach (var item in citizen.HappinessInfluences)
                 {
                     Utility.Dump(item);
                 }
@@ -122,27 +122,27 @@ namespace Transidious
             {
                 var sim = GameController.instance.sim;
                 var c = citizen;
-                sim.ScheduleEvent(sim.GameTime.AddMinutes(5), () => { c.SetHappiness(c.happiness + 2f); });
+                sim.ScheduleEvent(sim.GameTime.AddMinutes(5), () => { c.SetHappiness(c.Happiness + 2f); });
             });
             
             _debugPanel.AddClickableItem("Current Path", "Current Path", Color.blue, () =>
             {
-                Debug.Log(citizen.activePath?.path?.ToString() ?? "no active path");
+                Debug.Log(citizen.ActivePath?.path?.ToString() ?? "no active path");
             });
 
             _debugPanel.AddClickableItem("Generate Schedule", "Generate Schedule", Color.blue, () =>
             {
-                citizen.activePath = null;
+                citizen.ActivePath = null;
                 
                 var prevDate = GameController.instance.sim.GameTime.Date;
                 for (var i = 0; i < 10; ++i)
                 {
-                    Debug.Log(citizen.currentEvent.DebugDescription);
+                    Debug.Log(citizen.CurrentEvent.DebugDescription);
 
-                    var nextDate = citizen.currentEvent.endTime.Date;
+                    var nextDate = citizen.CurrentEvent.endTime.Date;
                     var newDay = prevDate != nextDate;
 
-                    citizen.Update(citizen.currentEvent.endTime, newDay, nextDate - prevDate);
+                    citizen.Update(citizen.CurrentEvent.endTime, newDay, nextDate - prevDate);
                 }
             });
 #endif
@@ -152,11 +152,11 @@ namespace Transidious
         {
             UpdateFrequentChanges();
 
-            this.panel.SetValue("Age", citizen.age.ToString());
+            this.panel.SetValue("Age", citizen.Age.ToString());
             this.panel.SetValue("Occupation", Translator.Get($"ui:citizen:occupation:{citizen.occupation.ToString()}"));
 
             var dst = citizen.CurrentDestination;
-            if (citizen.activePath != null && dst != null)
+            if (citizen.ActivePath != null && dst != null)
             {
                 this.panel.ShowItem("Destination");
 
@@ -197,16 +197,16 @@ namespace Transidious
 
         public void UpdateFrequentChanges()
         {
-            this.panel.SetProgress("Happiness", citizen.happiness / 100f);
-            this.panel.SetProgress("Energy", citizen.energy / 100f);
-            this.panel.SetProgress("RemainingWork", citizen.remainingWork / 100f);
-            this.panel.SetValue("Money", Translator.GetCurrency(citizen.money, true));
+            this.panel.SetProgress("Happiness", citizen.Happiness / 100f);
+            this.panel.SetProgress("Energy", citizen.Energy / 100f);
+            this.panel.SetProgress("RemainingWork", citizen.RemainingWork / 100f);
+            this.panel.SetValue("Money", Translator.GetCurrency(citizen.Money, true));
 
-            if (citizen.happiness < 50)
+            if (citizen.Happiness < 50)
             {
                 happinessSprite.sprite = SpriteManager.instance.happinessSprites[0];
             }
-            else if (citizen.happiness < 75)
+            else if (citizen.Happiness < 75)
             {
                 happinessSprite.sprite = SpriteManager.instance.happinessSprites[1];
             }
@@ -215,32 +215,32 @@ namespace Transidious
                 happinessSprite.sprite = SpriteManager.instance.happinessSprites[2];
             }
 
-            if (citizen.activePath?.IsDriving ?? false)
+            if (citizen.ActivePath?.IsDriving ?? false)
             {
                 this._debugPanel.SetValue("Distance From Start",
-                    $"{citizen.activePath._drivingCar.DistanceFromStart:n2} m");
+                    $"{citizen.ActivePath._drivingCar.DistanceFromStart:n2} m");
 
                 this._debugPanel.SetValue("Distance To Intersection",
-                    $"{citizen.activePath._drivingCar.DistanceToIntersection:n2} m");
+                    $"{citizen.ActivePath._drivingCar.DistanceToIntersection:n2} m");
                 
                 this._debugPanel.SetValue("Velocity",
-                    $"{citizen.activePath._drivingCar.CurrentVelocity.RealTimeMPS:n2} m/s");
+                    $"{citizen.ActivePath._drivingCar.CurrentVelocity.RealTimeMPS:n2} m/s");
                 
-                _debugPanel.SetValue("Blocking", citizen.activePath.idm.BlockingIntersection.ToString());
+                _debugPanel.SetValue("Blocking", citizen.ActivePath.idm.BlockingIntersection.ToString());
                 
-                if (citizen.activePath._drivingCar.Next != null)
+                if (citizen.ActivePath._drivingCar.Next != null)
                 {
                     this._debugPanel.SetValue("Distance To Next",
-                        $"{citizen.activePath._drivingCar.Next.DistanceFromStart - citizen.activePath._drivingCar.DistanceFromStart:n2} m");
+                        $"{citizen.ActivePath._drivingCar.Next.DistanceFromStart - citizen.ActivePath._drivingCar.DistanceFromStart:n2} m");
                 }
                 else
                 {
                     this._debugPanel.SetValue("Distance To Next", "-");
                 }
                 
-                if (citizen.activePath._drivingCar.NextTurn != null)
+                if (citizen.ActivePath._drivingCar.NextTurn != null)
                 {
-                    this._debugPanel.SetValue("NextTurn", citizen.activePath._drivingCar.NextTurn.Value.ToString());
+                    this._debugPanel.SetValue("NextTurn", citizen.ActivePath._drivingCar.NextTurn.Value.ToString());
                 }
                 else
                 {
@@ -248,7 +248,7 @@ namespace Transidious
                 }
 
                 this._debugPanel.SetValue("Step",
-                    citizen.activePath.currentStep?.GetType().Name ?? "None");
+                    citizen.ActivePath.currentStep?.GetType().Name ?? "None");
             }
         }
 
@@ -259,10 +259,10 @@ namespace Transidious
 
             UpdateAll();
 
-            if (citizen.activePath != null)
+            if (citizen.ActivePath != null)
             {
                 GameController.instance.input.FollowObject(
-                    citizen.activePath.gameObject, InputController.FollowingMode.Center);
+                    citizen.ActivePath.gameObject, InputController.FollowingMode.Center);
             }
         }
     }

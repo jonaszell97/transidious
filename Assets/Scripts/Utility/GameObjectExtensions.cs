@@ -49,6 +49,11 @@ namespace Transidious
         {
             return list.Count > index ? list[index] : default(TValue);
         }
+
+        public static void RemoveLast<TValue>(this List<TValue> list)
+        {
+            list.RemoveAt(list.Count - 1);
+        }
     }
 
     public static class GameObjectExtensions

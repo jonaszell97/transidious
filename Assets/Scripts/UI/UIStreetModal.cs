@@ -26,6 +26,7 @@ namespace UI
             infoPanel.AddItem("Type", "Type", "", "Sprites/ui_edit");
             infoPanel.AddItem("Length", "Length", "", "Sprites/ui_line_partial");
             infoPanel.AddItem("Bridge", "Bridge", "", "Sprites/ui_line_partial");
+            infoPanel.AddItem("OneWay", "One Way", "", "Sprites/ui_length");
             infoPanel.AddItem("Position", "Position", "", "Sprites/ui_citizen");
             infoPanel.AddItem("ParkingSpots", "Parking Spots", "", "Sprites/ui_car");
             
@@ -94,6 +95,7 @@ namespace UI
             UpdateFrequentChanges();
             infoPanel.SetValue("Type", segment.street.type.ToString());
             infoPanel.SetValue("Length", segment.length.ToString("n2") + "m");
+            infoPanel.SetValue("OneWay", segment.OneWay ? "yes" : "no");
             infoPanel.SetValue("Position", segment.position.ToString());
             infoPanel.SetValue("Bridge", segment.IsBridge ? "yes" : "no");
 

@@ -114,7 +114,13 @@ namespace Transidious
 
         /// List of buildings.
         public List<Building> buildings;
-        
+
+        /// Total building capacity for every building type.
+        public Dictionary<Tuple<Building.Type, OccupancyKind>, int> buildingCapacity;
+
+        /// Total building capacity for every building type.
+        public Dictionary<Tuple<Building.Type, OccupancyKind>, int> buildingOccupation;
+
         /// Map of buildings by type.
         public Dictionary<Building.Type, List<Building>> buildingsByType;
 
@@ -188,6 +194,8 @@ namespace Transidious
             this.buildings = new List<Building>();
             this.buildingsByType = new Dictionary<Building.Type, List<Building>>();
             this.occupancyMap = new Dictionary<Tuple<int, OccupancyKind>, SortedSet<Citizen>>();
+            this.buildingCapacity = new Dictionary<Tuple<Building.Type, OccupancyKind>, int>();
+            this.buildingOccupation = new Dictionary<Tuple<Building.Type, OccupancyKind>, int>();
 
             this.tileSize = tileSize;
             this.tilesToShow = new HashSet<MapTile>();
@@ -1653,6 +1661,21 @@ namespace Transidious
                 buildingsByType.Add(type, buildingList);
             }
 
+            for (var k = 0; k < (int)OccupancyKind._Last; ++k)
+            {
+                var kind = (OccupancyKind) k;
+                var key = Tuple.Create(building.type, kind);
+
+                if (buildingCapacity.TryGetValue(key, out var cap))
+                {
+                    buildingCapacity[key] = cap + building.GetCapacity(kind);
+                }
+                else
+                {
+                    buildingCapacity.Add(key, building.GetCapacity(kind));
+                }
+            }
+
             buildingList.Add(building);
             return building;
         }
@@ -1677,13 +1700,26 @@ namespace Transidious
             return null;
         }
 
-        public void AddOccupant(int objId, OccupancyKind kind, Citizen c)
+        public void AddOccupant(IMapObject obj, OccupancyKind kind, Citizen c)
         {
-            var key = Tuple.Create(objId, kind);
+            var key = Tuple.Create(obj.Id, kind);
             if (!occupancyMap.TryGetValue(key, out var set))
             {
                 set = new SortedSet<Citizen>();
                 occupancyMap[key] = set;
+            }
+
+            if (obj is Building b)
+            {
+                var otherKey = Tuple.Create(b.type, kind);
+                if (buildingOccupation.TryGetValue(otherKey, out var data))
+                {
+                    buildingOccupation[otherKey] = data + 1;
+                }
+                else
+                {
+                    buildingOccupation.Add(otherKey, 1);
+                }
             }
 
             set.Add(c);

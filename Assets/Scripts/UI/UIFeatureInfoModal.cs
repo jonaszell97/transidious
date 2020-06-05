@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Transidious.UI;
 
 namespace Transidious
@@ -14,8 +15,8 @@ namespace Transidious
         /// The info panel.
         public UIInfoPanel panel;
 
-        /// The current visitor list.
-        public UICitizenList visitorList;
+        /// The occupancy lists.
+        public UICitizenList[] occupancyLists;
 
 #if DEBUG
         private UIInfoPanel debugPanel;
@@ -26,7 +27,10 @@ namespace Transidious
             modal.Initialize();
             panel.Initialize();
             
-            visitorList.Initialize("ui:building:visitors");
+            for (var i = 0; i < (int) OccupancyKind._Last; ++i)
+            {
+                occupancyLists[i].Initialize($"ui:map_object:{(OccupancyKind)i}");
+            }
             
             var maxCharacters = 100;
             modal.titleInput.interactable = true;
@@ -58,7 +62,12 @@ namespace Transidious
             });
 
             panel.AddItem("Type", "ui:feature:type");
-            panel.AddItem("Occupants", "ui:building:visitors");
+
+            for (var i = 0; i < (int) OccupancyKind._Last; ++i)
+            {
+                var k = (OccupancyKind) i;
+                panel.AddItem(k.ToString(), $"ui:map_object:{k}s");
+            }
 
 #if DEBUG
             debugPanel = Instantiate(ResourceManager.instance.infoPanelCardPrefab, panel.transform.parent)
@@ -100,18 +109,38 @@ namespace Transidious
             this.feature = feature;
             this.modal.SetTitle(feature.name);
 
-            var visitors = feature.GetOccupants(OccupancyKind.Visitor);
-            this.panel.SetValue("Occupants", (visitors?.Count ?? 0) + " / " + feature.Capacity);
+            var defaultKind = feature.GetDefaultOccupancyKind();
+            for (var i = 0; i < (int) OccupancyKind._Last; ++i)
+            {
+                var k = (OccupancyKind) i;
+                var occ = feature.GetOccupancyCount(k);
+
+                var key = k.ToString();
+                if (occ == 0 && k != defaultKind)
+                {
+                    panel.HideItem(key);
+                    continue;
+                }
+
+                panel.ShowItem(key);
+                panel.SetValue(key, $"{occ} / {feature.GetCapacity(k)}");
+            }
+
             this.panel.SetValue("Type", Translator.Get("ui:feature:type:" + feature.type.ToString()));
 
-            if (visitors != null)
+            for (var i = 0; i < (int) OccupancyKind._Last; ++i)
             {
-                visitorList.gameObject.SetActive(true);
-                visitorList.SetCitizens(visitors);
-            }
-            else
-            {
-                visitorList.gameObject.SetActive(false);
+                var kind = (OccupancyKind) i;
+                var numOccupants = feature.GetOccupancyCount(kind);
+
+                if (numOccupants == 0)
+                {
+                    occupancyLists[i].gameObject.SetActive(false);
+                    continue;
+                }
+                
+                occupancyLists[i].gameObject.SetActive(true);
+                occupancyLists[i].SetCitizens(feature.GetOccupants(kind));
             }
 
 #if DEBUG

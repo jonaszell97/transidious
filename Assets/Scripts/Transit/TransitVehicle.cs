@@ -76,7 +76,10 @@ namespace Transidious
             }
         }
 
+        /// The distance to the next stop.
         public Distance DistanceFromNextStop => Distance.FromMeters(line.cumulativeLengths[CurrentRoute]) - DistanceFromStartOfLine;
+
+        /// The time left until arriving at the next stop.
         public TimeSpan TimeToNextStop => DistanceFromNextStop / Velocity;
 
         /// The distance (in time) from the start of the line.
@@ -143,9 +146,18 @@ namespace Transidious
             this.spriteRenderer.color = line.color;
         }
 
-        public void SetStartingRoute(int routeIndex)
+        /// Initialize the next departures after creating a new line.
+        public void InitializeNextDepartures()
         {
-            CurrentRoute = routeIndex;
+            var departure = sim.GameTime;
+            line.routes[0].beginStop.SetNextDeparture(line, departure);
+
+            foreach (var route in line.routes)
+            {
+                departure += route.distance / line.AverageSpeed;
+                route.endStop.SetNextDeparture(line, departure);
+                departure += line.AverageStopDuration;
+            }
         }
 
         public void StartDrive(int routeIndex = 0, float progress = 0f)
@@ -184,6 +196,12 @@ namespace Transidious
                     _pathFollow = null;
                     _waitingTime = line.AverageStopDuration;
                     CurrentRoute = (CurrentRoute + 1) % line.routes.Count;
+
+                    if (CurrentRoute == 0)
+                    {
+                        // The first vehicle also needs to wait after completing a full trip around the line.
+                        First = false;
+                    }
 
                     // Check citizens leaving here.
                     var stop = route.endStop;

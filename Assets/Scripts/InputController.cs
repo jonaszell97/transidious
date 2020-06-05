@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Transidious.UI;
 using UnityEngine.Events;
 
 namespace Transidious
@@ -866,9 +867,9 @@ namespace Transidious
                 }
                 else
                 {
-                    var c = controller.sim.CreateCitizen(true, true);
+                    var c = CitizenBuilder.Create().WithCar(true).Build();
 
-                    var planner = new PathPlanning.PathPlanner(c.transitPreferences);
+                    var planner = new PathPlanning.PathPlanner(c.TransitPreferences);
                     var map = controller.loadedMap;
                     var from = _fromPos.Value;
                     var to = clickedPos;
@@ -982,7 +983,36 @@ namespace Transidious
 
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F10))
             {
-                controller.mainUI.highlightOverlay.Highlight(controller.mainUI.settingsIcons[2].gameObject, 5f, true);
+                controller.mainUI.dialogPanel.Show(new []
+                {
+                    new UIDialogPanel.DialogItem
+                    {
+                        Message = "Message #1",
+                        Icon = "Sprites/occupation_businessman",
+                    },
+                    new UIDialogPanel.DialogItem
+                    {
+                        Message = "Message #2 aoisdoiashdoiahsoidhaioshdioashdoiahsodihaoishdoiaoishdoihaioshdioahsdoi",
+                        Icon = "Sprites/occupation_businessman",
+                        Highlight = Tuple.Create(controller.mainUI.settingsIcons[2].gameObject.GetComponent<RectTransform>(), 5f, true, false),
+                    },
+                    new UIDialogPanel.DialogItem
+                    {
+                        Message = "Message #3 aoisdoiashdoiahsoidhaioshdioashdoiahsodihaoishdoiaoishdoihaioshdioahsdoi aoisdoiashdoiahsoidhaioshdioashdoiahsodihaoishdoiaoishdoihaioshdioahsdoi aoisdoiashdoiahsoidhaioshdioashdoiahsodihaoishdoiaoishdoihaioshdioahsdoi",
+                        Icon = "Sprites/occupation_businessman",
+                        Highlight = Tuple.Create(controller.mainUI.settingsIcons[0].gameObject.GetComponent<RectTransform>(), 5f, true, true),
+                    },
+                    new UIDialogPanel.DialogItem
+                    {
+                        Message = "Message #4",
+                        Icon = "Sprites/occupation_doctor",
+                        Highlight = Tuple.Create(controller.mainUI.settingsIcons[1].gameObject.GetComponent<RectTransform>(), 5f, true, false),
+                    },
+                }, () =>
+                {
+                    Debug.Log("Done!");
+                });
+                // controller.mainUI.highlightOverlay.Highlight(controller.mainUI.settingsIcons[2].gameObject, 5f, true);
             }
 
             if (debugClickTest && Input.GetMouseButtonDown(0))
@@ -1030,7 +1060,7 @@ namespace Transidious
                         Destroy(_routeMesh?.gameObject ?? null);
                         _routeMesh = controller.loadedMap.CreateMultiMesh();
 
-                        var c = controller.sim.CreateCitizen(true);
+                        var c = CitizenBuilder.Create().WithCar(true).Build();
                         c.FollowPath(ppResult);
                         
                         _routeMesh.CreateMeshes();

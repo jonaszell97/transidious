@@ -49,6 +49,9 @@ namespace Transidious
         /// The highlighting overlay.
         public UIHighlightOverlay highlightOverlay;
 
+        /// The dialog panel.
+        public UIDialogPanel dialogPanel;
+
         /**
          * Date & Time Tab
          */
@@ -295,6 +298,16 @@ namespace Transidious
                 {
                     ShowPopulationHeatmap();
                 }
+            });
+
+            // Line building
+            lineBuildingUndoButton.button.onClick.AddListener(() =>
+            {
+                transitUI.activeBuilder.Undo();
+            });
+            lineBuildingRedoButton.button.onClick.AddListener(() =>
+            {
+                transitUI.activeBuilder.Redo();
             });
 
             // Modals

@@ -168,6 +168,7 @@ MonoBehaviour:
   colorPicker: {fileID: 5595582386470397572}
   infoPanel: {fileID: 1690445185170174091}
   lineViewCard: {fileID: 1619469111082957389}
+  systemIcons: []
   lineViewStopPrefab: {fileID: 1528278008855261995, guid: 3aab45882df294395a196f675468b148,
     type: 3}
   lineViewCrossingLinesPrefab: {fileID: 5985432388467333613, guid: 37853c57f32f641558e4d551c69cbf5a,
@@ -283,9 +284,9 @@ RectTransform:
   m_Father: {fileID: 5795805169166193774}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 195, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 195, y: -10}
   m_SizeDelta: {x: 370, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2824893142344703758

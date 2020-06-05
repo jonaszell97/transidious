@@ -79,70 +79,70 @@ namespace Transidious
         public readonly uint id;
         
         /// The citizen's first name.
-        public string firstName { get; private set; }
+        public string FirstName { get; set; }
         
         /// The citizen's last name.
-        public string lastName { get; private set; }
+        public string LastName { get; set; }
         
         /// The citizen's age in years.
-        public short age { get; private set; }
+        public short Age { get; set; }
 
         /// The citizen's birthday in range [0..365].
-        public short birthday { get; private set; }
+        public short Birthday { get; set; }
         
         /// True iff this citizen is a woman.
-        public bool female { get; private set; }
+        public bool Female { get; set; }
         
         /// The citizen's occupation.
-        public Occupation occupation { get; private set; }
+        public Occupation occupation { get; set; }
         
         /// The citizen's current money.
-        public decimal money { get; private set; }
+        public decimal Money { get; set; }
 
         /// The citizen's car (can be null).
-        public Car car;
+        public Car Car;
 
         /// The citizen's icon.
         public Sprite Icon;
 
         /// True iff this citizen has an education.
-        public bool educated { get; private set; }
+        public bool Educated { get; set; }
 
         /// The citizen's current happiness [0..100].
-        public float happiness { get; private set; }
+        public float Happiness { get; set; }
 
         /// The citizen's current energy level [0..100].
-        public float energy { get; private set; }
+        public float Energy { get; set; }
 
         /// The amount of work this citizen has to perform [0..100].
-        public float remainingWork { get; private set; }
+        public float RemainingWork { get; set; }
 
         /// The color to use for rendering this citizen.
-        public readonly Color preferredColor;
+        public readonly Color PreferredColor;
 
         /// Map of the citizen's relationships.
-        public readonly Dictionary<Relationship, Citizen> relationships;
+        public readonly Dictionary<Relationship, Citizen> Relationships;
         
         /// Map of the citizen's points of interest.
-        public readonly Dictionary<PointOfInterest, IMapObject> pointsOfInterest;
+        public readonly Dictionary<PointOfInterest, IMapObject> PointsOfInterest;
 
         /// Options to use for path planning.
-        public PathPlanningOptions transitPreferences;
+        public PathPlanningOptions TransitPreferences;
 
         /// Current position on the map.
-        public Vector2 currentPosition;
+        public Vector2 CurrentPosition;
 
         /// The citizen's schedule.
-        public Simulation.Schedule schedule;
+        public Simulation.Schedule Schedule;
         
         /// The citizen's next scheduled event.
-        public Simulation.Schedule.EventInfo currentEvent;
+        public Simulation.Schedule.EventInfo CurrentEvent;
 
         /// The path that the citizen is currently following (can be null).
-        public ActivePath activePath;
+        public ActivePath ActivePath;
 
         /// Regular influences on the citizen's happiness.
-        public readonly Dictionary<string, HappinessInfluence> happinessInfluences;
+        public readonly Dictionary<string, HappinessInfluence> HappinessInfluences;
 
         /// The last happiness level where an animation was displayed.
         private float _lastHappinessAnimation = -1f; 
@@ -167,12 +167,12 @@ namespace Transidious
 
             this.sim.citizens.Add(this.id, this);
             this.sim.citizenList.Add(this);
-            this.car = car;
-            this.preferredColor = RNG.RandomColor;
+            this.Car = car;
+            this.PreferredColor = RNG.RandomColor;
 
-            this.pointsOfInterest = new Dictionary<PointOfInterest, IMapObject>();
-            this.relationships = new Dictionary<Relationship, Citizen>();
-            this.happinessInfluences = new Dictionary<string, HappinessInfluence>();
+            this.PointsOfInterest = new Dictionary<PointOfInterest, IMapObject>();
+            this.Relationships = new Dictionary<Relationship, Citizen>();
+            this.HappinessInfluences = new Dictionary<string, HappinessInfluence>();
         }
 
         public Citizen(SimulationController sim, Serialization.Citizen c)
@@ -184,32 +184,32 @@ namespace Transidious
             this.sim.citizens.Add(this.id, this);
             this.sim.citizenList.Add(this);
 
-            this.firstName = c.FirstName;
-            this.lastName = c.LastName;
-            this.age = (short)c.Age;
-            this.female = c.Female;
-            this.birthday = (short)c.Birthday;
+            this.FirstName = c.FirstName;
+            this.LastName = c.LastName;
+            this.Age = (short)c.Age;
+            this.Female = c.Female;
+            this.Birthday = (short)c.Birthday;
             this.occupation = (Occupation)c.Occupation;
-            this.money = (decimal)c.Money;
-            this.happiness = (float)c.Happiness;
-            this.educated = c.Educated;
+            this.Money = (decimal)c.Money;
+            this.Happiness = (float)c.Happiness;
+            this.Educated = c.Educated;
 
-            this.pointsOfInterest = new Dictionary<PointOfInterest, IMapObject>();
-            this.relationships = new Dictionary<Relationship, Citizen>();
-            this.happinessInfluences = new Dictionary<string, HappinessInfluence>();
-            this.currentPosition = c.CurrentPosition.Deserialize();
+            this.PointsOfInterest = new Dictionary<PointOfInterest, IMapObject>();
+            this.Relationships = new Dictionary<Relationship, Citizen>();
+            this.HappinessInfluences = new Dictionary<string, HappinessInfluence>();
+            this.CurrentPosition = c.CurrentPosition.Deserialize();
 
             var map = GameController.instance.loadedMap;
             foreach (var poi in c.PointsOfInterest)
             {
                 var kind = (PointOfInterest)poi.Kind;
                 var building = map.GetMapObject<Building>((int)poi.BuildingId);
-                this.pointsOfInterest.Add(kind, building);
+                this.PointsOfInterest.Add(kind, building);
             }
 
             foreach (var inf in c.HappinessInfluences)
             {
-                happinessInfluences.Add(inf.DescriptionKey, new HappinessInfluence
+                HappinessInfluences.Add(inf.DescriptionKey, new HappinessInfluence
                 {
                     absoluteCapHi = inf.AbsoluteCapHi,
                     absoluteCapLo = inf.AbsoluteCapLo,
@@ -219,8 +219,8 @@ namespace Transidious
                 });
             }
 
-            this.preferredColor = c.PreferredColor.Deserialize();
-            transitPreferences = PathPlanningOptions.Deserialize(c.TransitPreferences);
+            this.PreferredColor = c.PreferredColor.Deserialize();
+            TransitPreferences = PathPlanningOptions.Deserialize(c.TransitPreferences);
         }
 
         public PathPlanning.PathPlanningOptions CreateRandomPreferences()
@@ -232,7 +232,7 @@ namespace Transidious
             float walkingTimeFactor;
             float maxWalkingDistance;
 
-            if (age < 10)
+            if (Age < 10)
             {
                 allowCar = false;
                 carTimeFactor = 1f;
@@ -241,7 +241,7 @@ namespace Transidious
                 walkingTimeFactor = RNG.Next(2f, 2.5f);
                 maxWalkingDistance = 100f;
             }
-            else if (age < 18)
+            else if (Age < 18)
             {
                 allowCar = false;
                 carTimeFactor = 1f;
@@ -250,7 +250,7 @@ namespace Transidious
                 walkingTimeFactor = RNG.Next(1f, 2.5f);
                 maxWalkingDistance = 200f;
             }
-            else if (age < 40)
+            else if (Age < 40)
             {
                 allowCar = RNG.value <= .6f;
                 carTimeFactor = RNG.Next(.8f, 3f);
@@ -259,7 +259,7 @@ namespace Transidious
                 walkingTimeFactor = RNG.Next(.8f, 2f);
                 maxWalkingDistance = 150f;
             }
-            else if (age < 65)
+            else if (Age < 65)
             {
                 allowCar = RNG.value <= .75f;
                 carTimeFactor = RNG.Next(.6f, 2.5f);
@@ -278,9 +278,9 @@ namespace Transidious
                 maxWalkingDistance = 50f;
             }
 
-            if (allowCar && car == null)
+            if (allowCar && Car == null)
             {
-                this.car = sim.CreateCar(this, currentPosition);
+                this.Car = sim.CreateCar(this, CurrentPosition);
             }
 
             return new PathPlanningOptions
@@ -301,7 +301,7 @@ namespace Transidious
 
             foreach (var rel in c.Relationships)
             {
-                this.relationships.Add((Relationship)rel.Kind, sim.citizens[rel.CitizenId]);
+                this.Relationships.Add((Relationship)rel.Kind, sim.citizens[rel.CitizenId]);
             }
         }
 
@@ -311,42 +311,42 @@ namespace Transidious
                                           float absoluteCapLo = 0f,
                                           float absoluteCapHi = 100f)
         {
-            this.happinessInfluences.Add(key, new HappinessInfluence(influence,
+            this.HappinessInfluences.Add(key, new HappinessInfluence(influence,
                 duration, relativeCap, absoluteCapLo, absoluteCapHi));
         }
 
         public void SetHappiness(float newHappiness)
         {
-            happiness = Mathf.Clamp(newHappiness, 0f, 100f);
+            Happiness = Mathf.Clamp(newHappiness, 0f, 100f);
 
             if (_lastHappinessAnimation < 0f)
             {
-                _lastHappinessAnimation = happiness;
+                _lastHappinessAnimation = Happiness;
                 return;
             }
 
-            var diff = happiness - _lastHappinessAnimation;
+            var diff = Happiness - _lastHappinessAnimation;
             if (Mathf.Abs(diff) >= 1f)
             {
                 DisplayHappinessChangeAnimation(diff);
-                _lastHappinessAnimation = happiness;
+                _lastHappinessAnimation = Happiness;
             }
         }
 
         public void SetEnergy(float newEnergy)
         {
-            this.energy = Mathf.Clamp(newEnergy, 0f, 100f);
+            this.Energy = Mathf.Clamp(newEnergy, 0f, 100f);
 
-            var tired = happinessInfluences.ContainsKey("Tired");
-            if (energy < 0f && !tired)
+            var tired = HappinessInfluences.ContainsKey("Tired");
+            if (Energy < 0f && !tired)
             {
                 // .5% per hour
                 AddHappinessInfluence("Tired", -(.5f / (24f * 60f)), null, 
                                       -1f, 0f, 70f);
             }
-            else if (energy > 0f && tired)
+            else if (Energy > 0f && tired)
             {
-                happinessInfluences.Remove("Tired");
+                HappinessInfluences.Remove("Tired");
             }
         }
 
@@ -355,7 +355,7 @@ namespace Transidious
             if (occupation == Occupation.Unemployed || occupation == Occupation.Retired)
                 return;
 
-            this.remainingWork = Mathf.Clamp(newRemainingWork, 0f, 100f);
+            this.RemainingWork = Mathf.Clamp(newRemainingWork, 0f, 100f);
         }
 
         void DisplayHappinessChangeAnimation(float diff)
@@ -371,7 +371,7 @@ namespace Transidious
             sr.color = Colors.GetColor(diff < 0f ? "ui.happinessLow" : "ui.happinessHigh");
             sr.transform.localScale = new Vector3(.3f, .3f, 1f);
 
-            var pos = currentPosition.WithZ(Map.Layer(MapLayer.Foreground));
+            var pos = CurrentPosition.WithZ(Map.Layer(MapLayer.Foreground));
             var anim = sr.gameObject.GetComponent<TransformAnimator>();
             anim.Initialize();
             anim.SetAnimationType(TransformAnimator.AnimationType.Loop, TransformAnimator.ExecutionMode.Manual);
@@ -394,78 +394,77 @@ namespace Transidious
         {
             if (lastName == null)
             {
-                this.lastName = RandomNameGenerator.LastName;
+                this.LastName = RandomNameGenerator.LastName;
             }
             else
             {
-                this.lastName = lastName;
+                this.LastName = lastName;
             }
 
             var genderAndAge = RandomNameGenerator.GenderAndAge;
-
             if (!female.HasValue)
             {
-                this.female = genderAndAge.Item1;
+                this.Female = genderAndAge.Item1;
             }
             else
             {
-                this.female = female.Value;
+                this.Female = female.Value;
             }
             
             if (!age.HasValue)
             {
-                this.age = (short)genderAndAge.Item2;
+                this.Age = (short)genderAndAge.Item2;
             }
             else
             {
-                this.age = age.Value;
+                this.Age = age.Value;
             }
             
             if (firstName == null)
             {
-                this.firstName = this.female ? RandomNameGenerator.FemaleFirstName
+                this.FirstName = this.Female ? RandomNameGenerator.FemaleFirstName
                                          : RandomNameGenerator.MaleFirstName;
             }
             else
             {
-                this.firstName = firstName;
+                this.FirstName = firstName;
             }
             
             if (!birthday.HasValue)
             {
-                this.birthday = (short)RNG.Next((float) 0, 365);
+                this.Birthday = (short)RNG.Next((float) 0, 365);
             }
             else
             {
-                this.birthday = birthday.Value;
+                this.Birthday = birthday.Value;
             }
 
             if (!happiness.HasValue)
             {
-                this.happiness = RNG.Next(70f, 100f);
+                this.Happiness = RNG.Next(70f, 100f);
             }
             else
             {
-                this.happiness = happiness.Value;
+                this.Happiness = happiness.Value;
             }
 
             if (!money.HasValue)
             {
-                this.money = (decimal)RNG.Next(0f, 1000f);
+                this.Money = (decimal)RNG.Next(0f, 1000f);
             }
             else
             {
-                this.money = money.Value;
+                this.Money = money.Value;
             }
 
-            if (this.money < 200m)
+            if (this.Money < 200m)
             {
                 // 1% per day
                 AddHappinessInfluence("Poorness", -(1f / (24f * 60f * 60f)), null, 
                                       -1f, 0f, 70f);
             }
 
-            transitPreferences = CreateRandomPreferences();
+            TransitPreferences = CreateRandomPreferences();
             AssignOccupation(occupation);
 
             var currentHour = sim.GameTime.Hour;
@@ -473,27 +472,27 @@ namespace Transidious
             {
                 if (currentHour < 8)
                 {
-                    remainingWork = 100f;
-                    energy = 100f - currentHour * (100f / 16f);
+                    RemainingWork = 100f;
+                    Energy = 100f - currentHour * (100f / 16f);
                 }
                 else if (currentHour < 16)
                 {
-                    remainingWork = (100f / 8f) * (16 - currentHour);
-                    energy = 100f - ((currentHour - 8) * (30f / 8f));
+                    RemainingWork = (100f / 8f) * (16 - currentHour);
+                    Energy = 100f - ((currentHour - 8) * (30f / 8f));
                 }
                 else
                 {
-                    remainingWork = 0f;
-                    energy = 100f - (30f / 8f);
+                    RemainingWork = 0f;
+                    Energy = 100f - (30f / 8f);
                 }
             }
             else
             {
-                remainingWork = 0f;
-                energy = 100f;
+                RemainingWork = 0f;
+                Energy = 100f;
             }
             
-            this.schedule = new Simulation.Schedule(this, null);
+            this.Schedule = new Simulation.Schedule(this, null);
             // if (this.occupation == Occupation.Kindergardener || this.occupation == Occupation.Retired)
             // {
             //     this.schedule = new Simulation.Schedule(this, new Simulation.Schedule.FixedEvent[] {});
@@ -524,20 +523,14 @@ namespace Transidious
             }
 
             home.AddOccupant(OccupancyKind.Resident, this);
-            this.pointsOfInterest.Add(PointOfInterest.Home, home);
+            this.PointsOfInterest.Add(PointOfInterest.Home, home);
             
-            currentPosition = home.Centroid;
+            CurrentPosition = home.Centroid;
         }
 
-        public void Initialize(uint scheduleID = 0)
+        public void Initialize()
         {
-            var groceryStore = sim.ClosestUnoccupiedBuilding(Building.Type.GroceryStore, Home.Centroid);
-            if (groceryStore != null)
-            {
-                pointsOfInterest.Add(PointOfInterest.GroceryStore, groceryStore);
-            }
-
-            this.currentPosition = Home.centroid;
+            this.CurrentPosition = Home.centroid;
             UpdateDailySchedule(sim.GameTime, false);
 
             sim.game.financeController.taxes.amount += GetTaxes();
@@ -564,19 +557,19 @@ namespace Transidious
             {
                 this.occupation = occupation.Value;
             }
-            else if (age < 7)
+            else if (Age < 7)
             {
                 this.occupation = Occupation.Kindergardener;
             }
-            else if (age < 11)
+            else if (Age < 11)
             {
                 this.occupation = Occupation.ElementarySchoolStudent;
             }
-            else if (age < 18)
+            else if (Age < 18)
             {
                 this.occupation = Occupation.HighSchoolStudent;
             }
-            else if (age < 25)
+            else if (Age < 25)
             {
                 if (RNG.value < UniversityProbability)
                 {
@@ -587,7 +580,7 @@ namespace Transidious
                     this.occupation = Occupation.Trainee;
                 }
             }
-            else if (age < 67)
+            else if (Age < 67)
             {
                 this.occupation = Occupation.Worker;
             }
@@ -673,7 +666,7 @@ namespace Transidious
             }
 
             place.AddOccupant(OccupancyKind.Worker, this);
-            pointsOfInterest.Add(poiType, place);
+            PointsOfInterest.Add(poiType, place);
         }
 
         private static readonly string[] _occupationIcons = new[]
@@ -689,13 +682,13 @@ namespace Transidious
             {
                 case Occupation.ElementarySchoolStudent:
                 case Occupation.HighSchoolStudent:
-                    iconName = female ? "pupil_female" : "pupil_male";
+                    iconName = Female ? "pupil_female" : "pupil_male";
                     break;
                 case Occupation.UniversityStudent:
                     iconName = "student";
                     break;
                 case Occupation.Retired:
-                    iconName = female ? "retiree_female" : "retiree_male";
+                    iconName = Female ? "retiree_female" : "retiree_male";
                     break;
                 case Occupation.Unemployed:
                     iconName = "generic2";
@@ -710,7 +703,7 @@ namespace Transidious
 
         public IMapObject GetPointOfInterest(params Citizen.PointOfInterest[] options)
         {
-            foreach (var poi in pointsOfInterest)
+            foreach (var poi in PointsOfInterest)
             {
                 if (options.Contains(poi.Key))
                 {
@@ -724,7 +717,7 @@ namespace Transidious
         public IMapObject GetRandomPointOfInterest(params Citizen.PointOfInterest[] options)
         {
             var possibilities = new List<IMapObject>();
-            foreach (var poi in pointsOfInterest)
+            foreach (var poi in PointsOfInterest)
             {
                 if (options.Contains(poi.Key))
                 {
@@ -737,14 +730,14 @@ namespace Transidious
 
         public void UpdateAge()
         {
-            if (sim.GameTime.DayOfYear != birthday)
+            if (sim.GameTime.DayOfYear != Birthday)
             {
                 return;
             }
 
-            ++age;
+            ++Age;
 
-            if (IsThresholdAge(age))
+            if (IsThresholdAge(Age))
             {
                 AssignOccupation();
                 UpdateDailySchedule(sim.GameTime, true);
@@ -771,17 +764,17 @@ namespace Transidious
 
         public void UpdateDailySchedule(DateTime currentTime, bool newDay)
         {
-            currentEvent.location?.RemoveOccupant(OccupancyKind.Visitor, this);
-            currentEvent = schedule.GetNextEvent(currentTime, newDay);
+            CurrentEvent.location?.RemoveOccupant(OccupancyKind.Visitor, this);
+            CurrentEvent = Schedule.GetNextEvent(currentTime, newDay);
 
-            if (currentEvent.path != null)
+            if (CurrentEvent.path != null)
             {
-                activePath = FollowPath(currentEvent.path);
-                if (currentEvent.location != null)
+                ActivePath = FollowPath(CurrentEvent.path);
+                if (CurrentEvent.location != null)
                 {
-                    activePath.onDone = () =>
+                    ActivePath.onDone = () =>
                     {
-                        currentEvent.location.AddOccupant(OccupancyKind.Visitor, this);
+                        CurrentEvent.location.AddOccupant(OccupancyKind.Visitor, this);
 
                         var modal = MainUI.instance.citizenModal;
                         if (modal.citizen == this)
@@ -797,10 +790,10 @@ namespace Transidious
         {
             var totalCapLo = 0f;
             var totalCapHi = 100f;
-            var newHappiness = happiness;
+            var newHappiness = Happiness;
             var passedSeconds = (float) timeSinceLastUpdate.TotalSeconds;
 
-            foreach (var (key, item) in happinessInfluences)
+            foreach (var (key, item) in HappinessInfluences)
             {
                 if (item.influence < 0f && newHappiness <= item.relativeCap)
                 {
@@ -830,50 +823,50 @@ namespace Transidious
             var happinessBonus = 0f;
             var passedHours = (float) timeSinceLastUpdate.TotalHours;
 
-            if (activePath == null)
+            if (ActivePath == null)
             {
-                happinessBonus = currentEvent.HappinessBonusPerHour;
+                happinessBonus = CurrentEvent.HappinessBonusPerHour;
             }
 
-            if (happinessInfluences.Count > 0)
+            if (HappinessInfluences.Count > 0)
             {
                 UpdateHappiness(timeSinceLastUpdate, happinessBonus);
             }
             else if (happinessBonus > 0f)
             {
-                SetHappiness(happiness + passedHours * happinessBonus);
+                SetHappiness(Happiness + passedHours * happinessBonus);
             }
 
             float energyBonus;
             float remainingWorkBonus;
 
-            if (activePath == null)
+            if (ActivePath == null)
             {
-                energyBonus = currentEvent.EnergyBonusPerHour;
-                remainingWorkBonus = currentEvent.RemainingWorkBonusPerHour;
+                energyBonus = CurrentEvent.EnergyBonusPerHour;
+                remainingWorkBonus = CurrentEvent.RemainingWorkBonusPerHour;
             }
             else
             {
-                energyBonus = activePath.EnergyBonusPerHour;
-                remainingWorkBonus = activePath.RemainingWorkBonusPerHour;
+                energyBonus = ActivePath.EnergyBonusPerHour;
+                remainingWorkBonus = ActivePath.RemainingWorkBonusPerHour;
             }
 
-            SetEnergy(energy + energyBonus * passedHours);
-            SetRemainingWork(remainingWork + remainingWorkBonus * passedHours);
+            SetEnergy(Energy + energyBonus * passedHours);
+            SetRemainingWork(RemainingWork + remainingWorkBonus * passedHours);
 
-            if (currentTime >= currentEvent.endTime)
+            if (currentTime >= CurrentEvent.endTime)
             {
-                if (activePath != null)
+                if (ActivePath != null)
                 {
                     // Check if we can safely abort the current path.
-                    if (!activePath.Abortable)
+                    if (!ActivePath.Abortable)
                     {
                         return;
                     }
 
                     // We completely missed the previous event, apply a penalty.
-                    SetHappiness(happiness - currentEvent.PenaltyForMissing);
-                    activePath.Abort(false);
+                    SetHappiness(Happiness - CurrentEvent.PenaltyForMissing);
+                    ActivePath.Abort(false);
                 }
 
                 UpdateDailySchedule(currentTime, newDay);
@@ -886,50 +879,50 @@ namespace Transidious
 
         public ActivePath FollowPath(PathPlanningResult path, System.Action callback = null)
         {
-            if (activePath == null)
+            if (ActivePath == null)
             {
-                activePath = ResourceManager.instance.GetActivePath();
-                if (activePath == null)
+                ActivePath = ResourceManager.instance.GetActivePath();
+                if (ActivePath == null)
                 {
                     return null;
                 }
             }
 
-            activePath.Initialize(path, this, callback);
-            activePath.gameObject.SetActive(true);
-            activePath.StartPath();
+            ActivePath.Initialize(path, this, callback);
+            ActivePath.gameObject.SetActive(true);
+            ActivePath.StartPath();
 
-            return activePath;
+            return ActivePath;
         }
 
         public Building Home
         {
             get
             {
-                Debug.Assert(pointsOfInterest.ContainsKey(PointOfInterest.Home), "citizen has no home!");
-                return pointsOfInterest[PointOfInterest.Home] as Building;
+                Debug.Assert(PointsOfInterest.ContainsKey(PointOfInterest.Home), "citizen has no home!");
+                return PointsOfInterest[PointOfInterest.Home] as Building;
             }
         }
 
-        public string Name => $"{firstName} {lastName}";
+        public string Name => $"{FirstName} {LastName}";
 
-        public IMapObject CurrentDestination => currentEvent.location;
+        public IMapObject CurrentDestination => CurrentEvent.location;
 
         public Velocity WalkingSpeed
         {
             get
             {
-                if (age < 10)
+                if (Age < 10)
                 {
                     return Velocity.FromRealTimeKPH(5f);
                 }
                 
-                if (age < 30)
+                if (Age < 30)
                 {
                     return Velocity.FromRealTimeKPH(8f);
                 }
                 
-                if (age < 60f)
+                if (Age < 60f)
                 {
                     return Velocity.FromRealTimeKPH(7f);
                 }
@@ -980,9 +973,9 @@ namespace Transidious
 
         public override string ToString()
         {
-            var s = firstName + " " + lastName + (female ? " (f)" : " (m)") + ", " + age;
+            var s = FirstName + " " + LastName + (Female ? " (f)" : " (m)") + ", " + Age;
 
-            foreach (var poi in pointsOfInterest)
+            foreach (var poi in PointsOfInterest)
             {
                 s += "\n   ";
                 s += poi.Key.ToString();
@@ -1006,36 +999,36 @@ namespace Transidious
             var c = new Serialization.Citizen
             {
                 Id = id,
-                FirstName = firstName,
-                LastName = lastName,
-                Age = (uint)age,
-                Birthday = (uint)birthday,
-                Female = female,
+                FirstName = FirstName,
+                LastName = LastName,
+                Age = (uint)Age,
+                Birthday = (uint)Birthday,
+                Female = Female,
                 Occupation = (Serialization.Citizen.Types.Occupation)occupation,
-                Money = (float)money,
-                Educated = educated,
-                Happiness = (uint)happiness,
-                CarID = car?.id ?? 0,
+                Money = (float)Money,
+                Educated = Educated,
+                Happiness = (uint)Happiness,
+                CarID = Car?.id ?? 0,
 
-                CurrentPosition = currentPosition.ToProtobuf(),
+                CurrentPosition = CurrentPosition.ToProtobuf(),
                 
-                PreferredColor = preferredColor.ToProtobuf(),
-                TransitPreferences = transitPreferences.ToProtobuf(),
+                PreferredColor = PreferredColor.ToProtobuf(),
+                TransitPreferences = TransitPreferences.ToProtobuf(),
             };
 
-            c.Relationships.AddRange(relationships.Select(r => new Serialization.Citizen.Types.Relationship
+            c.Relationships.AddRange(Relationships.Select(r => new Serialization.Citizen.Types.Relationship
             {
                 Kind = (Serialization.Citizen.Types.RelationshipKind)r.Key,
                 CitizenId = r.Value.id,
             }));
 
-            c.PointsOfInterest.AddRange(pointsOfInterest.Select(r => new Serialization.Citizen.Types.PointOfInterest
+            c.PointsOfInterest.AddRange(PointsOfInterest.Select(r => new Serialization.Citizen.Types.PointOfInterest
             {
                 Kind = (Serialization.Citizen.Types.PointOfInterestKind)r.Key,
                 BuildingId = (uint)r.Value.Id,
             }));
 
-            c.HappinessInfluences.AddRange(happinessInfluences.Select(inf => new Serialization.Citizen.Types.HappinessInfluence
+            c.HappinessInfluences.AddRange(HappinessInfluences.Select(inf => new Serialization.Citizen.Types.HappinessInfluence
             {
                 AbsoluteCapHi = inf.Value.absoluteCapHi,
                 AbsoluteCapLo = inf.Value.absoluteCapLo,

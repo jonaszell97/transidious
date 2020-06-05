@@ -61,7 +61,12 @@ namespace Transidious
             });
 
             panel.AddItem("Type", "ui:building:type");
-            panel.AddItem("Occupants", "ui:building:occupants");
+
+            for (var i = 0; i < (int) OccupancyKind._Last; ++i)
+            {
+                var k = (OccupancyKind) i;
+                panel.AddItem(k.ToString(), $"ui:map_object:{k}s");
+            }
 
 #if DEBUG
             debugPanel = Instantiate(ResourceManager.instance.infoPanelCardPrefab, panel.transform.parent)
@@ -96,23 +101,6 @@ namespace Transidious
             debugPanel.AddItem("Area", "ui:building:area");
             debugPanel.AddItem("Triangles", "Triangles");
             debugPanel.AddItem("Vertices", "Vertices");
-
-            debugPanel.AddClickableItem("Delete", "Delete", Color.red, () =>
-            {
-                this.building.DeleteMesh();
-            });
-
-            debugPanel.AddClickableItem("Simplify", "Simplify", Color.green, () =>
-            {
-                this.building.DeleteMesh();
-
-                var simplifier = new UnityMeshSimplifier.MeshSimplifier(this.building.mesh);
-                simplifier.SimplifyMesh(.8f);
-
-                var newMesh = Instantiate(GameController.instance.loadedMap.meshPrefab);
-                newMesh.GetComponent<MeshFilter>().sharedMesh = simplifier.ToMesh();
-                newMesh.GetComponent<MeshRenderer>().material = GameController.instance.GetUnlitMaterial(this.building.GetColor());
-            });
 #endif
         }
 
@@ -121,39 +109,22 @@ namespace Transidious
             this.building = building;
             this.modal.SetTitle(building.name);
 
-            string occupantsKey;
-            OccupancyKind occupancyKind;
-
-            switch (building.type)
+            var defaultKind = building.GetDefaultOccupancyKind();
+            for (var i = 0; i < (int) OccupancyKind._Last; ++i)
             {
-            case Building.Type.Residential:
-                occupantsKey = "ui:building:residents";
-                occupancyKind = OccupancyKind.Resident;
-                break;
-            case Building.Type.Shop:
-            case Building.Type.GroceryStore:
-            case Building.Type.Hospital:
-            case Building.Type.Office:
-            case Building.Type.Industrial:
-                occupantsKey = "ui:building:workers";
-                occupancyKind = OccupancyKind.Worker;
-                break;
-            case Building.Type.ElementarySchool:
-            case Building.Type.HighSchool:
-            case Building.Type.University:
-                occupantsKey = "ui:building:students";
-                occupancyKind = OccupancyKind.Student;
-                break;
-            default:
-                occupantsKey = "ui:building:visitors";
-                occupancyKind = OccupancyKind.Visitor;
-                break;
-            }
+                var k = (OccupancyKind) i;
+                var occ = building.GetOccupancyCount(k);
 
-            var occupantsItem = panel.GetItem("Occupants");
-            occupantsItem.Key.SetKey(occupantsKey);
-            occupantsItem.Value.text =
-                $"{building.GetOccupancyCount(occupancyKind)} / {building.GetCapacity(occupancyKind)}";
+                var key = k.ToString();
+                if (occ == 0 && k != defaultKind)
+                {
+                    panel.HideItem(key);
+                    continue;
+                }
+
+                panel.ShowItem(key);
+                panel.SetValue(key, $"{occ} / {building.GetCapacity(k)}");
+            }
 
             this.panel.SetValue("Type", Translator.Get("ui:building:type:" + building.type.ToString()));
 

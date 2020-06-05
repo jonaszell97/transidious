@@ -251,7 +251,7 @@ namespace Transidious
             }
 
             this.driver = driver;
-            driver.car = this;
+            driver.Car = this;
         }
 
         public Serialization.Car ToProtobuf()

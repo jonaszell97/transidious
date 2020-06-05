@@ -196,7 +196,7 @@ namespace Transidious.Simulation
                         fe1._fixedEvent.startingTime.CompareTo(fe2._fixedEvent.startingTime));
             }
 
-            this._pathPlanner = new PathPlanner(citizen.transitPreferences);
+            this._pathPlanner = new PathPlanner(citizen.TransitPreferences);
         }
 
         /// Move on to the next day to reset the fixed events that have already happened.
@@ -216,7 +216,7 @@ namespace Transidious.Simulation
         {
             get
             {
-                if (citizen.car != null)
+                if (citizen.Car != null)
                 {
                     return Velocity.FromRealTimeKPH(20);
                 }
@@ -257,7 +257,7 @@ namespace Transidious.Simulation
                 }
 
                 // Approximate how long it will take to get to the event.
-                var approximateDistance = Distance.Between(citizen.currentPosition, fe._location.VisualCenter);
+                var approximateDistance = Distance.Between(citizen.CurrentPosition, fe._location.VisualCenter);
                 var approximateTravelTime = approximateDistance / ApproximateVelocity;
 
                 // Approximate how much time we have left until we have to leave for the event.
@@ -300,7 +300,7 @@ namespace Transidious.Simulation
                 return Int32.MaxValue;
             }
 
-            return (int)((citizen.energy / -bonus) * 60f);
+            return (int)((citizen.Energy / -bonus) * 60f);
         }
 
         /// Schedule a new leisurely event.
@@ -322,15 +322,15 @@ namespace Transidious.Simulation
             int duration;
 
             // If the energy level is below 25%, go to sleep.
-            if (citizen.energy < .25f)
+            if (citizen.Energy < .25f)
             {
                 type = EventType.Sleep;
                 duration = System.Math.Min(9*60, minutesUntilNextEvent);
             }
-            else if (citizen.remainingWork >= 75f)
+            else if (citizen.RemainingWork >= 75f)
             {
                 type = EventType.Work;
-                duration = System.Math.Min((int)Mathf.Ceil(citizen.remainingWork / (100f / 8f) * 60f),
+                duration = System.Math.Min((int)Mathf.Ceil(citizen.RemainingWork / (100f / 8f) * 60f),
                                            minutesUntilNextEvent);
             }
             else
@@ -344,7 +344,7 @@ namespace Transidious.Simulation
             _pathPlanner.Reset();
             var path = _pathPlanner.FindClosestPath(
                 SaveManager.loadedMap, 
-                citizen.currentPosition,
+                citizen.CurrentPosition,
                 location.VisualCenter,
                 currentTime);
 
@@ -392,7 +392,7 @@ namespace Transidious.Simulation
             _pathPlanner.Reset();
             nextFixedEvent.path = _pathPlanner.FindClosestPath(
                 SaveManager.loadedMap, 
-                citizen.currentPosition,
+                citizen.CurrentPosition,
                 nextFixedEvent.location.VisualCenter,
                 currentTime);
 
@@ -451,7 +451,7 @@ namespace Transidious.Simulation
             IMapObject obj;
 
             // Move this around a bit so we don't always end up at the same places.
-            var pos = c.currentPosition;
+            var pos = c.CurrentPosition;
             pos = new Vector2(
                 Mathf.Clamp(pos.x + RNG.Next(50f, 150f), map.minX, map.maxX),
                 Mathf.Clamp(pos.y + RNG.Next(50f, 150f), map.minY, map.maxY));

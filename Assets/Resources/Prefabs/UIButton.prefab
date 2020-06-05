@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1669559561258268562}
   - component: {fileID: 8351289539910098455}
   - component: {fileID: 7254947910152374589}
+  - component: {fileID: 6153571814546089995}
   m_Layer: 5
   m_Name: UIButton
   m_TagString: Untagged
@@ -62,6 +63,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 0.26415092, g: 0.26415092, b: 0.26415092, a: 0.8235294}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -118,6 +120,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6153571814546089995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6856422970918042995}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7017d7d28a814aa8b751c4c880f8e8dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  button: {fileID: 7254947910152374589}
+  text: {fileID: 574716351359015731}
+  image: {fileID: 8351289539910098455}
 --- !u!1001 &5207948656432600889
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -125,11 +142,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 4046965446435700720}
     m_Modifications:
-    - target: {fileID: 8931929162980160758, guid: 73e04e16b1c495e88b986452faa1d725,
-        type: 3}
-      propertyPath: m_Name
-      value: UIText
-      objectReference: {fileID: 0}
     - target: {fileID: 157885429023393309, guid: 73e04e16b1c495e88b986452faa1d725,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -307,6 +319,11 @@ PrefabInstance:
       propertyPath: m_textInfo.spaceCount
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8931929162980160758, guid: 73e04e16b1c495e88b986452faa1d725,
+        type: 3}
+      propertyPath: m_Name
+      value: UIText
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 73e04e16b1c495e88b986452faa1d725, type: 3}
 --- !u!224 &5365672010565620004 stripped
@@ -315,3 +332,15 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 5207948656432600889}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &574716351359015731 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5746475269724539914, guid: 73e04e16b1c495e88b986452faa1d725,
+    type: 3}
+  m_PrefabInstance: {fileID: 5207948656432600889}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ef7458292ec74cd2bb33df1fcd86f2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -41,7 +41,7 @@ namespace Transidious.UI
                 btn.onClick.AddListener(() =>
                 {
                     var c = citizens[n];
-                    GameController.instance.input.MoveTowards(c.currentPosition, 0f, () => c.ActivateModal());
+                    GameController.instance.input.MoveTowards(c.CurrentPosition, 0f, () => c.ActivateModal());
                 });
 
                 listItems.Add(Tuple.Create(

@@ -973,7 +973,7 @@ namespace Transidious
 
             foreach (var c in sim.citizens)
             {
-                var path = c.Value.activePath;
+                var path = c.Value.ActivePath;
                 if (path == null || !path.IsDriving)
                 {
                     continue;

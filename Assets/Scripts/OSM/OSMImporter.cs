@@ -2743,6 +2743,43 @@ namespace Transidious
 
         IEnumerator LoadBuildings()
         {
+            var desiredRatios = new Dictionary<Building.Type, float>();
+            var thresholds = new[]
+            {
+                RandomNameGenerator.GetAgePercentage(CitizenBuilder.ElementarySchoolThresholdAge),
+                RandomNameGenerator.GetAgePercentage(CitizenBuilder.HighSchoolThresholdAge),
+                RandomNameGenerator.GetAgePercentage(CitizenBuilder.UniversityThresholdAge),
+                RandomNameGenerator.GetAgePercentage(CitizenBuilder.WorkerThresholdAge),
+                RandomNameGenerator.GetAgePercentage(CitizenBuilder.RetirementThresholdAge),
+            };
+
+            // Calculate how many spots we'd like to have for every 100 citizens.
+            desiredRatios.Add(Building.Type.Kindergarden, thresholds[0]);
+            desiredRatios.Add(Building.Type.ElementarySchool, thresholds[1] - thresholds[0]);
+            desiredRatios.Add(Building.Type.HighSchool, thresholds[2] - thresholds[1]);
+            desiredRatios.Add(Building.Type.University, thresholds[3] - thresholds[2]);
+
+            var totalWorkers = thresholds[4] - thresholds[3];
+            foreach (var (percentage, type) in CitizenBuilder.Workplaces)
+            {
+                if (desiredRatios.TryGetValue(type, out var ratio))
+                {
+                    desiredRatios[type] = ratio + percentage * totalWorkers;
+                }
+                else
+                {
+                    desiredRatios.Add(type, percentage * totalWorkers);
+                }
+            }
+
+            var actualCapacity = new Dictionary<Building.Type, int>();
+            actualCapacity.Add(Building.Type.Residential, 0);
+
+            foreach (var (type, _) in desiredRatios)
+            {
+                actualCapacity.Add(type, 0);
+            }
+
             var partialBuildings = new List<PartialBuilding>();
             foreach (var building in buildings)
             {
@@ -2815,6 +2852,63 @@ namespace Transidious
 
                 Debug.Log("reduced from " + partialBuildings.Count + " to " + mergedBuildings.Count + " buildings");
                 partialBuildings = mergedBuildings;
+                
+                // Calculate the actual capacities if we didn't change anything.
+                foreach (var building in partialBuildings)
+                {
+                    var type = building.buildingData.Item2;
+                    var area = building.pslg?.Area ?? 0f;
+
+                    actualCapacity.GetOrPutDefault(type, 0);
+                    actualCapacity[type] += Building.GetDefaultCapacity(type, area);
+                }
+
+                // Repurpose residential buildings until we're close to the desired capacity.
+                var totalResidents = actualCapacity[Building.Type.Residential];
+                foreach (var (type, ratio) in desiredRatios)
+                {
+                    var have = actualCapacity[type];
+                    var want = Mathf.RoundToInt(ratio * totalResidents);
+
+                    while (have < want)
+                    {
+                        Debug.Assert(totalResidents >= (want - have), "not enough residential capacity!");
+
+                        var needed = want - have;
+                        var minDiff = int.MaxValue;
+                        var minCapacity = 0;
+                        PartialBuilding minBuilding = null;
+
+                        foreach (var building in partialBuildings)
+                        {
+                            if (building.buildingData.Item2 != Building.Type.Residential)
+                            {
+                                continue;
+                            }
+
+                            var area = building.pslg?.Area ?? 0f;
+                            var capacity = Building.GetDefaultCapacity(type, area);
+
+                            var diff = System.Math.Abs(capacity - needed);
+                            if (diff < minDiff)
+                            {
+                                minDiff = diff;
+                                minBuilding = building;
+                                minCapacity = capacity;
+                            }
+                        }
+
+                        Debug.Assert(minBuilding != null, "no matching building found");
+
+                        minBuilding.buildingData = Tuple.Create(minBuilding.buildingData.Item1, type);
+                        have += minCapacity;
+                        totalResidents -= minCapacity;
+                    }
+
+                    actualCapacity[type] = have;
+                }
+
+                actualCapacity[Building.Type.Residential] = totalResidents;
             }
 
             var tinyBuildings = 0;
@@ -2887,6 +2981,17 @@ namespace Transidious
 
             Debug.Log($"tiny buildings: {tinyBuildings}, small buildings: {smallBuildings}");
             Debug.Log("'nique buildings: " + uniqueBuildings.Count);
+
+            {
+                var totalResidents = actualCapacity[Building.Type.Residential];
+                Debug.Log($"Max resident capacity: {totalResidents}");
+                foreach (var (type, ratio) in desiredRatios)
+                {
+                    var want = Mathf.RoundToInt(ratio * totalResidents);
+                    var have = actualCapacity[type];
+                    Debug.Log($"{type}: want {want}, have {have} ({((float) have / (float) want) * 100f:n0} %)");
+                }
+            }
         }
     }
 }

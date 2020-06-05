@@ -162,7 +162,7 @@ namespace Transidious
                 return false;
             }
 
-            Game.loadedMap.AddOccupant(id, kind, c);
+            Game.loadedMap.AddOccupant(this, kind, c);
             return true;
         }
 
@@ -357,7 +357,7 @@ namespace Transidious
                 return false;
             }
 
-            Game.loadedMap.AddOccupant(id, kind, c);
+            Game.loadedMap.AddOccupant(this, kind, c);
             return true;
         }
 

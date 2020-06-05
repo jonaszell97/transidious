@@ -12,6 +12,7 @@ namespace Transidious
             Residential,
             Shop,
             Office,
+            Kindergarden,
             ElementarySchool,
             HighSchool,
             University,
@@ -37,9 +38,9 @@ namespace Transidious
         public byte[] Capacities;
 
         public void Initialize(Map map, Type type,
-                               StreetSegment street, string numberStr,
-                               Mesh mesh, float area, string name = "",
-                               Vector2? centroid = null, int id = -1)
+            StreetSegment street, string numberStr,
+            Mesh mesh, float area, string name = "",
+            Vector2? centroid = null, int id = -1)
         {
 #if DEBUG
             if (name.Length == 0)
@@ -81,7 +82,7 @@ namespace Transidious
 
         public void InitializeCapacities()
         {
-            Capacities = new byte[(int)OccupancyKind.ParkingCitizen + 1];
+            Capacities = new byte[(int) OccupancyKind.ParkingCitizen + 1];
 
             switch (type)
             {
@@ -113,6 +114,7 @@ namespace Transidious
                 case Type.ElementarySchool:
                 case Type.HighSchool:
                 case Type.University:
+                case Type.Kindergarden:
                 {
                     var capacity = (byte) GetDefaultCapacity();
                     Capacities[(int) OccupancyKind.Student] = capacity;
@@ -153,66 +155,109 @@ namespace Transidious
             }
         }
 
-        private static int GetDefaultCapacity(Type type, float area)
+        public static OccupancyKind GetDefaultOccupancyKind(Type type)
         {
             switch (type)
             {
-            case Type.Residential:
-                // Calculate with an average of 2 floors and 1 person per 40m^2.
-                int floors;
-                if (area < 200)
-                {
-                    floors = 1;
-                }
-                else
-                {
-                    floors = 3;
-                }
+                case Type.Residential:
+                    return OccupancyKind.Resident;
+                case Type.Kindergarden:
+                case Type.ElementarySchool:
+                case Type.HighSchool:
+                case Type.University:
+                    return OccupancyKind.Student;
+                case Type.Sight:
+                case Type.Stadium:
+                    return OccupancyKind.Visitor;
+                case Type.Shop:
+                case Type.GroceryStore:
+                case Type.Hotel:
+                    return OccupancyKind.Customer;
+                default:
+                    return OccupancyKind.Worker;
+            }
+        }
 
-                return (int)Mathf.Ceil(floors * (area / 400f));
+        public OccupancyKind GetDefaultOccupancyKind()
+        {
+            return GetDefaultOccupancyKind(type);
+        }
+
+        public static int GetDefaultCapacity(Type type, float area)
+        {
+            int floors;
+            int sqMtrsPerPerson;
+
+            const float multiplier = .25f;
+
+            switch (type)
+            {
+            case Type.Residential:
+                floors = area < 200 ? 1 : 3;
+                sqMtrsPerPerson = 50;
+                break;
             case Type.Office:
-                // Calculate with an average of 3 floors and 1 person per 10m^2.
-                return (int)Mathf.Ceil(3 * (area / 200f));
+                floors = 2;
+                sqMtrsPerPerson = 30;
+                break;
             case Type.Shop:
             case Type.GroceryStore:
-                // Calculate with an average of 1 floors and 1 worker per 100m^2.
-                return (int)Mathf.Ceil(1 * (area / 500f));
+                floors = 1;
+                sqMtrsPerPerson = 30;
+                break;
             case Type.Hospital:
-                // Calculate with an average of 5 floors and 1 worker per 20m^2.
-                return (int)Mathf.Ceil(5 * (area / 200f));
+                floors = 5;
+                sqMtrsPerPerson = 100;
+                break;
             case Type.ElementarySchool:
-                // Calculate with an average of 2 floors and 1 student per 5m^2.
-                return (int)Mathf.Ceil(2 * (area / 5000f));
+            case Type.Kindergarden:
+                floors = 2;
+                sqMtrsPerPerson = 50;
+                break;
             case Type.HighSchool:
-                // Calculate with an average of 3 floors and 1 student per 5m^2.
-                return (int)Mathf.Ceil(3 * (area / 400f));
+                floors = 3;
+                sqMtrsPerPerson = 30;
+                break;
             case Type.University:
-                // Calculate with an average of 5 floors and 1 student per 5,^2.
-                return (int)Mathf.Ceil(5 * (area / 250f));
+                floors = 3;
+                sqMtrsPerPerson = 20;
+                break;
             case Type.Stadium:
-                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
-                return (int)Mathf.Ceil(1 * (area / 200f));
+                floors = 1;
+                sqMtrsPerPerson = 5;
+                break;
             case Type.Airport:
-                // Calculate with an average of 1 floors and 1 visitor per m^2.
-                return (int)Mathf.Ceil(area);
+                floors = 1;
+                sqMtrsPerPerson = 3;
+                break;
             case Type.Church:
-                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
-                return (int)Mathf.Ceil(1 * (area / 200f));
+                floors = 1;
+                sqMtrsPerPerson = 100;
+                break;
             case Type.Leisure:
-                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
-                return (int)Mathf.Ceil(1 * (area / 200f));
+                floors = 1;
+                sqMtrsPerPerson = 30;
+                break;
             case Type.Sight:
-                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
-                return (int)Mathf.Ceil(1 * (area / 500f));
+                floors = 1;
+                sqMtrsPerPerson = 75;
+                break;
             case Type.Industrial:
-                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
-                return (int)Mathf.Ceil(1 * (area / 700f));
+                floors = 1;
+                sqMtrsPerPerson = 30;
+                break;
             case Type.Hotel:
-                // Calculate with an average of 1 floors and 1 visitor per 2m^2.
-                return (int)Mathf.Ceil(1 * (area / 700f));
+                floors = 3;
+                sqMtrsPerPerson = 50;
+                break;
             default:
-                return 0;
+            case Type.Other:
+                floors = 1;
+                sqMtrsPerPerson = 50;
+                break;
             }
+
+            return (int)Mathf.Ceil(floors * (area / sqMtrsPerPerson) * multiplier);
         }
 
         public override Color GetColor()
@@ -273,21 +318,11 @@ namespace Transidious
             map.DeleteMapObject(this);
         }
 
-        public void DeleteMesh()
-        {
-            // var map = GameController.instance.loadedMap;
-            // foreach (var tile in map.GetTilesForObject(this))
-            // {
-            //     tile.GetMesh("Buildings").RemoveMesh(mesh);
-            // }
-        }
-
         public new Serialization.Building ToProtobuf()
         {
             return new Serialization.Building
             {
                 MapObject = base.ToProtobuf(),
-                // Mesh = mesh.ToProtobuf2D() ?? new Serialization.Mesh2D(),
                 StreetID = (uint)(street?.id ?? 0),
                 Type = (Serialization.Building.Types.Type)type,
                 Position = centroid.ToProtobuf(),

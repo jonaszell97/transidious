@@ -17,12 +17,21 @@ namespace Transidious
         public static float value => (float) _random.NextDouble();
 
         /// Generate a random int.
-        public static float intValue => _random.Next();
+        public static int intValue => _random.Next();
+
+        /// Generate a random bool.
+        public static bool boolValue => _random.Next(0, 1) != 0;
 
         /// Generate a float in a range.
         public static float Next(float min, float max)
         {
             return min + value * (max - min);
+        }
+        
+        /// Generate a decimal in a range.
+        public static decimal NextDecimal(float min, float max)
+        {
+            return (decimal) (min + value * (max - min));
         }
 
         /// Generate an integer in a range.

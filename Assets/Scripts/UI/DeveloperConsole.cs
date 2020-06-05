@@ -385,7 +385,7 @@ namespace Transidious
             Log($"located '{name}'");
 
             game.input.SetZoomLevel(50f);
-            game.input.MoveTowards(citizen.currentPosition);
+            game.input.MoveTowards(citizen.CurrentPosition);
             citizen.ActivateModal();
         }
 

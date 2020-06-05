@@ -267,8 +267,7 @@ namespace Transidious
         private TrafficLight _waitingForTrafficLight;
 
         /// True if this car is currently blocking an intersection.
-        private bool _blockingIntersection;
-        public bool BlockingIntersection => _blockingIntersection;
+        public bool BlockingIntersection;
 
         /// The current velocity.
         private Velocity _currentVelocity;
@@ -295,7 +294,7 @@ namespace Transidious
         /// (Re-)Initialize the IDM state.
         public void Initialize(DrivingCar car, Velocity velocity)
         {
-            Debug.Assert(!_blockingIntersection);
+            Debug.Assert(!BlockingIntersection);
             Reset(car, velocity);
         }
 
@@ -350,7 +349,7 @@ namespace Transidious
         }
 
         /// Whether or not the drive can be safely aborted right now without messing up something.
-        public bool Abortable => !_blockingIntersection;
+        public bool Abortable => !BlockingIntersection;
 
         /// Whether or not the car would illegally overtake the next car with this movement.
         private bool WouldOvertakeIllegally(float delta)
@@ -366,7 +365,7 @@ namespace Transidious
         /// Whether or not we're about to illegally cross an intersection.
         private bool WouldProceedIllegally(float delta)
         {
-            return _car.NextIntersection != null && !_car.Turning && !_blockingIntersection
+            return _car.NextIntersection != null && !_car.Turning && !BlockingIntersection
                    && delta >= _car.DistanceToIntersection;
         }
         
@@ -486,7 +485,7 @@ namespace Transidious
         private void CheckIntersectionStatus(float v, out float s, out float deltaV, out float s0)
         {
             // Don't accidentally block the intersection before the next car does to avoid deadlocks.
-            if ((_car.Next?.Path.idm._blockingIntersection ?? true) && IsIntersectionOccupied())
+            if ((_car.Next?.Path.idm.BlockingIntersection ?? true) && IsIntersectionOccupied())
             {
                 s = _car.DistanceToIntersection;
                 deltaV = v;
@@ -526,18 +525,19 @@ namespace Transidious
                 return true;
             }
 
-            _blockingIntersection = true;
+            BlockingIntersection = true;
             return false;
         }
 
         /// Notify other cars that we exited an intersection.
         public void UnblockIntersection()
         {
+            Debug.Assert(BlockingIntersection, "car is not blocking an intersection");
             var status = IntersectionOccupation[_car.NextIntersection];
 
             // Unblock the intersection.
             status.Unblock(_car.NextIntersection, _car.Segment, _car.NextSegment);
-            _blockingIntersection = false;
+            BlockingIntersection = false;
         }
 
         /// Calculate the busy road term for the car.
@@ -555,7 +555,7 @@ namespace Transidious
             // Check if this car is waiting for a traffic light.
             if (_waitingForTrafficLight != null)
             {
-                Debug.Assert(!_blockingIntersection, "blocking intersection at a red traffic light!");
+                Debug.Assert(!BlockingIntersection, "blocking intersection at a red traffic light!");
 
                 // Check if the traffic light is green again.
                 if (_waitingForTrafficLight.CurrentPhase != TrafficLight.Status.Green)
@@ -573,7 +573,7 @@ namespace Transidious
                 }
             }
             // Check if this car is waiting for an intersection to be unoccupied.
-            else if (!_blockingIntersection && _car.NextIntersection != null)
+            else if (!BlockingIntersection && _car.NextIntersection != null)
             {
                 CheckIntersectionStatus(v, out s, out deltaV, out s0);
             }
@@ -599,6 +599,11 @@ namespace Transidious
                 s0 = s0_car;
     
                 checkLeadingCars = false;
+
+                if (!_car.Next.Path.idm.BlockingIntersection && BlockingIntersection)
+                {
+                    UnblockIntersection();
+                }
             }
             // Check if there is a traffic light to pay attention to.
             else if (_car.NextIntersection != null)
@@ -617,9 +622,18 @@ namespace Transidious
                     _waitingForTrafficLight = tl;
 
                     // If we're blocking an intersection, we need to unblock it.
-                    if (_blockingIntersection)
+                    if (BlockingIntersection)
                     {
                         UnblockIntersection();
+
+                        // var curr = _car.Prev;
+                        // while (curr != null)
+                        // {
+                        //     if (curr.Path.idm._blockingIntersection)
+                        //         Debug.Log("it happened");
+                        //     curr.Path.idm.UnblockIntersection();
+                        //     curr = curr.Prev;
+                        // }
                     }
 
                     checkLeadingCars = false;

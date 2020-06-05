@@ -160,8 +160,24 @@ namespace Transidious
             case Type.Footpath:
                 return (int)Mathf.Ceil(area / 50f);
             case Type.Parking:
-                return (int)Mathf.Ceil(area / 50f);
+                return (int)Mathf.Ceil(area / 400f);
             }
+        }
+
+        public static OccupancyKind GetDefaultOccupancyKind(Type type)
+        {
+            switch (type)
+            {
+                case Type.Parking:
+                    return OccupancyKind.ParkingCitizen;
+                default:
+                    return OccupancyKind.Visitor;
+            }
+        }
+
+        public OccupancyKind GetDefaultOccupancyKind()
+        {
+            return GetDefaultOccupancyKind(type);
         }
 
         public void Delete(bool deleteMesh = false)
@@ -176,7 +192,6 @@ namespace Transidious
             return new Serialization.NaturalFeature
             {
                 MapObject = base.ToProtobuf(),
-                // Mesh = mesh?.ToProtobuf2D() ?? new Serialization.Mesh2D(),
                 Type = (Serialization.NaturalFeature.Types.Type)type,
             };
         }

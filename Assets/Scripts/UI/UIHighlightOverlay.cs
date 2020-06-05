@@ -24,6 +24,9 @@ namespace Transidious.UI
         /// The circle overlay.
         private RectTransform Circle => overlays[4];
 
+        /// The arrow.
+        private RectTransform Arrow => overlays[5];
+
         /// The current canvas scale.
         private float _canvasScale;
 
@@ -44,22 +47,27 @@ namespace Transidious.UI
             {
                 GameController.instance.input.RegisterEventListener(InputEvent.ResolutionChange, _ => Initialize(true));
             }
+
+            var animator = Arrow.GetComponent<TransformAnimator>();
+            animator.Initialize();
+            animator.SetAnimationType(TransformAnimator.AnimationType.Circular, 
+                                      TransformAnimator.ExecutionMode.Automatic);
         }
 
         /// Highlight the given component.
-        public void Highlight(GameObject obj, float padding = 0f, bool circle = false)
+        public void Highlight(GameObject obj, float padding = 0f, bool circle = false, bool arrow = false)
         {
-            Highlight(obj.GetComponent<RectTransform>(), padding, circle);   
+            Highlight(obj.GetComponent<RectTransform>(), padding, circle, arrow);   
         }
 
         /// Highlight the area of the rect transform.
-        public void Highlight(RectTransform rt, float padding = 0f, bool circle = false)
+        public void Highlight(RectTransform rt, float padding = 0f, bool circle = false, bool arrow = false)
         {
-            Highlight(Math.RectTransformToScreenSpace(rt, 1f / _canvasScale), padding, circle);
+            Highlight(Math.RectTransformToScreenSpace(rt, 1f / _canvasScale), padding, circle, arrow);
         }
 
         /// Highlight the given screen rectangle.
-        public void Highlight(Rect screenRect, float padding = 0f, bool circle = false)
+        public void Highlight(Rect screenRect, float padding = 0f, bool circle = false, bool arrow = false)
         {
             if (padding > 0f)
             {
@@ -88,6 +96,24 @@ namespace Transidious.UI
             else
             {
                 Circle.gameObject.SetActive(false);
+            }
+
+            if (arrow)
+            {
+                var startPos = new Vector2(screenRect.center.x, screenRect.center.y + screenRect.height * .5f + 5f);
+                var endPos = new Vector2(startPos.x, startPos.y + 5f);
+
+                var animator = Arrow.GetComponent<TransformAnimator>();
+                animator.SetTargetAnchoredPosition(endPos, startPos);
+                animator.Reset();
+                animator.StartAnimation(.7f);
+                
+                Arrow.anchoredPosition = startPos;
+                Arrow.gameObject.SetActive(true);
+            }
+            else
+            {
+                Arrow.gameObject.SetActive(false);
             }
 
             gameObject.SetActive(true);

@@ -120,7 +120,7 @@ namespace Transidious
             this.transform.SetLayer(MapLayer.Cars);
             this.transform.SetParent(GameController.instance.sim.transform);
 
-            c.activePath = this;
+            c.ActivePath = this;
         }
 
 #if DEBUG
@@ -186,11 +186,11 @@ namespace Transidious
 
             if (transitVehicle != null)
             {
-                citizen.currentPosition = transitVehicle.transform.position;
+                citizen.CurrentPosition = transitVehicle.transform.position;
             }
             else
             {
-                citizen.currentPosition = transform.position;
+                citizen.CurrentPosition = transform.position;
             }
 
             if (_currentStep >= path.path.Steps.Length)
@@ -266,7 +266,7 @@ namespace Transidious
         void PathDone()
         {
             this.onDone?.Invoke();
-            citizen.activePath = null;
+            citizen.ActivePath = null;
 
             onDone = null;
             _currentStep = int.MaxValue;
@@ -354,7 +354,7 @@ namespace Transidious
 
             if (reclaim)
             {
-                citizen.activePath = null;
+                citizen.ActivePath = null;
                 ResourceManager.instance.Reclaim(this);
             }
         }
@@ -393,7 +393,7 @@ namespace Transidious
             var path = new PathSegment(step.from, step.to);
 
             // Initialize walking citizen sprite.
-            UpdateSprite("Sprites/citizen", citizen.preferredColor);
+            UpdateSprite("Sprites/citizen", citizen.PreferredColor);
             transform.SetPositionInLayer(step.from);
 
             // Initialize path following helper.
@@ -412,7 +412,7 @@ namespace Transidious
 
         void InitDrivingSteps(PartialDriveStep firstStep)
         {
-            var car = citizen.car;
+            var car = citizen.Car;
             var pathSegments = new List<PathSegment>();
             var steps = path.path.Steps;
             var length = 0f;

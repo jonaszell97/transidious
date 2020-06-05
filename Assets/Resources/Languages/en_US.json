@@ -52,6 +52,14 @@
             "text": "Cancel"
         },
         {
+            "key": "ui:next",
+            "text": "Next"
+        },
+        {
+            "key": "ui:back",
+            "text": "Back"
+        },
+        {
             "key": "ui:clear",
             "text": "Clear"
         },
@@ -254,8 +262,9 @@
             "text": "System"
         },
         {
-            "key": "ui:transit:passengers",
-            "text": "Passengers"
+            "key": "ui:transit:passenger",
+            "text": "Passenger",
+            "plural": "Passengers"
         },
         {
             "key": "ui:transit:next_stop",
@@ -272,27 +281,33 @@
 
         {
             "key": "ui:map_object:Resident",
-            "text": "Resident"
+            "text": "Resident",
+            "plural": "Residents"
         },
         {
             "key": "ui:map_object:Worker",
-            "text": "Worker"
+            "text": "Worker",
+            "plural": "Workers"
         },
         {
             "key": "ui:map_object:Customer",
-            "text": "Customer"
+            "text": "Customer",
+            "plural": "Customers"
         },
         {
             "key": "ui:map_object:Student",
-            "text": "Student"
+            "text": "Student",
+            "plural": "Students"
         },
         {
             "key": "ui:map_object:Visitor",
-            "text": "Visitor"
+            "text": "Visitor",
+            "plural": "Visitors"
         },
         {
             "key": "ui:map_object:ParkingCitizen",
-            "text": "Parking"
+            "text": "Parking",
+            "plural": "Parking Citizens"
         },
 
         {
@@ -334,6 +349,14 @@
         {
             "key": "ui:building:type:Office",
             "text": "Office"
+        },
+        {
+            "key": "ui:building:type:Industrial",
+            "text": "Industrial"
+        },
+        {
+            "key": "ui:building:type:Kindergarden",
+            "text": "Kindergarden"
         },
         {
             "key": "ui:building:type:ElementarySchool",
@@ -379,6 +402,10 @@
         {
             "key": "ui:feature:visitors",
             "text": "Visitors"
+        },
+        {
+            "key": "ui:feature:parking_citizens",
+            "text": "Parking Citizens"
         },
         {
             "key": "ui:feature:type",

@@ -49,7 +49,7 @@ namespace Transidious
                 GameController.instance.input.StopFollowing();
                 moving = true;
 
-                var loc = linkedCitizen?.currentPosition ?? linkedLocation;
+                var loc = linkedCitizen?.CurrentPosition ?? linkedLocation;
                 var distance = (loc - (Vector2)Camera.main.transform.position).magnitude;
                 UpdateSpeed(distance);
             });
@@ -90,7 +90,7 @@ namespace Transidious
                 return;
             }
 
-            var loc = linkedCitizen?.currentPosition ?? linkedLocation;
+            var loc = linkedCitizen?.CurrentPosition ?? linkedLocation;
             var newPos = Vector2.MoveTowards(Camera.main.transform.position, 
                                                      loc, 
                                                      movementSpeed * Time.deltaTime);

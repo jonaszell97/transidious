@@ -7,40 +7,26 @@ namespace Transidious
 {
     public abstract class LineBuilder
     {
-        /// <summary>
         /// Describes the current state of line building, which works like a state machine.
-        /// </summary>
         public enum CreationState
         {
-            /// <summary>
             /// The default state when the line builder is inactive.
-            /// </summary>
             Idle,
             
-            /// <summary>
             /// The line building has just started, and no stop has been placed yet.
-            /// </summary>
             FirstStop,
 
-            /// <summary>
             /// There is at least one stop on the line, and additional ones can be placed.
-            /// </summary>
             IntermediateStops,
 
-            /// <summary>
             /// The line was closed and can be reviewed before finishing it.
-            /// </summary>
             Review,
         }
 
-        /// <summary>
         /// Describes the current state of line editing, which works like a state machine.
-        /// </summary>
         public enum EditingState
         {
-            /// <summary>
             /// The default state when the line builder is inactive.
-            /// </summary>
             Idle,
         }
 
@@ -52,6 +38,9 @@ namespace Transidious
 
         /// The current line creation state.
         public CreationState creationState { get; protected set; }
+
+        /// The undo / redo stack.
+        protected readonly UndoStack UndoStack;
 
         /// The transit type edited by this builder.
         protected TransitType transitType;
@@ -117,6 +106,50 @@ namespace Transidious
             this.creationState = CreationState.Idle;
             this.transitType = transitType;
             _temporaryStops = new List<TemporaryStop>();
+            UndoStack = new UndoStack(false);
+        }
+
+        /// Execute an action and push it to the undo stack.
+        protected void PerformAction(UndoStack.Action.ActionFunc redo, UndoStack.Action.ActionFunc undo)
+        {
+            UndoStack.PushAndExecute(redo, undo);
+            UpdateUndoRedoVisibility();
+        }
+
+        /// Undo the latest action.
+        public void Undo()
+        {
+            UndoStack.Undo();
+            UpdateUndoRedoVisibility();
+        }
+
+        /// Redo the latest action.
+        public void Redo()
+        {
+            UndoStack.Redo();
+            UpdateUndoRedoVisibility();
+        }
+
+        /// Update visibility of undo / redo buttons.
+        private void UpdateUndoRedoVisibility()
+        {
+            if (UndoStack.CanUndo)
+            {
+                game.mainUI.lineBuildingUndoButton.Enable();
+            }
+            else
+            {
+                game.mainUI.lineBuildingUndoButton.Disable();
+            }
+
+            if (UndoStack.CanRedo)
+            {
+                game.mainUI.lineBuildingRedoButton.Enable();
+            }
+            else
+            {
+                game.mainUI.lineBuildingRedoButton.Disable();
+            }
         }
 
         /// Initialize the line builder. Needs to be called once before it can be used.
@@ -159,6 +192,9 @@ namespace Transidious
             game.mainUI.transitEditorPanel.SetActive(false);
             game.mainUI.ShowLineBuildingPanel();
             this.Transition(CreationState.FirstStop);
+
+            game.mainUI.lineBuildingUndoButton.Disable();
+            game.mainUI.lineBuildingRedoButton.Disable();
         }
 
         public void EndLineCreation()
@@ -343,17 +379,42 @@ namespace Transidious
 
         protected IMapObject CreateFirstStop(TransitType type, IMapObject firstStop)
         {
-            currentLine = new TemporaryLine
-            {
-                name = Translator.Get("tooltip:new_line", game.GetSystemName(type)),
-                stops = new List<IMapObject>(),
-                completePath = new List<Vector2>(),
-                paths = new List<int>(),
-                streetSegments = new List<List<TrafficSimulator.PathSegmentInfo>>(),
-            };
+            Debug.Assert(creationState == CreationState.FirstStop);
 
-            currentLine.stops.Add(firstStop);
-            UpdateCosts();
+            PerformAction(() =>
+            {
+                currentLine = new TemporaryLine
+                {
+                    name = Translator.Get("tooltip:new_line", game.GetSystemName(type)),
+                    stops = new List<IMapObject>(),
+                    completePath = new List<Vector2>(),
+                    paths = new List<int>(),
+                    streetSegments = new List<List<TrafficSimulator.PathSegmentInfo>>(),
+                };
+
+                if (firstStop is TemporaryStop tmp)
+                {
+                    tmp.gameObject.SetActive(true);
+                }
+
+                currentLine.stops.Add(firstStop);
+                UpdateCosts();
+
+                previousStop = firstStop;
+                this.Transition(CreationState.IntermediateStops);
+            }, () =>
+            {
+                if (firstStop is TemporaryStop tmp)
+                {
+                    tmp.gameObject.SetActive(false);
+                }
+
+                currentLine = null;
+                totalConstructionCost = 0;
+                totalMonthlyCost = 0;
+                previousStop = null;
+                creationState = CreationState.FirstStop;
+            });
 
             return firstStop;
         }
@@ -368,16 +429,21 @@ namespace Transidious
         {
             game.mainUI.ShowConstructionCost(totalConstructionCost, totalMonthlyCost);
         }
-
-        float GetLengthOfTemporaryPath()
+        
+        static float GetLengthOfPath(List<Vector2> path)
         {
             var length = 0f;
-            for (var i = 1; i < temporaryPath.Count; ++i)
+            for (var i = 1; i < path.Count; ++i)
             {
-                length += (temporaryPath[i] - temporaryPath[i - 1]).magnitude;
+                length += (path[i] - path[i - 1]).magnitude;
             }
 
             return length / 1000f;
+        }
+
+        float GetLengthOfTemporaryPath()
+        {
+            return GetLengthOfPath(temporaryPath);
         }
 
         protected void UpdateLength()
@@ -390,31 +456,75 @@ namespace Transidious
             UpdateCosts();
         }
 
-        protected TemporaryStop AddStop(string name, Vector2 pos)
+        protected IMapObject AddStop(IMapObject nextStop, List<TrafficSimulator.PathSegmentInfo> streetSegments = null)
         {
             Debug.Assert(temporaryPath != null, "invalid path!");
 
-            var nextStop = CreateTempStop(name, pos);
-            currentLine.stops.Add(nextStop);
-            currentLine.completePath.AddRange(temporaryPath);
-            currentLine.paths.Add(currentLine.completePath.Count);
+            var savedPath = temporaryPath.ToList();
+            var savedPrevStop = previousStop;
+            
+            List<TrafficSimulator.PathSegmentInfo> savedSegments = null;
+            if (streetSegments != null)
+            {
+                savedSegments = streetSegments.ToList();
+            }
 
-            UpdateLength();
-            DrawExistingPath();
+            PerformAction(() =>
+            {
+                if (nextStop is TemporaryStop tmp)
+                {
+                    tmp.gameObject.SetActive(true);
+                }
+                
+                currentLine.stops.Add(nextStop);
+                currentLine.completePath.AddRange(savedPath);
+                currentLine.paths.Add(currentLine.completePath.Count);
+
+                UpdateLength();
+                DrawExistingPath();
+                
+                if (savedSegments != null)
+                {
+                    currentLine.streetSegments.Add(savedSegments);
+                }
+
+                previousStop = nextStop;
+            }, () =>
+            {
+                if (nextStop is TemporaryStop tmp)
+                {
+                    tmp.gameObject.SetActive(false);
+                }
+
+                currentLine.stops.RemoveLast();
+                currentLine.completePath.RemoveRange(currentLine.completePath.Count - savedPath.Count, savedPath.Count);
+                currentLine.paths.RemoveLast();
+
+                if (savedSegments != null)
+                {
+                    currentLine.streetSegments.RemoveLast();
+                }
+
+                var length = (decimal)GetLengthOfPath(savedPath);
+                this.length -= (float)length;
+
+                totalConstructionCost -= length * costPerKm;
+                totalMonthlyCost -= length * operatingCostPerKm;
+
+                previousStop = savedPrevStop;
+
+                UpdateCosts();
+                DrawExistingPath();
+            });
 
             return nextStop;
         }
 
-        protected IMapObject AddStop(IMapObject nextStop)
+        protected TemporaryStop AddStop(string name, Vector2 pos,
+                                        List<TrafficSimulator.PathSegmentInfo> streetSegments = null)
         {
-            Debug.Assert(temporaryPath != null, "invalid path!");
-
-            currentLine.stops.Add(nextStop);
-            currentLine.completePath.AddRange(temporaryPath);
-            currentLine.paths.Add(currentLine.completePath.Count);
-
-            UpdateLength();
-            DrawExistingPath();
+            var nextStop = CreateTempStop(name, pos);
+            AddStop(nextStop, streetSegments);
 
             return nextStop;
         }
@@ -566,15 +676,10 @@ namespace Transidious
 
     public abstract class StreetboundLineBuilder : LineBuilder
     {
-        /// <summary>
         /// Previous calculated paths for the temporary line.
-        /// </summary>
         protected List<TrafficSimulator.PathSegmentInfo> temporarySegments;
 
-        /// <summary>
         /// Protected c'tor.
-        /// </summary>
-        /// <param name="game"></param>
         protected StreetboundLineBuilder(GameController game, TransitType transitType) : base(game, transitType)
         {
             this.temporarySegments = new List<TrafficSimulator.PathSegmentInfo>();
@@ -734,13 +839,10 @@ namespace Transidious
             switch (creationState)
             {
                 case CreationState.FirstStop:
-                    previousStop = this.CreateFirstStop(street);
-                    this.Transition(CreationState.IntermediateStops);
-
+                    this.CreateFirstStop(street);
                     break;
                 case CreationState.IntermediateStops:
-                    previousStop = this.AddStop(street);
-
+                    this.AddStop(street);
                     break;
                 default:
                     break;
@@ -757,9 +859,7 @@ namespace Transidious
             switch (creationState)
             {
                 case CreationState.FirstStop:
-                    previousStop = base.CreateFirstStop(transitType, stop);
-                    this.Transition(CreationState.IntermediateStops);
-
+                    base.CreateFirstStop(transitType, stop);
                     break;
                 case CreationState.IntermediateStops:
                     if (stop == currentLine.stops.First())
@@ -769,7 +869,7 @@ namespace Transidious
                     }
                     else
                     {
-                        previousStop = this.AddStop(stop);
+                        this.AddStop(stop);
                     }
 
                     break;
@@ -785,20 +885,16 @@ namespace Transidious
 
         protected virtual TemporaryStop AddStop(StreetSegment street)
         {
-            var nextStop = base.AddStop(street.street.name, game.input.GameCursorPosition);
-
-            currentLine.streetSegments.Add(temporarySegments);
-            this.temporarySegments = new List<TrafficSimulator.PathSegmentInfo>();
+            var nextStop = base.AddStop(street.street.name, game.input.GameCursorPosition, temporarySegments);
+            this.temporarySegments.Clear();
 
             return nextStop;
         }
 
         protected new virtual IMapObject AddStop(IMapObject nextStop)
         {
-            nextStop = base.AddStop(nextStop);
-
-            currentLine.streetSegments.Add(temporarySegments);
-            this.temporarySegments = new List<TrafficSimulator.PathSegmentInfo>();
+            nextStop = base.AddStop(nextStop, temporarySegments);
+            this.temporarySegments.Clear();
 
             return nextStop;
         }

@@ -121,6 +121,7 @@ namespace Transidious
 
         void Start()
         {
+            CitizenBuilder.Initialize();
             EventManager.current.RegisterEventListener(this);
             UpdateCitizenUI();
         }
@@ -472,13 +473,30 @@ namespace Transidious
                 return null;
             }
 
+            OccupancyKind occupancyKind;
+            switch (type)
+            {
+                case Building.Type.Residential:
+                    occupancyKind = OccupancyKind.Resident;
+                    break;
+                case Building.Type.Kindergarden:
+                case Building.Type.ElementarySchool:
+                case Building.Type.HighSchool:
+                case Building.Type.University:
+                    occupancyKind = OccupancyKind.Student;
+                    break;
+                default:
+                    occupancyKind = OccupancyKind.Worker;
+                    break;
+            }
+
             var minDistance = float.PositiveInfinity;
             Building closestBuilding = null;
 
             foreach (var building in buildings)
             {
                 var distance = (building.centroid - pos).sqrMagnitude;
-                if (distance < minDistance && (ignoreOccupancy || building.HasCapacity(OccupancyKind.Resident)))
+                if (distance < minDistance && (ignoreOccupancy || building.HasCapacity(occupancyKind)))
                 {
                     minDistance = distance;
                     closestBuilding = building;
@@ -486,54 +504,6 @@ namespace Transidious
             }
 
             return closestBuilding;
-        }
-
-        public Citizen CreateCitizen(bool init, bool hasCar = false)
-        {
-            var c = new Citizen(this);
-            if (hasCar)
-            {
-                c.car = CreateCar(c, Vector3.zero);
-            }
-
-            c.AssignRandomHome();
-            c.AssignRandomValues();
-
-            if (init)
-            {
-                c.Initialize();
-            }
-
-            return c;
-        }
-
-        public Citizen CreateCitizen(string firstName = null,
-                                     string lastName = null,
-                                     short? age = null,
-                                     short? birthday = null,
-                                     bool? female = null,
-                                     Citizen.Occupation? occupation = null,
-                                     decimal? money = null,
-                                     bool? educated = null,
-                                     float? happiness = null,
-                                     Car car = null)
-        {
-            var c = new Citizen(this, car);
-            c.AssignRandomHome();
-            c.AssignRandomValues(firstName, lastName, age, birthday, female, occupation,
-                                 money, educated, happiness, car);
-
-            c.Initialize();
-
-            return c;
-        }
-
-        public Citizen CreateCitizen(Serialization.Citizen c)
-        {
-            var result = new Citizen(this, c);
-            result.Initialize(c.ScheduleID);
-
-            return result;
         }
 
         public Citizen GetCitizen(uint id)
@@ -545,22 +515,16 @@ namespace Transidious
         {
             for (int i = 0; i < amount; ++i)
             {
-                var citizen = CreateCitizen(false);
-                if (citizen.age >= 18 && RNG.value >= .1f)
-                {
-                    citizen.car = CreateCar(citizen, Vector3.zero, RNG.RandomColor);
-                }
-
-                citizen.Initialize();
+                var citizen = CitizenBuilder.Create().Build();
                 citizens?.Add(citizen);
             }
         }
-        
+
         public IEnumerator SpawnRandomCitizensAsync(int amount, float thresholdTime)
         {
             for (int i = 0; i < amount; ++i)
             {
-                var citizen = CreateCitizen(true);
+                _ = CitizenBuilder.Create().Build();
                 if (FrameTimer.instance.FrameDuration >= thresholdTime)
                 {
                     yield return null;
@@ -581,9 +545,9 @@ namespace Transidious
                 var result = planner.FindClosestDrive(game.loadedMap, start.centroid,
                                                       goal.centroid);
 
-                var citizen = CreateCitizen();
+                var citizen = CitizenBuilder.Create().WithCar(true).Build();
                 citizen.FollowPath(result);
-                
+
                 if (FrameTimer.instance.FrameDuration >= 8)
                 {
                     yield return null;
@@ -597,8 +561,8 @@ namespace Transidious
         {
             for (int i = 0; i < amount; ++i)
             {
-                var citizen = CreateCitizen();
-                citizen.car = CreateCar(citizen, Vector3.zero, RNG.RandomColor);
+                var citizen = CitizenBuilder.Create().WithCar(true).Build();
+                citizen.Car = CreateCar(citizen, Vector3.zero, RNG.RandomColor);
 
                 if (FrameTimer.instance.FrameDuration >= 8)
                 {

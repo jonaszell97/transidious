@@ -12,6 +12,7 @@ namespace Transidious
     {
         public string key;
         public string text;
+        public string plural;
     }
 
     [Serializable]
@@ -60,14 +61,11 @@ namespace Transidious
             foreach (var item in this.loadedLanguage.items)
             {
                 this.items.Add(item.key, item.text);
-            }
 
-            this.loadedLanguage = JsonUtility.FromJson<Language>(file.text);
-
-            this.items = new Dictionary<string, string>();
-            foreach (var item in this.loadedLanguage.items)
-            {
-                this.items.Add(item.key, item.text);
+                if (item.plural != null)
+                {
+                    this.items.Add(item.key + "s", item.plural);
+                }
             }
 
             this.culture = CultureInfo.CreateSpecificCulture(langId.Replace("_", "-"));

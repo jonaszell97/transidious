@@ -147,9 +147,9 @@ namespace Transidious
                 {
                     saveFile.Citizens.Add(c.Value.ToProtobuf());
 
-                    if (c.Value.activePath != null)
+                    if (c.Value.ActivePath != null)
                     {
-                        saveFile.ActivePaths.Add(c.Value.activePath.Serialize());
+                        saveFile.ActivePaths.Add(c.Value.ActivePath.Serialize());
                     }
                 }
             }
@@ -503,7 +503,8 @@ namespace Transidious
             // Deserialize raw citizens.
             foreach (var citizen in saveFile.Citizens)
             {
-                GameController.instance.sim.CreateCitizen(citizen);
+                var c = new Citizen(GameController.instance.sim, citizen);
+                c.Initialize();
             }
 
             // Deserialize raw cars.

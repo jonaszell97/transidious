@@ -30,9 +30,7 @@ namespace Transidious.UI
  
         public void OnScroll(PointerEventData data)
         {
-            Debug.Log($"scrolling {name}");
             mainScroll.OnScroll(data);
         }
- 
     }
 }

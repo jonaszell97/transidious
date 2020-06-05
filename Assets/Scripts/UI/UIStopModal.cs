@@ -153,7 +153,7 @@ namespace Transidious
         public void SetStop(Stop stop)
         {
             this.stop = stop;
-            this.modal.SetTitle(stop.name);
+            this.modal.SetTitle(stop.name, true);
             
             UpdateDepartures();
 

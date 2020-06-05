@@ -182,6 +182,8 @@ namespace Transidious
             }
 
             onFinish = null;
+            this.duration = 1f;
+            this._movementMultipliers = new [] { 1f, 1f, 1f };
         }
 
         public void Initialize()

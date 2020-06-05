@@ -115,9 +115,19 @@ namespace Transidious
             if (vehicle != null)
             {
                 panel.SetValue("DistanceToNext", $"{vehicle.DistanceToNext.TotalMinutes:n2} min");
-                panel.SetValue("TimeToNextStop", $"{vehicle.TimeToNextStop.TotalMinutes:n2} min");
-                panel.SetValue("DistanceFromStart", $"{vehicle.DistanceFromStartOfLine.Meters:n2} m");
-                panel.SetValue("DistanceToNextStop", $"{vehicle.DistanceFromNextStop.Meters:n2} m");
+
+                if (vehicle.Velocity.IsZero)
+                {
+                    panel.SetValue("TimeToNextStop", "-");
+                    panel.SetValue("DistanceFromStart", "-");
+                    panel.SetValue("DistanceToNextStop", "-");
+                }
+                else
+                {
+                    panel.SetValue("TimeToNextStop", $"{vehicle.TimeToNextStop.TotalMinutes:n2} min");
+                    panel.SetValue("DistanceFromStart", $"{vehicle.DistanceFromStartOfLine.Meters:n2} m");
+                    panel.SetValue("DistanceToNextStop", $"{vehicle.DistanceFromNextStop.Meters:n2} m");
+                }
             }
         }
 #endif

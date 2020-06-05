@@ -162,6 +162,9 @@ namespace Transidious
         /// The internal distance (in meters).
         private float _m;
         
+        /// Whether or not this distance is zero.
+        public bool IsZero => _m.Equals(0f);
+
         public static Distance zero => new Distance {_m = 0};
 
         /// Distance between two points on the map.
@@ -219,6 +222,9 @@ namespace Transidious
         private float _mps;
 
         public static Velocity zero => new Velocity {_mps = 0};
+
+        /// Whether or not this velocity is zero.
+        public bool IsZero => _mps.Equals(0f);
 
         /// Create a velocity from real-time mps.
         public static Velocity FromRealTimeMPS(float mps)
@@ -291,6 +297,9 @@ namespace Transidious
     {
         /// The internal acceleration (in meters per second^2).
         private float _mps2;
+        
+        /// Whether or not this acceleration is zero.
+        public bool IsZero => _mps2.Equals(0f);
 
         public static Acceleration zero => new Acceleration {_mps2 = 0};
 
