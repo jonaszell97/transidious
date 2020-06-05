@@ -240,7 +240,7 @@ namespace Transidious
         public static int RetirementThresholdAge => 67;
 
         /// Assign a random occupation.
-        private void AssignOccupation(Citizen c)
+        public static void AssignOccupation(Citizen c)
         {
             var age = c.Age;
             if (age < ElementarySchoolThresholdAge)
@@ -276,7 +276,7 @@ namespace Transidious
         };
 
         /// Assign a random icon.
-        void AssignIcon(Citizen c)
+        static void AssignIcon(Citizen c)
         {
             string iconName;
             switch (c.occupation)
@@ -303,7 +303,7 @@ namespace Transidious
         }
 
         /// Assign a random amount of starting money.
-        private void AssignMoney(Citizen c)
+        private static void AssignMoney(Citizen c)
         {
             switch (c.occupation)
             {
@@ -352,7 +352,7 @@ namespace Transidious
         };
 
         /// Assign a random workplace.
-        private void AssignWorkplace(Citizen c)
+        public static void AssignWorkplace(Citizen c)
         {
             Building.Type buildingType;
             PointOfInterest poiType;

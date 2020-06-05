@@ -254,14 +254,6 @@ namespace Transidious
             this.status = GameStatus.Paused;
             this.onLoad.Invoke();
             
-            Debug.Log($"Residential: {map.buildingCapacity[Tuple.Create(Building.Type.Residential, OccupancyKind.Resident)]}");
-            Debug.Log($"Kindergarden: {map.buildingCapacity[Tuple.Create(Building.Type.Kindergarden, OccupancyKind.Student)]}");
-            Debug.Log($"ElementarySchool: {map.buildingCapacity[Tuple.Create(Building.Type.ElementarySchool, OccupancyKind.Student)]}");
-            Debug.Log($"HighSchool: {map.buildingCapacity[Tuple.Create(Building.Type.HighSchool, OccupancyKind.Student)]}");
-
-            Debug.Log($"Industrial: {map.buildingCapacity[Tuple.Create(Building.Type.Industrial, OccupancyKind.Worker)]}");
-            Debug.Log($"Office: {map.buildingCapacity[Tuple.Create(Building.Type.Office, OccupancyKind.Worker)]}");
-
             this.status = GameStatus.Playing;
             loadingScreen.gameObject.SetActive(false);
             input.EnableControls();
