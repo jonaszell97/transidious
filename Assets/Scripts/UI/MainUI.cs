@@ -154,6 +154,9 @@ namespace Transidious
         /// The line building trash button.
         public UIIcon lineBuildingTrashButton;
 
+        /// The line building autocomplete button.
+        public UIIcon lineBuildingAutocompleteButton;
+
         /**
          * Settings buttons
          */
@@ -308,6 +311,10 @@ namespace Transidious
             lineBuildingRedoButton.button.onClick.AddListener(() =>
             {
                 transitUI.activeBuilder.Redo();
+            });
+            lineBuildingAutocompleteButton.button.onClick.AddListener(() =>
+            {
+                transitUI.activeBuilder.AutoComplete();
             });
 
             // Modals

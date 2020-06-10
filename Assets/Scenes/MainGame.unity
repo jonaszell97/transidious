@@ -133,18 +133,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &55862299 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6152434682899354460, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
-    type: 3}
-  m_PrefabInstance: {fileID: 6152434682888075079}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &59416990 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3015907665478983953, guid: addc16d1fc4fe4841ac4040479fb454b,
@@ -376,6 +364,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &832815660 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 832815660, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
+    type: 3}
+  m_PrefabInstance: {fileID: 6152434682888075079}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73fa5939a04f42ee9feda793145b7d47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!223 &952445062 stripped
 Canvas:
   m_CorrespondingSourceObject: {fileID: 6152434683831590849, guid: 15b066cdb5c94bc48a3cab138cd54b6a,
@@ -1190,67 +1190,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
         type: 3}
-      propertyPath: playPauseButton
-      value: 
-      objectReference: {fileID: 55862299}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
       propertyPath: game
       value: 
       objectReference: {fileID: 4230323441957945562}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: carPrefab
-      value: 
-      objectReference: {fileID: 2126439324982423967, guid: 08f32e62893a3414785a9649732ce874,
-        type: 3}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: trafficSim
-      value: 
-      objectReference: {fileID: 1422441216}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: buildingInfoModal
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: featureModal
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: citizienModal
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: citizienCountText
-      value: 
-      objectReference: {fileID: 6152434682888075081}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: citizienCountTrendImg
-      value: 
-      objectReference: {fileID: 6152434682888075080}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: walkingCitizienPrefab
-      value: 
-      objectReference: {fileID: 4774588395547642521, guid: 53373b5bb7b358047898fb697605bf05,
-        type: 3}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: transitVehiclePrefab
-      value: 
-      objectReference: {fileID: 5294801842841313851, guid: 23c079ef39aafc84f97f834d594b7992,
-        type: 3}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: transitVehicleModal
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
         type: 3}
       propertyPath: citizenCountText
@@ -1263,14 +1205,9 @@ PrefabInstance:
       objectReference: {fileID: 6152434682888075080}
     - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
         type: 3}
-      propertyPath: citizenModal
+      propertyPath: trafficSim
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 9163852148996152146, guid: b9fd727e87c9246a398777b0ae549e1f,
-        type: 3}
-      propertyPath: _gameTime
-      value: 01/03/2000 08:00
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1422441216}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b9fd727e87c9246a398777b0ae549e1f, type: 3}
 --- !u!1001 &5746133515205681550
@@ -1374,6 +1311,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 832815658, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
+      propertyPath: m_Name
+      value: AutocompleteButton
+      objectReference: {fileID: 0}
     - target: {fileID: 1182088429, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_AnchorMin.y
       value: 0
@@ -1458,6 +1399,10 @@ PrefabInstance:
       propertyPath: game
       value: 
       objectReference: {fileID: 4230323441957945562}
+    - target: {fileID: 1591282243, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
+      propertyPath: lineBuildingAutocompleteButton
+      value: 
+      objectReference: {fileID: 832815660}
     - target: {fileID: 1903431199, guid: 15b066cdb5c94bc48a3cab138cd54b6a, type: 3}
       propertyPath: m_AnchorMin.y
       value: 0
@@ -1802,7 +1747,7 @@ PrefabInstance:
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
       propertyPath: missionToLoad
-      value: Tutorial/Charlottenburg
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
@@ -1812,7 +1757,7 @@ PrefabInstance:
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
       propertyPath: saveFileToLoad
-      value: 
+      value: xxx
       objectReference: {fileID: 0}
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}

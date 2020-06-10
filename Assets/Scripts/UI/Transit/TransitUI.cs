@@ -7,92 +7,58 @@ namespace Transidious
 {
     public class TransitUI : MonoBehaviour
     {
-        /// <summary>
         /// Reference to the game controller.
-        /// </summary>
         public GameController game;
 
-        /// <summary>
         /// Buttons for the five transit systems.
-        /// </summary>
         public GameObject[] transitSystemButtons;
 
-        /// <summary>
         /// The currently selected transit system.
-        /// </summary>
         public TransitType? selectedTransitSystem;
 
-        /// <summary>
         /// The game objects containing the lines of the current system.
-        /// </summary>
         public GameObject lineOverviewList;
 
-        /// <summary>
         /// Prefab for creating new line entries.
-        /// </summary>
         public GameObject transitLineEntryPrefab;
 
-        /// <summary>
         /// Cache of created line entries.
-        /// </summary>
         Dictionary<Line, UILineListEntry> transitSystemEntries;
 
-        /// <summary>
         /// Text shown when no lines are available.
-        /// </summary>
         public TMP_Text noLineDataText;
 
-        /// <summary>
         /// Input field for filtering lines.
-        /// </summary>
         public TMP_InputField lineSearchField;
 
-        /// <summary>
         /// Text field showing how many lines are shown after filtering.
-        /// </summary>
         public TMP_Text resultCountText;
 
-        /// <summary>
         /// Total number of lines (for resultCountText).
-        /// </summary>
         int totalDisplayedLines;
 
-        /// <summary>
         /// The mini map.
-        /// </summary>
         public UIMiniMap miniMap;
 
-        /// <summary>
         /// The button for creating a new line.
-        /// </summary>
         public Button createLineButton;
 
-        /// <summary>
         /// The button for editing a line.
-        /// </summary>
         public Button editLineButton;
 
-        /// <summary>
         /// The button for deleting a line.
-        /// </summary>
         public Button deleteLineButton;
 
-        /// <summary>
         /// Prefab for temporary stops.
-        /// </summary>
         public GameObject temporaryStopPrefab;
 
-        /// <summary>
         /// The line builder instances.
-        /// </summary>
         public LineBuilder[] lineBuilders;
 
         /// The currently active line builder.
         public LineBuilder activeBuilder;
 
-        /// <summary>
         /// The panel that is shown after completing a line.
-        /// </summary>
         public GameObject confirmLineCreationPanel;
         public UIInfoPanel confirmLineCreationInfo;
         public Button confirmButton;
@@ -104,6 +70,7 @@ namespace Transidious
             {
                 new BusLineBuilder(game),
                 new TramLineBuilder(game),
+                new SubwayLineBuilder(game), 
             };
 
             foreach (var builder in this.lineBuilders)

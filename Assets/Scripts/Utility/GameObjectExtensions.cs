@@ -217,9 +217,10 @@ namespace Transidious
                                              Map.Layer(layer, positionInLayer));
         }
 
-        public static void ScaleBy(this Transform transform, float scale = 1f)
+        public static void ScaleBy(this Transform transform, float scale)
         {
-            transform.localScale = new Vector3(scale, scale, 1f);
+            var currentScale = transform.localScale;
+            transform.localScale = new Vector3(currentScale.x * scale, currentScale.y * scale, 1f);
         }
 
         public static Vector2 WithX(this Vector2 v, float x)

@@ -3,149 +3,76 @@ using UnityEngine;
 
 namespace Transidious
 {
-    /*public struct TimeSpan
+    public enum CardinalDirection
     {
-        /// The internal time span.
-        internal TimeSpan _ts;
+        North, South, West, East
+    }
 
-        public static TimeSpan zero => new TimeSpan();
-
-        /// Create a time span as the difference between two game time dates.
-        public static TimeSpan Difference(DateTime t1, DateTime t2)
+    public static class CardinalDirectionExtensions
+    {
+        public static bool IsHorizontal(this CardinalDirection dir)
         {
-            return new TimeSpan
-            {
-                _ts = t1 - t2,
-            };
+            return dir == CardinalDirection.East || dir == CardinalDirection.West;
         }
         
-        /// Create from real time seconds.
-        public static TimeSpan FromRealTimeSeconds(float seconds)
+        public static bool IsParallelTo(this CardinalDirection dir, CardinalDirection other)
         {
-            return new TimeSpan
+            switch (dir)
             {
-                _ts = TimeSpan.FromSeconds(seconds * 60),
-            };
-        }
-
-        /// Create from game time seconds.
-        public static TimeSpan FromGameTimeSeconds(float seconds)
-        {
-            return new TimeSpan
-            {
-                _ts = TimeSpan.FromSeconds(seconds),
-            };
-        }
-
-        /// Create from real time minutes.
-        public static TimeSpan FromRealTimeMinutes(float minutes)
-        {
-            return new TimeSpan
-            {
-                _ts = TimeSpan.FromMinutes(minutes * 60),
-            };
-        }
-
-        /// Create from real time seconds.
-        public static TimeSpan FromGameTimeMinutes(float minutes)
-        {
-            return new TimeSpan
-            {
-                _ts = TimeSpan.FromMinutes(minutes),
-            };
+                case CardinalDirection.North:
+                case CardinalDirection.South:
+                    return other == CardinalDirection.North || other == CardinalDirection.South;
+                
+                case CardinalDirection.West:
+                case CardinalDirection.East:
+                    return other == CardinalDirection.West || other == CardinalDirection.East;
+                default:
+                    throw new System.ArgumentException($"Illegal enum value {dir}");
+            }
         }
         
-        /// Create from real time minutes.
-        public static TimeSpan FromRealTimeMilliseconds(float millis)
+        public static CardinalDirection Opposite(this CardinalDirection dir)
         {
-            return new TimeSpan
+            switch (dir)
             {
-                _ts = TimeSpan.FromMilliseconds(millis * 60),
-            };
+                case CardinalDirection.North: return CardinalDirection.South;
+                case CardinalDirection.South: return CardinalDirection.North;
+                case CardinalDirection.East: return CardinalDirection.West;
+                case CardinalDirection.West: return CardinalDirection.East;
+                default:
+                    throw new System.ArgumentException($"Illegal enum value {dir}");
+            }
         }
 
-        /// Create from real time seconds.
-        public static TimeSpan FromMilliseconds(float millis)
+        public static CardinalDirection RotatedRight(this CardinalDirection dir)
         {
-            return new TimeSpan
+            switch (dir)
             {
-                _ts = TimeSpan.FromMilliseconds(millis),
-            };
+                case CardinalDirection.North: return CardinalDirection.East;
+                case CardinalDirection.South: return CardinalDirection.West;
+                case CardinalDirection.East: return CardinalDirection.South;
+                case CardinalDirection.West: return CardinalDirection.North;
+                default:
+                    throw new System.ArgumentException($"Illegal enum value {dir}");
+            }
         }
 
-        public float TotalSeconds => (float)_ts.TotalSeconds;
-        public float TotalMinutes => (float)_ts.TotalMinutes;
-        public float TotalMilliseconds => (float)_ts.TotalMilliseconds;
-
-        public TimeSpan RoundToInterval(TimeSpan interval)
+        public static CardinalDirection RotatedLeft(this CardinalDirection dir)
         {
-            return new TimeSpan
+            switch (dir)
             {
-                _ts = TimeSpan.FromSeconds(Mathf.Ceil((float)(_ts.TotalSeconds / interval.TotalSeconds)) * interval.TotalSeconds)
-            };
+                case CardinalDirection.North: return CardinalDirection.West;
+                case CardinalDirection.South: return CardinalDirection.East;
+                case CardinalDirection.East: return CardinalDirection.North;
+                case CardinalDirection.West: return CardinalDirection.South;
+                default:
+                    throw new System.ArgumentException($"Illegal enum value {dir}");
+            }
         }
-        
-        public static TimeSpan operator+(TimeSpan lhs, TimeSpan rhs)
-        {
-            return new TimeSpan
-            {
-                _ts = lhs._ts + rhs._ts,
-            };
-        }
-
-        public static TimeSpan operator-(TimeSpan lhs, TimeSpan rhs)
-        {
-            return new TimeSpan
-            {
-                _ts = lhs._ts - rhs._ts,
-            };
-        }
-
-        public static TimeSpan operator*(TimeSpan lhs, float rhs)
-        {
-            return new TimeSpan
-            {
-                _ts = TimeSpan.FromSeconds(lhs.TotalSeconds * rhs),
-            };
-        }
-        
-        public static TimeSpan operator*(TimeSpan lhs, TimeSpan rhs)
-        {
-            return new TimeSpan
-            {
-                _ts = TimeSpan.FromSeconds(lhs.TotalSeconds * rhs.TotalSeconds),
-            };
-        }
-        
-        public static TimeSpan operator/(TimeSpan lhs, float rhs)
-        {
-            return new TimeSpan
-            {
-                _ts = TimeSpan.FromSeconds(lhs.TotalSeconds * rhs),
-            };
-        }
-        
-        public static TimeSpan operator/(TimeSpan lhs, TimeSpan rhs)
-        {
-            return new TimeSpan
-            {
-                _ts = TimeSpan.FromSeconds(lhs.TotalSeconds / rhs.TotalSeconds),
-            };
-        }
-    }*/
+    }
 
     public static class TimeExtensions
     {
-        // public static DateTime Add(this DateTime d, TimeSpan ts)
-        // {
-        //     return d.Add(ts._ts);
-        // }
-        //
-        // public static DateTime Subtract(this DateTime d, TimeSpan ts)
-        // {
-        //     return d.Subtract(ts._ts);
-        // }
-
         public static TimeSpan Multiply(this TimeSpan lhs, float rhs)
         {
             return TimeSpan.FromSeconds(lhs.TotalSeconds * rhs);

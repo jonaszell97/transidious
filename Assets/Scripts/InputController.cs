@@ -48,6 +48,12 @@ namespace Transidious
         public GameController controller;
         public RenderingDistance renderingDistance = RenderingDistance.Near;
 
+        /// Set to true if we fired a mouse down event already in this frame.
+        private bool _firedMouseDown;
+        
+        /// Set to true if we fired a mouse over event already in this frame.
+        private bool _firedMouseOver;
+
         public delegate void InputEventListener(IMapObject mapObject);
         Dictionary<int, InputEventListener>[] inputEventListeners;
         int eventListenerCount;
@@ -203,6 +209,7 @@ namespace Transidious
                     continue;
                 }
 
+                _firedMouseOver = true;
                 listener.Value(obj);
             }
         }
@@ -221,17 +228,13 @@ namespace Transidious
                     continue;
                 }
 
+                _firedMouseOver = true;
                 listener.Value(obj);
             }
         }
 
         public void MouseExitMapObject(IMapObject obj)
         {
-            if (IsPointerOverUIElement())
-            {
-                return;
-            }
-
             foreach (var listener in inputEventListeners[(int)InputEvent.MouseExit])
             {
                 if (disabledListeners.Contains(listener.Key))
@@ -249,6 +252,8 @@ namespace Transidious
             {
                 return;
             }
+
+            _firedMouseDown = true;
 
             foreach (var listener in inputEventListeners[(int)InputEvent.MouseDown])
             {
@@ -778,6 +783,8 @@ namespace Transidious
                 }
             }
 
+            controller.snapController.Update();
+
             if (_movingTowards.HasValue)
             {
                 var currentPos = camera.transform.position;
@@ -796,7 +803,7 @@ namespace Transidious
             else if (_followObject != null)
             {
                 Vector2 pos = _followObject.transform.position;
-            
+
                 if (_followingMode == FollowingMode.Center)
                 {
                     SetCameraPosition(pos);
@@ -805,11 +812,20 @@ namespace Transidious
                 {
                     if (!IsPositionVisibleByCamera(pos))
                     {
-                        var direction = pos - (Vector2)camera.transform.position;
-                        SetCameraPosition((Vector2)camera.transform.position + direction.normalized * Time.deltaTime);
+                        Vector2 cameraPos = camera.transform.position;
+                        var direction = pos - cameraPos;
+                        SetCameraPosition(cameraPos + direction.normalized * Time.deltaTime);
                     }
                 }
             }
+
+            if (!_firedMouseDown && Input.GetMouseButtonDown(0) && !IsPointerOverUIElement())
+            {
+                FireEvent(InputEvent.MouseDown);
+            }
+
+            _firedMouseDown = false;
+            _firedMouseOver = false;
 
 #if DEBUG
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F1))

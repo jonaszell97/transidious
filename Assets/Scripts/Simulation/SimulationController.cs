@@ -46,6 +46,9 @@ namespace Transidious
         /// The citizen trend arrow.
         public Image citizenCountTrendImg;
 
+        /// The transform that contains all transit vehicles.
+        public Transform transitVehicleContainer;
+
         /// The transit vehicle prefab.
         public GameObject transitVehiclePrefab;
 
@@ -441,11 +444,21 @@ namespace Transidious
 
         public TransitVehicle CreateVehicle(Line line, TransitVehicle next)
         {
-            var obj = Instantiate(transitVehiclePrefab, this.transform, false);
+            var obj = Instantiate(transitVehiclePrefab, transitVehicleContainer, false);
             var vehicle = obj.GetComponent<TransitVehicle>();
             vehicle.Initialize(line, next);
 
             return vehicle;
+        }
+
+        public void DisableTransitVehicles()
+        {
+            transitVehicleContainer.gameObject.SetActive(false);
+        }
+
+        public void EnableTransitVehicles()
+        {
+            transitVehicleContainer.gameObject.SetActive(true);
         }
 
         public Building RandomBuilding()

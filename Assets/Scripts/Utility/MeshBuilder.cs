@@ -326,7 +326,7 @@ namespace Transidious
             if (colliderPath != null)
             {
                 var angle = Math.DirectionalAngleDeg(Vector2.down, normal12);
-                if (!angle.Equals(0f))
+                // if (!angle.Equals(0f))
                 {
                     // Add right side to forward path.
                     colliderPath[i - 1] = br;

@@ -3,7 +3,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Transidious.PathPlanning;
+using UnityEditor;
 
 namespace Transidious
 {
@@ -32,6 +34,8 @@ namespace Transidious
         TransitLines,
         TemporaryLines,
         Cars,
+        
+        Grid,
         TransitStops,
 
         Boundary,
@@ -102,6 +106,9 @@ namespace Transidious
 
         /// List of all public transit stops.
         public List<Stop> transitStops;
+
+        /// Set of grid points occupied by a stop.
+        public HashSet<Vector2> occupiedGridPoints;
 
         /// List of all public transit routes.
         public List<Route> transitRoutes;
@@ -189,6 +196,7 @@ namespace Transidious
             this.IntersectionPatterns = new Dictionary<int, IntersectionPattern>();
             this.transitRoutes = new List<Route>();
             this.transitStops = new List<Stop>();
+            this.occupiedGridPoints = new HashSet<Vector2>();
             this.transitLines = new List<Line>();
             this.naturalFeatures = new List<NaturalFeature>();
             this.buildings = new List<Building>();
@@ -1068,28 +1076,27 @@ namespace Transidious
         {
             public Line line;
             Stop lastAddedStop;
+            private Stop.StopType _type;
 
             internal LineBuilder(Line line)
             {
                 this.line = line;
                 this.lastAddedStop = null;
+                _type = Stop.GetStopType(line.type);
             }
 
             public LineBuilder AddStop(string name, Vector2 position,
-                                       bool oneWay = false, bool isBackRoute = false,
+                                       bool isBackRoute = false,
                                        List<Vector2> positions = null,
                                        bool automaticPath = false)
             {
-                return AddStop(line.map.GetOrCreateStop(name, position), oneWay, isBackRoute, positions, automaticPath);
+                return AddStop(line.map.GetOrCreateStop(_type, name, position), isBackRoute, positions, automaticPath);
             }
 
-            public LineBuilder AddStop(Stop stop, bool oneWay = false,
-                                       bool isBackRoute = false, List<Vector2> positions = null,
+            public LineBuilder AddStop(Stop stop, bool isBackRoute = false, List<Vector2> positions = null,
                                        bool automaticPath = false)
             {
                 Debug.Assert(stop != null, "stop is null!");
-                Debug.Assert(oneWay || !isBackRoute, "can't have a two-way back route!");
-
                 if (lastAddedStop == null)
                 {
                     lastAddedStop = stop;
@@ -1102,25 +1109,37 @@ namespace Transidious
                 if (automaticPath)
                 {
                     Debug.Assert(positions == null, "automatic path but positions are given!");
-                    Debug.Assert(line.type == TransitType.Bus, "invalid system for automatic path");
 
-                    var options = new PathPlanning.PathPlanningOptions { allowWalk = false };
-                    var planner = new PathPlanning.PathPlanner(options);
-                    var result = planner.FindClosestDrive(line.map, lastAddedStop.transform.position,
-                                                          stop.transform.position);
+                    var stopType = Stop.GetStopType(line.type);
+                    switch (stopType)
+                    {
+                        case Stop.StopType.StreetBound:
+                        {
 
-                    if (result != null)
-                    {
-                        segmentInfo = new List<TrafficSimulator.PathSegmentInfo>();
-                        positions = GameController.instance.sim.trafficSim.GetCompletePath(result, segmentInfo);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("no path found from " + lastAddedStop.name + " to " + stop.name);
+                            var options = new PathPlanning.PathPlanningOptions { allowWalk = false };
+                            var planner = new PathPlanning.PathPlanner(options);
+                            var result = planner.FindClosestDrive(line.map, lastAddedStop.transform.position,
+                                stop.transform.position);
+
+                            if (result != null)
+                            {
+                                segmentInfo = new List<TrafficSimulator.PathSegmentInfo>();
+                                positions = GameController.instance.sim.trafficSim.GetCompletePath(result, segmentInfo);
+                            }
+                            else
+                            {
+                                Debug.LogWarning("no path found from " + lastAddedStop.name + " to " + stop.name);
+                            }
+
+                            break;
+                        }
+                        default:
+                            positions = new List<Vector2> { lastAddedStop.location, stop.location };
+                            break;
                     }
                 }
 
-                var route = line.AddRoute(lastAddedStop, stop, positions, oneWay, isBackRoute);
+                var route = line.AddRoute(lastAddedStop, stop, positions, isBackRoute);
                 lastAddedStop = stop;
 
                 if (segmentInfo != null)
@@ -1296,14 +1315,14 @@ namespace Transidious
                         street, street.RightmostLane).Points;
 
                     var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsFwd);
-                    fwd = GetOrCreateStop(closestPt.street.street.name, newPtPos.Item1);
+                    fwd = GetOrCreateStop(Stop.StopType.StreetBound, closestPt.street.street.name, newPtPos.Item1);
                 }
                 {
                     var positionsBwd = GameController.instance.sim.trafficSim.StreetPathBuilder.GetPath(
                         street, street.LeftmostLane).Points;
 
                     var newPtPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positionsBwd);
-                    bwd = GetOrCreateStop(closestPt.street.street.name, newPtPos.Item1);
+                    bwd = GetOrCreateStop(Stop.StopType.StreetBound, closestPt.street.street.name, newPtPos.Item1);
                 }
             }
             else {
@@ -1351,14 +1370,14 @@ namespace Transidious
                         street, backward ? street.LeftmostLane : street.RightmostLane).Points;
 
                     var newPtPos = StreetSegment.GetClosestPointAndPosition(randomPt, positionsFwd);
-                    fwd = CreateStop(street.name, newPtPos.Item1);
+                    fwd = CreateStop(Stop.StopType.StreetBound, street.name, newPtPos.Item1);
                 }
                 {
                     var positionsBwd = GameController.instance.sim.trafficSim.StreetPathBuilder.GetPath(
                         street, backward ? street.RightmostLane : street.LeftmostLane).Points;
 
                     var newPtPos = StreetSegment.GetClosestPointAndPosition(randomPt, positionsBwd);
-                    bwd = CreateStop(street.name, newPtPos.Item1);
+                    bwd = CreateStop(Stop.StopType.StreetBound, street.name, newPtPos.Item1);
                 }
             }
 
@@ -1422,7 +1441,7 @@ namespace Transidious
             var newClosestPtAndPos = StreetSegment.GetClosestPointAndPosition(closestPt.pos, positions);
             closestPt.pos = newClosestPtAndPos.Item1;
 
-            return GetOrCreateStop(closestPt.street.street.name, closestPt.pos);
+            return GetOrCreateStop(Stop.StopType.StreetBound, closestPt.street.street.name, closestPt.pos);
         }
 
         public Line CreateRandomizedLine(TransitType type, string name = null, int stops = 2)
@@ -1438,7 +1457,7 @@ namespace Transidious
                 bwdStops.Add(nextStops.Item2);
                 previousStop = nextStops;
 
-                builder.AddStop(nextStops.Item1, true, false, null, type == TransitType.Bus);
+                builder.AddStop(nextStops.Item1, false, null, type == TransitType.Bus);
 
                 if (firstStop == null)
                 {
@@ -1448,12 +1467,12 @@ namespace Transidious
 
             for (var i = bwdStops.Count - 1; i >= 0; --i)
             {
-                builder.AddStop(bwdStops[i], true, false, null, type == TransitType.Bus);
+                builder.AddStop(bwdStops[i], false, null, type == TransitType.Bus);
             }
 
             if (firstStop != null)
             {
-                builder.AddStop(firstStop, true, false, null, type == TransitType.Bus);
+                builder.AddStop(firstStop, false, null, type == TransitType.Bus);
             }
 
             return builder.Finish();
@@ -1500,7 +1519,7 @@ namespace Transidious
             RegisterMapObject(route, route.positions, id);
         }
 
-        public Stop CreateStop(string name, Vector2 location, int id = -1)
+        public Stop CreateStop(Stop.StopType type, string name, Vector2 location, int id = -1)
         {
             string currentName = name;
 
@@ -1511,11 +1530,11 @@ namespace Transidious
                 ++i;
             }
 
-            return GetOrCreateStop(currentName, location, id);
+            return GetOrCreateStop(type, currentName, location, id);
         }
 
         /// Register a new public transit stop.
-        public Stop GetOrCreateStop(string name, Vector2 location, int id = -1)
+        public Stop GetOrCreateStop(Stop.StopType type, string name, Vector2 location, int id = -1)
         {
             var existingStop = GetMapObject<Stop>(name);
             if (existingStop != null)
@@ -1526,7 +1545,12 @@ namespace Transidious
             GameObject stopObject = Instantiate(stopPrefab);
             var stop = stopObject.GetComponent<Stop>();
             stop.transform.SetParent(this.transform, false);
-            stop.Initialize(this, name, location, id);
+            stop.Initialize(this, type, name, location, id);
+
+            if (GetNearestGridPt(location).Equals(location))
+            {
+                occupiedGridPoints.Add(location);
+            }
 
             RegisterStop(stop, id);
             return stop;
@@ -2092,13 +2116,16 @@ namespace Transidious
 
             if (isLoadedFromSaveFile)
             {
-                // Game.transitEditor.InitOverlappingRoutes();
+                Game.transitEditor.InitOverlappingRoutes();
+                Game.TransitMap.Initialize();
             }
 
             yield break;
         }
-        
-        private static readonly float GridCellSize = 15f;
+
+        public static readonly float GridCellSize = 7.5f;
+        private static readonly int BaseGridScale = 8;
+
         private Vector2 _baseGridTiling;
         private float _gridScale = 1f;
 
@@ -2108,11 +2135,50 @@ namespace Transidious
                                Mathf.Round(worldPos.y / GridCellSize) * GridCellSize);
         }
 
+#if UNITY_EDITOR
+        [UsedImplicitly]
+        private void CreateGridTexture()
+        {
+            var gridTex = new Texture2D(256, 256);
+            Color32 resetColor = new Color32(255, 255, 255, 0);
+            Color32[] resetColorArray = gridTex.GetPixels32();
+
+            for (int i = 0; i < resetColorArray.Length; i++) {
+                resetColorArray[i] = resetColor;
+            }
+
+            gridTex.SetPixels32(resetColorArray);
+
+            var gridColor = Color.white;
+            var cellSize = 256 / BaseGridScale;
+            for (var x = 0; x < BaseGridScale; ++x)
+            {
+                var baseX = x * cellSize;
+                for (var y = 0; y < BaseGridScale; ++y)
+                {
+                    var baseY = y * cellSize;
+
+                    for (var i = 0; i < cellSize; ++i)
+                    {
+                        gridTex.SetPixel(baseX + i, baseY, gridColor);
+                        gridTex.SetPixel(baseX, baseY + i, gridColor);
+                    }
+                }
+            }
+
+            gridTex.Apply();
+
+            var data = gridTex.EncodeToPNG();
+            System.IO.File.WriteAllBytes("Assets/Resources/Sprites/grid.png", data);
+        }
+#endif
+
         void InitializeGrid()
         {
+            gridMaterial = grid.GetComponent<MeshRenderer>().material;
             grid.transform.localScale = Vector3.one;
 
-            var layer = Layer(MapLayer.Foreground);
+            var layer = Layer(MapLayer.Grid);
             grid.transform.position = new Vector3(0f, 0f, layer);
 
             var aspect = Camera.main.aspect;
@@ -2127,10 +2193,10 @@ namespace Transidious
             {
                 vertices = new[]
                 {
-                    new Vector3(-halfWidth, -halfHeight, layer), 
-                    new Vector3(-halfWidth, halfHeight, layer),
-                    new Vector3(halfWidth, halfHeight, layer),
-                    new Vector3(halfWidth, -halfHeight, layer),
+                    new Vector3(-halfWidth, -halfHeight, 0f), 
+                    new Vector3(-halfWidth, halfHeight, 0f),
+                    new Vector3(halfWidth, halfHeight, 0f),
+                    new Vector3(halfWidth, -halfHeight, 0f),
                 },
                 triangles = new[]
                 {
@@ -2150,7 +2216,7 @@ namespace Transidious
 
             grid.GetComponent<MeshFilter>().sharedMesh = mesh;
 
-            _baseGridTiling = new Vector2(minTilingX, minTilingY);
+            _baseGridTiling = new Vector2(minTilingX / BaseGridScale, minTilingY / BaseGridScale);
             gridMaterial.SetTextureScale("_MainTex", _baseGridTiling);
         }
 
@@ -2165,8 +2231,8 @@ namespace Transidious
             var nearestGridPt = new Vector2(Mathf.Floor(minPtWorld.x / GridCellSize) * GridCellSize,
                                             Mathf.Floor(minPtWorld.y / GridCellSize) * GridCellSize);
 
-            var neededPt = nearestGridPt + new Vector2(_baseGridTiling.x * _gridScale * GridCellSize * .5f,
-                                                       _baseGridTiling.y * _gridScale * GridCellSize * .5f);
+            var neededPt = nearestGridPt + new Vector2(_baseGridTiling.x * _gridScale * GridCellSize * .5f * BaseGridScale,
+                                                       _baseGridTiling.y * _gridScale * GridCellSize * .5f * BaseGridScale);
 
             grid.transform.SetPositionInLayer(neededPt);
         }

@@ -215,7 +215,7 @@ namespace Transidious
                         }
 
                         obj.gameObject.SetActive(true);
-                        obj.GetComponent<UILineLogo>().SetLine(crossingLines[j]);
+                        obj.GetComponent<UILineLogo>().SetLine(crossingLines[j], true);
                     }
                 }
                 

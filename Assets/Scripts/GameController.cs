@@ -69,6 +69,9 @@ namespace Transidious
         /// The router instance.
         public Router router;
 
+        /// The transit map instance.
+        public TransitMap TransitMap;
+
         /// The translator for the current language.
         public Translator lang;
 
@@ -247,7 +250,8 @@ namespace Transidious
 
             loadingScreen.SetText("Initializing Routes...");
             transitEditor.InitOverlappingRoutes();
-            
+            TransitMap.Initialize();
+
             loadingScreen.SetText("Initializing Router...");
             router.Initialize(map);
 
@@ -336,6 +340,7 @@ namespace Transidious
             this.bulldozeHighlightColor = new Color(189f / 255f, 41f / 255f, 56f / 255f);
 
             this.snapController = new SnapController(this);
+            this.TransitMap = new TransitMap();
         }
 
         void Start()

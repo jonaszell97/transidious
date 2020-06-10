@@ -208,6 +208,7 @@ namespace Transidious
                 EndStopID = (uint)endStop.Id,
 
                 TotalTravelTime = (float)totalTravelTime.TotalMilliseconds,
+                IsBackRoute = isBackRoute,
             };
 
             foreach (var entry in pathSegmentInfoMap)
@@ -269,7 +270,7 @@ namespace Transidious
                        map.GetMapObject<Stop>((int)route.BeginStopID),
                        map.GetMapObject<Stop>((int)route.EndStopID),
                        route.Positions?.Select(v => v.Deserialize()).ToList(),
-                       false);
+                       route.IsBackRoute);
 
             for (var i = 0; i < route.PathSegmentInfoMap.Count; ++i)
             {

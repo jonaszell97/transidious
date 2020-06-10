@@ -174,7 +174,7 @@ namespace Transidious
         }
 
         /// Add a stop to the end of this line.
-        public Route AddRoute(Stop begin, Stop end, List<Vector2> positions, bool oneWay, bool isBackRoute)
+        public Route AddRoute(Stop begin, Stop end, List<Vector2> positions, bool isBackRoute = false)
         {
             GameObject routeObject = GameObject.Instantiate(GameController.instance.loadedMap.routePrefab);
             Route route = routeObject.GetComponent<Route>();
@@ -194,19 +194,6 @@ namespace Transidious
 
             begin.AddOutgoingRoute(route);
             end.AddIncomingRoute(route);
-
-            if (!oneWay)
-            {
-                GameObject backRouteObject = GameObject.Instantiate(GameController.instance.loadedMap.routePrefab);
-                Route backRoute = backRouteObject.GetComponent<Route>();
-                backRoute.Initialize(this, end, begin, positions, true);
-
-                routes.Add(backRoute);
-                map.RegisterRoute(backRoute);
-
-                end.AddOutgoingRoute(backRoute);
-                begin.AddIncomingRoute(backRoute);
-            }
 
             return route;
         }
@@ -271,9 +258,6 @@ namespace Transidious
             first.First = true;
             first.Next = next;
 
-            first.InitializeNextDepartures();
-            first.StartDrive();
-
             // Initialize opposite stops
             foreach (var stop in stops)
             {
@@ -305,6 +289,13 @@ namespace Transidious
             }
         }
 
+        public void StartVehicles()
+        {
+            var first = vehicles[0];
+            first.InitializeNextDepartures();
+            first.StartDrive();
+        }
+
         public new Serialization.Line ToProtobuf()
         {
             var result = new Serialization.Line
@@ -312,6 +303,7 @@ namespace Transidious
                 MapObject = base.ToProtobuf(),
                 DepotID = (uint)(depot?.id ?? 0),
                 Color = color.ToProtobuf(),
+                Type = (Serialization.TransitType)type,
             };
 
             result.StopIDs.AddRange(stops.Select(s => (uint)s.id));
@@ -325,6 +317,7 @@ namespace Transidious
             base.Deserialize(line.MapObject);
 
             this.map = map;
+            type = (TransitType) line.Type;
             stops = line.StopIDs.Select(id => map.GetMapObject<Stop>((int)id)).ToList();
             routes = line.RouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
             depot = map.GetMapObject<Stop>((int)line.DepotID);
@@ -335,6 +328,7 @@ namespace Transidious
             }
 
             this.FinalizeLine();
+            this.StartVehicles();
         }
     }
 }

@@ -79,9 +79,21 @@ namespace Transidious
             public Stop finalStop;
         }
 
-        /// Reference to the map.
-        public Map map;
-        
+        public enum StopType
+        {
+            /// Covers buses and trams.
+            StreetBound,
+
+            /// Covers normal trains.
+            AboveGround,
+
+            /// Covers subway stops.
+            Underground,
+
+            /// Covers ferry stops.
+            WaterBound,
+        }
+
         /// The routes beginning at this stop.
         public List<Route> outgoingRoutes;
 
@@ -101,13 +113,19 @@ namespace Transidious
         /// The stops current appearance type.
         public Appearance appearance;
 
+        /// The stops size.
+        public Vector2 size;
+
+        /// The type of this stop.
+        public StopType Type;
+
         public Vector2 location => transform.position;
 
-        public void Initialize(Map map, string name, Vector3 position, int id)
+        public void Initialize(Map map, StopType type, string name, Vector3 position, int id)
         {
-            base.Initialize(MapObjectKind.Line, id, position);
+            base.Initialize(MapObjectKind.Stop, id, position);
 
-            this.map = map;
+            this.Type = type;
             this.name = name;
             this.appearance = Appearance.None;
             this.outgoingRoutes = new List<Route>();
@@ -116,6 +134,22 @@ namespace Transidious
             this.waitingCitizens = new Dictionary<Line, List<WaitingCitizen>>();
             this.transform.position = new Vector3(position.x, position.y,
                                                   Map.Layer(MapLayer.TransitStops));
+        }
+
+        public static StopType GetStopType(TransitType type)
+        {
+            switch (type)
+            {
+                case TransitType.Bus:
+                case TransitType.Tram:
+                    return Stop.StopType.StreetBound;
+                case TransitType.Subway:
+                    return Stop.StopType.Underground;
+                case TransitType.Ferry:
+                    return Stop.StopType.WaterBound;
+                default:
+                    return Stop.StopType.AboveGround;
+            }
         }
 
         public Vector2 Location => location;
@@ -300,61 +334,41 @@ namespace Transidious
             routes.Add(route);
         }
 
-        void CreateCircleMesh()
+        public void CreateCircleMesh()
         {
             var spriteRenderer = GetComponent<SpriteRenderer>();
-            spriteRenderer.sprite = SpriteManager.GetSprite("Sprites/stop_ring");
-            spriteRenderer.drawMode = SpriteDrawMode.Simple;
-            spriteRenderer.color = Color.white;
-
-            var collider = GetComponent<Collider2D>();
-            if (collider != null)
-            {
-                Destroy(collider);
-            }
+            spriteRenderer.size = Vector3.one;
 
             var tf = transform;
-            tf.rotation = new Quaternion();
-            tf.localScale = Vector3.one;
-            tf.SetLayer(MapLayer.TransitStops);
+            tf.rotation = Quaternion.identity;
+            tf.localScale = new Vector3(5f, 5f, 1f);
 
-            this.gameObject.AddComponent<CircleCollider2D>();
             this.appearance = Appearance.Circle;
+            this.size = Vector2.one;
         }
 
-        void CreateSmallRectMesh()
+        float GetSpriteSize(int size)
         {
-            var spriteRenderer = GetComponent<SpriteRenderer>();
-            spriteRenderer.sprite = SpriteManager.GetSprite("Sprites/stop_rect");
-            spriteRenderer.drawMode = SpriteDrawMode.Sliced;
-            
-            var tf = transform;
-            // spriteRenderer.size = 
-
-            float? angle = null;
-            foreach (var route in routes)
+            var result = 1f;
+            if (--size > 0)
             {
-                Vector2 pt = route.endStop == this
-                    ? route.positions[route.positions.Count - 2]
-                    : route.positions[1];
-
-                var deg = Math.DirectionalAngleDeg(pt, tf.position);
-                if (angle.HasValue)
-                {
-                    if (!angle.Value.Equals(deg))
-                    {
-                        angle = null;
-                        break;
-                    }
-                }
-                else
-                {
-                    angle = deg;
-                }
+                result += .75f;
+                --size;
             }
 
-            tf.localScale = Vector3.one;
-            tf.rotation = Quaternion.Euler(0f, 0f, angle ?? 0f);
+            return result + size * .3f;
+        }
+
+        public void CreateSmallRectMesh(int width, int height, Quaternion rotation)
+        {
+            var spriteRenderer = GetComponent<SpriteRenderer>();
+
+            spriteRenderer.size = new Vector2(GetSpriteSize(width), GetSpriteSize(height));
+            this.size = new Vector2(width, height);
+
+            var tf = transform;
+            tf.rotation = rotation;
+            tf.localScale = new Vector3(5f, 5f, 1f);
             appearance = Appearance.SmallRect;
         }
 
@@ -372,24 +386,13 @@ namespace Transidious
             return angle1.Equals(angle2);
         }
 
-        public void UpdateAppearance()
-        {
-            if (lineData.Count == 1)
-            {
-                CreateCircleMesh();
-            }
-            else
-            {
-                CreateSmallRectMesh();
-            }
-        }
-
         public new Serialization.Stop ToProtobuf()
         {
             var result = new Serialization.Stop
             {
                 MapObject = base.ToProtobuf(),
                 Position = location.ToProtobuf(),
+                Type = (Serialization.Stop.Types.StopType)Type,
             };
 
             result.OutgoingRouteIDs.AddRange(outgoingRoutes.Select(r => (uint)r.Id));
@@ -406,9 +409,11 @@ namespace Transidious
         public void Deserialize(Serialization.Stop stop, Map map)
         {
             base.Deserialize(stop.MapObject);
+
+            Type = (Stop.StopType) stop.Type;
             outgoingRoutes = stop.OutgoingRouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
             routes = stop.RouteIDs.Select(id => map.GetMapObject<Route>((int)id)).ToList();
-
+            
             foreach (var sched in stop.Schedules)
             {
                 var line = map.GetMapObject<Line>((int)sched.LineID);

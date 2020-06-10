@@ -31,44 +31,47 @@ namespace Transidious.Serialization {
             "dHlwZRgCIAEoDjImLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVHJhbnNp",
             "dFR5cGUSDwoHZGVwb3RJRBgDIAEoDRIPCgdzdG9wSURzGAQgAygNEhAKCHJv",
             "dXRlSURzGAUgAygNEi8KBWNvbG9yGAYgASgLMiAuVHJhbnNpZGlvdXMuU2Vy",
-            "aWFsaXphdGlvbi5Db2xvciK5AgoEU3RvcBI3CgltYXBPYmplY3QYASABKAsy",
+            "aWFsaXphdGlvbi5Db2xvciLAAwoEU3RvcBI3CgltYXBPYmplY3QYASABKAsy",
             "JC5UcmFuc2lkaW91cy5TZXJpYWxpemF0aW9uLk1hcE9iamVjdBI0Cghwb3Np",
             "dGlvbhgCIAEoCzIiLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uVmVjdG9y",
             "MhIYChBvdXRnb2luZ1JvdXRlSURzGAMgAygNEhAKCHJvdXRlSURzGAQgAygN",
             "Ej8KCXNjaGVkdWxlcxgFIAMoCzIsLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRp",
-            "b24uU3RvcC5TdG9wU2NoZWR1bGUaVQoMU3RvcFNjaGVkdWxlEg4KBmxpbmVJ",
-            "RBgBIAEoDRI1CghzY2hlZHVsZRgCIAEoCzIjLlRyYW5zaWRpb3VzLlNlcmlh",
-            "bGl6YXRpb24uU2NoZWR1bGUigQcKBVJvdXRlEjcKCW1hcE9iamVjdBgBIAEo",
+            "b24uU3RvcC5TdG9wU2NoZWR1bGUSNgoEdHlwZRgGIAEoDjIoLlRyYW5zaWRp",
+            "b3VzLlNlcmlhbGl6YXRpb24uU3RvcC5TdG9wVHlwZRpVCgxTdG9wU2NoZWR1",
+            "bGUSDgoGbGluZUlEGAEgASgNEjUKCHNjaGVkdWxlGAIgASgLMiMuVHJhbnNp",
+            "ZGlvdXMuU2VyaWFsaXphdGlvbi5TY2hlZHVsZSJNCghTdG9wVHlwZRIPCgtT",
+            "dHJlZXRCb3VuZBAAEg8KC0Fib3ZlR3JvdW5kEAESDwoLVW5kZXJncm91bmQQ",
+            "AhIOCgpXYXRlckJvdW5kEAMilgcKBVJvdXRlEjcKCW1hcE9iamVjdBgBIAEo",
             "CzIkLlRyYW5zaWRpb3VzLlNlcmlhbGl6YXRpb24uTWFwT2JqZWN0Eg4KBmxp",
             "bmVJRBgCIAEoDRI1Cglwb3NpdGlvbnMYAyADKAsyIi5UcmFuc2lkaW91cy5T",
             "ZXJpYWxpemF0aW9uLlZlY3RvcjISEwoLYmVnaW5TdG9wSUQYBCABKA0SEQoJ",
-            "ZW5kU3RvcElEGAUgASgNEhcKD3RvdGFsVHJhdmVsVGltZRgGIAEoAhJcChZz",
-            "dHJlZXRTZWdtZW50T2Zmc2V0TWFwGAcgAygLMjwuVHJhbnNpZGlvdXMuU2Vy",
-            "aWFsaXphdGlvbi5Sb3V0ZS5TdHJlZXRTZWdtZW50T2Zmc2V0TWFwRW50cnkS",
-            "VAoScGF0aFNlZ21lbnRJbmZvTWFwGAggAygLMjguVHJhbnNpZGlvdXMuU2Vy",
-            "aWFsaXphdGlvbi5Sb3V0ZS5QYXRoU2VnbWVudEluZm9NYXBFbnRyeRrFAQoP",
-            "UGF0aFNlZ21lbnRJbmZvEhEKCXNlZ21lbnRJRBgBIAEoDRIMCgRsYW5lGAIg",
-            "ASgFEg4KBm9mZnNldBgDIAEoBRIOCgZsZW5ndGgYBCABKAUSFAoMcGFydGlh",
-            "bFN0YXJ0GAUgASgIEhIKCnBhcnRpYWxFbmQYBiABKAgSEAoIYmFja3dhcmQY",
-            "ByABKAgSNQoJZGlyZWN0aW9uGAggASgLMiIuVHJhbnNpZGlvdXMuU2VyaWFs",
-            "aXphdGlvbi5WZWN0b3IyGjEKEFN0cmVldFNlZ21lbnRLZXkSDwoHc2VnbWVu",
-            "dBgBIAEoBRIMCgRsYW5lGAIgASgFGp4BChtTdHJlZXRTZWdtZW50T2Zmc2V0",
-            "TWFwRW50cnkSPgoDa2V5GAEgASgLMjEuVHJhbnNpZGlvdXMuU2VyaWFsaXph",
-            "dGlvbi5Sb3V0ZS5TdHJlZXRTZWdtZW50S2V5Ej8KBXZhbHVlGAIgAygLMjAu",
-            "VHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5Sb3V0ZS5QYXRoU2VnbWVudElu",
-            "Zm8aZwoXUGF0aFNlZ21lbnRJbmZvTWFwRW50cnkSCwoDa2V5GAEgASgNEj8K",
-            "BXZhbHVlGAIgASgLMjAuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5Sb3V0",
-            "ZS5QYXRoU2VnbWVudEluZm8qWQoLVHJhbnNpdFR5cGUSBwoDQnVzEAASCAoE",
-            "VHJhbRABEgoKBlN1YndheRACEhEKDUludGVyY2l0eVJhaWwQAxIJCgVGZXJy",
-            "eRAEEg0KCUxpZ2h0UmFpbBAFQhyqAhlUcmFuc2lkaW91cy5TZXJpYWxpemF0",
-            "aW9uYgZwcm90bzM="));
+            "ZW5kU3RvcElEGAUgASgNEhcKD3RvdGFsVHJhdmVsVGltZRgGIAEoAhITCgtp",
+            "c0JhY2tSb3V0ZRgHIAEoCBJcChZzdHJlZXRTZWdtZW50T2Zmc2V0TWFwGAgg",
+            "AygLMjwuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5Sb3V0ZS5TdHJlZXRT",
+            "ZWdtZW50T2Zmc2V0TWFwRW50cnkSVAoScGF0aFNlZ21lbnRJbmZvTWFwGAkg",
+            "AygLMjguVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5Sb3V0ZS5QYXRoU2Vn",
+            "bWVudEluZm9NYXBFbnRyeRrFAQoPUGF0aFNlZ21lbnRJbmZvEhEKCXNlZ21l",
+            "bnRJRBgBIAEoDRIMCgRsYW5lGAIgASgFEg4KBm9mZnNldBgDIAEoBRIOCgZs",
+            "ZW5ndGgYBCABKAUSFAoMcGFydGlhbFN0YXJ0GAUgASgIEhIKCnBhcnRpYWxF",
+            "bmQYBiABKAgSEAoIYmFja3dhcmQYByABKAgSNQoJZGlyZWN0aW9uGAggASgL",
+            "MiIuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5WZWN0b3IyGjEKEFN0cmVl",
+            "dFNlZ21lbnRLZXkSDwoHc2VnbWVudBgBIAEoBRIMCgRsYW5lGAIgASgFGp4B",
+            "ChtTdHJlZXRTZWdtZW50T2Zmc2V0TWFwRW50cnkSPgoDa2V5GAEgASgLMjEu",
+            "VHJhbnNpZGlvdXMuU2VyaWFsaXphdGlvbi5Sb3V0ZS5TdHJlZXRTZWdtZW50",
+            "S2V5Ej8KBXZhbHVlGAIgAygLMjAuVHJhbnNpZGlvdXMuU2VyaWFsaXphdGlv",
+            "bi5Sb3V0ZS5QYXRoU2VnbWVudEluZm8aZwoXUGF0aFNlZ21lbnRJbmZvTWFw",
+            "RW50cnkSCwoDa2V5GAEgASgNEj8KBXZhbHVlGAIgASgLMjAuVHJhbnNpZGlv",
+            "dXMuU2VyaWFsaXphdGlvbi5Sb3V0ZS5QYXRoU2VnbWVudEluZm8qWQoLVHJh",
+            "bnNpdFR5cGUSBwoDQnVzEAASCAoEVHJhbRABEgoKBlN1YndheRACEhEKDUlu",
+            "dGVyY2l0eVJhaWwQAxIJCgVGZXJyeRAEEg0KCUxpZ2h0UmFpbBAFQhyqAhlU",
+            "cmFuc2lkaW91cy5TZXJpYWxpemF0aW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Transidious.Serialization.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Transidious.Serialization.TransitType), }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Schedule), global::Transidious.Serialization.Schedule.Parser, new[]{ "FirstDeparture", "Interval" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Line), global::Transidious.Serialization.Line.Parser, new[]{ "MapObject", "Type", "DepotID", "StopIDs", "RouteIDs", "Color" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Stop), global::Transidious.Serialization.Stop.Parser, new[]{ "MapObject", "Position", "OutgoingRouteIDs", "RouteIDs", "Schedules" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Stop.Types.StopSchedule), global::Transidious.Serialization.Stop.Types.StopSchedule.Parser, new[]{ "LineID", "Schedule" }, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route), global::Transidious.Serialization.Route.Parser, new[]{ "MapObject", "LineID", "Positions", "BeginStopID", "EndStopID", "TotalTravelTime", "StreetSegmentOffsetMap", "PathSegmentInfoMap" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route.Types.PathSegmentInfo), global::Transidious.Serialization.Route.Types.PathSegmentInfo.Parser, new[]{ "SegmentID", "Lane", "Offset", "Length", "PartialStart", "PartialEnd", "Backward", "Direction" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Stop), global::Transidious.Serialization.Stop.Parser, new[]{ "MapObject", "Position", "OutgoingRouteIDs", "RouteIDs", "Schedules", "Type" }, null, new[]{ typeof(global::Transidious.Serialization.Stop.Types.StopType) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Stop.Types.StopSchedule), global::Transidious.Serialization.Stop.Types.StopSchedule.Parser, new[]{ "LineID", "Schedule" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route), global::Transidious.Serialization.Route.Parser, new[]{ "MapObject", "LineID", "Positions", "BeginStopID", "EndStopID", "TotalTravelTime", "IsBackRoute", "StreetSegmentOffsetMap", "PathSegmentInfoMap" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route.Types.PathSegmentInfo), global::Transidious.Serialization.Route.Types.PathSegmentInfo.Parser, new[]{ "SegmentID", "Lane", "Offset", "Length", "PartialStart", "PartialEnd", "Backward", "Direction" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route.Types.StreetSegmentKey), global::Transidious.Serialization.Route.Types.StreetSegmentKey.Parser, new[]{ "Segment", "Lane" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry), global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry.Parser, new[]{ "Key", "Value" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Transidious.Serialization.Route.Types.PathSegmentInfoMapEntry), global::Transidious.Serialization.Route.Types.PathSegmentInfoMapEntry.Parser, new[]{ "Key", "Value" }, null, null, null)})
@@ -562,6 +565,7 @@ namespace Transidious.Serialization {
       outgoingRouteIDs_ = other.outgoingRouteIDs_.Clone();
       routeIDs_ = other.routeIDs_.Clone();
       schedules_ = other.schedules_.Clone();
+      type_ = other.type_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -622,6 +626,17 @@ namespace Transidious.Serialization {
       get { return schedules_; }
     }
 
+    /// <summary>Field number for the "type" field.</summary>
+    public const int TypeFieldNumber = 6;
+    private global::Transidious.Serialization.Stop.Types.StopType type_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Transidious.Serialization.Stop.Types.StopType Type {
+      get { return type_; }
+      set {
+        type_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Stop);
@@ -640,6 +655,7 @@ namespace Transidious.Serialization {
       if(!outgoingRouteIDs_.Equals(other.outgoingRouteIDs_)) return false;
       if(!routeIDs_.Equals(other.routeIDs_)) return false;
       if(!schedules_.Equals(other.schedules_)) return false;
+      if (Type != other.Type) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -651,6 +667,7 @@ namespace Transidious.Serialization {
       hash ^= outgoingRouteIDs_.GetHashCode();
       hash ^= routeIDs_.GetHashCode();
       hash ^= schedules_.GetHashCode();
+      if (Type != 0) hash ^= Type.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -675,6 +692,10 @@ namespace Transidious.Serialization {
       outgoingRouteIDs_.WriteTo(output, _repeated_outgoingRouteIDs_codec);
       routeIDs_.WriteTo(output, _repeated_routeIDs_codec);
       schedules_.WriteTo(output, _repeated_schedules_codec);
+      if (Type != 0) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) Type);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -692,6 +713,9 @@ namespace Transidious.Serialization {
       size += outgoingRouteIDs_.CalculateSize(_repeated_outgoingRouteIDs_codec);
       size += routeIDs_.CalculateSize(_repeated_routeIDs_codec);
       size += schedules_.CalculateSize(_repeated_schedules_codec);
+      if (Type != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -718,6 +742,9 @@ namespace Transidious.Serialization {
       outgoingRouteIDs_.Add(other.outgoingRouteIDs_);
       routeIDs_.Add(other.routeIDs_);
       schedules_.Add(other.schedules_);
+      if (other.Type != 0) {
+        Type = other.Type;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -757,6 +784,10 @@ namespace Transidious.Serialization {
             schedules_.AddEntriesFrom(input, _repeated_schedules_codec);
             break;
           }
+          case 48: {
+            Type = (global::Transidious.Serialization.Stop.Types.StopType) input.ReadEnum();
+            break;
+          }
         }
       }
     }
@@ -765,6 +796,13 @@ namespace Transidious.Serialization {
     /// <summary>Container for nested types declared in the Stop message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
+      public enum StopType {
+        [pbr::OriginalName("StreetBound")] StreetBound = 0,
+        [pbr::OriginalName("AboveGround")] AboveGround = 1,
+        [pbr::OriginalName("Underground")] Underground = 2,
+        [pbr::OriginalName("WaterBound")] WaterBound = 3,
+      }
+
       public sealed partial class StopSchedule : pb::IMessage<StopSchedule> {
         private static readonly pb::MessageParser<StopSchedule> _parser = new pb::MessageParser<StopSchedule>(() => new StopSchedule());
         private pb::UnknownFieldSet _unknownFields;
@@ -964,6 +1002,7 @@ namespace Transidious.Serialization {
       beginStopID_ = other.beginStopID_;
       endStopID_ = other.endStopID_;
       totalTravelTime_ = other.totalTravelTime_;
+      isBackRoute_ = other.isBackRoute_;
       streetSegmentOffsetMap_ = other.streetSegmentOffsetMap_.Clone();
       pathSegmentInfoMap_ = other.pathSegmentInfoMap_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1039,10 +1078,21 @@ namespace Transidious.Serialization {
       }
     }
 
+    /// <summary>Field number for the "isBackRoute" field.</summary>
+    public const int IsBackRouteFieldNumber = 7;
+    private bool isBackRoute_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsBackRoute {
+      get { return isBackRoute_; }
+      set {
+        isBackRoute_ = value;
+      }
+    }
+
     /// <summary>Field number for the "streetSegmentOffsetMap" field.</summary>
-    public const int StreetSegmentOffsetMapFieldNumber = 7;
+    public const int StreetSegmentOffsetMapFieldNumber = 8;
     private static readonly pb::FieldCodec<global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry> _repeated_streetSegmentOffsetMap_codec
-        = pb::FieldCodec.ForMessage(58, global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry.Parser);
+        = pb::FieldCodec.ForMessage(66, global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry.Parser);
     private readonly pbc::RepeatedField<global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry> streetSegmentOffsetMap_ = new pbc::RepeatedField<global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Transidious.Serialization.Route.Types.StreetSegmentOffsetMapEntry> StreetSegmentOffsetMap {
@@ -1050,9 +1100,9 @@ namespace Transidious.Serialization {
     }
 
     /// <summary>Field number for the "pathSegmentInfoMap" field.</summary>
-    public const int PathSegmentInfoMapFieldNumber = 8;
+    public const int PathSegmentInfoMapFieldNumber = 9;
     private static readonly pb::FieldCodec<global::Transidious.Serialization.Route.Types.PathSegmentInfoMapEntry> _repeated_pathSegmentInfoMap_codec
-        = pb::FieldCodec.ForMessage(66, global::Transidious.Serialization.Route.Types.PathSegmentInfoMapEntry.Parser);
+        = pb::FieldCodec.ForMessage(74, global::Transidious.Serialization.Route.Types.PathSegmentInfoMapEntry.Parser);
     private readonly pbc::RepeatedField<global::Transidious.Serialization.Route.Types.PathSegmentInfoMapEntry> pathSegmentInfoMap_ = new pbc::RepeatedField<global::Transidious.Serialization.Route.Types.PathSegmentInfoMapEntry>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Transidious.Serialization.Route.Types.PathSegmentInfoMapEntry> PathSegmentInfoMap {
@@ -1078,6 +1128,7 @@ namespace Transidious.Serialization {
       if (BeginStopID != other.BeginStopID) return false;
       if (EndStopID != other.EndStopID) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(TotalTravelTime, other.TotalTravelTime)) return false;
+      if (IsBackRoute != other.IsBackRoute) return false;
       if(!streetSegmentOffsetMap_.Equals(other.streetSegmentOffsetMap_)) return false;
       if(!pathSegmentInfoMap_.Equals(other.pathSegmentInfoMap_)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -1092,6 +1143,7 @@ namespace Transidious.Serialization {
       if (BeginStopID != 0) hash ^= BeginStopID.GetHashCode();
       if (EndStopID != 0) hash ^= EndStopID.GetHashCode();
       if (TotalTravelTime != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(TotalTravelTime);
+      if (IsBackRoute != false) hash ^= IsBackRoute.GetHashCode();
       hash ^= streetSegmentOffsetMap_.GetHashCode();
       hash ^= pathSegmentInfoMap_.GetHashCode();
       if (_unknownFields != null) {
@@ -1128,6 +1180,10 @@ namespace Transidious.Serialization {
         output.WriteRawTag(53);
         output.WriteFloat(TotalTravelTime);
       }
+      if (IsBackRoute != false) {
+        output.WriteRawTag(56);
+        output.WriteBool(IsBackRoute);
+      }
       streetSegmentOffsetMap_.WriteTo(output, _repeated_streetSegmentOffsetMap_codec);
       pathSegmentInfoMap_.WriteTo(output, _repeated_pathSegmentInfoMap_codec);
       if (_unknownFields != null) {
@@ -1153,6 +1209,9 @@ namespace Transidious.Serialization {
       }
       if (TotalTravelTime != 0F) {
         size += 1 + 4;
+      }
+      if (IsBackRoute != false) {
+        size += 1 + 1;
       }
       size += streetSegmentOffsetMap_.CalculateSize(_repeated_streetSegmentOffsetMap_codec);
       size += pathSegmentInfoMap_.CalculateSize(_repeated_pathSegmentInfoMap_codec);
@@ -1185,6 +1244,9 @@ namespace Transidious.Serialization {
       }
       if (other.TotalTravelTime != 0F) {
         TotalTravelTime = other.TotalTravelTime;
+      }
+      if (other.IsBackRoute != false) {
+        IsBackRoute = other.IsBackRoute;
       }
       streetSegmentOffsetMap_.Add(other.streetSegmentOffsetMap_);
       pathSegmentInfoMap_.Add(other.pathSegmentInfoMap_);
@@ -1226,11 +1288,15 @@ namespace Transidious.Serialization {
             TotalTravelTime = input.ReadFloat();
             break;
           }
-          case 58: {
-            streetSegmentOffsetMap_.AddEntriesFrom(input, _repeated_streetSegmentOffsetMap_codec);
+          case 56: {
+            IsBackRoute = input.ReadBool();
             break;
           }
           case 66: {
+            streetSegmentOffsetMap_.AddEntriesFrom(input, _repeated_streetSegmentOffsetMap_codec);
+            break;
+          }
+          case 74: {
             pathSegmentInfoMap_.AddEntriesFrom(input, _repeated_pathSegmentInfoMap_codec);
             break;
           }

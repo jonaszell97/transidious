@@ -489,7 +489,7 @@ namespace Transidious
             // Deserialize raw routes without routes.
             foreach (var stop in saveFile.Stops)
             {
-                map.GetOrCreateStop(stop.MapObject.Name, stop.Position.Deserialize(),
+                map.GetOrCreateStop((Stop.StopType)stop.Type, stop.MapObject.Name, stop.Position.Deserialize(),
                                     (int)stop.MapObject.Id);
             }
 

@@ -10,6 +10,7 @@ namespace Transidious
 
         public void Initialize(GameController game, string name, Vector3 position)
         {
+            base.Initialize(MapObjectKind.TemporaryStop, 0, position);
             this.name = name;
             this.position = position;
             this.transform.position = new Vector3(position.x, position.y, Map.Layer(MapLayer.TransitStops));

@@ -45,6 +45,9 @@ namespace Transidious
         /// The transit type edited by this builder.
         protected TransitType transitType;
 
+        /// The stop type to use.
+        protected Stop.StopType _stopType;
+
         /// Saved event flag for restoration.
         protected MapObjectKind savedClickEvents;
         protected MapObjectKind savedHoverEvents;
@@ -107,6 +110,7 @@ namespace Transidious
             this.transitType = transitType;
             _temporaryStops = new List<TemporaryStop>();
             UndoStack = new UndoStack(false);
+            _stopType = Stop.GetStopType(transitType);
         }
 
         /// Execute an action and push it to the undo stack.
@@ -129,6 +133,9 @@ namespace Transidious
             UndoStack.Redo();
             UpdateUndoRedoVisibility();
         }
+
+        /// Auto-complete the line.
+        public abstract void AutoComplete();
 
         /// Update visibility of undo / redo buttons.
         private void UpdateUndoRedoVisibility()
@@ -166,11 +173,22 @@ namespace Transidious
 
             ui.lineBuildingUndoButton.Disable();
             ui.lineBuildingRedoButton.Disable();
+
+            this.keyboardEventIDs = new[]
+            {
+                game.input.RegisterKeyboardEventListener(KeyCode.Escape, _ =>
+                {
+                    game.mainUI.lineBuildingTrashButton.button.onClick.Invoke();
+                }, false)
+            };
         }
 
         /// Enable the event listeners for a particular state.
         public virtual void EnableListeners(CreationState state)
         {
+            if (eventListenerIDs == null)
+                return;
+            
             foreach (var id in eventListenerIDs)
             {
                 game.input.EnableEventListener(id);
@@ -180,24 +198,34 @@ namespace Transidious
         /// Disable the event listeners for a particular state.
         public virtual void DisableListeners(CreationState state)
         {
+            if (eventListenerIDs == null)
+                return;
+
             foreach (var id in eventListenerIDs)
             {
                 game.input.DisableEventListener(id);
             }
         }
 
-        public void StartLineCreation()
+        public virtual void StartLineCreation()
         {
+            // Enter pause during line construction
             _wasPaused = game.EnterPause(true);
+
+            // Show line building UI
             game.mainUI.transitEditorPanel.SetActive(false);
             game.mainUI.ShowLineBuildingPanel();
             this.Transition(CreationState.FirstStop);
 
+            // Disable transit vehicles
+            game.sim.DisableTransitVehicles();
+
+            // Disable undo / redo
             game.mainUI.lineBuildingUndoButton.Disable();
             game.mainUI.lineBuildingRedoButton.Disable();
         }
 
-        public void EndLineCreation()
+        public virtual void EndLineCreation()
         {
             if (!_wasPaused)
             {
@@ -223,9 +251,13 @@ namespace Transidious
             existingPathMesh?.SetActive(false);
             UIInstruction.Hide();
 
+            // Update UI
             game.mainUI.transitEditorPanel.SetActive(true);
             game.mainUI.transitUI.activeBuilder = null;
             game.mainUI.ShowPanels();
+
+            // Enable transit vehicles
+            game.sim.EnableTransitVehicles();
 
             this.Transition(CreationState.Idle);
         }
@@ -322,6 +354,9 @@ namespace Transidious
                     {
                         line.SetTransparency(.5f);
                     }
+
+                    // Disable auto-completion.
+                    game.mainUI.lineBuildingAutocompleteButton.Disable();
 
                     totalConstructionCost = 0m;
                     totalMonthlyCost = 0m;
@@ -489,6 +524,9 @@ namespace Transidious
                 }
 
                 previousStop = nextStop;
+                
+                // Enable auto-completion.
+                game.mainUI.lineBuildingAutocompleteButton.Enable();
             }, () =>
             {
                 if (nextStop is TemporaryStop tmp)
@@ -515,6 +553,12 @@ namespace Transidious
 
                 UpdateCosts();
                 DrawExistingPath();
+
+                if (currentLine.stops.Count <= 1)
+                {
+                    // Disable auto-completion.
+                    game.mainUI.lineBuildingAutocompleteButton.Disable();
+                }
             });
 
             return nextStop;
@@ -538,32 +582,28 @@ namespace Transidious
 
             var line = game.loadedMap.CreateLine(transitType, currentLine.name,
                                                  Colors.GetDefaultSystemColor(transitType));
-            
-            currentLine.stops.Add(currentLine.stops.First());
-            currentLine.completePath.AddRange(temporaryPath);
-            currentLine.paths.Add(currentLine.completePath.Count);
 
             Stop firstStop = null;
             var pathIdx = 0;
+            var createdStops = new Dictionary<IMapObject, Stop>();
+
             for (var i = 0; i < currentLine.stops.Count; ++i)
             {
                 var nextStop = currentLine.stops[i];
 
                 Stop stop;
-                if (i == currentLine.stops.Count - 1)
+                if (createdStops.TryGetValue(nextStop, out Stop existingStop))
                 {
-                    stop = firstStop;
+                    stop = existingStop;
                 }
-                else if (nextStop is Stop)
+                else if (nextStop is TemporaryStop tmpStop)
                 {
-                    stop = nextStop as Stop;
+                    stop = game.loadedMap.CreateStop(_stopType, tmpStop.name, tmpStop.position);
+                    createdStops.Add(tmpStop, stop);
                 }
                 else
                 {
-                    var tmpStop = nextStop as TemporaryStop;
-                    stop = game.loadedMap.CreateStop(tmpStop.name, tmpStop.position);
-
-                    tmpStop.Destroy();
+                    stop = (Stop) nextStop;
                 }
 
                 if (firstStop == null)
@@ -571,16 +611,17 @@ namespace Transidious
                     firstStop = stop;
                 }
 
+                var isBackRoute = transitType == TransitType.Subway && i > currentLine.stops.Count / 2;
                 if (i != 0)
                 {
-                    line.AddStop(stop, true, false, currentLine.completePath.GetRange(
+                    line.AddStop(stop, isBackRoute, currentLine.completePath.GetRange(
                         pathIdx, currentLine.paths[i - 1] - pathIdx));
 
                     pathIdx = currentLine.paths[i - 1];
                 }
                 else
                 {
-                    line.AddStop(stop, true, false);
+                    line.AddStop(stop);
                 }
             }
 
@@ -593,29 +634,44 @@ namespace Transidious
                 nightInterval = 20,
             });
 
-            var crossedStreets = new HashSet<Tuple<StreetSegment, int>>();
-            var j = 0;
-
-            foreach (var route in newLine.routes)
+            if (_stopType == Stop.StopType.StreetBound)
             {
-                route.DisableCollision();
+                var crossedStreets = new HashSet<Tuple<StreetSegment, int>>();
+                var j = 0;
 
-                // Note which streets this route passes over.
-                foreach (var segAndLane in currentLine.streetSegments[j])
+                foreach (var route in newLine.routes)
                 {
-                    var routesOnSegment = segAndLane.segment.GetTransitRoutes(segAndLane.lane);
-                    routesOnSegment.Add(route);
+                    route.DisableCollision();
 
-                    route.AddStreetSegmentOffset(segAndLane);
-                    crossedStreets.Add(Tuple.Create(segAndLane.segment, segAndLane.lane));
+                    // Note which streets this route passes over.
+                    foreach (var segAndLane in currentLine.streetSegments[j])
+                    {
+                        var routesOnSegment = segAndLane.segment.GetTransitRoutes(segAndLane.lane);
+                        routesOnSegment.Add(route);
+
+                        route.AddStreetSegmentOffset(segAndLane);
+                        crossedStreets.Add(Tuple.Create(segAndLane.segment, segAndLane.lane));
+                    }
+
+                    ++j;
                 }
+                
+                game.transitEditor.CheckOverlappingRoutes(crossedStreets);
+            }
+            else
+            {
+                game.TransitMap.UpdateAppearances(newLine);
+            }
 
-                ++j;
+            foreach (var ts in _temporaryStops)
+            {
+                ts.Destroy();
             }
 
             _temporaryStops.Clear();
             this.EndLineCreation();
-            game.transitEditor.CheckOverlappingRoutes(crossedStreets);
+
+            newLine.StartVehicles();
 
             var modal = MainUI.instance.lineModal;
             modal.SetLine(newLine, newLine.routes.First());
@@ -691,7 +747,7 @@ namespace Transidious
 
             this.eventListenerIDs = new int[]
             {
-                game.input.RegisterEventListener(InputEvent.MouseEnter, (IMapObject obj) =>
+                game.input.RegisterEventListener(InputEvent.MouseEnter, obj =>
                 {
                     if (obj is StreetSegment street)
                     {
@@ -701,25 +757,25 @@ namespace Transidious
                     {
                         this.OnMouseEnter(obj);
                     }
-                }),
+                }, false),
 
-                game.input.RegisterEventListener(InputEvent.MouseOver, (IMapObject obj) =>
+                game.input.RegisterEventListener(InputEvent.MouseOver, obj =>
                 {
                     if (obj is StreetSegment street)
                     {
                         this.OnMouseOver(street);
                     }
-                }),
+                }, false),
 
-                game.input.RegisterEventListener(InputEvent.MouseExit, (IMapObject obj) =>
+                game.input.RegisterEventListener(InputEvent.MouseExit, obj =>
                 {
                     if (obj is StreetSegment || obj is Stop || obj is TemporaryStop)
                     {
                         this.OnMouseExit(obj);
                     }
-                }),
+                }, false),
 
-                game.input.RegisterEventListener(InputEvent.MouseDown, (IMapObject obj) =>
+                game.input.RegisterEventListener(InputEvent.MouseDown, obj =>
                 {
                     if (obj is StreetSegment street)
                     {
@@ -729,16 +785,18 @@ namespace Transidious
                     {
                         this.OnMouseDown(obj);
                     }
-                }),
+                }, false),
             };
+        }
 
-            this.keyboardEventIDs = new[]
-            {
-                game.input.RegisterKeyboardEventListener(KeyCode.Escape, _ =>
-                {
-                    
-                }, false)
-            };
+        /// Auto-complete the line.
+        public override void AutoComplete()
+        {
+            Debug.Assert(currentLine != null && currentLine.stops.Count > 0);
+
+            var firstStop = currentLine.stops.First();
+            OnMouseEnter(firstStop);
+            OnMouseDown(firstStop);
         }
 
         protected void OnMouseEnter(StreetSegment street)
@@ -775,10 +833,12 @@ namespace Transidious
 
         protected void OnMouseEnter(IMapObject stop)
         {
-            if (!(stop is Stop) && !(stop is TemporaryStop))
+            if (stop.Kind != MapObjectKind.Stop && stop.Kind != MapObjectKind.TemporaryStop)
             {
                 return;
             }
+
+            stop.transform.localScale = new Vector3(1.3f, 1.3f, 1.0f);
 
             switch (creationState)
             {
@@ -786,14 +846,25 @@ namespace Transidious
                     UIInstruction.Show("Click to create line");
                     break;
                 case CreationState.IntermediateStops:
-                    var s = stop as Stop;
-                    if (s != null)
+                    if (stop != currentLine.stops.First() && currentLine.stops.Contains(stop))
                     {
+                        UIInstruction.Show("This stop is already on the line");
+                        return;
+                    }
+
+                    if (stop is Stop s)
+                    {
+                        if (s.Type != _stopType)
+                        {
+                            UIInstruction.Show("This stop can only be used for X lines");
+                            return;
+                        }
+
                         this.DrawTemporaryPath(s.location);
                     }
                     else
                     {
-                        this.DrawTemporaryPath((stop as TemporaryStop).position);
+                        this.DrawTemporaryPath(((TemporaryStop)stop).position);
                     }
 
                     if (stop == currentLine.stops.First())
@@ -819,8 +890,13 @@ namespace Transidious
             }
         }
 
-        protected void OnMouseExit(IMapObject _)
+        protected void OnMouseExit(IMapObject stop)
         {
+            if (stop.Kind == MapObjectKind.Stop || stop.Kind == MapObjectKind.TemporaryStop)
+            {
+                stop.transform.localScale = Vector3.one;
+            }
+
             switch (creationState)
             {
                 case CreationState.FirstStop:
@@ -862,12 +938,20 @@ namespace Transidious
                     base.CreateFirstStop(transitType, stop);
                     break;
                 case CreationState.IntermediateStops:
+                    if (stop is Stop s)
+                    {
+                        if (s.Type != _stopType)
+                        {
+                            return;
+                        }
+                    }
+
                     if (stop == currentLine.stops.First())
                     {
                         UpdateLength();
                         this.ShowConfirmationPanel();
                     }
-                    else
+                    else if (!currentLine.stops.Contains(stop))
                     {
                         this.AddStop(stop);
                     }
@@ -901,6 +985,10 @@ namespace Transidious
 
         protected override void FinishLine()
         {
+            currentLine.stops.Add(currentLine.stops.First());
+            currentLine.completePath.AddRange(temporaryPath);
+            currentLine.paths.Add(currentLine.completePath.Count);
+
             currentLine.streetSegments.Add(temporarySegments);
             temporarySegments = new List<TrafficSimulator.PathSegmentInfo>();
 
@@ -920,50 +1008,21 @@ namespace Transidious
 
     public class BusLineBuilder : StreetboundLineBuilder
     {
-        /// <summary>
         /// Public c'tor.
-        /// </summary>
-        /// <param name="game"></param>
         public BusLineBuilder(GameController game) : base(game, TransitType.Bus)
         {
 
         }
 
-        protected override decimal costPerKm
-        {
-            get
-            {
-                return 0m;
-            }
-        }
+        protected override decimal costPerKm => 0m;
 
-        protected override decimal operatingCostPerKm
-        {
-            get
-            {
-                return 25m;
-            }
-        }
+        protected override decimal operatingCostPerKm => 25m;
 
-        protected override decimal costPerStop
-        {
-            get
-            {
-                return 1000m;
-            }
-        }
+        protected override decimal costPerStop => 1000m;
 
-        protected override decimal operatingCostPerStop
-        {
-            get
-            {
-                return 75m;
-            }
-        }
+        protected override decimal operatingCostPerStop => 75m;
 
-        /// <summary>
         /// Initialize the event listeners.
-        /// </summary>
         public override void Initialize()
         {
             base.Initialize();
@@ -987,53 +1046,24 @@ namespace Transidious
     {
         HashSet<StreetSegment> addedTramTracks;
 
-        /// <summary>
         /// Public c'tor.
-        /// </summary>
-        /// <param name="game"></param>
         public TramLineBuilder(GameController game) : base(game, TransitType.Tram)
         {
             this.addedTramTracks = new HashSet<StreetSegment>();
         }
 
-        protected override decimal costPerKm
-        {
-            get
-            {
-                // Only if tram tracks need to be built.
-                return 0m;
-            }
-        }
+        // Only if tram tracks need to be built.
+        protected override decimal costPerKm => 0m;
 
-        protected override decimal operatingCostPerKm
-        {
-            get
-            {
-                return 35m;
-            }
-        }
+        protected override decimal operatingCostPerKm => 35m;
 
-        protected override decimal costPerStop
-        {
-            get
-            {
-                return 1500m;
-            }
-        }
+        protected override decimal costPerStop => 1500m;
 
-        protected override decimal operatingCostPerStop
-        {
-            get
-            {
-                return 100m;
-            }
-        }
+        protected override decimal operatingCostPerStop => 100m;
 
         protected static readonly decimal costPerKmTrack = 10000m;
 
-        /// <summary>
         /// Initialize the event listeners.
-        /// </summary>
         public override void Initialize()
         {
             base.Initialize();
@@ -1092,9 +1122,268 @@ namespace Transidious
         {
             temporarySegments.Clear();
             temporaryPath = game.sim.trafficSim.GetCompletePath(path, temporarySegments);
-            //temporaryPath = MeshBuilder.GetOffsetPath(temporaryPath, -3f);
-
             base.DrawCurrentPath();
         }
+    }
+
+    public class SubwayLineBuilder : LineBuilder
+    {
+        /// The grid snap settings.
+        private SnapSettings _gridSnapSettings;
+
+        /// The stop that the cursor is currently over, or null.
+        private IMapObject _hoveredStop;
+
+        /// Public c'tor.
+        public SubwayLineBuilder(GameController game) : base(game, TransitType.Subway)
+        {
+            _gridSnapSettings = new SnapSettings
+            {
+                snapCursor = SpriteManager.GetSprite("Sprites/stop_ring"),
+                snapCursorColor = Color.white,
+                snapCursorScale = Vector3.one,
+
+                hideCursor = true,
+                snapToEnd = false,
+                snapToLane = false,
+                snapToRivers = false,
+
+                snapCondition = pt =>
+                {
+                    if (_hoveredStop != null)
+                    {
+                        return false;
+                    }
+
+                    return !game.loadedMap.occupiedGridPoints.Contains(pt);
+                },
+                onSnapEnter = () =>
+                {
+                    switch (creationState)
+                    {
+                        case CreationState.FirstStop:
+                            UIInstruction.Show("Left click to create line");
+                            break;
+                        case CreationState.IntermediateStops:
+                            UIInstruction.Show("Left click to add stop");
+                            DrawTemporaryPath(game.input.gameCursorPosition);
+                            break;
+                    }
+                },
+
+                onSnapExit = () =>
+                {
+                    UIInstruction.Hide();
+                    plannedPathMesh?.SetActive(false);
+                },
+            };
+
+            eventListenerIDs = new[]
+            {
+                game.input.RegisterEventListener(InputEvent.MouseEnter, obj =>
+                {
+                    if (obj.Kind == MapObjectKind.Stop || obj.Kind == MapObjectKind.TemporaryStop)
+                    {
+                        this.OnMouseEnter(obj);
+                    }
+                }, false),
+
+                game.input.RegisterEventListener(InputEvent.MouseExit, obj =>
+                {
+                    if (obj.Kind == MapObjectKind.Stop || obj.Kind == MapObjectKind.TemporaryStop)
+                    {
+                        this.OnMouseExit(obj);
+                    }
+                }, false),
+
+                game.input.RegisterEventListener(InputEvent.MouseDown, obj =>
+                {
+                    if (obj == null || (obj.Kind != MapObjectKind.Stop && obj.Kind != MapObjectKind.TemporaryStop))
+                    {
+                        this.OnMouseDown();
+                    }
+                    else
+                    {
+                        this.OnMouseDown(obj);
+                    }
+                }, false),
+            };
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+        }
+
+        public override void StartLineCreation()
+        {
+            base.StartLineCreation();
+            game.loadedMap.EnableGrid();
+            game.snapController.EnableGridSnap(_gridSnapSettings, 2f);
+        }
+
+        public override void EndLineCreation()
+        {
+            base.EndLineCreation();
+            game.loadedMap.DisableGrid();
+            game.snapController.DisableGridSnap();
+        }
+
+        /// Auto-complete the line.
+        public override void AutoComplete()
+        {
+            Debug.Assert(currentLine != null && currentLine.stops.Count > 0);
+            this.ShowConfirmationPanel();
+        }
+
+        /// Finish the line.
+        protected override void FinishLine()
+        {
+            for (var i = currentLine.stops.Count - 2; i >= 0; --i)
+            {
+                currentLine.stops.Add(currentLine.stops[i]);
+
+                var startIdx = i == 0 ? 0 : currentLine.paths[i - 1];
+                currentLine.completePath.AddRange(
+                    currentLine.completePath.GetRange(startIdx, currentLine.paths[i] - startIdx)
+                        .AsEnumerable().Reverse());
+
+                currentLine.paths.Add(currentLine.completePath.Count);
+            }
+
+            base.FinishLine();
+        }
+
+        private void DrawTemporaryPath(Vector2 position)
+        {
+            if (temporaryPath == null)
+            {
+                temporaryPath = new List<Vector2>();
+            }
+            else
+            {
+                temporaryPath.Clear();
+            }
+
+            var startPos = previousStop.Centroid;
+            temporaryPath.Add(startPos);
+            temporaryPath.Add(position);
+            base.DrawCurrentPath();
+        }
+
+        private void OnMouseEnter(IMapObject stop)
+        {
+            if (stop.Kind != MapObjectKind.Stop && stop.Kind != MapObjectKind.TemporaryStop)
+            {
+                return;
+            }
+
+            stop.transform.ScaleBy(1.3f);
+            _hoveredStop = stop;
+
+            switch (creationState)
+            {
+                case CreationState.FirstStop:
+                    UIInstruction.Show("Click to create line");
+                    break;
+                case CreationState.IntermediateStops:
+                    if (currentLine.stops.Contains(stop))
+                    {
+                        UIInstruction.Show("This stop is already on the line");
+                        return;
+                    }
+
+                    if (stop is Stop s)
+                    {
+                        if (s.Type != _stopType)
+                        {
+                            UIInstruction.Show("This stop can only be used for X lines");
+                            return;
+                        }
+
+                        this.DrawTemporaryPath(s.location);
+                    }
+                    else
+                    {
+                        this.DrawTemporaryPath(((TemporaryStop)stop).position);
+                    }
+
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void OnMouseExit(IMapObject stop)
+        {
+            if (stop.Kind != MapObjectKind.Stop && stop.Kind != MapObjectKind.TemporaryStop)
+            {
+                return;
+            }
+
+            stop.transform.ScaleBy(1f / 1.3f);
+            _hoveredStop = null;
+
+            ResetPath();
+        }
+
+        private void OnMouseDown(IMapObject stop)
+        {
+            if (stop.Kind != MapObjectKind.Stop && stop.Kind != MapObjectKind.TemporaryStop)
+            {
+                return;
+            }
+
+            switch (creationState)
+            {
+                case CreationState.FirstStop:
+                    base.CreateFirstStop(transitType, "", game.input.gameCursorPosition);
+                    break;
+                case CreationState.IntermediateStops:
+                    if (currentLine.stops.Contains(stop))
+                    {
+                        UIInstruction.Show("This stop is already on the line");
+                        return;
+                    }
+
+                    if (stop is Stop s)
+                    {
+                        if (s.Type != _stopType)
+                        {
+                            UIInstruction.Show("This stop can only be used for X lines");
+                            return;
+                        }
+                    }
+
+                    base.AddStop(stop);
+                    break;
+            }
+        }
+
+        private void OnMouseDown()
+        {
+            if (!game.snapController.IsSnappedToGrid)
+            {
+                return;
+            }
+
+            switch (creationState)
+            {
+                case CreationState.FirstStop:
+                    base.CreateFirstStop(transitType, "New Subway Stop", game.input.gameCursorPosition);
+                    break;
+                case CreationState.IntermediateStops:
+                    base.AddStop("New Subway Stop", game.input.gameCursorPosition);
+                    break;
+            }
+        }
+
+        protected override decimal costPerKm => 100_000m;
+
+        protected override decimal operatingCostPerKm => 500m;
+
+        protected override decimal costPerStop => 50_000m;
+
+        protected override decimal operatingCostPerStop => 1000m;
     }
 }

@@ -105,8 +105,8 @@ namespace Transidious
 
                     UpdateRouteMesh(route, linesPerPositionMap, offsetMap, latestOffsetMap);
 
-                    route.beginStop.UpdateAppearance();
-                    route.endStop.UpdateAppearance();
+                    // route.beginStop.UpdateAppearance();
+                    // route.endStop.UpdateAppearance();
                 }
             }
         }

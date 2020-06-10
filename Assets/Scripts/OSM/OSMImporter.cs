@@ -897,7 +897,7 @@ namespace Transidious
             return boundaryPositions;
         }
 
-        Stop GetOrCreateStop(Node stopNode, bool projectOntoStreet = false)
+        Stop GetOrCreateStop(TransitType type, Node stopNode, bool projectOntoStreet = false)
         {
             if (stopNode == null)
             {
@@ -936,7 +936,7 @@ namespace Transidious
             stopName = stopName.Replace("Berlin-", "");
             stopName = stopName.Replace("Berlin ", "");
 
-            var s = map.CreateStop(stopName, loc);
+            var s = map.CreateStop(Stop.GetStopType(type), stopName, loc);
             stopMap.Add(stopNode.Geo.Id, s);
 
             return s;
@@ -1046,7 +1046,7 @@ namespace Transidious
 
                             if (node.Geo.Tags.Contains("highway", "bus_stop"))
                             {
-                                s = GetOrCreateStop(node, true);
+                                s = GetOrCreateStop(type, node, true);
                                 break;
                             }
                         }
@@ -1054,22 +1054,22 @@ namespace Transidious
 
                     if (s == null)
                     {
-                        s = GetOrCreateStop(FindNode(member.Id));
+                        s = GetOrCreateStop(type, FindNode(member.Id));
                     }
 
                     if (s != null)
                     {
-                        l.AddStop(s, true, false, wayPositions, true);
+                        l.AddStop(s, false, wayPositions, true);
                         previousStop = s;
                     }
 
                     ++i;
                     ++n;
                 }
-                
+
                 if (l.line.stops.Count != 0 && previousStop != l.line.stops.First())
                 {
-                    l.AddStop(l.line.stops.First(), true, false, null, true);
+                    l.AddStop(l.line.stops.First(), false, null, true);
                 }
 
                 l.Finish();

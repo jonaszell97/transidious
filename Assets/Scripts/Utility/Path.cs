@@ -7,45 +7,6 @@ using Transidious;
 
 namespace Transidious
 {
-    public enum CardinalDirection
-    {
-        North, South, West, East
-    }
-
-    public static class CardinalDirectionExtensions
-    {
-        public static bool IsHorizontal(this CardinalDirection dir)
-        {
-            return dir == CardinalDirection.East || dir == CardinalDirection.West;
-        }
-
-        public static CardinalDirection RotatedRight(this CardinalDirection dir)
-        {
-            switch (dir)
-            {
-                case CardinalDirection.North: return CardinalDirection.East;
-                case CardinalDirection.South: return CardinalDirection.West;
-                case CardinalDirection.East: return CardinalDirection.South;
-                case CardinalDirection.West: return CardinalDirection.North;
-                default:
-                    throw new System.ArgumentException(string.Format("Illegal enum value {0}", dir));
-            }
-        }
-
-        public static CardinalDirection RotatedLeft(this CardinalDirection dir)
-        {
-            switch (dir)
-            {
-                case CardinalDirection.North: return CardinalDirection.West;
-                case CardinalDirection.South: return CardinalDirection.East;
-                case CardinalDirection.East: return CardinalDirection.North;
-                case CardinalDirection.West: return CardinalDirection.South;
-                default:
-                    throw new System.ArgumentException(string.Format("Illegal enum value {0}", dir));
-            }
-        }
-    }
-
     public struct PathSegment
     {
         public enum Kind

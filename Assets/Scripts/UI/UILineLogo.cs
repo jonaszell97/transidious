@@ -23,11 +23,6 @@ namespace Transidious
 
         void Awake()
         {
-            if (line != null)
-            {
-                SetLine(line);
-            }
-
             link.onClick.AddListener(() =>
             {
                 line.ActivateModal();
@@ -52,7 +47,7 @@ namespace Transidious
             return line.name.Length > 4 ? line.name.Substring(0, 4).Trim() : line.name;
         }
 
-        public void SetLine(Line line, bool truncateName = false, bool allowLink = true)
+        public void SetLine(Line line, bool truncateName = true, bool allowLink = true)
         {
             this.line = line;
             SetColor(line.color);
@@ -62,6 +57,7 @@ namespace Transidious
                 if (inputField != null)
                 {
                     inputField.text = GetTruncatedLineName(line);
+                    placeholderText.text = inputField.text;
                 }
                 else
                 {
@@ -71,6 +67,7 @@ namespace Transidious
             else if (inputField != null)
             {
                 inputField.text = line.name;
+                placeholderText.text = line.name;
             }
             else
             {

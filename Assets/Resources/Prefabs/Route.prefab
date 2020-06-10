@@ -50,13 +50,13 @@ MonoBehaviour:
   id: 0
   uniqueTile: {fileID: 0}
   highlighted: 0
-  renderer: {fileID: 0}
-  collider: {fileID: 0}
-  line: {fileID: 0}
+  renderer: {fileID: 4507481455031345864}
+  collider: {fileID: 1275439177606518646}
+  centroid: {x: 0, y: 0}
   positions: []
+  length: 0
   beginStop: {fileID: 0}
   endStop: {fileID: 0}
-  totalTravelTime: 0
   isBackRoute: 0
   mesh: {fileID: 0}
   meshRenderer: {fileID: 0}
@@ -99,6 +99,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:

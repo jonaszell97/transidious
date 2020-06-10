@@ -206,7 +206,7 @@ MonoBehaviour:
   canvas: {fileID: 9009150387208353036}
   heatmap: {fileID: 247483900375424230}
   grid: {fileID: 5396771011209830305}
-  gridMaterial: {fileID: 2100000, guid: e50573cd85960425bbd7da968a4603b1, type: 2}
+  gridMaterial: {fileID: 0}
   mapTilePrefab: {fileID: 1060823748927563579, guid: 892d51f03ca52426492b071554cf9e27,
     type: 3}
   multiMeshPrefab: {fileID: 61026142767662235, guid: f49e2519502aa4eb5b9f49aefff1410f,

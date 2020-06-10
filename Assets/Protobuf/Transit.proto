@@ -45,12 +45,19 @@ message Stop {
         uint32 lineID = 1;
         Schedule schedule = 2;
     }
+    enum StopType {
+        StreetBound = 0;
+        AboveGround = 1;
+        Underground = 2;
+        WaterBound = 3;
+    }
 
     MapObject mapObject = 1;
     Vector2 position = 2;
     repeated uint32 outgoingRouteIDs = 3;
     repeated uint32 routeIDs = 4;
     repeated StopSchedule schedules = 5;
+    StopType type = 6;
 }
 
 message Route {
@@ -89,7 +96,8 @@ message Route {
     uint32 endStopID = 5;
 
     float totalTravelTime = 6;
+    bool isBackRoute = 7;
 
-    repeated StreetSegmentOffsetMapEntry streetSegmentOffsetMap = 7;
-    repeated PathSegmentInfoMapEntry pathSegmentInfoMap = 8;
+    repeated StreetSegmentOffsetMapEntry streetSegmentOffsetMap = 8;
+    repeated PathSegmentInfoMapEntry pathSegmentInfoMap = 9;
 }

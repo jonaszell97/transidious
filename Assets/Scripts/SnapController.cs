@@ -15,6 +15,7 @@ namespace Transidious
         public UnityAction onSnapEnter;
         public UnityAction onSnapOver;
         public UnityAction onSnapExit;
+        public Func<Vector2, bool> snapCondition;
 
         public bool hideCursor;
 
@@ -27,7 +28,6 @@ namespace Transidious
     // BRING ME THANOOOOS!
     public class SnapController
     {
-
         abstract class ActiveSnap
         {
             internal int id;
@@ -54,35 +54,70 @@ namespace Transidious
             }
         }
 
-        GameController game;
-        int snapCount;
-        List<ActiveSnap> activeSnaps;
-        HashSet<int> disabledSnaps;
-        ActiveSnap activeSnap;
+        /// Reference to the game.
+        private readonly GameController _game;
+        
+        /// Number of active snaps.
+        private int _snapCount;
+        
+        /// List of active snaps.
+        private readonly List<ActiveSnap> _activeSnaps;
+        
+        /// Set of disabled snaps.
+        private readonly HashSet<int> _disabledSnaps;
+        
+        /// The current active snap.
+        private ActiveSnap _activeSnap;
+
+        /// Settings for grid snapping.
+        private SnapSettings? _gridSnapSettings;
+
+        /// If > 0, snap to the grid if the distance between the cursor and a grid point is less than this.
+        private float _snapToGridThreshold = 0f;
+
+        /// Whether or not we're currently snapped to the grid.
+        private bool _snappedToGrid;
+
+        /// Whether or not we're currently snapped to the grid.
+        public bool IsSnappedToGrid => _snappedToGrid;
 
         public SnapController(GameController game)
         {
-            this.game = game;
-            this.snapCount = 0;
-            this.activeSnaps = new List<ActiveSnap>();
-            this.disabledSnaps = new HashSet<int>();
+            this._game = game;
+            this._snapCount = 0;
+            this._activeSnaps = new List<ActiveSnap>();
+            this._disabledSnaps = new HashSet<int>();
 
-            game.input.RegisterEventListener(InputEvent.MouseOver,
-                                             (IMapObject obj) =>
-                                             {
-                                                 this.HandleMouseOver(obj);
-                                             });
-            game.input.RegisterEventListener(InputEvent.MouseExit,
-                                             (IMapObject obj) =>
-                                             {
-                                                 this.HandleMouseExit(obj);
-                                             });
+            game.input.RegisterEventListener(InputEvent.MouseOver, this.HandleMouseOver);
+            game.input.RegisterEventListener(InputEvent.MouseExit, this.HandleMouseExit);
+        }
+
+        public void Update()
+        {
+            if (_gridSnapSettings != null && !_game.input.IsPointerOverUIElement())
+            {
+                var pos = Input.mousePosition;
+                SnapToGrid(Camera.main.ScreenToWorldPoint(pos));
+            }
+        }
+
+        public void EnableGridSnap(SnapSettings gridSnapSettings, float threshold)
+        {
+            _gridSnapSettings = gridSnapSettings;
+            _snapToGridThreshold = threshold;
+        }
+
+        public void DisableGridSnap()
+        {
+            _gridSnapSettings = null;
+            _snapToGridThreshold = 0f;
+            Unsnap();
         }
 
         public int AddStreetSnap(Sprite snapCursor, Color snapCursorColor, Vector3 snapCursorScale,
                                  bool snapToEnd, bool snapToLane, bool snapToRivers)
         {
-            int id = snapCount++;
+            int id = ++_snapCount;
             var settings = new SnapSettings
             {
                 snapCursor = snapCursor,
@@ -99,14 +134,14 @@ namespace Transidious
                 settings = settings,
             };
 
-            activeSnaps.Add(snap);
+            _activeSnaps.Add(snap);
             return id;
         }
 
         public int AddSnap(Sprite snapCursor, Color snapCursorColor, Vector3 snapCursorScale,
                            Type type)
         {
-            int id = snapCount++;
+            int id = ++_snapCount;
             var settings = new SnapSettings
             {
                 snapCursor = snapCursor,
@@ -121,13 +156,13 @@ namespace Transidious
                 type = type,
             };
 
-            activeSnaps.Add(snap);
+            _activeSnaps.Add(snap);
             return id;
         }
 
         public int AddSnap(Type type, SnapSettings settings, bool enabled = true)
         {
-            int id = snapCount++;
+            int id = ++_snapCount;
             ActiveSnap snap;
 
             if (type == typeof(StreetSegment))
@@ -148,11 +183,11 @@ namespace Transidious
                 };
             }
 
-            activeSnaps.Add(snap);
+            _activeSnaps.Add(snap);
             
             if (!enabled)
             {
-                disabledSnaps.Add(id);
+                _disabledSnaps.Add(id);
             }
 
             return id;
@@ -160,19 +195,19 @@ namespace Transidious
 
         public void EnableSnap(int id)
         {
-            disabledSnaps.Remove(id);
+            _disabledSnaps.Remove(id);
         }
 
         public void DisableSnap(int id)
         {
-            disabledSnaps.Add(id);
+            _disabledSnaps.Add(id);
         }
 
         ActiveSnap GetSnapForObject(IMapObject obj)
         {
-            foreach (var snap in activeSnaps)
+            foreach (var snap in _activeSnaps)
             {
-                if (disabledSnaps.Contains(snap.id))
+                if (_disabledSnaps.Contains(snap.id))
                 {
                     continue;
                 }
@@ -200,9 +235,9 @@ namespace Transidious
                 return;
             }
 
-            if (activeSnap != snap)
+            if (_activeSnap != snap)
             {
-                activeSnap = snap;
+                _activeSnap = snap;
                 snap.settings.onSnapEnter?.Invoke();
             }
 
@@ -220,13 +255,52 @@ namespace Transidious
 
         public void HandleMouseExit(IMapObject obj)
         {
-            if (activeSnap != null)
+            if (_activeSnap != null)
             {
-                activeSnap.settings.onSnapExit?.Invoke();
+                _activeSnap.settings.onSnapExit?.Invoke();
             }
 
             Unsnap();
-            activeSnap = null;
+            _activeSnap = null;
+        }
+
+        private void SnapToGrid(Vector2 mousePosWorld)
+        {
+            Debug.Assert(_gridSnapSettings != null);
+
+            var nearestGridPt = GameController.instance.loadedMap.GetNearestGridPt(mousePosWorld);
+            var diff = (nearestGridPt - mousePosWorld).sqrMagnitude;
+
+            if (diff >= _snapToGridThreshold)
+            {
+                if (_snappedToGrid)
+                {
+                    _snappedToGrid = false;
+                    _gridSnapSettings.Value.onSnapExit?.Invoke();
+                    Unsnap();
+                }
+
+                return;
+            }
+
+            if (_gridSnapSettings.Value.snapCondition != null)
+            {
+                if (!_gridSnapSettings.Value.snapCondition(nearestGridPt))
+                {
+                    return;
+                }
+            }
+
+            _gridSnapSettings.Value.onSnapOver?.Invoke();
+
+            if (_snappedToGrid && _game.input.gameCursorPosition.Equals(nearestGridPt))
+            {
+                return;
+            }
+
+            _snappedToGrid = true;
+            _gridSnapSettings.Value.onSnapEnter?.Invoke();
+            SnapToPosition(_gridSnapSettings.Value, nearestGridPt);
         }
 
         static readonly float endSnapThreshold = 5f;
@@ -250,13 +324,13 @@ namespace Transidious
                 Cursor.visible = false;
             }
 
-            Vector2 cursorPos = game.input.NativeCursorPosition;
+            Vector2 cursorPos = _game.input.NativeCursorPosition;
 
             Tuple<Vector2, Math.PointPosition> closestPtAndPos;
             if (snapSettings.settings.snapToLane)
             {
                 closestPtAndPos = street.GetClosestPointAndPosition(cursorPos);
-                var positions = game.sim.trafficSim.StreetPathBuilder.GetPath(
+                var positions = _game.sim.trafficSim.StreetPathBuilder.GetPath(
                     street,
                     (closestPtAndPos.Item2 == Math.PointPosition.Right || street.IsOneWay)
                         ? street.RightmostLane
@@ -289,7 +363,7 @@ namespace Transidious
                 }
             }
 
-            var cursorObj = game.CreateCursorSprite;
+            var cursorObj = _game.CreateCursorSprite;
             var spriteRenderer = cursorObj.GetComponent<SpriteRenderer>();
 
             spriteRenderer.sprite = snapSettings.settings.snapCursor;
@@ -300,32 +374,36 @@ namespace Transidious
             cursorObj.transform.position = new Vector3(closestPt.x, closestPt.y,
                                                        Map.Layer(MapLayer.Cursor));
 
-            game.input.gameCursorPosition = cursorObj.transform.position;
+            _game.input.gameCursorPosition = cursorObj.transform.position;
         }
 
         void SnapToMapObject(MapObjectSnap snapSettings, IMapObject obj)
         {
-            var cursorObj = game.CreateCursorSprite;
+            SnapToPosition(snapSettings.settings, obj.transform.position);
+        }
+
+        void SnapToPosition(SnapSettings snapSettings, Vector2 pos)
+        {
+            var cursorObj = _game.CreateCursorSprite;
             var spriteRenderer = cursorObj.GetComponent<SpriteRenderer>();
 
-            spriteRenderer.sprite = snapSettings.settings.snapCursor;
-            spriteRenderer.color = snapSettings.settings.snapCursorColor;
-            spriteRenderer.transform.localScale = snapSettings.settings.snapCursorScale;
+            spriteRenderer.sprite = snapSettings.snapCursor;
+            spriteRenderer.color = snapSettings.snapCursorColor;
+            spriteRenderer.transform.localScale = snapSettings.snapCursorScale;
 
             Cursor.visible = false;
             cursorObj.SetActive(true);
-            cursorObj.transform.position = new Vector3(obj.transform.position.x,
-                                                       obj.transform.position.y,
+            cursorObj.transform.position = new Vector3(pos.x, pos.y,
                                                        Map.Layer(MapLayer.Cursor));
 
-            game.input.gameCursorPosition = cursorObj.transform.position;
+            _game.input.gameCursorPosition = cursorObj.transform.position;
         }
 
         void Unsnap()
         {
             Cursor.visible = true;
 
-            var cursorObj = game.CreateCursorSprite;
+            var cursorObj = _game.CreateCursorSprite;
             cursorObj.SetActive(false);
         }
     }

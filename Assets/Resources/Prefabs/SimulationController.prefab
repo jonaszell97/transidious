@@ -1,5 +1,35 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5086755248196765016
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5438317801018847841}
+  m_Layer: 0
+  m_Name: TransitVehicles
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5438317801018847841
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5086755248196765016}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4392540316352838572}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6111768573365978046
 GameObject:
   m_ObjectHideFlags: 0
@@ -27,7 +57,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 5438317801018847841}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -45,6 +76,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   game: {fileID: 0}
   simulationSpeed: 0
-  playPauseButton: {fileID: 0}
-  playSprite: {fileID: 21300000, guid: 5fcb9fd4cd3b34978bb3a5e3f6f94933, type: 3}
-  pauseSprite: {fileID: 21300000, guid: 0c3a7d36d672d416a9037c187cdb15ee, type: 3}
+  totalCitizenCount: 0
+  citizenCountTrend: 0
+  citizenCountText: {fileID: 0}
+  citizenCountTrendImg: {fileID: 0}
+  transitVehicleContainer: {fileID: 5438317801018847841}
+  transitVehiclePrefab: {fileID: 5294801842841313851, guid: 23c079ef39aafc84f97f834d594b7992,
+    type: 3}
+  trafficSim: {fileID: 0}
+  _gameTime: 01/03/2000 08:00
