@@ -79,6 +79,9 @@ namespace Transidious
         /// Game object used to render the path between the previous stop and the current cursor position.
         protected GameObject plannedPathMesh;
 
+        /// Set of created temporary stop locations.
+        protected HashSet<Vector2> _tempStopLocations;
+
         /// The length of the line in km.
         protected float length;
 
@@ -106,8 +109,10 @@ namespace Transidious
         protected LineBuilder(GameController game, TransitType transitType)
         {
             this.game = game;
-            this.creationState = CreationState.Idle;
             this.transitType = transitType;
+
+            creationState = CreationState.Idle;
+            _tempStopLocations = new HashSet<Vector2>();
             _temporaryStops = new List<TemporaryStop>();
             UndoStack = new UndoStack(false);
             _stopType = Stop.GetStopType(transitType);
@@ -429,6 +434,7 @@ namespace Transidious
 
                 if (firstStop is TemporaryStop tmp)
                 {
+                    _tempStopLocations.Add(tmp.position);
                     tmp.gameObject.SetActive(true);
                 }
 
@@ -441,6 +447,7 @@ namespace Transidious
             {
                 if (firstStop is TemporaryStop tmp)
                 {
+                    _tempStopLocations.Remove(tmp.position);
                     tmp.gameObject.SetActive(false);
                 }
 
@@ -459,7 +466,7 @@ namespace Transidious
             var firstStop = CreateTempStop(name, pos);
             return CreateFirstStop(type, firstStop);
         }
-        
+
         protected void UpdateCosts()
         {
             game.mainUI.ShowConstructionCost(totalConstructionCost, totalMonthlyCost);
@@ -508,6 +515,7 @@ namespace Transidious
             {
                 if (nextStop is TemporaryStop tmp)
                 {
+                    _tempStopLocations.Add(tmp.position);
                     tmp.gameObject.SetActive(true);
                 }
                 
@@ -531,6 +539,7 @@ namespace Transidious
             {
                 if (nextStop is TemporaryStop tmp)
                 {
+                    _tempStopLocations.Remove(tmp.position);
                     tmp.gameObject.SetActive(false);
                 }
 
@@ -1150,7 +1159,7 @@ namespace Transidious
 
                 snapCondition = pt =>
                 {
-                    if (_hoveredStop != null)
+                    if (_hoveredStop != null || _tempStopLocations.Contains(pt))
                     {
                         return false;
                     }
@@ -1337,7 +1346,7 @@ namespace Transidious
             switch (creationState)
             {
                 case CreationState.FirstStop:
-                    base.CreateFirstStop(transitType, "", game.input.gameCursorPosition);
+                    base.CreateFirstStop(transitType, stop);
                     break;
                 case CreationState.IntermediateStops:
                     if (currentLine.stops.Contains(stop))
@@ -1376,6 +1385,8 @@ namespace Transidious
                     base.AddStop("New Subway Stop", game.input.gameCursorPosition);
                     break;
             }
+
+            game.snapController.Unsnap();
         }
 
         protected override decimal costPerKm => 100_000m;

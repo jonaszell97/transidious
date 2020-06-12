@@ -152,7 +152,7 @@ namespace Transidious
                         dayHours = Tuple.Create(4, 22),
                         nightHours = Tuple.Create(22, 1),
                         operatingDays = Weekday.All,
-                        dayInterval = 5,
+                        dayInterval = 15,
                         nightInterval = 15,
                     },
 

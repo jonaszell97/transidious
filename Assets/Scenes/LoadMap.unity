@@ -1311,7 +1311,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: linesToLoad.Array.size
-      value: 1
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1341,7 +1341,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: forceReload
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1356,7 +1356,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: loadTransitLines
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1366,22 +1366,22 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: linesToLoad.Array.data[1]
-      value: U2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
-        type: 3}
-      propertyPath: linesToLoad.Array.data[2]
-      value: U9
-      objectReference: {fileID: 0}
-    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
-        type: 3}
-      propertyPath: linesToLoad.Array.data[3]
       value: U1
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
+      propertyPath: linesToLoad.Array.data[2]
+      value: U2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
+        type: 3}
+      propertyPath: linesToLoad.Array.data[3]
+      value: U3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
+        type: 3}
       propertyPath: linesToLoad.Array.data[4]
-      value: 100
+      value: U4
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1407,6 +1407,16 @@ PrefabInstance:
         type: 3}
       propertyPath: visualizeIntersections
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
+        type: 3}
+      propertyPath: linesToLoad.Array.data[5]
+      value: U7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
+        type: 3}
+      propertyPath: linesToLoad.Array.data[6]
+      value: U9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 986eb10373372489eaa02d19d5030ae1, type: 3}

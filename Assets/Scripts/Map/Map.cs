@@ -1156,6 +1156,17 @@ namespace Transidious
                 return this;
             }
 
+            public LineBuilder Loop()
+            {
+                for (var i = line.routes.Count - 1; i >= 0; --i)
+                {
+                    var route = line.routes[i];
+                    AddStop(route.beginStop, true, route.positions.AsEnumerable().Reverse().ToList());
+                }
+
+                return this;
+            }
+
             public Line Finish(Schedule sched = null)
             {
                 if (sched != null)

@@ -49,7 +49,8 @@ namespace Transidious
         /// Initialize the transit map.
         public void Initialize()
         {
-            UpdateAppearances(new HashSet<Stop>(GameController.instance.loadedMap.transitStops));
+            UpdateAppearances(new HashSet<Stop>(GameController.instance.loadedMap.transitStops
+                .Where(s => s.Type == Stop.StopType.Underground)));
         }
 
         /// Update stop and line appearance for all stops on a line.
@@ -182,7 +183,7 @@ namespace Transidious
         /// Update the appearance and slot assignment of all routes on a line.
         void UpdateLine(Line line, HashSet<Stop> stops)
         {
-            var routesToReassign = new List<Tuple<Route, Stop, SlotAssignment>>();
+            var routesToReassign = new List<Tuple<Route, Stop, Route, SlotAssignment>>();
             for (var i = 0; i < line.routes.Count; ++i)
             {
                 var route = line.routes[i];
@@ -206,10 +207,10 @@ namespace Transidious
                 Tuple<SlotAssignment, bool> firstAssignment = null;
                 if (stops.Contains(from))
                 {
-                    firstAssignment = AssignSlot(route, from, prevRoute, prevAssignment);
+                    firstAssignment = AssignSlot(route, from, prevRoute, prevAssignment, true);
                     if (prevRoute != null && firstAssignment != null && !firstAssignment.Item2)
                     {
-                        routesToReassign.Add(Tuple.Create(prevRoute, from, firstAssignment.Item1));
+                        routesToReassign.Add(Tuple.Create(prevRoute, from, route, firstAssignment.Item1));
                     }
                 }
 
@@ -218,92 +219,30 @@ namespace Transidious
                     continue;
                 }
 
-                var sndAssignment = AssignSlot(route, to, nextRoute, firstAssignment?.Item1);
-                if (sndAssignment != null && !sndAssignment.Item2)
+                var sndAssignment = AssignSlot(route, to, nextRoute, firstAssignment?.Item1, false);
+                if (sndAssignment != null && sndAssignment.Item1.SlotIndex != firstAssignment?.Item1.SlotIndex)
                 {
-                    routesToReassign.Add(Tuple.Create(route, from, sndAssignment.Item1));
+                    routesToReassign.Add(Tuple.Create(route, from, nextRoute, sndAssignment.Item1));
                 }
             }
 
-            foreach (var (route, stop, slot) in routesToReassign)
+            foreach (var (route, stop, oppositeRoute, slot) in routesToReassign)
             {
-                slot.Route = null;
-                _routeSlotAssignmentMap.Remove(Tuple.Create(route, stop));
-
-                AssignSlot(route, stop, null, slot);
-            }
-        }
-
-        /// Update a route mesh.
-        void UpdateRouteMesh(Route route)
-        {
-            const float offset = 5f;
-
-            var positions = new List<Vector2>();
-            if (_routeSlotAssignmentMap.TryGetValue(Tuple.Create(route, route.beginStop), out var fromAssignment))
-            {
-                var beginPos = GetSlotPosition(route.beginStop, fromAssignment, true);
-                positions.Add(beginPos);
-
-                switch (fromAssignment.SlotDirection)
+                var key = Tuple.Create(route, stop);
+                if (_routeSlotAssignmentMap.TryGetValue(key, out var existingSlot))
                 {
-                    case CardinalDirection.North:
-                        positions.Add(new Vector2(beginPos.x, beginPos.y + offset));
-                        break;
-                    case CardinalDirection.South:
-                        positions.Add(new Vector2(beginPos.x, beginPos.y - offset));
-                        break;
-                    case CardinalDirection.East:
-                        positions.Add(new Vector2(beginPos.x + offset, beginPos.y));
-                        break;
-                    case CardinalDirection.West:
-                        positions.Add(new Vector2(beginPos.x - offset, beginPos.y));
-                        break;
-                }
-            }
-            else
-            {
-                positions.Add(route.beginStop.location);
-            }
-
-            if (_routeSlotAssignmentMap.TryGetValue(Tuple.Create(route, route.endStop), out var toAssignment))
-            {
-                var endPos = GetSlotPosition(route.endStop, toAssignment, true);
-                switch (toAssignment.SlotDirection)
-                {
-                    case CardinalDirection.North:
-                        positions.Add(new Vector2(endPos.x, endPos.y + offset));
-                        break;
-                    case CardinalDirection.South:
-                        positions.Add(new Vector2(endPos.x, endPos.y - offset));
-                        break;
-                    case CardinalDirection.East:
-                        positions.Add(new Vector2(endPos.x + offset, endPos.y));
-                        break;
-                    case CardinalDirection.West:
-                        positions.Add(new Vector2(endPos.x - offset, endPos.y));
-                        break;
+                    existingSlot.Route = null;
+                    _routeSlotAssignmentMap.Remove(key);
                 }
 
-                positions.Add(endPos);
+                AssignSlot(route, stop, oppositeRoute, slot, false);
             }
-            else
-            {
-                positions.Add(route.endStop.location);
-            }
-
-            var collider = route.GetComponent<PolygonCollider2D>();
-            collider.pathCount = 0;
-
-            var mesh = MeshBuilder.CreateSmoothLine(positions, route.line.LineWidth * .3f, 20, 0f, collider);
-            route.UpdateMesh(mesh, positions, null);
-            route.EnableCollision();
-            route.positions = positions;
         }
 
         /// Assign a desired slot to a route.
         Tuple<SlotAssignment, bool>
-        AssignSlot(Route route, Stop stop, Route opposite, SlotAssignment oppositeAssignment = null)
+        AssignSlot(Route route, Stop stop, Route opposite, SlotAssignment oppositeAssignment,
+                   bool reserveOpposite)
         {
             if (!_slotAssignmentMap.TryGetValue(stop, out var assignments))
             {
@@ -341,34 +280,103 @@ namespace Transidious
             SlotAssignment result;
             if (outDirection == null)
             {
-                result = AssignSlot(route, stop, inCardinal, assignments, desiredSlot, false);
+                result = AssignSlot(route, stop, inCardinal, assignments, desiredSlot, false,
+                                    reserveOpposite ? oppositeAssignment : null);
             }
             else
             {
-                var outCardinal = GetCardinalDirection(outDirection.Value);
-                var backward = false;
+                var beginStopPos = route.beginStop.location;
+                var endStopPos = route.endStop.location;
 
+                // Find the destination quadrant.
+                StopQuadrant dstQuadrant;
+                if (endStopPos.x >= beginStopPos.x)
+                {
+                    dstQuadrant = endStopPos.y >= beginStopPos.y ? StopQuadrant.TopRight : StopQuadrant.BottomRight;
+                }
+                else
+                {
+                    dstQuadrant = endStopPos.y >= beginStopPos.y ? StopQuadrant.TopLeft : StopQuadrant.BottomLeft;
+                }
+
+                // Normalize the angle to be relative to the quadrant.
+                var angle = Math.AngleFromHorizontalAxis(endStopPos - beginStopPos);
+                switch (dstQuadrant)
+                {
+                    case StopQuadrant.TopRight:
+                        break;
+                    case StopQuadrant.TopLeft:
+                        angle -= 90f;
+                        break;
+                    case StopQuadrant.BottomLeft:
+                        angle -= 180f;
+                        break;
+                    case StopQuadrant.BottomRight:
+                        angle -= 270f;
+                        break;
+                }
+
+                CardinalDirection outCardinal;
+                if (angle < 15f)
+                {
+                    outCardinal = GetCardinalDirection(outDirection.Value);
+                }
+                else
+                {
+                    switch (dstQuadrant)
+                    {
+                        case StopQuadrant.TopRight:
+                        case StopQuadrant.BottomRight:
+                            outCardinal = CardinalDirection.West;
+                            break;
+                        case StopQuadrant.TopLeft:
+                        case StopQuadrant.BottomLeft:
+                            outCardinal = CardinalDirection.East;
+                            break;
+                        default:
+                            throw new ArgumentException("invalid quadrant");
+                    }
+                }
+                
+                var backward = false;
                 switch (inCardinal)
                 {
                     case CardinalDirection.West:
-                    case CardinalDirection.East:
                         if (outCardinal == CardinalDirection.South)
                         {
                             backward = true;
+                            desiredSlot = assignments[(int) inCardinal].Length - 1;
                         }
 
                         break;
                     case CardinalDirection.North:
-                    case CardinalDirection.South:
-                        if (outCardinal == CardinalDirection.West)
+                        if (outCardinal == CardinalDirection.East)
                         {
                             backward = true;
+                            desiredSlot = assignments[(int) inCardinal].Length - 1;
+                        }
+
+                        break;
+                    case CardinalDirection.East:
+                        if (outCardinal == CardinalDirection.South)
+                        {
+                            backward = true;
+                            desiredSlot = assignments[(int) inCardinal].Length - 1;
+                        }
+
+                        break;
+                    case CardinalDirection.South:
+                        if (outCardinal == CardinalDirection.East || outCardinal == CardinalDirection.West)
+                        {
+                            backward = true;
+                            desiredSlot = assignments[(int) inCardinal].Length - 1;
                         }
 
                         break;
                 }
 
-                result = AssignSlot(route, stop, inCardinal, assignments, desiredSlot, backward);
+                result = AssignSlot(route, stop, inCardinal, assignments, desiredSlot, backward,
+                                    reserveOpposite ? oppositeAssignment : null);
             }
 
             return Tuple.Create(result, result?.SlotIndex == desiredSlot);
@@ -377,7 +385,8 @@ namespace Transidious
         /// Assign a desired slot.
         SlotAssignment AssignSlot(Route route, Stop stop, CardinalDirection direction,
                                   SlotAssignment[][] assignments,
-                                  int desiredSlot, bool backward)
+                                  int desiredSlot, bool backward,
+                                  SlotAssignment oppositeAssignment)
         {
             var availableSlots = assignments[(int) direction];
             desiredSlot = Mathf.Clamp(desiredSlot, 0, availableSlots.Length - 1);
@@ -394,8 +403,11 @@ namespace Transidious
                     _routeSlotAssignmentMap[Tuple.Create(route, stop)] = slot;
 
                     // Reserve the opposite slot for this line.
-                    var oppositeSlot = assignments[(int) direction.Opposite()][i];
-                    oppositeSlot.ReservedForLine = route.line;
+                    if (oppositeAssignment == null)
+                    {
+                        var oppositeSlot = assignments[(int) direction.Opposite()][i];
+                        oppositeSlot.ReservedForLine = route.line;
+                    }
 
                     return slot;
                 }
@@ -516,6 +528,333 @@ namespace Transidious
             }
 
             return pos;
+        }
+
+#if DEBUG
+        void CreateDebugSubwayLines()
+        {
+            var map = GameController.instance.loadedMap;
+            var basePos = map.GetMapObject<NaturalFeature>("Sophie-Charlotte-Platz").VisualCenter;
+
+            var Ruhleben = map.GetOrCreateStop(Stop.StopType.Underground, "U Ruhleben",             basePos + new Vector2(-2400f, 600f));
+            var OlympiaStadion = map.GetOrCreateStop(Stop.StopType.Underground, "U Olympiastadion", basePos + new Vector2(-2200f, 400f));
+            var NeuWestend = map.GetOrCreateStop(Stop.StopType.Underground, "U Neu-Westend",        basePos + new Vector2(-2000f, -200f));
+            var THP = map.GetOrCreateStop(Stop.StopType.Underground, "U Theodor-Heuss-Platz",       basePos + new Vector2(-1600f, 0f));
+            var Kaiserdamm = map.GetOrCreateStop(Stop.StopType.Underground, "U Kaiserdamm",         basePos + new Vector2(-800f, 0f));
+            var SCP = map.GetOrCreateStop(Stop.StopType.Underground, "U Sophie-Charlotte-Platz",    basePos);
+
+            var u2 = map.CreateLine(TransitType.Subway, "U2", Color.red)
+                .AddStop(Ruhleben)
+                .AddStop(OlympiaStadion)
+                .AddStop(NeuWestend)
+                .AddStop(THP)
+                .AddStop(Kaiserdamm)
+                .AddStop(SCP)
+                .Loop();
+
+            UpdateAppearances(u2.line);
+            u2.Finish();
+        }
+#endif
+
+        /*
+         * X: Current stop
+         * A, B, C, D, M: Destination stops
+         * |-------------------------------------------------|
+         * |                        |   D    C               |
+         * |                        M                     B  |
+         * |                        |                     A  |
+         * |-----------M------------X------------M-----------|
+         * |                        |                        |
+         * |                        M                        |
+         * |                        |                        |
+         * |-------------------------------------------------|
+         */
+        enum StopLocation
+        {
+            A, B, C, D,
+        }
+
+        enum StopQuadrant
+        {
+            TopLeft, TopRight, BottomLeft, BottomRight,
+        }
+
+        void FinalizeRouteMesh(Route route, List<Vector2> positions)
+        {
+            var collider = route.GetComponent<PolygonCollider2D>();
+            collider.pathCount = 0;
+
+            var mesh = MeshBuilder.CreateSmoothLine(positions, route.line.LineWidth * .3f, 20, 0f, collider);
+            route.UpdateMesh(mesh, positions, null);
+            route.EnableCollision();
+            route.positions = positions;
+        }
+
+        void UpdateRouteMesh(Route route)
+        {
+            var positions = new List<Vector2>();
+
+            var beginStop = route.beginStop;
+            var endStop = route.endStop;
+
+            var beginStopPos = beginStop.location;
+            var endStopPos = endStop.location;
+
+            // Case M: Same X / Y
+            if (beginStopPos.x.Equals(endStopPos.x) || beginStopPos.y.Equals(endStopPos.y))
+            {
+                positions.Add(beginStopPos);
+                positions.Add(endStopPos);
+
+                FinalizeRouteMesh(route, positions);
+                return;
+            }
+
+            const float offset = 5f;
+            const float thresholdAngle = 15f;
+
+            var distance = (endStopPos - beginStopPos).magnitude;
+            var angle = Math.AngleFromHorizontalAxis(endStopPos - beginStopPos) % 90f;
+            if (angle > 45f)
+            {
+                angle = 90f - angle;
+            }
+
+            if (angle < thresholdAngle || distance < 2 * offset)
+            {
+                positions.Add(beginStopPos);
+                positions.Add(endStopPos);
+
+                FinalizeRouteMesh(route, positions);
+                return;
+            }
+
+            var oneThirdDistance = distance * (1f / 3f);
+
+            Vector2 beginPos;
+            CardinalDirection beginCardinal;
+
+            if (_routeSlotAssignmentMap.TryGetValue(Tuple.Create(route, route.beginStop), out var fromAssignment))
+            {
+                beginPos = GetSlotPosition(route.beginStop, fromAssignment, true);
+                beginCardinal = fromAssignment.SlotDirection;
+            }
+            else
+            {
+                beginPos = route.beginStop.location;
+                beginCardinal = GetCardinalDirection(route.positions[1] - route.positions[0]);
+            }
+
+            positions.Add(beginPos);
+
+            // Avoid 90-degree angles.
+            switch (beginCardinal)
+            {
+                case CardinalDirection.North:
+                    positions.Add(new Vector2(beginPos.x, beginPos.y + oneThirdDistance));
+                    break;
+                case CardinalDirection.South:
+                    positions.Add(new Vector2(beginPos.x, beginPos.y - oneThirdDistance));
+                    break;
+                case CardinalDirection.East:
+                    positions.Add(new Vector2(beginPos.x + oneThirdDistance, beginPos.y));
+                    break;
+                case CardinalDirection.West:
+                    positions.Add(new Vector2(beginPos.x - oneThirdDistance, beginPos.y));
+                    break;
+            }
+
+            Vector2 endPos;
+            CardinalDirection endCardinal;
+            if (_routeSlotAssignmentMap.TryGetValue(Tuple.Create(route, route.endStop), out var toAssignment))
+            {
+                endPos = GetSlotPosition(route.endStop, toAssignment, true);
+                endCardinal = toAssignment.SlotDirection;
+            }
+            else
+            {
+                endPos = route.endStop.location;
+                endCardinal = GetCardinalDirection(route.positions.SecondToLast() - route.positions.Last());
+            }
+
+            switch (endCardinal)
+            {
+                case CardinalDirection.North:
+                    positions.Add(new Vector2(endPos.x, endPos.y + oneThirdDistance));
+                    break;
+                case CardinalDirection.South:
+                    positions.Add(new Vector2(endPos.x, endPos.y - oneThirdDistance));
+                    break;
+                case CardinalDirection.East:
+                    positions.Add(new Vector2(endPos.x + oneThirdDistance, endPos.y));
+                    break;
+                case CardinalDirection.West:
+                    positions.Add(new Vector2(endPos.x - oneThirdDistance, endPos.y));
+                    break;
+            }
+
+            positions.Add(endPos);
+            FinalizeRouteMesh(route, positions);
+        }
+
+        /// Update a route mesh.
+        void UpdateRouteMesh_(Route route)
+        {
+            const float offset = 5f;
+            var positions = new List<Vector2>();
+
+            var beginStop = route.beginStop;
+            var endStop = route.endStop;
+
+            var beginStopPos = beginStop.location;
+            var endStopPos = endStop.location;
+
+            // Case M: Same X / Y
+            if (beginStopPos.x.Equals(endStopPos.x) || beginStopPos.y.Equals(endStopPos.y))
+            {
+                positions.Add(beginStopPos);
+                positions.Add(endStopPos);
+
+                FinalizeRouteMesh(route, positions);
+                return;
+            }
+
+            // Find the destination quadrant.
+            StopQuadrant dstQuadrant;
+            if (endStopPos.x >= beginStopPos.x)
+            {
+                dstQuadrant = endStopPos.y >= beginStopPos.y ? StopQuadrant.TopRight : StopQuadrant.BottomRight;
+            }
+            else
+            {
+                dstQuadrant = endStopPos.y >= beginStopPos.y ? StopQuadrant.TopLeft : StopQuadrant.BottomLeft;
+            }
+
+            // Normalize the angle to be relative to the quadrant.
+            var angle = Math.AngleFromHorizontalAxis(endStopPos - beginStopPos);
+            switch (dstQuadrant)
+            {
+                case StopQuadrant.TopRight:
+                    break;
+                case StopQuadrant.TopLeft:
+                    angle -= 90f;
+                    break;
+                case StopQuadrant.BottomLeft:
+                    angle -= 180f;
+                    break;
+                case StopQuadrant.BottomRight:
+                    angle -= 270f;
+                    break;
+            }
+
+            // Find the destination location.
+            StopLocation dstLocation;
+
+            const float thresholdAngle = 45f;
+            const float thresholdDistance = 50f;
+            if (angle <= thresholdAngle)
+            {
+                var distanceFromXAxis = Mathf.Abs(endStopPos.y - beginStopPos.y);
+                dstLocation = distanceFromXAxis <= thresholdDistance ? StopLocation.A : StopLocation.B;
+            }
+            else
+            {
+                var distanceFromYAxis = Mathf.Abs(endStopPos.x - beginStopPos.x);
+                dstLocation = distanceFromYAxis <= thresholdDistance ? StopLocation.D : StopLocation.C;
+            }
+
+            Vector2 beginPos;
+            CardinalDirection beginCardinal;
+
+            if (_routeSlotAssignmentMap.TryGetValue(Tuple.Create(route, route.beginStop), out var fromAssignment))
+            {
+                beginPos = GetSlotPosition(route.beginStop, fromAssignment, true);
+                beginCardinal = fromAssignment.SlotDirection;
+            }
+            else
+            {
+                beginPos = route.beginStop.location;
+                beginCardinal = GetCardinalDirection(route.positions[1] - route.positions[0]);
+            }
+
+            positions.Add(beginPos);
+
+            float startOffset;
+            switch (dstLocation)
+            {
+                default:
+                case StopLocation.A:
+                case StopLocation.D:
+                    startOffset = Mathf.Abs(endStopPos.y - beginStopPos.y);
+                    break;
+                case StopLocation.B:
+                case StopLocation.C:
+                    startOffset = (endStopPos - beginStopPos).magnitude * (1f / 3f);
+                    break;
+            }
+
+            switch (beginCardinal)
+            {
+                case CardinalDirection.North:
+                    positions.Add(new Vector2(beginPos.x, beginPos.y + startOffset));
+                    break;
+                case CardinalDirection.South:
+                    positions.Add(new Vector2(beginPos.x, beginPos.y - startOffset));
+                    break;
+                case CardinalDirection.East:
+                    positions.Add(new Vector2(beginPos.x + startOffset, beginPos.y));
+                    break;
+                case CardinalDirection.West:
+                    positions.Add(new Vector2(beginPos.x - startOffset, beginPos.y));
+                    break;
+            }
+
+            Vector2 endPos;
+            CardinalDirection endCardinal;
+            if (_routeSlotAssignmentMap.TryGetValue(Tuple.Create(route, route.endStop), out var toAssignment))
+            {
+                endPos = GetSlotPosition(route.endStop, toAssignment, true);
+                endCardinal = toAssignment.SlotDirection;
+            }
+            else
+            {
+                endPos = route.endStop.location;
+                endCardinal = GetCardinalDirection(route.positions.SecondToLast() - route.positions.Last());
+            }
+
+            float endOffset;
+            switch (dstLocation)
+            {
+                default:
+                case StopLocation.A:
+                case StopLocation.D:
+                    endOffset = 0f;
+                    break;
+                case StopLocation.B:
+                case StopLocation.C:
+                    endOffset = (endStopPos - beginStopPos).magnitude * (1f / 3f);
+                    break;
+            }
+
+            switch (endCardinal)
+            {
+                case CardinalDirection.North:
+                    positions.Add(new Vector2(endPos.x, endPos.y + endOffset));
+                    break;
+                case CardinalDirection.South:
+                    positions.Add(new Vector2(endPos.x, endPos.y - endOffset));
+                    break;
+                case CardinalDirection.East:
+                    positions.Add(new Vector2(endPos.x + endOffset, endPos.y));
+                    break;
+                case CardinalDirection.West:
+                    positions.Add(new Vector2(endPos.x - endOffset, endPos.y));
+                    break;
+            }
+
+            positions.Add(endPos);
+            FinalizeRouteMesh(route, positions);
         }
     }
 }

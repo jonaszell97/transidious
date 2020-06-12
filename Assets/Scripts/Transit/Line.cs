@@ -291,6 +291,9 @@ namespace Transidious
 
         public void StartVehicles()
         {
+            if (vehicles.Count == 0)
+                return;
+
             var first = vehicles[0];
             first.InitializeNextDepartures();
             first.StartDrive();

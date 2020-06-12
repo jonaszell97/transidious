@@ -399,7 +399,7 @@ namespace Transidious
             _game.input.gameCursorPosition = cursorObj.transform.position;
         }
 
-        void Unsnap()
+        public void Unsnap()
         {
             Cursor.visible = true;
 

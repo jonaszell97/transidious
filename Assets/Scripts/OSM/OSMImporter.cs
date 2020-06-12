@@ -897,6 +897,9 @@ namespace Transidious
             return boundaryPositions;
         }
 
+        private Dictionary<Tuple<Stop.StopType, string>, Stop> _createdStops =
+            new Dictionary<Tuple<Stop.StopType, string>, Stop>();
+
         Stop GetOrCreateStop(TransitType type, Node stopNode, bool projectOntoStreet = false)
         {
             if (stopNode == null)
@@ -928,6 +931,10 @@ namespace Transidious
                 closestPtAndPos = StreetSegment.GetClosestPointAndPosition(loc, positions);
                 loc = closestPtAndPos.Item1;
             }
+            else
+            {
+                loc = map.GetNearestGridPt(loc);
+            }
 
             var stopName = stopNode.Geo.Tags.GetValue("name");
             stopName = stopName.Replace("S+U ", "");
@@ -936,9 +943,16 @@ namespace Transidious
             stopName = stopName.Replace("Berlin-", "");
             stopName = stopName.Replace("Berlin ", "");
 
-            var s = map.CreateStop(Stop.GetStopType(type), stopName, loc);
-            stopMap.Add(stopNode.Geo.Id, s);
+            var key = Tuple.Create(Stop.GetStopType(type), stopName);
+            _createdStops.TryGetValue(key, out Stop s);
 
+            if (s == null)
+            {
+                s = map.CreateStop(Stop.GetStopType(type), stopName, loc);
+                _createdStops.Add(key, s);
+            }
+
+            stopMap.Add(stopNode.Geo.Id, s);
             return s;
         }
 
@@ -965,58 +979,16 @@ namespace Transidious
                 var name = l1.Geo.Tags.GetValue("ref");
                 var type = linePair.Value.type;
                 var l = map.CreateLine(type, name, color);
-
                 var members = l1.Members.ToList();
-                if (l2 != null)
+                
+                if (type == TransitType.Bus && l2 != null)
                 {
                     members.AddRange(l2.Members);
                 }
 
-                int i = 0;
                 List<Vector2> wayPositions = null;
-                List<Vector2> currentPositions = null;
 
-                if (type != TransitType.Bus)
-                {
-                    wayPositions = new List<Vector2>();
-                    currentPositions = new List<Vector2>();
-                    
-                    foreach (var member in members)
-                    {
-                        if (!string.IsNullOrEmpty(member.Role))
-                            continue;
-
-                        var way = FindWay(member.Id);
-                        if (way == null)
-                        {
-                            continue;
-                        }
-
-                        foreach (var nodeId in way.Nodes)
-                        {
-                            var node = FindNode(nodeId);
-                            if (node == null)
-                                continue;
-
-                            currentPositions.Add(Project(node));
-
-                            if (i != 0 && node.Geo.Tags != null
-                            && (node.Geo.Tags.GetValue("railway").StartsWith("stop", StringComparison.InvariantCulture)
-                            || node.Geo.Tags.GetValue("public_transport").StartsWith("stop", StringComparison.InvariantCulture)
-                            || node.Geo.Tags.GetValue("highway").Contains("stop")))
-                            {
-                                wayPositions.AddRange(currentPositions);
-                                currentPositions.Clear();
-                            }
-                        }
-
-                        ++i;
-                    }
-                }
-
-                i = 0;
                 var n = 0;
-
                 Stop previousStop = null;
                 foreach (var member in members)
                 {
@@ -1027,7 +999,6 @@ namespace Transidious
                     }
 
                     Stop s = null;
-
                     Way platform = null;
                     if (n < members.Count - 1 && members[n + 1].Role.StartsWith("platform"))
                     {
@@ -1063,13 +1034,19 @@ namespace Transidious
                         previousStop = s;
                     }
 
-                    ++i;
                     ++n;
                 }
 
-                if (l.line.stops.Count != 0 && previousStop != l.line.stops.First())
+                if (type == TransitType.Bus)
                 {
-                    l.AddStop(l.line.stops.First(), false, null, true);
+                    if (l.line.stops.Count != 0 && previousStop != l.line.stops.First())
+                    {
+                        l.AddStop(l.line.stops.First(), false, null, true);
+                    }
+                }
+                else
+                {
+                    l.Loop();
                 }
 
                 l.Finish();

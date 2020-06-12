@@ -355,20 +355,9 @@ namespace Transidious
 
             UpdateGameTimeString();
             UpdateCitizenUI();
+            game.mainUI.UpdateDayNightOverlay(gameTime);
 
-            if (gameTime.Hour == 7 && gameTime.Minute == 0)
-            {
-                game.displayMode = MapDisplayMode.Day;
-                game.input.FireEvent(InputEvent.DisplayModeChange);
-            }
-            else if (gameTime.Hour == 19 && gameTime.Minute == 0)
-            {
-                game.displayMode = MapDisplayMode.Night;
-                game.input.FireEvent(InputEvent.DisplayModeChange);
-            }
-
-            var newDay = gameTime.DayOfYear;
-            return prevDay != newDay;
+            return prevDay != gameTime.DayOfYear;
         }
 
         public void SetGameTime(DateTime time)

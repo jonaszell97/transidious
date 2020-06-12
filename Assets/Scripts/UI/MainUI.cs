@@ -25,8 +25,11 @@ namespace Transidious
         /// The main UI instance.
         public static MainUI instance;
 
-        /// Referene to the main camera.
+        /// Reference to the main camera.
         public Camera mainCamera;
+
+        /// The day/night overlay.
+        public Image dayNightOverlay;
 
         /// Reference to the game controller.
         public GameController game;
@@ -348,6 +351,72 @@ namespace Transidious
 
             transitUI.Initialize();
             highlightOverlay.Initialize();
+        }
+
+        public void UpdateDayNightOverlay(DateTime gameTime)
+        {
+            var hour = gameTime.Hour;
+            if (hour >= 7 && hour <= 17)
+            {
+                dayNightOverlay.gameObject.SetActive(false);
+                return;
+            }
+
+            dayNightOverlay.gameObject.SetActive(true);
+
+            float alpha;
+            switch (hour)
+            {
+                case 18:
+                    alpha = 0f;
+                    break;
+                case 19:
+                    alpha = 20f;
+                    break;
+                case 20:
+                    alpha = 40f;
+                    break;
+                case 21:
+                    alpha = 60f;
+                    break;
+                case 22:
+                    alpha = 80f;
+                    break;
+                case 23:
+                    alpha = 100f;
+                    break;
+                case 24:
+                    alpha = 120f;
+                    break;
+                case 0:
+                    alpha = 120f;
+                    break;
+                case 1:
+                    alpha = 100f;
+                    break;
+                case 2:
+                    alpha = 80f;
+                    break;
+                case 3:
+                    alpha = 60f;
+                    break;
+                case 4:
+                    alpha = 40f;
+                    break;
+                case 5:
+                    alpha = 20f;
+                    break;
+                case 6:
+                    alpha = 00f;
+                    break;
+                default:
+                    alpha = 0f;
+                    Debug.LogError("invalid hour");
+                    break;
+            }
+
+            alpha = Mathf.Min(120f, alpha + (hour >= 1 && hour <= 6 ? -1 : 1) * (gameTime.Minute / 60f) * 20f);
+            dayNightOverlay.color = new Color(0f, 0f, 0f, alpha / 255f);
         }
 
         public void ShowOverlay()
