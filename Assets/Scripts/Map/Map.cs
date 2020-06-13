@@ -206,7 +206,7 @@ namespace Transidious
             this.buildingOccupation = new Dictionary<Tuple<Building.Type, OccupancyKind>, int>();
 
             this.tileSize = tileSize;
-            this.tilesToShow = new HashSet<MapTile>();
+            this._tilesToShow = new MapTile[4];
             mapObjectIDMap[0] = null;
 
             if (resetIDs)
@@ -1861,29 +1861,17 @@ namespace Transidious
             return false;
         }
 
-        HashSet<MapTile> tilesToShow;
+        private MapTile[] _tilesToShow;
 
         public void UpdateVisibleTiles()
         {
-            if (tiles == null)
+            if (tiles == null || input.renderingDistance == RenderingDistance.Far)
             {
                 return;
             }
 
-#if DEBUG
-            if (Game.ImportingMap)
-            {
-                foreach (var tile in AllTiles)
-                {
-                    tile.Show(RenderingDistance.Near);
-                }
-
-                return;
-            }
-#endif
-
-            var bottomLeft = Camera.main.ViewportToWorldPoint(new Vector3(0f, 0f));
-            var topRight = Camera.main.ViewportToWorldPoint(new Vector3(1f, 1f));
+            var bottomLeft = input.camera.ViewportToWorldPoint(new Vector3(0f, 0f));
+            var topRight = input.camera.ViewportToWorldPoint(new Vector3(1f, 1f));
             var cameraRect = new Rect(bottomLeft.x, bottomLeft.y,
                                       topRight.x - bottomLeft.x,
                                       topRight.y - bottomLeft.y);
@@ -1896,9 +1884,37 @@ namespace Transidious
                 }
             }
 
-            tilesToShow.Clear();
+            var topLeft = input.camera.ViewportToWorldPoint(new Vector3(0f, 1f));
+            var bottomRight = input.camera.ViewportToWorldPoint(new Vector3(1f, 0f));
+
+            var visibleTile1 = GetTile(bottomLeft);
+            var visibleTile2 = GetTile(topRight);
+            var visibleTile3 = GetTile(bottomRight);
+            var visibleTile4 = GetTile(topLeft);
+
+            for (var i = 0; i < 4; ++i)
+            {
+                var tile = _tilesToShow[i];
+                if (tile == null | tile == visibleTile1 | tile == visibleTile2 | tile == visibleTile3 | tile == visibleTile4)
+                {
+                    continue;
+                }
+
+                tile.Hide();
+            }
 
             var renderingDistance = input?.renderingDistance ?? RenderingDistance.Near;
+            visibleTile1?.Show(renderingDistance);
+            visibleTile2?.Show(renderingDistance);
+            visibleTile3?.Show(renderingDistance);
+            visibleTile4?.Show(renderingDistance);
+
+            _tilesToShow[0] = visibleTile1;
+            _tilesToShow[1] = visibleTile2;
+            _tilesToShow[2] = visibleTile3;
+            _tilesToShow[3] = visibleTile4;
+
+            /*var renderingDistance = input?.renderingDistance ?? RenderingDistance.Near;
             for (var x = 0; x < tilesWidth; ++x)
             {
                 var endX = (x + 1) * tileSize;
@@ -1935,7 +1951,7 @@ namespace Transidious
                         tile.Hide();
                     }
                 }
-            }
+            }*/
 
             prevCameraRect = cameraRect;
         }
@@ -1997,11 +2013,26 @@ namespace Transidious
             }
         }
 
-        public void UpdateScale()
+        private void UpdateScale()
         {
-            foreach (var tile in ActiveTiles)
+            if (input.renderingDistance == RenderingDistance.Far)
             {
-                tile.Show(input.renderingDistance);
+                foreach (var tile in AllTiles)
+                {
+                    tile.Show(RenderingDistance.Far);
+                }
+
+                prevCameraRect = null;
+            }
+            else
+            {
+                foreach (var tile in AllTiles)
+                {
+                    tile.Hide();
+                }
+
+                prevCameraRect = null;
+                UpdateVisibleTiles();
             }
         }
 
