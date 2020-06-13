@@ -539,6 +539,88 @@ namespace Transidious
             }
         }
 
+        public static List<Polygon2D> TriangulateBatch(List<PSLG> pslgs)
+        {
+            var polyFiles = new List<string>();
+            foreach (var pslg in pslgs)
+            {
+                if (pslg.vertices.Count == 0)
+                {
+                    Debug.LogWarning("No vertices passed to triangle. hole count: "
+                                     + pslg.holes.Count + ", vert count: " + pslg.vertices.Count);
+
+                    continue;
+                }
+
+                try
+                {
+                    if (!pslg.Validate())
+                    {
+                        Debug.LogError("Invalid points in PSLG!");
+                        continue;
+                    }
+
+                    // Write poly file
+                    var polyFilePath = WritePolyFile(pslg);
+                    polyFiles.Add(polyFilePath);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning(e.GetType().AssemblyQualifiedName + " " + e.Message);
+                }
+            }
+
+            using (var process = new System.Diagnostics.Process
+            {
+                StartInfo =
+                {
+                    FileName = "/Users/Jonas/Transidious/Plugins/TriangleAPI/cmake-build-release/TriangleAPI",
+                    Arguments = string.Join(" ", polyFiles),
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = false,
+                },
+                EnableRaisingEvents = true
+            })
+            {
+                process.Start();
+                if (!process.WaitForExit(100000))
+                {
+                    return null;
+                }
+
+                if (process.ExitCode != 0)
+                {
+                    Debug.LogError($"TriangleAPI has failed with exit code {process.ExitCode}");
+                }
+            }
+
+            var polys = new List<Polygon2D>();
+            var i = 0;
+
+            foreach (var polyFilePath in polyFiles)
+            {
+                try
+                {
+                    // Read output
+                    Vector3[] vertices = ReadVerticesFile(polyFilePath, pslgs[i].z);
+                    int[] triangles = ReadTrianglesFile(polyFilePath);
+
+                    polys.Add(new Polygon2D(triangles, vertices));
+                }
+                catch (Exception e)
+                {
+                    polys.Add(null);
+                    Debug.LogWarning(e);
+                }
+
+                ++i;
+            }
+
+            return polys;
+        }
+
         static int GetIndex(Vertex v, List<Vector3> vertices, Dictionary<Vector2, int> triMap)
         {
             Vector3 vert = new Vector3((float)v.x, (float)v.y, 0f);
@@ -673,7 +755,33 @@ namespace Transidious
             return mesh;
         }
 
-        public static Mesh CreateMeshOld(PSLG pslg)
+        public static List<Mesh> CreateMeshes(List<PSLG> pslgs)
+        {
+            var polys = TriangulateBatch(pslgs);
+            var meshes = new List<Mesh>();
+
+            foreach (var poly in polys)
+            {
+                if (poly == null)
+                {
+                    meshes.Add(null);
+                    continue;
+                }
+
+                var mesh = new Mesh
+                {
+                    vertices = poly.vertices,
+                    triangles = poly.triangles
+                };
+
+                MeshBuilder.FixWindingOrder(mesh);
+                meshes.Add(mesh);
+            }
+
+            return meshes;
+        }
+
+        private static Mesh CreateMeshOld(PSLG pslg)
         {
             if (pslg == null)
             {

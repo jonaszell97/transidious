@@ -826,7 +826,7 @@ namespace Transidious
 
             foreach (var seg in tile.streetSegments)
             {
-                if (disregardRivers && seg.street.type == Street.Type.River)
+                if (disregardRivers == (seg.street.type == Street.Type.River))
                     continue;
 
                 for (int i = 1; i < seg.drivablePositions.Count; ++i)

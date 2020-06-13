@@ -516,6 +516,9 @@ namespace Transidious.PathPlanning
         /// Whether or not to allow walking.
         public bool allowWalk = true;
 
+        /// Whether or not to allow rivers.
+        public bool useRivers = false;
+
         /// The maximum acceptable walking distance between stations.
         public float maxWalkingDistance = 1000f;
 
@@ -1191,7 +1194,7 @@ namespace Transidious.PathPlanning
                                                    bool endAtParkingLot = false, DateTime? leaveBy = null)
         {
             var time = leaveBy ?? GameController.instance.sim.GameTime;
-            var nearestPtFrom = map.GetClosestStreet(from);
+            var nearestPtFrom = map.GetClosestStreet(from, true, !options.useRivers);
 
             IMapObject nearestParking = null;
             if (endAtParkingLot)
@@ -1199,7 +1202,7 @@ namespace Transidious.PathPlanning
                 nearestParking = FindNearestParkingLot(to);
             }
 
-            var nearestPtTo = map.GetClosestStreet(endAtParkingLot ? nearestParking.VisualCenter : to);
+            var nearestPtTo = map.GetClosestStreet(endAtParkingLot ? nearestParking.VisualCenter : to, true, !options.useRivers);
             if (nearestPtFrom == null || nearestPtTo == null)
             {
                 return !options.allowWalk ? null : CreateWalk(time, from, to);

@@ -643,7 +643,7 @@ namespace Transidious
                 nightInterval = 20,
             });
 
-            if (_stopType == Stop.StopType.StreetBound)
+            if (_stopType == Stop.StopType.StreetBound || _stopType == Stop.StopType.WaterBound)
             {
                 var crossedStreets = new HashSet<Tuple<StreetSegment, int>>();
                 var j = 0;
@@ -741,13 +741,23 @@ namespace Transidious
 
     public abstract class StreetboundLineBuilder : LineBuilder
     {
+        /// The path planner.
+        protected PathPlanning.PathPlanner planner;
+
         /// Previous calculated paths for the temporary line.
         protected List<TrafficSimulator.PathSegmentInfo> temporarySegments;
 
         /// Protected c'tor.
         protected StreetboundLineBuilder(GameController game, TransitType transitType) : base(game, transitType)
         {
-            this.temporarySegments = new List<TrafficSimulator.PathSegmentInfo>();
+            var options = new PathPlanning.PathPlanningOptions
+            {
+                allowWalk = false,
+                useRivers = _stopType == Stop.StopType.WaterBound,
+            };
+
+            planner = new PathPlanning.PathPlanner(options);
+            temporarySegments = new List<TrafficSimulator.PathSegmentInfo>();
         }
 
         public override void Initialize()
@@ -810,6 +820,11 @@ namespace Transidious
 
         protected void OnMouseEnter(StreetSegment street)
         {
+            if (street.IsRiver != (transitType == TransitType.Ferry))
+            {
+                return;
+            }
+
             switch (creationState)
             {
                 case CreationState.FirstStop:
@@ -822,9 +837,6 @@ namespace Transidious
 
         protected void DrawTemporaryPath(Vector2 pos)
         {
-            var options = new PathPlanning.PathPlanningOptions { allowWalk = false };
-            var planner = new PathPlanning.PathPlanner(options);
-
             var result = planner.FindClosestDrive(game.loadedMap, previousStop.transform.position,
                                                   pos);
 
@@ -847,7 +859,7 @@ namespace Transidious
                 return;
             }
 
-            stop.transform.localScale = new Vector3(1.3f, 1.3f, 1.0f);
+            stop.transform.ScaleBy(1.3f);
 
             switch (creationState)
             {
@@ -889,6 +901,11 @@ namespace Transidious
 
         protected void OnMouseOver(StreetSegment street)
         {
+            if (street.IsRiver != (transitType == TransitType.Ferry))
+            {
+                return;
+            }
+
             switch (creationState)
             {
                 case CreationState.IntermediateStops:
@@ -903,7 +920,7 @@ namespace Transidious
         {
             if (stop.Kind == MapObjectKind.Stop || stop.Kind == MapObjectKind.TemporaryStop)
             {
-                stop.transform.localScale = Vector3.one;
+                stop.transform.ScaleBy(1f/1.3f);
             }
 
             switch (creationState)
@@ -921,6 +938,11 @@ namespace Transidious
 
         protected void OnMouseDown(StreetSegment street)
         {
+            if (street.IsRiver != (transitType == TransitType.Ferry))
+            {
+                return;
+            }
+
             switch (creationState)
             {
                 case CreationState.FirstStop:
@@ -1132,6 +1154,42 @@ namespace Transidious
             temporarySegments.Clear();
             temporaryPath = game.sim.trafficSim.GetCompletePath(path, temporarySegments);
             base.DrawCurrentPath();
+        }
+    }
+    
+    public class FerryLineBuilder : StreetboundLineBuilder
+    {
+        /// Public c'tor.
+        public FerryLineBuilder(GameController game) : base(game, TransitType.Ferry)
+        {
+
+        }
+
+        protected override decimal costPerKm => 0m;
+
+        protected override decimal operatingCostPerKm => 50m;
+
+        protected override decimal costPerStop => 3000m;
+
+        protected override decimal operatingCostPerStop => 150m;
+
+        /// Initialize the event listeners.
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            this.snapSettingID = game.snapController.AddSnap(typeof(StreetSegment), new SnapSettings
+            {
+                snapCursor = game.createStreetSprite,
+                snapCursorColor = Colors.GetDefaultSystemColor(TransitType.Ferry),
+                snapCursorScale = new Vector3(3f, 3f, 1f),
+
+                hideCursor = true,
+
+                snapToEnd = false,
+                snapToLane = true,
+                snapToRivers = true,
+            }, false);
         }
     }
 

@@ -236,7 +236,7 @@ tgBackup = open('./Files/_OSMImport.tg', 'w')
 tgBackup.write(tgContent)
 tgBackup.close()
 
-index = tgContent.find('def ' + searchTerm)
+index = tgContent.find('def ' + searchTerm + ' ')
 if index != -1:
     open_braces = 0
     close_braces = 0

@@ -75,6 +75,9 @@ namespace Transidious
         private readonly Dictionary<MapTile, List<MeshFilter>> _tileMeshes;
         readonly Statistics _stats;
 
+        /// Whether or not we should batch triangulations.
+        private bool _batchTriangulations;
+
         List<Tuple<IMapObject, MeshInfo>> _sortedMeshes;
         List<Tuple<IMapObject, MeshInfo>> SortedMeshes
         {
@@ -90,10 +93,11 @@ namespace Transidious
             }
         }
 
-        public MapExporter(Map map, int resolution = 4096)
+        public MapExporter(Map map, int resolution = 4096, bool batchTriangulations = false)
         {
             this.map = map;
             this.resolution = resolution;
+            _batchTriangulations = batchTriangulations;
             this.meshInfo = new Dictionary<IMapObject, MeshInfo>();
             this._stats = new Statistics();
             this._otherMeshes = new List<Tuple<MapTile[], MeshInfo>>();
@@ -677,7 +681,7 @@ namespace Transidious
         {
             var objectsToDraw = new HashSet<IMapObject>();
             var streetsToDraw = new HashSet<StreetSegment>();
-            
+
             foreach (var obj in tile.mapObjects)
             {
                 if (!meshInfo.ContainsKey(obj))
@@ -841,12 +845,6 @@ namespace Transidious
             }
         }
 
-        Mesh CreateMesh(MeshInfo info, bool fast)
-        {
-            var pslg = info.pslg;
-            return TriangleAPI.CreateMesh(pslg, fast || pslg.Simple);
-        }
-        
         Mesh CreateMesh(PSLG pslg, bool fast)
         {
             return TriangleAPI.CreateMesh(pslg, fast || pslg.Simple);
@@ -966,8 +964,11 @@ namespace Transidious
 
                 yield break;
             }
-            
+
+            var pslgs = new List<PSLG>();
+            var pslgInfo = new Dictionary<Tuple<MapTile, PSLG>, Tuple<MapTile, string, UnityEngine.Color, float>>();
             var meshes = new Dictionary<MapTile, List<Tuple<string, Mesh, UnityEngine.Color, float>>>();
+
             foreach (var tile in map.AllTiles)
             {
                 meshes.Add(tile, new List<Tuple<string, Mesh, Color, float>>());
@@ -982,7 +983,7 @@ namespace Transidious
                     var streetColor = seg.GetStreetColor();
 
                     var mapLayer = seg.IsRiver ? MapLayer.Rivers : MapLayer.Streets;
-                    var positionInLayer = seg.IsBridge ? 1 : 0;
+                    var positionInLayer = seg.IsBridge || seg.IsRiver ? 1 : 0;
                     var streetLayer = Map.Layer(mapLayer, positionInLayer);
 
                     foreach (var tile in map.GetTilesForObject(info.Key))
@@ -1037,6 +1038,14 @@ namespace Transidious
 
                 if (info.Key.UniqueTile != null)
                 {
+                    if (!fast && !info.Value.pslg.Simple)
+                    {
+                        pslgs.Add(info.Value.pslg);
+                        pslgInfo.Add(Tuple.Create(info.Key.UniqueTile, info.Value.pslg),
+                            Tuple.Create(info.Key.UniqueTile, group, color, layer));
+                        continue;
+                    }
+
                     var mesh = CreateMesh(info.Value.pslg, fast);
                     meshes[info.Key.UniqueTile].Add(Tuple.Create(group, mesh, color, layer));
                     _stats.AddMesh(group, mesh);
@@ -1045,6 +1054,14 @@ namespace Transidious
                 {
                     foreach (var tile in map.GetTilesForObject(info.Key))
                     {
+                        if (!fast && !info.Value.pslg.Simple)
+                        {
+                            pslgs.Add(info.Value.pslg);
+                            pslgInfo.Add(Tuple.Create(tile, info.Value.pslg), 
+                                Tuple.Create(tile, group, color, layer));
+                            continue;
+                        }
+
                         var mesh = GetCutoutMesh(tile, info.Value.pslg, fast);
                         meshes[tile].Add(Tuple.Create(group, mesh, color, layer));
                         _stats.AddMesh(group, mesh);
@@ -1063,6 +1080,14 @@ namespace Transidious
                 {
                     if (info.Item1.Length == 1)
                     {
+                        if (!fast && !info.Item2.pslg.Simple)
+                        {
+                            pslgs.Add(info.Item2.pslg);
+                            pslgInfo.Add(Tuple.Create(info.Item1[0], info.Item2.pslg), 
+                                Tuple.Create(info.Item1[0], "Uncategorised", info.Item2.color, info.Item2.layer));
+                            continue;
+                        }
+
                         var mesh = CreateMesh(info.Item2.pslg, fast);
                         meshes[info.Item1[0]].Add(Tuple.Create("Uncategorised", mesh, info.Item2.color, info.Item2.layer));
                         _stats.AddMesh("Uncategorised", mesh);
@@ -1071,6 +1096,14 @@ namespace Transidious
                     {
                         foreach (var tile in info.Item1)
                         {
+                            if (!fast && !info.Item2.pslg.Simple)
+                            {
+                                pslgs.Add(info.Item2.pslg);
+                                pslgInfo.Add(Tuple.Create(tile, info.Item2.pslg), 
+                                    Tuple.Create(tile, "Uncategorised", info.Item2.color, info.Item2.layer));
+                                continue;
+                            }
+
                             var mesh = GetCutoutMesh(tile, info.Item2.pslg, fast);
                             meshes[tile].Add(Tuple.Create("Uncategorised", mesh, info.Item2.color, info.Item2.layer));
                             _stats.AddMesh("Uncategorised", mesh);
@@ -1081,6 +1114,31 @@ namespace Transidious
                     {
                         yield return null;
                     }
+                }
+            }
+
+            if (pslgs.Count > 0)
+            {
+                var meshList = TriangleAPI.CreateMeshes(pslgs);
+                var i = 0;
+
+                var pslgMap = new Dictionary<PSLG, Mesh>();
+                foreach (var mesh in meshList)
+                {
+                    var pslg = pslgs[i++];
+                    if (pslgMap.ContainsKey(pslg))
+                        continue;
+                    
+                    pslgMap.Add(pslg, mesh);
+                }
+
+                foreach (var (key, value) in pslgInfo)
+                {
+                    var mesh = pslgMap[key.Item2];
+                    if (mesh == null)
+                        continue;
+
+                    meshes[value.Item1].Add(Tuple.Create(value.Item2, mesh, value.Item3, value.Item4));
                 }
             }
 

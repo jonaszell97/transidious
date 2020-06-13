@@ -1,5 +1,5 @@
 
-class Tag<let key: string, let value: string>
+class Tag<let key: string, let value: string, let isExclusionTag: i1 = false>
 class NotTag<key: string, value: string> : Tag<key, value>
 
 enum GeoType {
@@ -209,9 +209,11 @@ class DefaultArea : Area
     override rivers = [
         RiverInfo<[
             Tag<"type", "waterway">,
-            Tag<"waterway", "river">
+            Tag<"waterway", "river">,
+            Tag<"tunnel", "", true>
         ], [
-            Tag<"waterway", "river">
+            Tag<"waterway", "river">,
+            Tag<"tunnel", "", true>
         ]>
     ]
 
@@ -261,17 +263,21 @@ class DefaultArea : Area
         ], [.Way, .Relation]>,
 
         NaturalFeatureInfo<.River, [
-            Tag<"waterway", "river">
-        ], [.Way, .Relation]>,
+            Tag<"waterway", "river">,
+            Tag<"tunnel", "", true>
+        ], [.Way, .Relation], true>,
         NaturalFeatureInfo<.River, [
-            Tag<"waterway", "riverbank">
-        ], [.Way, .Relation]>,
+            Tag<"waterway", "riverbank">,
+            Tag<"tunnel", "", true>
+        ], [.Way, .Relation], true>,
         NaturalFeatureInfo<.River, [
-            Tag<"waterway", "stream">
-        ], [.Way, .Relation]>,
+            Tag<"waterway", "stream">,
+            Tag<"tunnel", "", true>
+        ], [.Way, .Relation], true>,
         NaturalFeatureInfo<.River, [
-            Tag<"waterway", "canal">
-        ], [.Way, .Relation]>,
+            Tag<"waterway", "canal">,
+            Tag<"tunnel", "", true>
+        ], [.Way, .Relation], true>,
 
         NaturalFeatureInfo<.Lake, [
             Tag<"natural", "water">
@@ -628,16 +634,7 @@ def Werder : DefaultArea {
     ], "Werder (Havel)">
 }
 
-def Manhattan : DefaultArea {
-    country = "NewYorkState"
-    boundary = BoundaryInfo<"Manhattan", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "7">
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "7">
-    ]>
-}
+
 
 def Vancouver : DefaultArea {
     country = "Canada"
@@ -661,16 +658,7 @@ def Fuerteventura : DefaultArea {
     ]>
 }
 
-def Charlottenburg : DefaultArea {
-    country = "Deutschland"
-    boundary = BoundaryInfo<"Charlottenburg", [
-        Tag<"type", "boundary">,
-        Tag<"admin_level", "10">,
-    ], [
-        Tag<"boundary", "administrative">,
-        Tag<"admin_level", "10">,
-    ]>
-}
+
 
 def Mitte : DefaultArea {
     country = "Deutschland"
@@ -690,5 +678,83 @@ def CharlottenburgWilmersdorf : DefaultArea {
     ], [
         Tag<"boundary", "administrative">,
         Tag<"admin_level", "9">,
+    ]>
+}
+
+def Buffalo : DefaultArea {
+    country = "NewYorkState"
+    boundary = BoundaryInfo<"Buffalo", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">,
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">,
+    ]>
+}
+
+def Manhattan : DefaultArea {
+    country = "NewYorkState"
+    boundary = BoundaryInfo<"Manhattan", [
+        Tag<"type", "boundary">,
+        
+    ], [
+        Tag<"boundary", "administrative">,
+        
+    ]>
+}
+
+def Queens : DefaultArea {
+    country = "NewYorkState"
+    boundary = BoundaryInfo<"Queens", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "6">,
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "6">,
+    ]>
+}
+
+def Charlottenburg : DefaultArea {
+    country = "Deutschland"
+    boundary = BoundaryInfo<"Charlottenburg", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "10">,
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "10">,
+    ]>
+}
+
+def Charlotte : DefaultArea {
+    country = "NorthCarolina"
+    boundary = BoundaryInfo<"Charlotte", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">,
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">,
+    ]>
+}
+
+def ProvidenceRI : DefaultArea {
+    country = "RhodeIsland"
+    nodeFile = "RhodeIsland"
+    boundary = BoundaryInfo<"Providence", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">,
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">,
+    ]>
+}
+
+def JerseyCity : DefaultArea {
+    country = "NewJersey"
+    boundary = BoundaryInfo<"Jersey City", [
+        Tag<"type", "boundary">,
+        Tag<"admin_level", "8">,
+    ], [
+        Tag<"boundary", "administrative">,
+        Tag<"admin_level", "8">,
     ]>
 }

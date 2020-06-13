@@ -40,12 +40,17 @@ public class OSMImportHelper
         Seaside,
         Salinas,
         Werder,
-        Manhattan,
         Vancouver,
         Fuerteventura,
-        Charlottenburg,
         Mitte,
         CharlottenburgWilmersdorf,
+        Buffalo,
+        Manhattan,
+        Queens,
+        Charlottenburg,
+        Charlotte,
+        ProvidenceRI,
+        JerseyCity,
     }
 
     OSMImporterProxy importer;
@@ -212,12 +217,6 @@ public class OSMImportHelper
 
             break;
         }
-        case Area.Manhattan :
-        {
-            allNodes = null;
-
-            break;
-        }
         case Area.Vancouver :
         {
             allNodes = null;
@@ -230,12 +229,6 @@ public class OSMImportHelper
 
             break;
         }
-        case Area.Charlottenburg :
-        {
-            allNodes = null;
-
-            break;
-        }
         case Area.Mitte :
         {
             allNodes = null;
@@ -243,6 +236,58 @@ public class OSMImportHelper
             break;
         }
         case Area.CharlottenburgWilmersdorf :
+        {
+            allNodes = null;
+
+            break;
+        }
+        case Area.Buffalo :
+        {
+            allNodes = null;
+
+            break;
+        }
+        case Area.Manhattan :
+        {
+            allNodes = null;
+
+            break;
+        }
+        case Area.Queens :
+        {
+            allNodes = null;
+
+            break;
+        }
+        case Area.Charlottenburg :
+        {
+            allNodes = null;
+
+            break;
+        }
+        case Area.Charlotte :
+        {
+            allNodes = null;
+
+            break;
+        }
+        case Area.ProvidenceRI :
+        {
+            string allNodesFileName = "Resources/OSM/";
+            allNodesFileName += "RhodeIsland";
+            allNodesFileName += ".osm.pbf";
+            var allNodesInput = File.OpenRead(allNodesFileName);
+            if (allNodesInput == null)
+            {
+                Debug.LogError("opening stream failed");
+                return;
+            }
+
+            allNodes = new PBFOsmStreamSource(allNodesInput);
+
+            break;
+        }
+        case Area.JerseyCity :
         {
             allNodes = null;
 
@@ -605,34 +650,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -1333,34 +1386,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -2061,34 +2122,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -2789,34 +2858,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -3517,34 +3594,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -4245,34 +4330,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -4973,34 +5066,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -5701,34 +5802,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -6429,34 +6538,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -7157,34 +7274,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -7885,34 +8010,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -8613,34 +8746,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -9341,34 +9482,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -10069,34 +10218,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -10797,34 +10954,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -11525,34 +11690,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -12253,34 +12426,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -12981,34 +13162,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -13709,762 +13898,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "water")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("leisure", "swimming_pool")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
                         importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "footpath") && 
-        tags.Contains("area", "yes")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.FootpathArea));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "forest")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Forest));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "beach")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "sand")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("amenity", "parking")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Parking));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "railway")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Railway));
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Check buildings.
-                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
-                {
-    if (
-        tags.Contains("building", "residential")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "house")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "yes")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "apartments")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "garage")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "construction")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "retail") && 
-        tags.Contains("shop", "supermarket")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.GroceryStore));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "retail")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "commercial")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "mall")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "public") && 
-        tags.Contains("leisure", "sports_centre")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "concert_hall")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "exhibition_hall")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "industrial")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "office")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "public")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "government")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "embassy")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "manufacture")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "warehouse")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "university")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.University));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "school")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.HighSchool));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "hospital")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hospital));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "stadium")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Stadium));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "airport")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Airport));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "church")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Church));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "castle")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Sight));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "hotel")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hotel));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.ContainsKey("building")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Other));
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Check transit lines.
-                if (geo.Type == OsmGeoType.Relation)
-                {
-                    while (true)
-                    {
-                        TransitType type;
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "bus")
-    )
-
-                        {
-                            type = TransitType.Bus;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "tram")
-    )
-
-                        {
-                            type = TransitType.Tram;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "light_rail")
-    )
-
-                        {
-                            type = TransitType.Tram;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "subway")
-    )
-
-                        {
-                            type = TransitType.Subway;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "train") && 
-        tags.Contains("line", "light_rail")
-    )
-
-                        {
-                            type = TransitType.LightRail;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "train") && 
-        tags.Contains("service", "regional")
-    )
-
-                        {
-                            type = TransitType.LightRail;
-                        }
-                        else
-                        {
-                            break;
-                        }
-
-                        var rel = geo as Relation;
-                        AddGeoReference(rel);
-
-                        var lineName = tags.GetValue("ref");
-                        if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
-                        {
-                            pair.outbound = rel;
-                        }
-                        else
-                        {
-                            importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
-                                inbound = rel,
-                                type = type
-                            });
-                        }
-
-                        break;
-                    }
-                }
-
-                // Check transit stops.
-                if (geo.Type == OsmGeoType.Node)
-                {
-    if (
-        tags.Contains("highway", "bus_stop")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("public_transport", "stop_position")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("railway", "stop")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("railway", "stop_exit_only")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("railway", "tram_stop")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("railway", "tram_stop_exit_only")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Check streets.
-                if (geo.Type == OsmGeoType.Way)
-                {
-    if (
-        tags.Contains("highway", "motorway")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Highway));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "residential")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "living_street")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "primary")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Primary));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "motorway_link")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "primary_link")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "secondary")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Secondary));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "secondary_link")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "tertiary")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "unclassified")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "tertiary_link")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "river")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.River));
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Update max and min.
-                if (geo.Type == OsmGeoType.Node)
-                {
-                    var node = geo as Node;
-                    double lat = node.Latitude.Value;
-                    double lng = node.Longitude.Value;
-
-                    importer.minLat = System.Math.Min(lat, importer.minLat);
-                    importer.minLng = System.Math.Min(lng, importer.minLng);
-
-                    importer.maxLat = System.Math.Max(lat, importer.maxLat);
-                    importer.maxLng = System.Math.Max(lng, importer.maxLng);
-                }
-            }
-
-            break;
-        }
-        case Area.Manhattan :
-        {
-            foreach (var geo in sourceStream)
-            {
-                var tags = geo.Tags;
-                if (tags == null)
-                {
-                    continue;
-                }
-
-                // Check boundary.
-                if (geo.Type == OsmGeoType.Relation)
-                {
-                    string boundaryName = "Manhattan";
-                    if (tags.Contains("name", boundaryName))
-                    {
-                        importer.boundary = geo as Relation;
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Check parks.
-                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
-                {
-    if (
-        tags.Contains("leisure", "park")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Park));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "village_green")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "grass")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "recreation_ground")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "heath")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "grassland")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("leisure", "zoo")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Zoo));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "allotments")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Allotment));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "cemetery")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Cemetery));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("leisure", "pitch")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("leisure", "track")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "water") && 
-        tags.Contains("water", "river")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "river")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "riverbank")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "stream")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "canal")
-    )
-
-                    {
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -15165,34 +14634,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -15893,762 +15370,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "water")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("leisure", "swimming_pool")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
                         importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "footpath") && 
-        tags.Contains("area", "yes")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.FootpathArea));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "forest")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Forest));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "beach")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "sand")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("amenity", "parking")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Parking));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "railway")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Railway));
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Check buildings.
-                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
-                {
-    if (
-        tags.Contains("building", "residential")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "house")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "yes")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "apartments")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "garage")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "construction")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "retail") && 
-        tags.Contains("shop", "supermarket")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.GroceryStore));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "retail")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "commercial")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "mall")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "public") && 
-        tags.Contains("leisure", "sports_centre")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "concert_hall")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "exhibition_hall")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "industrial")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "office")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "public")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "government")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "embassy")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "manufacture")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "warehouse")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "university")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.University));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "school")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.HighSchool));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "hospital")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hospital));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "stadium")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Stadium));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "airport")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Airport));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "church")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Church));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "castle")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Sight));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("building", "hotel")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hotel));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.ContainsKey("building")
-    )
-
-                    {
-                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Other));
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Check transit lines.
-                if (geo.Type == OsmGeoType.Relation)
-                {
-                    while (true)
-                    {
-                        TransitType type;
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "bus")
-    )
-
-                        {
-                            type = TransitType.Bus;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "tram")
-    )
-
-                        {
-                            type = TransitType.Tram;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "light_rail")
-    )
-
-                        {
-                            type = TransitType.Tram;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "subway")
-    )
-
-                        {
-                            type = TransitType.Subway;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "train") && 
-        tags.Contains("line", "light_rail")
-    )
-
-                        {
-                            type = TransitType.LightRail;
-                        } else 
-    if (
-        tags.Contains("type", "route") && 
-        tags.Contains("route", "train") && 
-        tags.Contains("service", "regional")
-    )
-
-                        {
-                            type = TransitType.LightRail;
-                        }
-                        else
-                        {
-                            break;
-                        }
-
-                        var rel = geo as Relation;
-                        AddGeoReference(rel);
-
-                        var lineName = tags.GetValue("ref");
-                        if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
-                        {
-                            pair.outbound = rel;
-                        }
-                        else
-                        {
-                            importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
-                                inbound = rel,
-                                type = type
-                            });
-                        }
-
-                        break;
-                    }
-                }
-
-                // Check transit stops.
-                if (geo.Type == OsmGeoType.Node)
-                {
-    if (
-        tags.Contains("highway", "bus_stop")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("public_transport", "stop_position")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("railway", "stop")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("railway", "stop_exit_only")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("railway", "tram_stop")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("railway", "tram_stop_exit_only")
-    )
-
-                    {
-                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
-                        importer.stops.Add(geo.Id.Value, geo as Node);
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Check streets.
-                if (geo.Type == OsmGeoType.Way)
-                {
-    if (
-        tags.Contains("highway", "motorway")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Highway));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "residential")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "living_street")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "primary")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Primary));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "motorway_link")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "primary_link")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "secondary")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Secondary));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "secondary_link")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "tertiary")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "unclassified")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("highway", "tertiary_link")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "river")
-    )
-
-                    {
-                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.River));
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Update max and min.
-                if (geo.Type == OsmGeoType.Node)
-                {
-                    var node = geo as Node;
-                    double lat = node.Latitude.Value;
-                    double lng = node.Longitude.Value;
-
-                    importer.minLat = System.Math.Min(lat, importer.minLat);
-                    importer.minLng = System.Math.Min(lng, importer.minLng);
-
-                    importer.maxLat = System.Math.Max(lat, importer.maxLat);
-                    importer.maxLng = System.Math.Max(lng, importer.maxLng);
-                }
-            }
-
-            break;
-        }
-        case Area.Charlottenburg :
-        {
-            foreach (var geo in sourceStream)
-            {
-                var tags = geo.Tags;
-                if (tags == null)
-                {
-                    continue;
-                }
-
-                // Check boundary.
-                if (geo.Type == OsmGeoType.Relation)
-                {
-                    string boundaryName = "Charlottenburg";
-                    if (tags.Contains("name", boundaryName))
-                    {
-                        importer.boundary = geo as Relation;
-                        AddGeoReference(geo);
-                    }
-                }
-
-                // Check parks.
-                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
-                {
-    if (
-        tags.Contains("leisure", "park")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Park));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "village_green")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "grass")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "recreation_ground")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "heath")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "grassland")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("leisure", "zoo")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Zoo));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "allotments")
-    )
-
-                    {
-                        importer.visualOnlyFeatures.Add(geo.Id.Value);
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Allotment));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("landuse", "cemetery")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Cemetery));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("leisure", "pitch")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("leisure", "track")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("natural", "water") && 
-        tags.Contains("water", "river")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "river")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "riverbank")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "stream")
-    )
-
-                    {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
-                        AddGeoReference(geo);
-                    } else 
-    if (
-        tags.Contains("waterway", "canal")
-    )
-
-                    {
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -17349,34 +16106,42 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "river")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 
@@ -18077,15 +16842,735 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "swimming_pool")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "footpath") && 
+        tags.Contains("area", "yes")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.FootpathArea));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "forest")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Forest));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "beach")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "sand")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("amenity", "parking")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Parking));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "railway")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Railway));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check buildings.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("building", "residential")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "house")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "yes")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "apartments")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "garage")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "construction")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail") && 
+        tags.Contains("shop", "supermarket")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.GroceryStore));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "commercial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "mall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public") && 
+        tags.Contains("leisure", "sports_centre")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "concert_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "exhibition_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "industrial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "office")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "government")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "embassy")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "manufacture")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "warehouse")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "university")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.University));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "school")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.HighSchool));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hospital")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hospital));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "stadium")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Stadium));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "airport")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Airport));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "church")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Church));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "castle")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Sight));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hotel")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hotel));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.ContainsKey("building")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Other));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check transit lines.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    while (true)
+                    {
+                        TransitType type;
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "bus")
+    )
+
+                        {
+                            type = TransitType.Bus;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "tram")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "light_rail")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "subway")
+    )
+
+                        {
+                            type = TransitType.Subway;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("line", "light_rail")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("service", "regional")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        var rel = geo as Relation;
+                        AddGeoReference(rel);
+
+                        var lineName = tags.GetValue("ref");
+                        if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
+                        {
+                            pair.outbound = rel;
+                        }
+                        else
+                        {
+                            importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
+                                inbound = rel,
+                                type = type
+                            });
+                        }
+
+                        break;
+                    }
+                }
+
+                // Check transit stops.
+                if (geo.Type == OsmGeoType.Node)
+                {
+    if (
+        tags.Contains("highway", "bus_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("public_transport", "stop_position")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check streets.
+                if (geo.Type == OsmGeoType.Way)
+                {
+    if (
+        tags.Contains("highway", "motorway")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Highway));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "residential")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "living_street")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Primary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "motorway_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Secondary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "unclassified")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
         tags.Contains("waterway", "river")
     )
 
                     {
-                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.River));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Update max and min.
+                if (geo.Type == OsmGeoType.Node)
+                {
+                    var node = geo as Node;
+                    double lat = node.Latitude.Value;
+                    double lng = node.Longitude.Value;
+
+                    importer.minLat = System.Math.Min(lat, importer.minLat);
+                    importer.minLng = System.Math.Min(lng, importer.minLng);
+
+                    importer.maxLat = System.Math.Max(lat, importer.maxLat);
+                    importer.maxLng = System.Math.Max(lng, importer.maxLng);
+                }
+            }
+
+            break;
+        }
+        case Area.Buffalo :
+        {
+            foreach (var geo in sourceStream)
+            {
+                var tags = geo.Tags;
+                if (tags == null)
+                {
+                    continue;
+                }
+
+                // Check boundary.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    string boundaryName = "Buffalo";
+                    if (tags.Contains("name", boundaryName))
+                    {
+                        importer.boundary = geo as Relation;
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check parks.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("leisure", "park")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Park));
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "riverbank")
+        tags.Contains("landuse", "village_green")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "grass")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "recreation_ground")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "heath")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "grassland")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "zoo")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Zoo));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "allotments")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Allotment));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "cemetery")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Cemetery));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "pitch")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "track")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water") && 
+        tags.Contains("water", "river")
     )
 
                     {
@@ -18093,7 +17578,735 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "stream")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "swimming_pool")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "footpath") && 
+        tags.Contains("area", "yes")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.FootpathArea));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "forest")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Forest));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "beach")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "sand")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("amenity", "parking")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Parking));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "railway")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Railway));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check buildings.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("building", "residential")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "house")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "yes")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "apartments")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "garage")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "construction")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail") && 
+        tags.Contains("shop", "supermarket")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.GroceryStore));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "commercial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "mall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public") && 
+        tags.Contains("leisure", "sports_centre")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "concert_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "exhibition_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "industrial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "office")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "government")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "embassy")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "manufacture")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "warehouse")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "university")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.University));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "school")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.HighSchool));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hospital")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hospital));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "stadium")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Stadium));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "airport")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Airport));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "church")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Church));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "castle")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Sight));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hotel")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hotel));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.ContainsKey("building")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Other));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check transit lines.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    while (true)
+                    {
+                        TransitType type;
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "bus")
+    )
+
+                        {
+                            type = TransitType.Bus;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "tram")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "light_rail")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "subway")
+    )
+
+                        {
+                            type = TransitType.Subway;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("line", "light_rail")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("service", "regional")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        var rel = geo as Relation;
+                        AddGeoReference(rel);
+
+                        var lineName = tags.GetValue("ref");
+                        if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
+                        {
+                            pair.outbound = rel;
+                        }
+                        else
+                        {
+                            importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
+                                inbound = rel,
+                                type = type
+                            });
+                        }
+
+                        break;
+                    }
+                }
+
+                // Check transit stops.
+                if (geo.Type == OsmGeoType.Node)
+                {
+    if (
+        tags.Contains("highway", "bus_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("public_transport", "stop_position")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check streets.
+                if (geo.Type == OsmGeoType.Way)
+                {
+    if (
+        tags.Contains("highway", "motorway")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Highway));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "residential")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "living_street")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Primary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "motorway_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Secondary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "unclassified")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.River));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Update max and min.
+                if (geo.Type == OsmGeoType.Node)
+                {
+                    var node = geo as Node;
+                    double lat = node.Latitude.Value;
+                    double lng = node.Longitude.Value;
+
+                    importer.minLat = System.Math.Min(lat, importer.minLat);
+                    importer.minLng = System.Math.Min(lng, importer.minLng);
+
+                    importer.maxLat = System.Math.Max(lat, importer.maxLat);
+                    importer.maxLng = System.Math.Max(lng, importer.maxLng);
+                }
+            }
+
+            break;
+        }
+        case Area.Manhattan :
+        {
+            foreach (var geo in sourceStream)
+            {
+                var tags = geo.Tags;
+                if (tags == null)
+                {
+                    continue;
+                }
+
+                // Check boundary.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    string boundaryName = "Manhattan";
+                    if (tags.Contains("name", boundaryName))
+                    {
+                        importer.boundary = geo as Relation;
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check parks.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("leisure", "park")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Park));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "village_green")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "grass")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "recreation_ground")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "heath")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "grassland")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "zoo")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Zoo));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "allotments")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Allotment));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "cemetery")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Cemetery));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "pitch")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "track")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water") && 
+        tags.Contains("water", "river")
     )
 
                     {
@@ -18101,10 +18314,3722 @@ public class OSMImportHelper
                         AddGeoReference(geo);
                     } else 
     if (
-        tags.Contains("waterway", "canal")
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
     )
 
                     {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "swimming_pool")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "footpath") && 
+        tags.Contains("area", "yes")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.FootpathArea));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "forest")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Forest));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "beach")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "sand")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("amenity", "parking")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Parking));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "railway")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Railway));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check buildings.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("building", "residential")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "house")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "yes")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "apartments")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "garage")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "construction")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail") && 
+        tags.Contains("shop", "supermarket")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.GroceryStore));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "commercial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "mall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public") && 
+        tags.Contains("leisure", "sports_centre")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "concert_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "exhibition_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "industrial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "office")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "government")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "embassy")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "manufacture")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "warehouse")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "university")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.University));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "school")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.HighSchool));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hospital")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hospital));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "stadium")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Stadium));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "airport")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Airport));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "church")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Church));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "castle")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Sight));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hotel")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hotel));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.ContainsKey("building")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Other));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check transit lines.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    while (true)
+                    {
+                        TransitType type;
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "bus")
+    )
+
+                        {
+                            type = TransitType.Bus;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "tram")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "light_rail")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "subway")
+    )
+
+                        {
+                            type = TransitType.Subway;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("line", "light_rail")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("service", "regional")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        var rel = geo as Relation;
+                        AddGeoReference(rel);
+
+                        var lineName = tags.GetValue("ref");
+                        if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
+                        {
+                            pair.outbound = rel;
+                        }
+                        else
+                        {
+                            importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
+                                inbound = rel,
+                                type = type
+                            });
+                        }
+
+                        break;
+                    }
+                }
+
+                // Check transit stops.
+                if (geo.Type == OsmGeoType.Node)
+                {
+    if (
+        tags.Contains("highway", "bus_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("public_transport", "stop_position")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check streets.
+                if (geo.Type == OsmGeoType.Way)
+                {
+    if (
+        tags.Contains("highway", "motorway")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Highway));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "residential")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "living_street")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Primary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "motorway_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Secondary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "unclassified")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.River));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Update max and min.
+                if (geo.Type == OsmGeoType.Node)
+                {
+                    var node = geo as Node;
+                    double lat = node.Latitude.Value;
+                    double lng = node.Longitude.Value;
+
+                    importer.minLat = System.Math.Min(lat, importer.minLat);
+                    importer.minLng = System.Math.Min(lng, importer.minLng);
+
+                    importer.maxLat = System.Math.Max(lat, importer.maxLat);
+                    importer.maxLng = System.Math.Max(lng, importer.maxLng);
+                }
+            }
+
+            break;
+        }
+        case Area.Queens :
+        {
+            foreach (var geo in sourceStream)
+            {
+                var tags = geo.Tags;
+                if (tags == null)
+                {
+                    continue;
+                }
+
+                // Check boundary.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    string boundaryName = "Queens";
+                    if (tags.Contains("name", boundaryName))
+                    {
+                        importer.boundary = geo as Relation;
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check parks.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("leisure", "park")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Park));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "village_green")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "grass")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "recreation_ground")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "heath")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "grassland")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "zoo")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Zoo));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "allotments")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Allotment));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "cemetery")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Cemetery));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "pitch")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "track")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water") && 
+        tags.Contains("water", "river")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "swimming_pool")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "footpath") && 
+        tags.Contains("area", "yes")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.FootpathArea));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "forest")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Forest));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "beach")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "sand")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("amenity", "parking")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Parking));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "railway")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Railway));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check buildings.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("building", "residential")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "house")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "yes")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "apartments")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "garage")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "construction")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail") && 
+        tags.Contains("shop", "supermarket")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.GroceryStore));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "commercial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "mall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public") && 
+        tags.Contains("leisure", "sports_centre")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "concert_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "exhibition_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "industrial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "office")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "government")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "embassy")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "manufacture")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "warehouse")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "university")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.University));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "school")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.HighSchool));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hospital")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hospital));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "stadium")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Stadium));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "airport")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Airport));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "church")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Church));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "castle")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Sight));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hotel")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hotel));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.ContainsKey("building")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Other));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check transit lines.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    while (true)
+                    {
+                        TransitType type;
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "bus")
+    )
+
+                        {
+                            type = TransitType.Bus;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "tram")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "light_rail")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "subway")
+    )
+
+                        {
+                            type = TransitType.Subway;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("line", "light_rail")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("service", "regional")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        var rel = geo as Relation;
+                        AddGeoReference(rel);
+
+                        var lineName = tags.GetValue("ref");
+                        if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
+                        {
+                            pair.outbound = rel;
+                        }
+                        else
+                        {
+                            importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
+                                inbound = rel,
+                                type = type
+                            });
+                        }
+
+                        break;
+                    }
+                }
+
+                // Check transit stops.
+                if (geo.Type == OsmGeoType.Node)
+                {
+    if (
+        tags.Contains("highway", "bus_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("public_transport", "stop_position")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check streets.
+                if (geo.Type == OsmGeoType.Way)
+                {
+    if (
+        tags.Contains("highway", "motorway")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Highway));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "residential")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "living_street")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Primary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "motorway_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Secondary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "unclassified")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.River));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Update max and min.
+                if (geo.Type == OsmGeoType.Node)
+                {
+                    var node = geo as Node;
+                    double lat = node.Latitude.Value;
+                    double lng = node.Longitude.Value;
+
+                    importer.minLat = System.Math.Min(lat, importer.minLat);
+                    importer.minLng = System.Math.Min(lng, importer.minLng);
+
+                    importer.maxLat = System.Math.Max(lat, importer.maxLat);
+                    importer.maxLng = System.Math.Max(lng, importer.maxLng);
+                }
+            }
+
+            break;
+        }
+        case Area.Charlottenburg :
+        {
+            foreach (var geo in sourceStream)
+            {
+                var tags = geo.Tags;
+                if (tags == null)
+                {
+                    continue;
+                }
+
+                // Check boundary.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    string boundaryName = "Charlottenburg";
+                    if (tags.Contains("name", boundaryName))
+                    {
+                        importer.boundary = geo as Relation;
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check parks.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("leisure", "park")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Park));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "village_green")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "grass")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "recreation_ground")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "heath")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "grassland")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "zoo")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Zoo));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "allotments")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Allotment));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "cemetery")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Cemetery));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "pitch")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "track")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water") && 
+        tags.Contains("water", "river")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "swimming_pool")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "footpath") && 
+        tags.Contains("area", "yes")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.FootpathArea));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "forest")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Forest));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "beach")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "sand")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("amenity", "parking")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Parking));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "railway")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Railway));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check buildings.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("building", "residential")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "house")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "yes")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "apartments")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "garage")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "construction")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail") && 
+        tags.Contains("shop", "supermarket")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.GroceryStore));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "commercial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "mall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public") && 
+        tags.Contains("leisure", "sports_centre")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "concert_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "exhibition_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "industrial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "office")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "government")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "embassy")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "manufacture")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "warehouse")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "university")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.University));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "school")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.HighSchool));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hospital")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hospital));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "stadium")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Stadium));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "airport")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Airport));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "church")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Church));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "castle")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Sight));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hotel")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hotel));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.ContainsKey("building")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Other));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check transit lines.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    while (true)
+                    {
+                        TransitType type;
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "bus")
+    )
+
+                        {
+                            type = TransitType.Bus;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "tram")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "light_rail")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "subway")
+    )
+
+                        {
+                            type = TransitType.Subway;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("line", "light_rail")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("service", "regional")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        var rel = geo as Relation;
+                        AddGeoReference(rel);
+
+                        var lineName = tags.GetValue("ref");
+                        if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
+                        {
+                            pair.outbound = rel;
+                        }
+                        else
+                        {
+                            importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
+                                inbound = rel,
+                                type = type
+                            });
+                        }
+
+                        break;
+                    }
+                }
+
+                // Check transit stops.
+                if (geo.Type == OsmGeoType.Node)
+                {
+    if (
+        tags.Contains("highway", "bus_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("public_transport", "stop_position")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check streets.
+                if (geo.Type == OsmGeoType.Way)
+                {
+    if (
+        tags.Contains("highway", "motorway")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Highway));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "residential")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "living_street")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Primary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "motorway_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Secondary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "unclassified")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.River));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Update max and min.
+                if (geo.Type == OsmGeoType.Node)
+                {
+                    var node = geo as Node;
+                    double lat = node.Latitude.Value;
+                    double lng = node.Longitude.Value;
+
+                    importer.minLat = System.Math.Min(lat, importer.minLat);
+                    importer.minLng = System.Math.Min(lng, importer.minLng);
+
+                    importer.maxLat = System.Math.Max(lat, importer.maxLat);
+                    importer.maxLng = System.Math.Max(lng, importer.maxLng);
+                }
+            }
+
+            break;
+        }
+        case Area.Charlotte :
+        {
+            foreach (var geo in sourceStream)
+            {
+                var tags = geo.Tags;
+                if (tags == null)
+                {
+                    continue;
+                }
+
+                // Check boundary.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    string boundaryName = "Charlotte";
+                    if (tags.Contains("name", boundaryName))
+                    {
+                        importer.boundary = geo as Relation;
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check parks.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("leisure", "park")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Park));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "village_green")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "grass")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "recreation_ground")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "heath")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "grassland")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "zoo")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Zoo));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "allotments")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Allotment));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "cemetery")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Cemetery));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "pitch")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "track")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water") && 
+        tags.Contains("water", "river")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "swimming_pool")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "footpath") && 
+        tags.Contains("area", "yes")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.FootpathArea));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "forest")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Forest));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "beach")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "sand")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("amenity", "parking")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Parking));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "railway")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Railway));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check buildings.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("building", "residential")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "house")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "yes")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "apartments")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "garage")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "construction")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail") && 
+        tags.Contains("shop", "supermarket")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.GroceryStore));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "commercial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "mall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public") && 
+        tags.Contains("leisure", "sports_centre")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "concert_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "exhibition_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "industrial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "office")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "government")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "embassy")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "manufacture")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "warehouse")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "university")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.University));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "school")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.HighSchool));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hospital")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hospital));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "stadium")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Stadium));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "airport")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Airport));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "church")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Church));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "castle")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Sight));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hotel")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hotel));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.ContainsKey("building")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Other));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check transit lines.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    while (true)
+                    {
+                        TransitType type;
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "bus")
+    )
+
+                        {
+                            type = TransitType.Bus;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "tram")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "light_rail")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "subway")
+    )
+
+                        {
+                            type = TransitType.Subway;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("line", "light_rail")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("service", "regional")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        var rel = geo as Relation;
+                        AddGeoReference(rel);
+
+                        var lineName = tags.GetValue("ref");
+                        if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
+                        {
+                            pair.outbound = rel;
+                        }
+                        else
+                        {
+                            importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
+                                inbound = rel,
+                                type = type
+                            });
+                        }
+
+                        break;
+                    }
+                }
+
+                // Check transit stops.
+                if (geo.Type == OsmGeoType.Node)
+                {
+    if (
+        tags.Contains("highway", "bus_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("public_transport", "stop_position")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check streets.
+                if (geo.Type == OsmGeoType.Way)
+                {
+    if (
+        tags.Contains("highway", "motorway")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Highway));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "residential")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "living_street")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Primary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "motorway_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Secondary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "unclassified")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.River));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Update max and min.
+                if (geo.Type == OsmGeoType.Node)
+                {
+                    var node = geo as Node;
+                    double lat = node.Latitude.Value;
+                    double lng = node.Longitude.Value;
+
+                    importer.minLat = System.Math.Min(lat, importer.minLat);
+                    importer.minLng = System.Math.Min(lng, importer.minLng);
+
+                    importer.maxLat = System.Math.Max(lat, importer.maxLat);
+                    importer.maxLng = System.Math.Max(lng, importer.maxLng);
+                }
+            }
+
+            break;
+        }
+        case Area.ProvidenceRI :
+        {
+            foreach (var geo in sourceStream)
+            {
+                var tags = geo.Tags;
+                if (tags == null)
+                {
+                    continue;
+                }
+
+                // Check boundary.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    string boundaryName = "Providence";
+                    if (tags.Contains("name", boundaryName))
+                    {
+                        importer.boundary = geo as Relation;
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check parks.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("leisure", "park")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Park));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "village_green")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "grass")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "recreation_ground")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "heath")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "grassland")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "zoo")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Zoo));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "allotments")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Allotment));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "cemetery")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Cemetery));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "pitch")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "track")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water") && 
+        tags.Contains("water", "river")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "swimming_pool")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Lake));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "footpath") && 
+        tags.Contains("area", "yes")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.FootpathArea));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "forest")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Forest));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "beach")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "sand")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Beach));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("amenity", "parking")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Parking));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "railway")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Railway));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check buildings.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("building", "residential")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "house")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "yes")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "apartments")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "garage")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "construction")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail") && 
+        tags.Contains("shop", "supermarket")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.GroceryStore));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "retail")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "commercial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "mall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Shop));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public") && 
+        tags.Contains("leisure", "sports_centre")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "concert_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "exhibition_hall")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Leisure));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "industrial")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "office")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "public")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "government")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "embassy")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Office));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "manufacture")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "warehouse")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Industrial));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "university")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.University));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "school")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.HighSchool));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hospital")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hospital));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "stadium")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Stadium));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "airport")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Airport));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "church")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Church));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "castle")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Sight));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("building", "hotel")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Hotel));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.ContainsKey("building")
+    )
+
+                    {
+                        importer.buildings.Add(new Tuple<OsmGeo, Building.Type>(geo, Building.Type.Other));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check transit lines.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    while (true)
+                    {
+                        TransitType type;
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "bus")
+    )
+
+                        {
+                            type = TransitType.Bus;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "tram")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "light_rail")
+    )
+
+                        {
+                            type = TransitType.Tram;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "subway")
+    )
+
+                        {
+                            type = TransitType.Subway;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("line", "light_rail")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        } else 
+    if (
+        tags.Contains("type", "route") && 
+        tags.Contains("route", "train") && 
+        tags.Contains("service", "regional")
+    )
+
+                        {
+                            type = TransitType.LightRail;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        var rel = geo as Relation;
+                        AddGeoReference(rel);
+
+                        var lineName = tags.GetValue("ref");
+                        if (importer.lines.TryGetValue(lineName, out OSMImporterProxy.TransitLine pair))
+                        {
+                            pair.outbound = rel;
+                        }
+                        else
+                        {
+                            importer.lines.Add(lineName, new OSMImporterProxy.TransitLine {
+                                inbound = rel,
+                                type = type
+                            });
+                        }
+
+                        break;
+                    }
+                }
+
+                // Check transit stops.
+                if (geo.Type == OsmGeoType.Node)
+                {
+    if (
+        tags.Contains("highway", "bus_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("public_transport", "stop_position")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("railway", "tram_stop_exit_only")
+    )
+
+                    {
+                        Debug.Assert(geo.Id.HasValue, "stop does not have an ID");
+                        importer.stops.Add(geo.Id.Value, geo as Node);
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check streets.
+                if (geo.Type == OsmGeoType.Way)
+                {
+    if (
+        tags.Contains("highway", "motorway")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Highway));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "residential")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "living_street")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Residential));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Primary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "motorway_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "primary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Secondary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "secondary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "unclassified")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Tertiary));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("highway", "tertiary_link")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.Link));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river")
+    )
+
+                    {
+                        importer.streets.Add(new Tuple<Way, Street.Type>(geo as Way, Street.Type.River));
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Update max and min.
+                if (geo.Type == OsmGeoType.Node)
+                {
+                    var node = geo as Node;
+                    double lat = node.Latitude.Value;
+                    double lng = node.Longitude.Value;
+
+                    importer.minLat = System.Math.Min(lat, importer.minLat);
+                    importer.minLng = System.Math.Min(lng, importer.minLng);
+
+                    importer.maxLat = System.Math.Max(lat, importer.maxLat);
+                    importer.maxLng = System.Math.Max(lng, importer.maxLng);
+                }
+            }
+
+            break;
+        }
+        case Area.JerseyCity :
+        {
+            foreach (var geo in sourceStream)
+            {
+                var tags = geo.Tags;
+                if (tags == null)
+                {
+                    continue;
+                }
+
+                // Check boundary.
+                if (geo.Type == OsmGeoType.Relation)
+                {
+                    string boundaryName = "Jersey City";
+                    if (tags.Contains("name", boundaryName))
+                    {
+                        importer.boundary = geo as Relation;
+                        AddGeoReference(geo);
+                    }
+                }
+
+                // Check parks.
+                if (geo.Type == OsmGeoType.Way || geo.Type == OsmGeoType.Relation)
+                {
+    if (
+        tags.Contains("leisure", "park")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Park));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "village_green")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "grass")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "recreation_ground")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "heath")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "grassland")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Green));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "zoo")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Zoo));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "allotments")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Allotment));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("landuse", "cemetery")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.Cemetery));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "pitch")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("leisure", "track")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.SportsPitch));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("natural", "water") && 
+        tags.Contains("water", "river")
+    )
+
+                    {
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "river") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "riverbank") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "stream") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
+                        importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
+                        AddGeoReference(geo);
+                    } else 
+    if (
+        tags.Contains("waterway", "canal") &&  ! 
+        tags.ContainsKey("tunnel")
+    )
+
+                    {
+                        importer.visualOnlyFeatures.Add(geo.Id.Value);
                         importer.naturalFeatures.Add(new Tuple<OsmGeo, NaturalFeature.Type>(geo, NaturalFeature.Type.River));
                         AddGeoReference(geo);
                     } else 

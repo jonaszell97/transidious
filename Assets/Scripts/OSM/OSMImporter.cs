@@ -429,6 +429,7 @@ namespace Transidious
         public int resolution = 8192;
         public float mapTileSize = Map.defaultTileSize;
         public int backgroundBlur = 10;
+        public bool batchTriangulations;
 
         public Relation boundary = null;
         public Dictionary<ulong, Node> nodes = new Dictionary<ulong, Node>();
@@ -475,7 +476,7 @@ namespace Transidious
             
             map.Initialize(this.area.ToString(), GameController.instance.input, mapTileSize);
 
-            this.exporter = new MapExporter(map, resolution);
+            this.exporter = new MapExporter(map, resolution, batchTriangulations);
             this.ImportArea();
 
             if (importOnly)
@@ -2248,7 +2249,7 @@ namespace Transidious
                     else
                     {
                         var wayPositions = GetWayPositions(way);
-                        if (wayPositions.Count < 3)
+                        if (wayPositions.Count < 3 || !wayPositions.First().Equals(wayPositions.Last()))
                         {
                             continue;
                         }
@@ -2667,55 +2668,6 @@ namespace Transidious
             };
 
             return MeshBuilder.RotateMesh(m, centroid, rot);
-        }
-
-        Mesh GetBuildingMesh(PartialBuilding building, Vector2 centroid)
-        {
-            Mesh mesh = TriangleAPI.CreateMesh(building.pslg, importType == ImportType.Fast);
-            return mesh;
-            /*
-            var minAngle = 0f;
-            var rect = MeshBuilder.GetSmallestSurroundingRect(mesh, ref minAngle);
-            var rectArea = (rect[0] - rect[1]).magnitude * (rect[2] - rect[1]).magnitude;
-            var rectCentroid = rect[0] + ((rect[2] - rect[0]) * .5f);
-
-            // Don't replace special buildings.
-            if (building.geo?.Tags.ContainsKey("name") ?? false)
-            {
-                return mesh;
-            }
-
-            float threshold = 25f;
-            if (registeredUniqueBuildings >= maxUniqueBuildings)
-            {
-                foreach (var b in uniqueBuildings)
-                {
-                    if (b.area < rectArea && (rectArea - b.area) < threshold)
-                    {
-                        this.gameObject.transform.position = centroid;
-                        this.gameObject.DrawCircle(10f, 1f, Color.red);
-
-                        return ModifyBuildingMesh(mesh, centroid, b);
-                    }
-                }
-            }
-            
-            // Register a new unique building.
-            var rot = Quaternion.Euler(0f, 0f, minAngle * Mathf.Rad2Deg);
-
-            var id = ++registeredUniqueBuildings;
-            var rotated = MeshBuilder.RotateMesh(mesh, centroid, rot);
-
-            uniqueBuildings.Add(new BuildingMesh
-            {
-                id = id,
-                area = rectArea,
-                mesh = rotated,
-                centroid = centroid,
-            });
-
-            uniqueBuildings.Sort((BuildingMesh b1, BuildingMesh b2) => b2.area.CompareTo(b1.area));
-            return mesh;*/
         }
 
         IEnumerator LoadBuildings()

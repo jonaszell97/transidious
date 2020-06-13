@@ -2,6 +2,7 @@
     if (
     <% for_each | $(tags) as TAG, i %>
         <% if | !gt($(i), 0) %> && <% end %>
+        <% if | $(TAG).isExclusionTag %> ! <% end %>
         <% if | !empty($(TAG).value) %>
         tags.ContainsKey(<%% str | $(TAG).key %%>)
         <% else %>

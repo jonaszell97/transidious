@@ -1316,7 +1316,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: area
-      value: 22
+      value: 29
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1341,7 +1341,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: forceReload
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1356,7 +1356,7 @@ PrefabInstance:
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
       propertyPath: loadTransitLines
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
         type: 3}
@@ -1417,6 +1417,11 @@ PrefabInstance:
         type: 3}
       propertyPath: linesToLoad.Array.data[6]
       value: U9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7366181421576492994, guid: 986eb10373372489eaa02d19d5030ae1,
+        type: 3}
+      propertyPath: batchTriangulations
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 986eb10373372489eaa02d19d5030ae1, type: 3}

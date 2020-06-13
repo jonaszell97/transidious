@@ -70,12 +70,14 @@ namespace Transidious
             {
                 new BusLineBuilder(game),
                 new TramLineBuilder(game),
-                new SubwayLineBuilder(game), 
+                new SubwayLineBuilder(game),
+                null,
+                new FerryLineBuilder(game), 
             };
 
             foreach (var builder in this.lineBuilders)
             {
-                builder.Initialize();
+                builder?.Initialize();
             }
 
             var i = 0;
