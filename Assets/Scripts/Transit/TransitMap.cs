@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 namespace Transidious
 {
@@ -66,7 +67,6 @@ namespace Transidious
             var affectedRoutes = new List<Route>();
             foreach (var stop in stops)
             {
-                UpdateStop(stop);
                 affectedRoutes.AddRange(stop.routes.Where(r => !r.isBackRoute));
             }
 
@@ -76,11 +76,35 @@ namespace Transidious
                 affectedLines.Add(route.line);
             }
 
-            // Reassign affected routes to the best-fitting slot and update their paths.
+            if (affectedLines.Count == 0)
+            {
+                return;
+            }
+
+            var cardinalDirections = new Dictionary<Tuple<Route, Stop>, CardinalDirection>();
+
+            // Update the needed number of slots for all affected stops.
             foreach (var affectedLine in affectedLines)
             {
-                UpdateLine(affectedLine, stops);
+                UpdateStopsOnLine(affectedLine, cardinalDirections);
             }
+
+            // Update affected stops.
+            var affectedStops = new HashSet<Stop>(cardinalDirections.Select(k => k.Key.Item2));
+            foreach (var stop in affectedStops)
+            {
+                UpdateStop(stop, cardinalDirections);
+            }
+
+            // Find contiguous segments of lines.
+            var contiguousStops = new List<List<Tuple<Route, Stop>>>();
+            foreach (var affectedLine in affectedLines)
+            {
+                FindContiguousStops(affectedLine, cardinalDirections, contiguousStops);
+            }
+
+            // Assign slots to routes.
+            AssignSlots(contiguousStops, cardinalDirections);
 
             // Update route meshes according to their assigned slots.
             foreach (var affectedLine in affectedLines)
@@ -120,7 +144,7 @@ namespace Transidious
         }
 
         /// Update the appearance of a single stop.
-        void UpdateStop(Stop stop)
+        void UpdateStop(Stop stop, Dictionary<Tuple<Route, Stop>, CardinalDirection> cardinalDirections)
         {
             if (stop.lineData.Count <= 1)
             {
@@ -138,9 +162,7 @@ namespace Transidious
                 }
 
                 var nextStop = stop == route.endStop ? route.beginStop : route.endStop;
-                var direction = nextStop.location - stop.location;
-
-                ++neededSlots[(int) GetCardinalDirection(direction)];
+                ++neededSlots[(int) cardinalDirections[Tuple.Create(route, nextStop)]];
             }
 
             var height = Mathf.Max(1, neededSlots[(int) CardinalDirection.East], neededSlots[(int) CardinalDirection.West]);
@@ -181,250 +203,307 @@ namespace Transidious
         }
 
         /// Update the appearance and slot assignment of all routes on a line.
-        void UpdateLine(Line line, HashSet<Stop> stops)
+        void UpdateStopsOnLine(Line line, Dictionary<Tuple<Route, Stop>, CardinalDirection> cardinalDirections)
         {
-            var routesToReassign = new List<Tuple<Route, Stop, Route, SlotAssignment>>();
+            // Calculate the desired direction each route should start and end in.
             for (var i = 0; i < line.routes.Count; ++i)
             {
                 var route = line.routes[i];
                 if (route.isBackRoute)
                 {
-                    continue;
+                    break;
                 }
 
-                var prevRoute = i > 0 ? line.routes[i - 1] : null;
-                var nextRoute = i + 1 < line.routes.Count ? line.routes[i + 1] : null;
+                var start = route.beginStop;
+                var end = route.endStop;
 
-                var from = route.beginStop;
-                var to = route.endStop;
-
-                SlotAssignment prevAssignment = null;
-                if (prevRoute != null)
+                CardinalDirection startDir;
+                if (i == 0)
                 {
-                    _routeSlotAssignmentMap.TryGetValue(Tuple.Create(prevRoute, from), out prevAssignment);
-                }
-
-                Tuple<SlotAssignment, bool> firstAssignment = null;
-                if (stops.Contains(from))
-                {
-                    firstAssignment = AssignSlot(route, from, prevRoute, prevAssignment, true);
-                    if (prevRoute != null && firstAssignment != null && !firstAssignment.Item2)
-                    {
-                        routesToReassign.Add(Tuple.Create(prevRoute, from, route, firstAssignment.Item1));
-                    }
-                }
-
-                if (!stops.Contains(to))
-                {
-                    continue;
-                }
-
-                var sndAssignment = AssignSlot(route, to, nextRoute, firstAssignment?.Item1, false);
-                if (sndAssignment != null && sndAssignment.Item1.SlotIndex != firstAssignment?.Item1.SlotIndex)
-                {
-                    routesToReassign.Add(Tuple.Create(route, from, nextRoute, sndAssignment.Item1));
-                }
-            }
-
-            foreach (var (route, stop, oppositeRoute, slot) in routesToReassign)
-            {
-                var key = Tuple.Create(route, stop);
-                if (_routeSlotAssignmentMap.TryGetValue(key, out var existingSlot))
-                {
-                    existingSlot.Route = null;
-                    _routeSlotAssignmentMap.Remove(key);
-                }
-
-                AssignSlot(route, stop, oppositeRoute, slot, false);
-            }
-        }
-
-        /// Assign a desired slot to a route.
-        Tuple<SlotAssignment, bool>
-        AssignSlot(Route route, Stop stop, Route opposite, SlotAssignment oppositeAssignment,
-                   bool reserveOpposite)
-        {
-            if (!_slotAssignmentMap.TryGetValue(stop, out var assignments))
-            {
-                return null;
-            }
-
-            Vector2 inDirection;
-            Vector2? outDirection = null;
-
-            if (stop == route.beginStop)
-            {
-                inDirection = route.positions[1] - route.positions[0];
-                if (opposite != null)
-                {
-                    outDirection = opposite.positions.SecondToLast() - opposite.positions.Last();
-                }
-            }
-            else
-            {
-                inDirection = route.positions.SecondToLast() - route.positions.Last();
-                if (opposite != null)
-                {
-                    outDirection = opposite.positions[1] - opposite.positions[0];
-                }
-            }
-
-            var inCardinal = GetCardinalDirection(inDirection);
-            var desiredSlot = 0;
-
-            if (oppositeAssignment?.SlotDirection.IsParallelTo(inCardinal) ?? false)
-            {
-                desiredSlot = oppositeAssignment.SlotIndex;
-            }
-
-            SlotAssignment result;
-            if (outDirection == null)
-            {
-                result = AssignSlot(route, stop, inCardinal, assignments, desiredSlot, false,
-                                    reserveOpposite ? oppositeAssignment : null);
-            }
-            else
-            {
-                var beginStopPos = route.beginStop.location;
-                var endStopPos = route.endStop.location;
-
-                // Find the destination quadrant.
-                StopQuadrant dstQuadrant;
-                if (endStopPos.x >= beginStopPos.x)
-                {
-                    dstQuadrant = endStopPos.y >= beginStopPos.y ? StopQuadrant.TopRight : StopQuadrant.BottomRight;
+                    // For the first stop always use the default direction.
+                    startDir = GetCardinalDirection(route.positions[1] - route.positions[0]);
                 }
                 else
                 {
-                    dstQuadrant = endStopPos.y >= beginStopPos.y ? StopQuadrant.TopLeft : StopQuadrant.BottomLeft;
+                    // Prefer to exit via the opposite cardinal direction of the previous route, unless the angle
+                    // would be too sharp.
+                    var prevRoute = line.routes[i - 1];
+                    var inDir = prevRoute.positions.Last() - prevRoute.positions.SecondToLast();
+                    var outDir = route.positions[1] - route.positions[0];
+
+                    var angle = Math.DirectionalAngleDeg(inDir, outDir);
+                    if ((angle >= 80f && angle <= 100f) || (angle >= 260f && angle <= 280f))
+                    {
+                        // Angle is too sharp.
+                        startDir = GetCardinalDirection(outDir);
+                    }
+                    else
+                    {
+                        startDir = cardinalDirections[Tuple.Create(prevRoute, start)].Opposite();
+                    }
                 }
 
-                // Normalize the angle to be relative to the quadrant.
-                var angle = Math.AngleFromHorizontalAxis(endStopPos - beginStopPos);
-                switch (dstQuadrant)
+                cardinalDirections.Add(Tuple.Create(route, start), startDir);
+
+                // Get the 'quadrant' the end stop is in relative to the beginning.
+                var nextStopQuadrant = GetQuadrant(start, end);
+                var endVec = route.positions.SecondToLast() - route.positions.Last();
+
+                // Try to fit the route according the the assignment of the begin stop.
+                CardinalDirection endDir;
+                switch (nextStopQuadrant)
                 {
+                    case StopQuadrant.Centered:
+                        endDir = GetCardinalDirection(endVec);
+                        break;
                     case StopQuadrant.TopRight:
-                        break;
-                    case StopQuadrant.TopLeft:
-                        angle -= 90f;
-                        break;
-                    case StopQuadrant.BottomLeft:
-                        angle -= 180f;
+                        switch (startDir)
+                        {
+                            case CardinalDirection.North:
+                                endDir = CardinalDirection.West;
+                                break;
+                            case CardinalDirection.East:
+                                endDir = CardinalDirection.South;
+                                break;
+                            default:
+                                Debug.LogError("should not be possible");
+                                endDir = GetCardinalDirection(endVec);
+                                break;
+                        }
+
                         break;
                     case StopQuadrant.BottomRight:
-                        angle -= 270f;
+                        switch (startDir)
+                        {
+                            case CardinalDirection.South:
+                                endDir = CardinalDirection.West;
+                                break;
+                            case CardinalDirection.East:
+                                endDir = CardinalDirection.North;
+                                break;
+                            default:
+                                Debug.LogError("should not be possible");
+                                endDir = GetCardinalDirection(endVec);
+                                break;
+                        }
+
+                        break;
+                    case StopQuadrant.TopLeft:
+                        switch (startDir)
+                        {
+                            case CardinalDirection.North:
+                                endDir = CardinalDirection.East;
+                                break;
+                            case CardinalDirection.West:
+                                endDir = CardinalDirection.South;
+                                break;
+                            default:
+                                Debug.LogError("should not be possible");
+                                endDir = GetCardinalDirection(endVec);
+                                break;
+                        }
+
+                        break;
+                    case StopQuadrant.BottomLeft:
+                        switch (startDir)
+                        {
+                            case CardinalDirection.South:
+                                endDir = CardinalDirection.East;
+                                break;
+                            case CardinalDirection.West:
+                                endDir = CardinalDirection.North;
+                                break;
+                            default:
+                                Debug.LogError("should not be possible");
+                                endDir = GetCardinalDirection(endVec);
+                                break;
+                        }
+
+                        break;
+                    default:
+                        Debug.LogError($"bad enum value {nextStopQuadrant}");
+                        endDir = GetCardinalDirection(endVec);
                         break;
                 }
 
-                CardinalDirection outCardinal;
-                if (angle < 15f)
+                cardinalDirections.Add(Tuple.Create(route, end), endDir);
+            }
+        }
+
+        /// Update the appearance and slot assignment of all routes on a line.
+        void FindContiguousStops(Line line, Dictionary<Tuple<Route, Stop>, CardinalDirection> cardinalDirections,
+                                 List<List<Tuple<Route, Stop>>> contiguousStops)
+        {
+            // Find contigous parts of the line (i.e. routes that that enter and exit in the opposite cardinal
+            // directions) and make sure there's no jumps in the slot assignments.
+            for (var i = 0; i < line.routes.Count;)
+            {
+                var firstRoute = line.routes[i];
+                if (firstRoute.isBackRoute)
                 {
-                    outCardinal = GetCardinalDirection(outDirection.Value);
+                    break;
+                }
+
+                var horizontal = cardinalDirections[Tuple.Create(firstRoute, firstRoute.beginStop)].IsHorizontal();
+                var endHorizontal = cardinalDirections[Tuple.Create(firstRoute, firstRoute.endStop)].IsHorizontal();
+
+                if (horizontal != endHorizontal)
+                {
+                    ++i;
+                    continue;
+                }
+
+                var curr = new List<Tuple<Route, Stop>>
+                {
+                    Tuple.Create(firstRoute, firstRoute.beginStop),
+                    Tuple.Create(firstRoute, firstRoute.endStop)
+                };
+
+                while (++i < line.routes.Count)
+                {
+                    var nextRoute = line.routes[i];
+                    if (nextRoute.isBackRoute)
+                    {
+                        break;
+                    }
+
+                    var startDir = cardinalDirections[Tuple.Create(nextRoute, nextRoute.beginStop)];
+                    if (startDir.IsHorizontal() != horizontal)
+                    {
+                        break;
+                    }
+
+                    curr.Add(Tuple.Create(nextRoute, nextRoute.beginStop));
+
+                    var endDir = cardinalDirections[Tuple.Create(nextRoute, nextRoute.endStop)];
+                    if (endDir.IsHorizontal() != horizontal)
+                    {
+                        break;
+                    }
+
+                    curr.Add(Tuple.Create(nextRoute, nextRoute.endStop));
+                }
+
+                contiguousStops.Add(curr);
+            }
+        }
+
+        /// Find the optimal slot assignment for all routes.
+        void AssignSlots(List<List<Tuple<Route, Stop>>> allContiguousStops,
+                         Dictionary<Tuple<Route, Stop>, CardinalDirection> cardinalDirections)
+        {
+            int DoNextAssignment(List<Tuple<Route, Stop>> contiguousStops,
+                                 Dictionary<SlotAssignment, Tuple<Route, Stop>> solution)
+            {
+                var score = Int32.MaxValue;
+                var currentSlot = 0;
+                var bestSlot = -1;
+
+                while (true)
+                {
+                    var mismatches = 0;
+                    var allMatch = true;
+                    var foundHigher = false;
+
+                    foreach (var (route, stop) in contiguousStops)
+                    {
+                        if (!_slotAssignmentMap.ContainsKey(stop))
+                        {
+                            continue;
+                        }
+
+                        var dir = cardinalDirections[Tuple.Create(route, stop)];
+                        var slots = _slotAssignmentMap[stop][(int) dir];
+                        foundHigher |= slots.Length > currentSlot;
+
+                        var idx = Mathf.Min(currentSlot, slots.Length - 1);
+                        if (solution.ContainsKey(slots[idx]))
+                        {
+                            ++mismatches;
+                            allMatch = false;
+                        }
+                    }
+
+                    if (mismatches < score)
+                    {
+                        score = mismatches;
+                        bestSlot = currentSlot;
+                    }
+
+                    if (allMatch || !foundHigher)
+                    {
+                        break;
+                    }
+
+                    ++currentSlot;
+                }
+
+                foreach (var (route, stop) in contiguousStops)
+                {
+                    if (!_slotAssignmentMap.ContainsKey(stop))
+                    {
+                        continue;
+                    }
+
+                    var key = Tuple.Create(route, stop);
+                    var dir = cardinalDirections[key];
+                    var slots = _slotAssignmentMap[stop][(int) dir];
+                    var idx = Mathf.Min(bestSlot, slots.Length - 1);
+
+                    var slot = slots[idx];
+                    while (solution.ContainsKey(slot))
+                    {
+                        idx = (idx + 1) % slots.Length;
+                        slot = slots[idx];
+                    }
+
+                    solution.Add(slot, key);
+                }
+
+                return score;
+            }
+
+            Dictionary<SlotAssignment, Tuple<Route, Stop>> bestSolution = null;
+            var bestScore = int.MaxValue;
+
+            var currentSolution = new Dictionary<SlotAssignment, Tuple<Route, Stop>>();
+            foreach (var permutation in allContiguousStops.GetPermutations())
+            {
+                var currentScore = 0;
+                foreach (var contiguousStops in permutation)
+                {
+                    currentScore += DoNextAssignment(contiguousStops, currentSolution);
+                    if (currentScore >= bestScore)
+                    {
+                        break;
+                    }
+                }
+
+                if (currentScore < bestScore)
+                {
+                    bestSolution = currentSolution;
+                    bestScore = currentScore;
+
+                    if (bestScore == 0)
+                    {
+                        break;
+                    }
+
+                    currentSolution = new Dictionary<SlotAssignment, Tuple<Route, Stop>>();
                 }
                 else
                 {
-                    switch (dstQuadrant)
-                    {
-                        case StopQuadrant.TopRight:
-                        case StopQuadrant.BottomRight:
-                            outCardinal = CardinalDirection.West;
-                            break;
-                        case StopQuadrant.TopLeft:
-                        case StopQuadrant.BottomLeft:
-                            outCardinal = CardinalDirection.East;
-                            break;
-                        default:
-                            throw new ArgumentException("invalid quadrant");
-                    }
+                    currentSolution.Clear();
                 }
-                
-                var backward = false;
-                switch (inCardinal)
-                {
-                    case CardinalDirection.West:
-                        if (outCardinal == CardinalDirection.South)
-                        {
-                            backward = true;
-                            desiredSlot = assignments[(int) inCardinal].Length - 1;
-                        }
-
-                        break;
-                    case CardinalDirection.North:
-                        if (outCardinal == CardinalDirection.East)
-                        {
-                            backward = true;
-                            desiredSlot = assignments[(int) inCardinal].Length - 1;
-                        }
-
-                        break;
-                    case CardinalDirection.East:
-                        if (outCardinal == CardinalDirection.South)
-                        {
-                            backward = true;
-                            desiredSlot = assignments[(int) inCardinal].Length - 1;
-                        }
-
-                        break;
-                    case CardinalDirection.South:
-                        if (outCardinal == CardinalDirection.East || outCardinal == CardinalDirection.West)
-                        {
-                            backward = true;
-                            desiredSlot = assignments[(int) inCardinal].Length - 1;
-                        }
-
-                        break;
-                }
-
-                result = AssignSlot(route, stop, inCardinal, assignments, desiredSlot, backward,
-                                    reserveOpposite ? oppositeAssignment : null);
             }
 
-            return Tuple.Create(result, result?.SlotIndex == desiredSlot);
-        }
+            Debug.Assert(bestSolution != null, "no solution found");
 
-        /// Assign a desired slot.
-        SlotAssignment AssignSlot(Route route, Stop stop, CardinalDirection direction,
-                                  SlotAssignment[][] assignments,
-                                  int desiredSlot, bool backward,
-                                  SlotAssignment oppositeAssignment)
-        {
-            var availableSlots = assignments[(int) direction];
-            desiredSlot = Mathf.Clamp(desiredSlot, 0, availableSlots.Length - 1);
-
-            var inc = backward ? -1 : 1;
-            for (int i = desiredSlot, n = 0; n != availableSlots.Length; ++n)
+            foreach (var (slot, routeStopPair) in bestSolution)
             {
-                var slot = availableSlots[i];
-                if (slot.Route == null && (slot.ReservedForLine == null || slot.ReservedForLine == route.line))
-                {
-                    slot.Route = route;
-                    slot.ReservedForLine = null;
-
-                    _routeSlotAssignmentMap[Tuple.Create(route, stop)] = slot;
-
-                    // Reserve the opposite slot for this line.
-                    if (oppositeAssignment == null)
-                    {
-                        var oppositeSlot = assignments[(int) direction.Opposite()][i];
-                        oppositeSlot.ReservedForLine = route.line;
-                    }
-
-                    return slot;
-                }
-
-                i += inc;
-                if (i == -1)
-                {
-                    i = availableSlots.Length - 1;
-                }
-                else if (i == availableSlots.Length)
-                {
-                    i = 0;
-                }
+                slot.Route = routeStopPair.Item1;
+                _routeSlotAssignmentMap[routeStopPair] = slot;
             }
-
-            Debug.LogError("no empty slot!");
-            return null;
         }
 
 #if DEBUG
@@ -576,8 +655,26 @@ namespace Transidious
         }
 
         enum StopQuadrant
+        { 
+            Centered, TopLeft, TopRight, BottomLeft, BottomRight,
+        }
+
+        StopQuadrant GetQuadrant(Stop start, Stop end)
         {
-            TopLeft, TopRight, BottomLeft, BottomRight,
+            var beginStopPos = start.location;
+            var endStopPos = end.location;
+
+            if (beginStopPos.x.Equals(endStopPos.x) || beginStopPos.y.Equals(endStopPos.y))
+            {
+                return StopQuadrant.Centered;
+            }
+
+            if (endStopPos.x >= beginStopPos.x)
+            {
+                return endStopPos.y >= beginStopPos.y ? StopQuadrant.TopRight : StopQuadrant.BottomRight;
+            }
+
+            return endStopPos.y >= beginStopPos.y ? StopQuadrant.TopLeft : StopQuadrant.BottomLeft;
         }
 
         void FinalizeRouteMesh(Route route, List<Vector2> positions)
@@ -602,14 +699,7 @@ namespace Transidious
             var endStopPos = endStop.location;
 
             // Case M: Same X / Y
-            if (beginStopPos.x.Equals(endStopPos.x) || beginStopPos.y.Equals(endStopPos.y))
-            {
-                positions.Add(beginStopPos);
-                positions.Add(endStopPos);
-
-                FinalizeRouteMesh(route, positions);
-                return;
-            }
+            var directRoute = beginStopPos.x.Equals(endStopPos.x) || beginStopPos.y.Equals(endStopPos.y);
 
             const float offset = 5f;
             const float thresholdAngle = 15f;
@@ -623,11 +713,7 @@ namespace Transidious
 
             if (angle < thresholdAngle || distance < 2 * offset)
             {
-                positions.Add(beginStopPos);
-                positions.Add(endStopPos);
-
-                FinalizeRouteMesh(route, positions);
-                return;
+                directRoute = true;
             }
 
             var oneThirdDistance = distance * (1f / 3f);
@@ -649,20 +735,23 @@ namespace Transidious
             positions.Add(beginPos);
 
             // Avoid 90-degree angles.
-            switch (beginCardinal)
+            if (!directRoute)
             {
-                case CardinalDirection.North:
-                    positions.Add(new Vector2(beginPos.x, beginPos.y + oneThirdDistance));
-                    break;
-                case CardinalDirection.South:
-                    positions.Add(new Vector2(beginPos.x, beginPos.y - oneThirdDistance));
-                    break;
-                case CardinalDirection.East:
-                    positions.Add(new Vector2(beginPos.x + oneThirdDistance, beginPos.y));
-                    break;
-                case CardinalDirection.West:
-                    positions.Add(new Vector2(beginPos.x - oneThirdDistance, beginPos.y));
-                    break;
+                switch (beginCardinal)
+                {
+                    case CardinalDirection.North:
+                        positions.Add(new Vector2(beginPos.x, beginPos.y + oneThirdDistance));
+                        break;
+                    case CardinalDirection.South:
+                        positions.Add(new Vector2(beginPos.x, beginPos.y - oneThirdDistance));
+                        break;
+                    case CardinalDirection.East:
+                        positions.Add(new Vector2(beginPos.x + oneThirdDistance, beginPos.y));
+                        break;
+                    case CardinalDirection.West:
+                        positions.Add(new Vector2(beginPos.x - oneThirdDistance, beginPos.y));
+                        break;
+                }
             }
 
             Vector2 endPos;
@@ -678,179 +767,23 @@ namespace Transidious
                 endCardinal = GetCardinalDirection(route.positions.SecondToLast() - route.positions.Last());
             }
 
-            switch (endCardinal)
+            if (!directRoute)
             {
-                case CardinalDirection.North:
-                    positions.Add(new Vector2(endPos.x, endPos.y + oneThirdDistance));
-                    break;
-                case CardinalDirection.South:
-                    positions.Add(new Vector2(endPos.x, endPos.y - oneThirdDistance));
-                    break;
-                case CardinalDirection.East:
-                    positions.Add(new Vector2(endPos.x + oneThirdDistance, endPos.y));
-                    break;
-                case CardinalDirection.West:
-                    positions.Add(new Vector2(endPos.x - oneThirdDistance, endPos.y));
-                    break;
-            }
-
-            positions.Add(endPos);
-            FinalizeRouteMesh(route, positions);
-        }
-
-        /// Update a route mesh.
-        void UpdateRouteMesh_(Route route)
-        {
-            const float offset = 5f;
-            var positions = new List<Vector2>();
-
-            var beginStop = route.beginStop;
-            var endStop = route.endStop;
-
-            var beginStopPos = beginStop.location;
-            var endStopPos = endStop.location;
-
-            // Case M: Same X / Y
-            if (beginStopPos.x.Equals(endStopPos.x) || beginStopPos.y.Equals(endStopPos.y))
-            {
-                positions.Add(beginStopPos);
-                positions.Add(endStopPos);
-
-                FinalizeRouteMesh(route, positions);
-                return;
-            }
-
-            // Find the destination quadrant.
-            StopQuadrant dstQuadrant;
-            if (endStopPos.x >= beginStopPos.x)
-            {
-                dstQuadrant = endStopPos.y >= beginStopPos.y ? StopQuadrant.TopRight : StopQuadrant.BottomRight;
-            }
-            else
-            {
-                dstQuadrant = endStopPos.y >= beginStopPos.y ? StopQuadrant.TopLeft : StopQuadrant.BottomLeft;
-            }
-
-            // Normalize the angle to be relative to the quadrant.
-            var angle = Math.AngleFromHorizontalAxis(endStopPos - beginStopPos);
-            switch (dstQuadrant)
-            {
-                case StopQuadrant.TopRight:
-                    break;
-                case StopQuadrant.TopLeft:
-                    angle -= 90f;
-                    break;
-                case StopQuadrant.BottomLeft:
-                    angle -= 180f;
-                    break;
-                case StopQuadrant.BottomRight:
-                    angle -= 270f;
-                    break;
-            }
-
-            // Find the destination location.
-            StopLocation dstLocation;
-
-            const float thresholdAngle = 45f;
-            const float thresholdDistance = 50f;
-            if (angle <= thresholdAngle)
-            {
-                var distanceFromXAxis = Mathf.Abs(endStopPos.y - beginStopPos.y);
-                dstLocation = distanceFromXAxis <= thresholdDistance ? StopLocation.A : StopLocation.B;
-            }
-            else
-            {
-                var distanceFromYAxis = Mathf.Abs(endStopPos.x - beginStopPos.x);
-                dstLocation = distanceFromYAxis <= thresholdDistance ? StopLocation.D : StopLocation.C;
-            }
-
-            Vector2 beginPos;
-            CardinalDirection beginCardinal;
-
-            if (_routeSlotAssignmentMap.TryGetValue(Tuple.Create(route, route.beginStop), out var fromAssignment))
-            {
-                beginPos = GetSlotPosition(route.beginStop, fromAssignment, true);
-                beginCardinal = fromAssignment.SlotDirection;
-            }
-            else
-            {
-                beginPos = route.beginStop.location;
-                beginCardinal = GetCardinalDirection(route.positions[1] - route.positions[0]);
-            }
-
-            positions.Add(beginPos);
-
-            float startOffset;
-            switch (dstLocation)
-            {
-                default:
-                case StopLocation.A:
-                case StopLocation.D:
-                    startOffset = Mathf.Abs(endStopPos.y - beginStopPos.y);
-                    break;
-                case StopLocation.B:
-                case StopLocation.C:
-                    startOffset = (endStopPos - beginStopPos).magnitude * (1f / 3f);
-                    break;
-            }
-
-            switch (beginCardinal)
-            {
-                case CardinalDirection.North:
-                    positions.Add(new Vector2(beginPos.x, beginPos.y + startOffset));
-                    break;
-                case CardinalDirection.South:
-                    positions.Add(new Vector2(beginPos.x, beginPos.y - startOffset));
-                    break;
-                case CardinalDirection.East:
-                    positions.Add(new Vector2(beginPos.x + startOffset, beginPos.y));
-                    break;
-                case CardinalDirection.West:
-                    positions.Add(new Vector2(beginPos.x - startOffset, beginPos.y));
-                    break;
-            }
-
-            Vector2 endPos;
-            CardinalDirection endCardinal;
-            if (_routeSlotAssignmentMap.TryGetValue(Tuple.Create(route, route.endStop), out var toAssignment))
-            {
-                endPos = GetSlotPosition(route.endStop, toAssignment, true);
-                endCardinal = toAssignment.SlotDirection;
-            }
-            else
-            {
-                endPos = route.endStop.location;
-                endCardinal = GetCardinalDirection(route.positions.SecondToLast() - route.positions.Last());
-            }
-
-            float endOffset;
-            switch (dstLocation)
-            {
-                default:
-                case StopLocation.A:
-                case StopLocation.D:
-                    endOffset = 0f;
-                    break;
-                case StopLocation.B:
-                case StopLocation.C:
-                    endOffset = (endStopPos - beginStopPos).magnitude * (1f / 3f);
-                    break;
-            }
-
-            switch (endCardinal)
-            {
-                case CardinalDirection.North:
-                    positions.Add(new Vector2(endPos.x, endPos.y + endOffset));
-                    break;
-                case CardinalDirection.South:
-                    positions.Add(new Vector2(endPos.x, endPos.y - endOffset));
-                    break;
-                case CardinalDirection.East:
-                    positions.Add(new Vector2(endPos.x + endOffset, endPos.y));
-                    break;
-                case CardinalDirection.West:
-                    positions.Add(new Vector2(endPos.x - endOffset, endPos.y));
-                    break;
+                switch (endCardinal)
+                {
+                    case CardinalDirection.North:
+                        positions.Add(new Vector2(endPos.x, endPos.y + oneThirdDistance));
+                        break;
+                    case CardinalDirection.South:
+                        positions.Add(new Vector2(endPos.x, endPos.y - oneThirdDistance));
+                        break;
+                    case CardinalDirection.East:
+                        positions.Add(new Vector2(endPos.x + oneThirdDistance, endPos.y));
+                        break;
+                    case CardinalDirection.West:
+                        positions.Add(new Vector2(endPos.x - oneThirdDistance, endPos.y));
+                        break;
+                }
             }
 
             positions.Add(endPos);

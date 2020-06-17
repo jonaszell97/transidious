@@ -1777,7 +1777,7 @@ PrefabInstance:
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
       propertyPath: saveFileToLoad
-      value: 
+      value: xxx
       objectReference: {fileID: 0}
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
