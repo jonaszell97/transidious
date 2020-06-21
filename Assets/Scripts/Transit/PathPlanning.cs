@@ -1028,7 +1028,7 @@ namespace Transidious.PathPlanning
                 openSet.Remove(current);
                 closedSet.Add(current);
 
-                if (_router?.IsHub(current) ?? false)
+                /*if (_router?.IsHub(current) ?? false)
                 {
                     Debug.Log("using hub!");
                     var neighbor = _router.FindClosestHubInDirection(current.Location, goal.Location);
@@ -1056,7 +1056,7 @@ namespace Transidious.PathPlanning
                     }
                     
                     continue;
-                }
+                }*/
 
                 foreach (IRoute route in current.Routes)
                 {
@@ -1103,7 +1103,7 @@ namespace Transidious.PathPlanning
                         // Find the maximum waiting time.
                         if ((prevRoute == null || route.AssociatedID != prevRoute.AssociatedID))
                         {
-                            var wait = (route as Route).line.schedule.dayInterval;
+                            var wait = ((Route)route).line.schedule.dayInterval * .5f;
 
                             tentative_gScore += wait * options.waitingTimeFactor;
                             duration += wait;

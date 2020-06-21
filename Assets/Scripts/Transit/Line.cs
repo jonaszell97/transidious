@@ -65,6 +65,9 @@ namespace Transidious
         /// The current schedule of the line.
         public Schedule schedule;
 
+        /// Fare for a trip on the line.
+        public decimal TripFare;
+
         /// The total travel time of the line without stopping.
         public TimeSpan TotalTravelTime => (distance / AverageSpeed) + AverageStopDuration.Multiply(routes.Count - 1);
 
@@ -109,6 +112,26 @@ namespace Transidious
             }
         }
 
+        /// The default trip fare for a transit system.
+        public decimal DefaultTripFare => GetDefaultTripFare(type);
+
+        /// The default trip fare for a transit system.
+        public static decimal GetDefaultTripFare(TransitType type)
+        {
+            switch (type)
+            {
+                case TransitType.Bus: return 2.5m;
+                case TransitType.Tram: return 3m;
+                case TransitType.Subway: return 5m;
+                case TransitType.LightRail: return 5m;
+                case TransitType.IntercityRail: return 25m;
+                case TransitType.Ferry: return 3m;
+                default:
+                    Debug.LogError("Unknown transit type!");
+                    return 2.5m;
+            }
+        }
+
         public float LineWidth
         {
             get
@@ -136,6 +159,7 @@ namespace Transidious
             this.color = color;
             this.type = type;
 
+            this.TripFare = DefaultTripFare;
             this.schedule = Schedule.GetDefaultSchedule(type);
             this.material = new Material(GameController.instance.unlitMaterial)
             {

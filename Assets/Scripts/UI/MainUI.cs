@@ -37,8 +37,8 @@ namespace Transidious
         /// The state of the UI.
         public State state;
 
-        /// The modal instance.
-        public UIModal modal;
+        /// The main UI panel at the bottom of the screen.
+        public GameObject mainUIPanel;
 
         /// Array containing all of the ui elements from left to right.
         public RectTransform[] panels;
@@ -79,7 +79,7 @@ namespace Transidious
          */
 
         /// The citizen count ui text.
-        public TMPro.TMP_Text citizenCountText;
+        public TMP_Text citizenCountText;
 
         /// The citizen trend arrow.
         public Image citizenCountTrendImg;
@@ -88,33 +88,22 @@ namespace Transidious
          * Finances Tab
          */
 
-        /// <summary>
         /// The money ui text object.
-        /// </summary>
-        public TMPro.TMP_Text moneyText;
+        public TMP_Text moneyText;
 
-        /// <summary>
         /// The income ui text object.
-        /// </summary>
-        public TMPro.TMP_Text incomeText;
+        public TMP_Text incomeText;
+
+        /// The finance overview.
+        public UIFinanceOverview financeOverview;
 
         /// The background panel image.
         public Image financeBackgroundImage;
 
-        /// The detailed financial panel.
-        public UIInfoPanel financesPanel;
-
-        /// The expandable finances panel.
-        public UIExpandablePanel expandableFinancePanel;
-
-        /// <summary>
         /// The income colors.
-        /// </summary>
         public Color[] financeColors;
 
-        /// <summary>
         /// The panel that shows construction and monthly costs.
-        /// </summary>
         public GameObject constructionCostPanel;
         public TMP_Text constructionCostText;
         public TMP_Text monthlyCostText;
@@ -234,9 +223,11 @@ namespace Transidious
             this.simSpeedButton.onClick.AddListener(OnSimSpeedClick);
 
             // Finance panel
-            financesPanel.AddItem("Earnings", "ui:finances:earnings", "0");
-            financesPanel.AddItem("Expenses", "ui:finances:expenses", "0");
-            financesPanel.AddItem("Income", "ui:finances:income", "0");
+            financeOverview.Initialize();
+            financeBackgroundImage.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                financeOverview.Toggle();
+            });
 
             // Transit panel
             this.settingsIcons[0].onClick.AddListener(() =>
@@ -353,6 +344,16 @@ namespace Transidious
             highlightOverlay.Initialize();
         }
 
+        public void ShowUI()
+        {
+            mainUIPanel.gameObject.SetActive(true);
+        }
+        
+        public void HideUI()
+        {
+            mainUIPanel.gameObject.SetActive(false);
+        }
+
         public void UpdateDayNightOverlay(DateTime gameTime)
         {
             var hour = gameTime.Hour;
@@ -466,11 +467,11 @@ namespace Transidious
             var c = financeColors[incomeCmp + 1];
             financeBackgroundImage.color = new Color(c.r, c.g, c.b, financeBackgroundImage.color.a);
 
-            financesPanel.SetValue("Earnings", Translator.GetCurrency(finances.earnings));
-            financesPanel.SetValue("Expenses", Translator.GetCurrency(finances.expenses));
-            
-            financesPanel.SetValue("Income", incomeStr);
-            financesPanel.GetValue("Income").color = new Color(c.r, c.g, c.b, 1f);
+            // financesPanel.SetValue("Earnings", Translator.GetCurrency(finances.earnings));
+            // financesPanel.SetValue("Expenses", Translator.GetCurrency(finances.expenses));
+            //
+            // financesPanel.SetValue("Income", incomeStr);
+            // financesPanel.GetValue("Income").color = new Color(c.r, c.g, c.b, 1f);
         }
 
         void HidePanels(State finalState, int panelIndex, Action onDone = null)

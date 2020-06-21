@@ -566,13 +566,18 @@ namespace Transidious
         /**
          * Transit steps
          */
-        
+
         void InitTransitStep(PublicTransitStep step)
         {
             var firstStop = step.routes.First().beginStop;
             firstStop.AddWaitingCitizen(this, step);
+
+            citizen.Money -= step.line.TripFare;
+            Debug.Assert(citizen.Money >= 0m, "not enough money to pay for trip!");
+
+            GameController.instance.financeController.Earn(step.line.TripFare);
         }
-        
+
         /**
          * Simulation
          */

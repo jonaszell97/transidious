@@ -75,6 +75,9 @@ namespace Transidious
         /// The translator for the current language.
         public Translator lang;
 
+        /// The unlock progress.
+        public Progress Progress;
+
         ///  Prefab for creating tooltips.
         public GameObject tooltipPrefab;
 
@@ -277,6 +280,8 @@ namespace Transidious
             
             this.status = GameStatus.Playing;
             this.onLoad.Invoke();
+            
+            Progress.UnlockAll();
 
             loadingScreen.gameObject.SetActive(false);
             input.EnableControls();
@@ -327,6 +332,7 @@ namespace Transidious
 
             this.lang = Translator.SetActiveLanguage("en_US");
             this.router = new Router();
+            this.Progress = new Progress();
 
             this.onLoad = new UnityEvent();
 

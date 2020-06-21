@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0beta2 (2b71d25, 2019-12-03)"
+   sodipodi:docname="noun_Lock_3401975.svg"
+   id="svg871"
+   version="1.1"
+   y="0px"
+   x="0px"
+   viewBox="0 0 100 100"
+   data-name="Layer 2"
+   fill="#FFFFFF"
+   width="100px"
+   height="100px">
+  <metadata
+     id="metadata875">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>i-1</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:current-layer="svg871"
+     inkscape:window-maximized="0"
+     inkscape:window-y="23"
+     inkscape:window-x="0"
+     inkscape:cy="50"
+     inkscape:cx="4.2279412"
+     inkscape:zoom="2.72"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview873"
+     inkscape:window-height="862"
+     inkscape:window-width="1536"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     inkscape:document-rotation="0"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <defs
+     id="defs859">
+    <style
+       id="style857">.cls-1{fill-rule:evenodd;}</style>
+  </defs>
+  <title
+     id="title861">i-1</title>
+  <g
+     inkscape:export-ydpi="274.63019"
+     inkscape:export-xdpi="274.63019"
+     inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/ui_lock.png"
+     id="g1442">
+    <g
+       id="g865">
+      <path
+         class="cls-1"
+         d="M79.83,35.08V50H67.9V35.08a17.9,17.9,0,0,0-35.8,0V50H20.17V35.08a29.83,29.83,0,0,1,59.66,0Z"
+         id="path863" />
+    </g>
+    <g
+       id="g869">
+      <path
+         d="M79.83,50H20.17a6,6,0,0,0-6,6V88.78a6,6,0,0,0,6,6H79.83a6,6,0,0,0,6-6V56A6,6,0,0,0,79.83,50ZM53,76v6.79H47V76a6,6,0,1,1,6,0Z"
+         id="path867" />
+    </g>
+  </g>
+</svg>

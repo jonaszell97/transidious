@@ -26,7 +26,16 @@
         "Stadium": [],
         "GroceryStore": []
     },
-    "items": [{
+    "items": [
+        {
+            "key": "ui:other",
+            "text": "Other"
+        },
+        {
+            "key": "ui:locked",
+            "text": "Locked"
+        },
+        {
             "key": "ui:finances:income",
             "text": "Income"
         },
@@ -41,6 +50,56 @@
         {
             "key": "ui:finances:taxes",
             "text": "Taxes"
+        },
+        {
+            "key": "ui:finances:interest",
+            "text": "Interest"
+        },
+        {
+            "key": "ui:finances:loan",
+            "text": "Loan",
+            "plural": "Loans"
+        },
+        {
+            "key": "ui:finances:take_loan",
+            "text": "Take Loan"
+        },
+        {
+            "key": "ui:finances:small_loan",
+            "text": "Small Loan"
+        },
+        {
+            "key": "ui:finances:medium_loan",
+            "text": "Medium Loan"
+        },
+        {
+            "key": "ui:finances:big_loan",
+            "text": "Big Loan"
+        },
+        {
+            "key": "ui:finances:loan_balance",
+            "text": "Balance"
+        },
+        {
+            "key": "ui:finances:payback_loan",
+            "text": "Pay Full Amount"
+        },
+        {
+
+            "key": "ui:finances:number_of_payments",
+            "text": "Payments"
+        },
+        {
+            "key": "ui:finances:monthly_rate",
+            "text": "Monthly Rate"
+        },
+        {
+            "key": "ui:finances:upkeep",
+            "text": "Upkeep"
+        },
+        {
+            "key": "ui:finances:maintenance",
+            "text": "Maintenance"
         },
 
         {
@@ -278,6 +337,11 @@
             "key": "ui:transit:line_color",
             "text": "Line Color"
         },
+        {
+            "key": "ui:transit:fare",
+            "text": "Fare",
+            "plural": "Fares"
+        },
 
         {
             "key": "ui:map_object:Resident",
@@ -344,11 +408,13 @@
         },
         {
             "key": "ui:building:type:Shop",
-            "text": "Shop"
+            "text": "Shop",
+            "plural": "Shops"
         },
         {
             "key": "ui:building:type:Office",
-            "text": "Office"
+            "text": "Office",
+            "plural": "Offices"
         },
         {
             "key": "ui:building:type:Industrial",

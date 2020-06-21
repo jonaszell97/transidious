@@ -50,6 +50,7 @@ namespace Transidious
                               "", "Sprites/ui_citizen_head");
 
             infoPanel.AddItem("TripsSaved", "ui:transit:trips_saved");
+            infoPanel.AddItem("Fare", "ui:transit:fare");
 
             var maxCharacters = 32;
             modal.titleInput.interactable = true;
@@ -239,6 +240,7 @@ namespace Transidious
 
             infoPanel.SetValue("WeeklyPassengers", line.weeklyPassengers.ToString());
             infoPanel.SetValue("TripsSaved", "0%");
+            infoPanel.SetValue("Fare", Translator.GetCurrency(line.TripFare, true));
 
 #if DEBUG
             infoPanel.SetValue("NumVehicles", line.vehicles.Count.ToString());

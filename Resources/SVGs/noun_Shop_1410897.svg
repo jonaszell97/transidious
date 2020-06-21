@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0beta2 (2b71d25, 2019-12-03)"
+   sodipodi:docname="noun_Shop_1410897.svg"
+   id="svg1434"
+   version="1.1"
+   y="0px"
+   x="0px"
+   viewBox="0 0 128 128"
+   fill="#FFFFFF"
+   width="100px"
+   height="100px">
+  <metadata
+     id="metadata1440">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Shop</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs1438" />
+  <sodipodi:namedview
+     inkscape:current-layer="svg1434"
+     inkscape:window-maximized="0"
+     inkscape:window-y="23"
+     inkscape:window-x="0"
+     inkscape:cy="50"
+     inkscape:cx="4.2279412"
+     inkscape:zoom="2.72"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     id="namedview1436"
+     inkscape:window-height="862"
+     inkscape:window-width="1536"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     inkscape:document-rotation="0"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <title
+     id="title1424">Shop</title>
+  <g
+     inkscape:export-ydpi="245.75999"
+     inkscape:export-xdpi="245.75999"
+     inkscape:export-filename="/Users/Jonas/Transidious/Assets/Resources/Sprites/shop.png"
+     id="g1432"
+     data-name="Layer 2">
+    <path
+       id="path1426"
+       d="M126,31H2a2,2,0,0,0-2,2V43.33a12.33,12.33,0,0,0,22.67,6.72,12.32,12.32,0,0,0,20.66,0,12.32,12.32,0,0,0,20.67,0,12.32,12.32,0,0,0,20.67,0,12.32,12.32,0,0,0,20.66,0A12.32,12.32,0,0,0,128,43.33V33A2,2,0,0,0,126,31ZM12.33,51.67A8.34,8.34,0,0,1,4,43.33V35H20.67v8.33A8.34,8.34,0,0,1,12.33,51.67Zm41.34,0a8.35,8.35,0,0,1-8.34-8.34V35H62v8.33A8.34,8.34,0,0,1,53.67,51.67Zm41.33,0a8.34,8.34,0,0,1-8.33-8.34V35h16.66v8.33A8.32,8.32,0,0,1,95,51.67Z" />
+    <path
+       id="path1428"
+       d="M121,0H7A7,7,0,0,0,0,7V27H128V7A7,7,0,0,0,121,0Z" />
+    <path
+       id="path1430"
+       d="M105.33,56a16.32,16.32,0,0,1-20.67,0A16.32,16.32,0,0,1,64,56a16.32,16.32,0,0,1-20.66,0,16.32,16.32,0,0,1-20.67,0,16.18,16.18,0,0,1-12.34,3.55V126a2,2,0,0,0,2,2H115.67a2,2,0,0,0,2-2V59.53A16.23,16.23,0,0,1,105.33,56ZM52.82,124h-27V69a3,3,0,0,1,3-3h21a3,3,0,0,1,3,3Zm53.36-8.33a2,2,0,0,1-2,2h-31a2,2,0,0,1-2-2V105.33a2,2,0,0,1,2-2h31a2,2,0,0,1,2,2Zm0-20.67a2,2,0,0,1-2,2h-31a2,2,0,0,1-2-2V69a7,7,0,0,1,7-7h21a7,7,0,0,1,7,7Z" />
+  </g>
+</svg>

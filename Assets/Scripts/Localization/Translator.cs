@@ -237,10 +237,11 @@ namespace Transidious
             return amount.ToString("N", current.culture);
         }
 
-        public static string GetCurrency(decimal amount, bool includeSymbol = false, bool includePlusSign = false)
+        public static string GetCurrency(decimal amount, bool includeSymbol = false, bool includePlusSign = false,
+                                         int decimalPlaces = 2)
         {
             ref var currency = ref current.loadedLanguage.currency;
-            var str = (amount * (decimal)currency.valueInDollars).ToString("N", current.culture);
+            var str = (amount * (decimal)currency.valueInDollars).ToString($"N{decimalPlaces}", current.culture);
 
             if (includeSymbol)
             {
@@ -260,21 +261,6 @@ namespace Transidious
             }
 
             return str;
-
-            //var str = new StringBuilder();
-            //if (currency.beforeNumber)
-            //{
-            //    str.Append(currency.symbol);
-            //}
-
-            //AddCurrency(ref current.loadedLanguage, str, amount * currency.valueInDollars, 2);
-
-            //if (!currency.beforeNumber)
-            //{
-            //    str.Append(currency.symbol);
-            //}
-
-            //return str.ToString();
         }
 
         public static int MaxTimeStringLength

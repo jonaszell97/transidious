@@ -70,6 +70,22 @@
             "key": "building.defaultNight",
             "value": "#333"
         },
+        {
+            "key": "building.residential",
+            "value": "#126C00"
+        },
+        {
+            "key": "building.office",
+            "value": "#00FFF4"
+        },
+        {
+            "key": "building.shop",
+            "value": "#001DB4"
+        },
+        {
+            "key": "building.industrial",
+            "value": "#FFCF00"
+        },
 
         {
             "key": "feature.Lake",

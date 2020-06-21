@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
@@ -339,6 +340,18 @@ namespace Transidious
             }
 
             PlayerPrefs.DeleteKey(key);
+        }
+
+        public void HandleUnlockCommand(string item)
+        {
+            if (!Enum.TryParse(item, out Progress.Unlockable result))
+            {
+                Log($"invalid unlockable: {item}");
+                return;
+            }
+
+            GameController.instance.Progress.Unlock(result);
+            Log($"unlocked {item}");
         }
 
         public void HandleAddStartupCommandCommand()

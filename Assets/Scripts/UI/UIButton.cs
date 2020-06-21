@@ -19,17 +19,25 @@ namespace Transidious.UI
         {
             var c = image.color;
             image.color = new Color(c.r, c.g, c.b, 1f);
-            text.textMesh.color = Color.white;
             button.enabled = true;
+
+            if (text != null)
+            {
+                text.textMesh.color = Color.white;
+            }
         }
-        
+
         /// Disable the button.
         public void Disable()
         {
             var c = image.color;
             image.color = new Color(c.r, c.g, c.b, .4f);
-            text.textMesh.color = new Color(.7f, .7f, .7f);
             button.enabled = false;
+
+            if (text != null)
+            {
+                text.textMesh.color = new Color(.7f, .7f, .7f);
+            }
         }
     }
 }

@@ -15,6 +15,11 @@ namespace Transidious
         public static readonly float HalfPI = .5f * Mathf.PI;
         public static readonly float ThreeHalvesPI = 1.5f * Mathf.PI;
 
+        public static decimal Clamp(decimal value, decimal min, decimal max)
+        {
+            return System.Math.Max(min, System.Math.Min(max, value));
+        }
+
         private static void arcLengthUtil(Vector2 A, Vector2 B,
                                           Vector2 C, Vector2 D,
                                           uint subdiv, ref float L)
