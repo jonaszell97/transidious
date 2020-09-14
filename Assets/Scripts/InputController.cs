@@ -770,15 +770,30 @@ namespace Transidious
 
             CheckKeyboardEvents();
 
-            if (controller.mainUI != null)
+            var mainUI = controller.mainUI;
+            if (mainUI != null)
             {
-                if (controller.mainUI.fadeScaleBarTime > 0f)
+                if (mainUI.fadeScaleBarTime > 0f)
                 {
-                    controller.mainUI.fadeScaleBarTime -= Time.deltaTime;
-                    if (controller.mainUI.fadeScaleBarTime <= 0f)
+                    mainUI.fadeScaleBarTime -= Time.deltaTime;
+                    if (mainUI.fadeScaleBarTime <= 0f)
                     {
-                        controller.mainUI.fadeScaleBarTime = 0f;
-                        controller.mainUI.FadeScaleBar();
+                        mainUI.fadeScaleBarTime = 0f;
+                        mainUI.FadeScaleBar();
+                    }
+                }
+
+                var missionProgress = mainUI.missionProgress;
+                if (missionProgress.shouldFade && !missionProgress.hovered)
+                {
+                    if (missionProgress.fadeTime > 0f)
+                    {
+                        missionProgress.fadeTime -= Time.deltaTime;
+                        if (missionProgress.fadeTime <= 0f)
+                        {
+                            missionProgress.fadeTime = 0f;
+                            missionProgress.Fade();
+                        }
                     }
                 }
             }
@@ -949,32 +964,15 @@ namespace Transidious
                     Utility.DrawCircle(pos.pos, 3f, 3f, Color.red);
                 }
             }
-            
+
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F7))
             {
-                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                if (_fromPos == null)
-                {
-                    Debug.Log("first point set");
-                    _fromPos = clickedPos;
-                }
-                else
-                {
-                    var from = _fromPos.Value;
-                    var to = clickedPos;
+                mainUI.missionProgress.SetProgress(0f, false, false);
 
-                    var hubs = controller.router.GetClosestHubs(from, to);
-                    Utility.DrawCircle(from, 3f, 3f, Color.red);
-                    Utility.DrawArrow(from, hubs.Item1.Location, 2f, Color.blue);
-                    Utility.DrawCircle(hubs.Item1.Location, 3f, 3f, Color.yellow);
-                    Utility.DrawCircle(hubs.Item2.Location, 3f, 3f, Color.yellow);
-                    Utility.DrawArrow(hubs.Item2.Location, to, 2f, Color.blue);
-                    Utility.DrawCircle(to, 3f, 3f, Color.red);
-                    
-                    _fromPos = null;
-                }
+                var value = RNG.Next(.30f, 1.00f);
+                mainUI.missionProgress.SetProgress(value);
             }
-            
+
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F8))
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);

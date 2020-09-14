@@ -12,12 +12,12 @@ namespace Transidious
         [System.Flags]
         public enum TransformType
         {
-            None            = 0x0,
-            Position        = 0x1,
-            AnchoredPosition   = 0x2,
-            Rotation        = 0x4,
-            Scale           = 0x8,
-            SizeDelta       = 0x10,
+            None             = 0x0,
+            Position         = 0x1,
+            AnchoredPosition = 0x2,
+            Rotation         = 0x4,
+            Scale            = 0x8,
+            SizeDelta        = 0x10,
         }
 
         public enum AnimationType

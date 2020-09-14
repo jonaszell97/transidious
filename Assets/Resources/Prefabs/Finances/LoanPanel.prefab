@@ -2148,7 +2148,7 @@ PrefabInstance:
     - target: {fileID: 4973943035530800606, guid: 29fc902e9641d4d74aee1336fd42bd94,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 13
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 4973943035530800606, guid: 29fc902e9641d4d74aee1336fd42bd94,
         type: 3}
@@ -2168,7 +2168,7 @@ PrefabInstance:
     - target: {fileID: 4973943035530800606, guid: 29fc902e9641d4d74aee1336fd42bd94,
         type: 3}
       propertyPath: m_text
-      value: 'Monthly Rate
+      value: 'Hourly Rate
 
 '
       objectReference: {fileID: 0}
@@ -2200,7 +2200,7 @@ PrefabInstance:
     - target: {fileID: 6103083550524494333, guid: 29fc902e9641d4d74aee1336fd42bd94,
         type: 3}
       propertyPath: localizationKey
-      value: ui:finances:monthly_rate
+      value: ui:finances:hourly_rate
       objectReference: {fileID: 0}
     - target: {fileID: 6859886147209849691, guid: 29fc902e9641d4d74aee1336fd42bd94,
         type: 3}

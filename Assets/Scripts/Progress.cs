@@ -16,6 +16,8 @@ namespace Transidious
             /// The big loan.
             BigLoan,
 
+            /// The bus transit system.
+            Bus,
             /// The tram transit system.
             Tram,
             /// The subway transit system.

@@ -3,6 +3,25 @@ using System;
 
 namespace Transidious
 {
+    /// Types of update hooks that are available for tasks.
+    public enum ObjectiveUpdateHook
+    {
+        /// Update after every tick of game time.
+        EveryTick,
+
+        /// Update after every minute of game time.
+        EveryMinute,
+
+        /// Update after the start of a new day.
+        EveryDay,
+
+        /// Update after every monetary change.
+        MonetaryChange,
+
+        /// Update after line change.
+        TransitChange,
+    }
+
     [Serializable]
     public struct Objective
     {
@@ -113,6 +132,212 @@ namespace Transidious
                 return false;
             }
 
+            return false;
+        }
+    }
+
+    public abstract class Task
+    {
+        /// The type of task.
+        public enum TaskType
+        {
+            /// Connect a part of the city to the transit system.
+            ConnectToTransit,
+            
+            /// Connect a part of the city with another part.
+            CreateConnection,
+            
+            /// Build a specified number of stops for a specific system.
+            BuildStops,
+            
+            /// Build a new line of a specific system.
+            BuildLine,
+            
+            /// Have a certain amount of money in the bank.
+            TotalMoney,
+            
+            /// Maintain a specified average happiness level.
+            MaintainAvgHappiness,
+        }
+
+        /// The task type.
+        public TaskType Type;
+        
+        /// Start time of the task.
+        public DateTime StartTime;
+
+        /// The task's deadline.
+        public DateTime Deadline;
+
+        /// The reward for this task.
+        public decimal Reward;
+
+        /// The update hooks of this objective.
+        public ObjectiveUpdateHook[] UpdateHooks;
+
+        /// Subclass C'tor.
+        protected Task(TaskType type, DateTime deadline, decimal reward, ObjectiveUpdateHook[] updateHooks)
+        {
+            Type = type;
+            Deadline = deadline;
+            Reward = reward;
+            UpdateHooks = updateHooks;
+
+            StartTime = GameController.instance.sim.GameTime;
+        }
+
+        /// Estimate the task progress in %.
+        public abstract float EstimateProgress(GameController game);
+
+        /// Check whether or not the task has failed (if it can fail at all).
+        public virtual bool IsFailed(GameController game)
+        {
+            return false;
+        }
+    }
+    
+    public class ConnectToTransitTask : Task
+    {
+        /// The map object that should be connected.
+        public IMapObject MapObject;
+
+        /// C'tor.
+        public ConnectToTransitTask(IMapObject obj, DateTime deadline, decimal reward)
+            : base(TaskType.ConnectToTransit, deadline, reward, new [] {ObjectiveUpdateHook.TransitChange})
+        {
+            MapObject = obj;
+        }
+
+        /// Estimate the task progress in %.
+        public override float EstimateProgress(GameController game)
+        {
+            return 0f;
+        }
+    }
+
+    public class CreateConnectionTask : Task
+    {
+        /// The map object from which a connection should be created.
+        public IMapObject OriginMapObject;
+
+        /// The map object to which a connection should be created.
+        public IMapObject DestinationMapObject;
+
+        /// C'tor.
+        public CreateConnectionTask(IMapObject origin, IMapObject destination, DateTime deadline, decimal reward)
+            : base(TaskType.CreateConnection, deadline, reward, new [] {ObjectiveUpdateHook.TransitChange})
+        {
+            OriginMapObject = origin;
+            DestinationMapObject = destination;
+        }
+        
+        /// Estimate the task progress in %.
+        public override float EstimateProgress(GameController game)
+        {
+            return 0f;
+        }
+    }
+
+    public class BuildStopsTask : Task
+    {
+        /// The transit system to build the stops for.
+        public TransitType System;
+        
+        /// The number of stops to build.
+        public int NumStops;
+
+        /// C'tor.
+        public BuildStopsTask(TransitType system, int numStops, DateTime deadline, decimal reward)
+            : base(TaskType.BuildStops, deadline, reward, new[] {ObjectiveUpdateHook.TransitChange})
+        {
+            System = system;
+            NumStops = numStops;
+        }
+        
+        /// Estimate the task progress in %.
+        public override float EstimateProgress(GameController game)
+        {
+            return 0f;
+        }
+    }
+
+    public class BuildLineTask : Task
+    {
+        /// The transit system to build the line of.
+        public TransitType System;
+
+        /// C'tor.
+        public BuildLineTask(TransitType system, DateTime deadline, decimal reward)
+            : base(TaskType.BuildLine, deadline, reward, new[] {ObjectiveUpdateHook.TransitChange})
+        {
+            System = system;
+        }
+
+        /// Estimate the task progress in %.
+        public override float EstimateProgress(GameController game)
+        {
+            return 0f;
+        }
+    }
+    
+    public class TotalMoneyTask : Task
+    {
+        /// The amount of money to save.
+        public decimal Amount;
+
+        /// C'tor.
+        public TotalMoneyTask(decimal amount, DateTime deadline, decimal reward)
+            : base(TaskType.TotalMoney, deadline, reward, new[] {ObjectiveUpdateHook.MonetaryChange})
+        {
+            Amount = amount;
+        }
+
+        /// Estimate the task progress in %.
+        public override float EstimateProgress(GameController game)
+        {
+            return Mathf.Clamp((float)(game.financeController.Money / Amount), 0f, 1f);
+        }
+    }
+
+    public abstract class TimedTask : Task
+    {
+        /// Subclass C'tor.
+        protected TimedTask(TaskType type, DateTime deadline, decimal reward, ObjectiveUpdateHook[] updateHooks)
+            : base(type, deadline, reward, updateHooks)
+        {
+        }
+
+        /// Estimate the task progress in %.
+        public override float EstimateProgress(GameController game)
+        {
+            var gt = game.sim.GameTime;
+            if (gt >= Deadline)
+            {
+                return 1f;
+            }
+
+            var totalInterval = Deadline - StartTime;
+            var passedInterval = game.sim.GameTime - StartTime;
+
+            return Mathf.Clamp((float) (passedInterval.TotalSeconds / totalInterval.TotalSeconds), 0f, 1f);
+        }
+    }
+    
+    public class MaintainAvgHappinessTask : TimedTask
+    {
+        /// The happiness level to maintain.
+        public float HappinessLevel;
+
+        /// C'tor.
+        public MaintainAvgHappinessTask(float happinessLevel, DateTime deadline, decimal reward)
+            : base(TaskType.TotalMoney, deadline, reward, new[] {ObjectiveUpdateHook.EveryMinute})
+        {
+            HappinessLevel = happinessLevel;
+        }
+
+        /// Check whether or not the task has failed (if it can fail at all).
+        public override bool IsFailed(GameController game)
+        {
             return false;
         }
     }

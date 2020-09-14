@@ -16,115 +16,103 @@ namespace Transidious.UI
         /// The expenses text.
         public TMP_Text expenses;
 
-        /// The tax rate text fields.
-        public TMP_Text[] taxRates;
-
-        /// The tax rate increase buttons.
-        public UIButton[] taxRateIncButtons;
-
-        /// The tax rate decrease buttons.
-        public UIButton[] taxRateDecButtons;
+        /// The tax rate panels.
+        public UITaxPanel[] taxRatePanels;
         
-        /// The fare text fields.
-        public TMP_Text[] defaultFares;
-
-        /// The fare increase buttons.
-        public UIButton[] fareIncButtons;
-
-        /// The fare decrease buttons.
-        public UIButton[] fareDecButtons;
+        /// The default fare panels.
+        public UITaxPanel[] defaultFarePanels;
 
         /// The loan panels.
         public UILoanPanel[] loanPanels;
+
+        /// Whether or not the game was paused when opening the finance overview.
+        private bool _wasPaused;
 
         /// Initialize.
         public void Initialize()
         {
             _financeController = GameController.instance.financeController;
 
+            const decimal step = .25m;
             for (var i = 0; i < (int) FinanceController.TaxationType._Last; ++i)
             {
                 var n = i;
-                taxRateIncButtons[i].button.onClick.AddListener(() =>
+                taxRatePanels[i].plusButton.button.onClick.AddListener(() =>
                 {
-                    const decimal step = .25m;
                     var currRate = _financeController.GetTaxRate((FinanceController.TaxationType) n);
                     var newRate = Math.Clamp(currRate + step, FinanceController.MinTaxRate, FinanceController.MaxTaxRate);
                     _financeController.SetTaxRate((FinanceController.TaxationType) n, newRate);
-                    taxRates[n].text = Translator.GetCurrency(newRate, true);
+                    taxRatePanels[n].amount.text = Translator.GetCurrency(newRate, true);
 
                     if (newRate.Equals(FinanceController.MaxTaxRate))
                     {
-                        taxRateIncButtons[n].Disable();
+                        taxRatePanels[n].plusButton.Disable();
                     }
                     else
                     {
-                        taxRateIncButtons[n].Enable();
+                        taxRatePanels[n].plusButton.Enable();
                     }
 
-                    taxRateDecButtons[n].Enable();
+                    taxRatePanels[n].minusButton.Enable();
                 });
-                taxRateDecButtons[i].button.onClick.AddListener(() =>
+                taxRatePanels[i].minusButton.button.onClick.AddListener(() =>
                 {
-                    const decimal step = .25m;
                     var currRate = _financeController.GetTaxRate((FinanceController.TaxationType) n);
                     var newRate = Math.Clamp(currRate - step, FinanceController.MinTaxRate, FinanceController.MaxTaxRate);
                     _financeController.SetTaxRate((FinanceController.TaxationType) n, newRate);
-                    taxRates[n].text = Translator.GetCurrency(newRate, true);
+                    taxRatePanels[n].amount.text = Translator.GetCurrency(newRate, true);
 
                     if (newRate.Equals(FinanceController.MinTaxRate))
                     {
-                        taxRateDecButtons[n].Disable();
+                        taxRatePanels[n].minusButton.Disable();
                     }
                     else
                     {
-                        taxRateDecButtons[n].Enable();
+                        taxRatePanels[n].minusButton.Enable();
                     }
                     
-                    taxRateIncButtons[n].Enable();
+                    taxRatePanels[n].plusButton.Enable();
                 });
             }
 
             for (var i = 0; i <= (int) TransitType.Ferry; ++i)
             {
                 var n = i;
-                fareIncButtons[i].button.onClick.AddListener(() =>
+                defaultFarePanels[i].plusButton.button.onClick.AddListener(() =>
                 {
-                    const decimal step = .25m;
                     var currRate = _financeController.GetDefaultFare((TransitType) n);
                     var newRate = Math.Clamp(currRate + step, FinanceController.MinTripFare, FinanceController.MaxTripFare);
                     _financeController.SetDefaultFare((TransitType) n, newRate);
-                    defaultFares[n].text = Translator.GetCurrency(newRate, true);
+                    defaultFarePanels[n].amount.text = Translator.GetCurrency(newRate, true);
 
                     if (newRate.Equals(FinanceController.MaxTripFare))
                     {
-                        fareIncButtons[n].Disable();
+                        defaultFarePanels[n].plusButton.Disable();
                     }
                     else
                     {
-                        fareIncButtons[n].Enable();
+                        defaultFarePanels[n].plusButton.Enable();
                     }
                     
-                    fareDecButtons[n].Enable();
+                    defaultFarePanels[n].minusButton.Enable();
                 });
-                fareDecButtons[i].button.onClick.AddListener(() =>
+                defaultFarePanels[i].minusButton.button.onClick.AddListener(() =>
                 {
-                    const decimal step = .25m;
                     var currRate = _financeController.GetDefaultFare((TransitType) n);
                     var newRate = Math.Clamp(currRate - step, FinanceController.MinTripFare, FinanceController.MaxTripFare);
                     _financeController.SetDefaultFare((TransitType) n, newRate);
-                    defaultFares[n].text = Translator.GetCurrency(newRate, true);
+                    defaultFarePanels[n].amount.text = Translator.GetCurrency(newRate, true);
 
                     if (newRate.Equals(FinanceController.MinTripFare))
                     {
-                        fareDecButtons[n].Disable();
+                        defaultFarePanels[n].minusButton.Disable();
                     }
                     else
                     {
-                        fareDecButtons[n].Enable();
+                        defaultFarePanels[n].minusButton.Enable();
                     }
 
-                    fareIncButtons[n].Enable();
+                    defaultFarePanels[n].plusButton.Enable();
                 });
             }
 
@@ -154,21 +142,43 @@ namespace Transidious.UI
         }
 
         /// Activate the finance overview.
-        public void Activate()
+        void Activate()
         {
             earnings.text = Translator.GetCurrency(_financeController.earnings, true);
             expenses.text = Translator.GetCurrency(_financeController.expenses, true);
 
             for (var i = 0; i < (int) FinanceController.TaxationType._Last; ++i)
             {
-                taxRates[i].text = Translator.GetCurrency(
+                taxRatePanels[i].amount.text = Translator.GetCurrency(
                     _financeController.GetTaxRate((FinanceController.TaxationType) i), true);
             }
 
             for (var i = 0; i <= (int) TransitType.Ferry; ++i)
             {
-                defaultFares[i].text = Translator.GetCurrency(
-                    _financeController.GetDefaultFare((TransitType) i), true);
+                var type = (Progress.Unlockable) ((int) Progress.Unlockable.Bus + i);
+                var panel = defaultFarePanels[i];
+                
+                if (GameController.instance.Progress.IsUnlocked(type))
+                {
+                    panel.amount.gameObject.SetActive(true);
+                    panel.nameText.gameObject.SetActive(true);
+                    panel.minusButton.gameObject.SetActive(true);
+                    panel.plusButton.gameObject.SetActive(true);
+                    panel.icon.gameObject.SetActive(true);
+                    panel.lockSprite.gameObject.SetActive(false);
+                    
+                    panel.amount.text = Translator.GetCurrency(
+                        _financeController.GetDefaultFare((TransitType) i), true);
+                }
+                else
+                {
+                    panel.amount.gameObject.SetActive(false);
+                    panel.nameText.gameObject.SetActive(false);
+                    panel.minusButton.gameObject.SetActive(false);
+                    panel.plusButton.gameObject.SetActive(false);
+                    panel.icon.gameObject.SetActive(false);
+                    panel.lockSprite.gameObject.SetActive(true);   
+                }
             }
 
             RefreshLoanPanel();
@@ -176,7 +186,7 @@ namespace Transidious.UI
         }
 
         /// Deactivate the finance overview.
-        public void Deactivate()
+        void Deactivate()
         {
             gameObject.SetActive(false);
         }
@@ -187,21 +197,24 @@ namespace Transidious.UI
             if (gameObject.activeSelf)
             {
                 Deactivate();
+                GameController.instance.mainUI.EnableUI();
+
+                if (!_wasPaused)
+                {
+                    GameController.instance.ExitPause();
+                }
             }
             else
             {
+                _wasPaused = GameController.instance.EnterPause();
+                GameController.instance.mainUI.DisableUI(true, false, true);
                 Activate();
             }
         }
 
         /// Update the finance panel.
-        void Update()
+        /*void Update()
         {
-            if (GameController.instance.Paused)
-            {
-                return;
-            }
-            
             earnings.text = Translator.GetCurrency(_financeController.earnings, true);
             expenses.text = Translator.GetCurrency(_financeController.expenses, true);
 
@@ -226,7 +239,7 @@ namespace Transidious.UI
                     panel.paybackButton.Disable();
                 }
             }
-        }
+        }*/
 
         /// Refresh the loan panel.
         void RefreshLoanPanel()

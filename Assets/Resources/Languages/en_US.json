@@ -90,8 +90,8 @@
             "text": "Payments"
         },
         {
-            "key": "ui:finances:monthly_rate",
-            "text": "Monthly Rate"
+            "key": "ui:finances:hourly_rate",
+            "text": "Hourly Rate"
         },
         {
             "key": "ui:finances:upkeep",
