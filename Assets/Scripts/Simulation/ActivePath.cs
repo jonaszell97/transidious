@@ -618,7 +618,7 @@ namespace Transidious
 
         public void OnMouseDown()
         {
-            if (GameController.instance.input.IsPointerOverUIElement())
+            if (InputController.PointerOverUIObject)
             {
                 return;
             }

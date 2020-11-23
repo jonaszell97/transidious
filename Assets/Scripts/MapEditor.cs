@@ -83,7 +83,7 @@ namespace Transidious
 
         void Update()
         {
-            if (Input.GetMouseButtonDown(0) && !game.input.IsPointerOverUIElement())
+            if (Input.GetMouseButtonDown(0) && !InputController.PointerOverUIObject)
             {
                 if (clickedOnce)
                 {

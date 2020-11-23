@@ -286,7 +286,7 @@ namespace Transidious
 
             var txt = map.CreateText(Vector3.zero, DisplayName, new Color(0.3f, 0.3f, 0.3f, 1f));
             txt.textMesh.autoSizeTextContainer = true;
-            txt.textMesh.fontSize = segments.First().GetFontSize(InputController.maxZoom);
+            txt.textMesh.fontSize = segments.First().GetFontSize(InputController.MaxZoom);
             txt.textMesh.alignment = TMPro.TextAlignmentOptions.Center;
             txt.textMesh.ForceMeshUpdate();
             txt.gameObject.SetActive(false);

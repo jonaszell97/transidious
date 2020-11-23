@@ -117,21 +117,15 @@ namespace Transidious
                     }
                     else
                     {
-                        // Assign parameter based on position.
-                        var foundUnassigned = false;
-
                     <% for_each | $(CMD).params as PARM %>
                         if (!assignedParams.ContainsKey(<%% str | $(PARM).name %%>))
                         {
-                            foundUnassigned = true;
                             assignedParams.Add(<%% str | $(PARM).name %%>, paramValue.Item2);
+                            continue;
                         }
                     <% end %>
 
-                        if (!foundUnassigned)
-                        {
-                            DeveloperConsole.Log($"ignoring parameter '{paramValue.Item2}'");
-                        }
+                        DeveloperConsole.Log($"ignoring parameter '{paramValue.Item2}'");
                     }
                 }
 

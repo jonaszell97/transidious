@@ -372,7 +372,7 @@ namespace Transidious
                 return;
             }
 
-            if (GameController.instance.input.IsPointerOverUIElement())
+            if (InputController.PointerOverUIObject)
             {
                 return;
             }

@@ -805,7 +805,6 @@ namespace Transidious
             }
         }
 
-#if UNITY_EDITOR
         static LineRenderer _tmpRenderer;
 
         public Tuple<Mesh, Mesh> CreateMeshes()
@@ -855,7 +854,6 @@ namespace Transidious
 
             return Tuple.Create(streetMesh, outlineMesh);
         }
-#endif
 
         public void UpdateMesh()
         {
@@ -1193,7 +1191,7 @@ namespace Transidious
                 return;
             }
 
-            if (GameController.instance.input.IsPointerOverUIElement())
+            if (InputController.PointerOverUIObject)
             {
                 return;
             }

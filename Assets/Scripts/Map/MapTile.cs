@@ -284,11 +284,12 @@ namespace Transidious
 
         void OnMouseDown()
         {
-            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            if (InputController.PointerOverUIObject)
             {
                 return;
             }
             
+            Debug.Log($"Frame #{Time.frameCount}: CLICK");
             var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             
             // Check if a car was clicked.
@@ -374,7 +375,7 @@ namespace Transidious
 
         void OnMouseOver()
         {
-            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            if (InputController.PointerOverUIObject)
             {
                 return;
             }

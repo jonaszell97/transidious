@@ -76,21 +76,30 @@ namespace Transidious
 
         Dictionary<ControlType, Tuple<KeyCode, KeyCode>> keyBindings;
 
-        public static float minZoom = 50f;
-        public static float maxZoom;
-        static float zoomSensitivityMouse = 25.0f;
-        static float zoomSensitivityTrackpad = 5.0f;
-        static float zoomSensitivityTouchscreen = 5.0f;
-        float zoomSensitivity;
+        public static readonly float minZoom = 50f;
+        public static float MaxZoom;
 
-        static float panSensitivityX = 0.5f;
-        static float panSensitivityXMobile = panSensitivityX / 20f;
-        static float panSensitivityY = 0.5f;
-        static float panSensitivityYMobile = panSensitivityY / 20f;
+        public static float ZoomSensitivityMouse { get; private set; } = 25.0f;
+        public static float zoomSensitivityTrackpad { get; private set; } = 5.0f;
+        public static float ZoomSensitivityTouchscreen => ZoomSensitivityMouse / 20f;
+        float _zoomSensitivity;
+
+        public static float PanSensitivityX { get; private set; } = 0.5f;
+        public static float PanSensitivityXMobile => PanSensitivityX / 5f;
+        public static float PanSensitivityY { get; private set; } = 0.5f;
+        public static float PanSensitivityYMobile => PanSensitivityY / 5f;
+
+        public void SetPanSensitivity(float x, float y)
+        {
+            PanSensitivityX = x;
+            PanSensitivityY = y;
+        }
 
         static readonly float farRenderingThreshold = 650f;
 
         public EventSystem eventSystem;
+        public static bool PointerOverUIObject = false;
+
         new public Camera camera;
 
         public Vector3 NativeCursorPosition => camera.ScreenToWorldPoint(Input.mousePosition);
@@ -190,14 +199,25 @@ namespace Transidious
             controlListenersEnabled = true;
         }
 
-        public bool IsPointerOverUIElement()
+        private bool CheckPointerOverUIObject()
         {
+            if (Input.touchCount > 0)
+            {
+                foreach (var touch in Input.touches)
+                {
+                    if (eventSystem.IsPointerOverGameObject(touch.fingerId))
+                    {
+                        return true;
+                    }
+                }
+            }
+
             return eventSystem.IsPointerOverGameObject();
         }
 
         public void MouseOverMapObject(IMapObject obj)
         {
-            if (IsPointerOverUIElement())
+            if (PointerOverUIObject)
             {
                 return;
             }
@@ -216,7 +236,7 @@ namespace Transidious
 
         public void MouseEnterMapObject(IMapObject obj)
         {
-            if (IsPointerOverUIElement())
+            if (PointerOverUIObject)
             {
                 return;
             }
@@ -248,7 +268,7 @@ namespace Transidious
 
         public void MouseDownMapObject(IMapObject obj)
         {
-            if (IsPointerOverUIElement())
+            if (PointerOverUIObject)
             {
                 return;
             }
@@ -283,7 +303,7 @@ namespace Transidious
 
             // Zoom camera
             var newSize = currentSize - amount;
-            camera.orthographicSize = Mathf.Clamp(newSize, minZoom, maxZoom);
+            camera.orthographicSize = Mathf.Clamp(newSize, minZoom, MaxZoom);
 
             // Update min / max positions based on new zoom.
             UpdateCameraBoundaries(controller.loadedMap);
@@ -332,7 +352,7 @@ namespace Transidious
         // Update the zoom based on mouse wheel input.
         void UpdateZoom()
         {
-            if (IsPointerOverUIElement())
+            if (PointerOverUIObject)
             {
                 return;
             }
@@ -355,14 +375,14 @@ namespace Transidious
                 return;
             }
 
-            if ((cmp < 0 && camera.orthographicSize.Equals(maxZoom))
+            if ((cmp < 0 && camera.orthographicSize.Equals(MaxZoom))
                 || (cmp > 0 && camera.orthographicSize.Equals(minZoom)))
             {
                 return;
             }
 
             var prevSize = camera.orthographicSize;
-            ZoomOrthoCamera(camera.ScreenToWorldPoint(Input.mousePosition), input * zoomSensitivity);
+            ZoomOrthoCamera(camera.ScreenToWorldPoint(Input.mousePosition), input * _zoomSensitivity);
 
             var newSize = camera.orthographicSize;
             if (prevSize.Equals(newSize))
@@ -375,7 +395,7 @@ namespace Transidious
 
         public void SetZoomLevel(float zoom)
         {
-            zoom = Mathf.Clamp(zoom, minZoom, maxZoom);
+            zoom = Mathf.Clamp(zoom, minZoom, MaxZoom);
             
             if (zoom.Equals(camera.orthographicSize))
             {
@@ -445,27 +465,27 @@ namespace Transidious
             {
                 Vector3 diff = camera.ScreenToViewportPoint(Input.mousePosition - mouseOrigin);
 
-                position.x -= diff.x * panSensitivityX;
-                position.y -= diff.y * panSensitivityY;
+                position.x -= diff.x * PanSensitivityX;
+                position.y -= diff.y * PanSensitivityY;
 
                 return position;
             }
 
             if (IsPressed(ControlType.PanUp))
             {
-                position.y += panSensitivityY;
+                position.y += PanSensitivityY;
             }
             if (IsPressed(ControlType.PanDown))
             {
-                position.y -= panSensitivityY;
+                position.y -= PanSensitivityY;
             }
             if (IsPressed(ControlType.PanRight))
             {
-                position.x += panSensitivityX;
+                position.x += PanSensitivityX;
             }
             if (IsPressed(ControlType.PanLeft))
             {
-                position.x -= panSensitivityX;
+                position.x -= PanSensitivityX;
             }
 
             return position;
@@ -481,8 +501,8 @@ namespace Transidious
             else if (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Moved)
             {
                 Vector2 touchDeltaPosition = Input.GetTouch(0).deltaPosition;
-                position.x += -touchDeltaPosition.x * panSensitivityXMobile;
-                position.y += -touchDeltaPosition.y * panSensitivityYMobile;
+                position.x += -touchDeltaPosition.x * PanSensitivityXMobile;
+                position.y += -touchDeltaPosition.y * PanSensitivityYMobile;
             }
 
             return position;
@@ -585,14 +605,14 @@ namespace Transidious
             var aspect = camera.aspect;
             if (aspect >= 1f)
             {
-                maxZoom = (backgroundRect.width * .5f) / aspect;
+                MaxZoom = (backgroundRect.width * .5f) / aspect;
             }
             else
             {
-                maxZoom = backgroundRect.height * .5f * aspect;
+                MaxZoom = backgroundRect.height * .5f * aspect;
             }
 
-            camera.orthographicSize = maxZoom;
+            camera.orthographicSize = MaxZoom;
             UpdateCameraBoundaries(map);
 
 #if UNITY_EDITOR
@@ -610,9 +630,9 @@ namespace Transidious
             minY = map.minY - panThresholdY + orthoSize;
             maxY = map.maxY + panThresholdY - orthoSize;
 
-            panSensitivityX = orthoSize * 0.1f;
-            panSensitivityY = orthoSize * 0.1f;
-            zoomSensitivity = orthoSize * 0.5f;
+            PanSensitivityX = orthoSize * 0.1f;
+            PanSensitivityY = orthoSize * 0.1f;
+            _zoomSensitivity = orthoSize * 0.5f;
         }
 
         public Vector3 WorldToUISpace(Canvas parentCanvas, Vector3 worldPos)
@@ -652,7 +672,6 @@ namespace Transidious
                 this.inputEventListeners[i] = new Dictionary<int, InputEventListener>();
             }
 
-            eventSystem = EventSystem.current;
             camera = Camera.main;
             mainCamera = camera;
             aspectRatio = camera.aspect;
@@ -661,21 +680,21 @@ namespace Transidious
 
             if (aspectRatio > 1.0f)
             {
-                panSensitivityY = 1f / aspectRatio;
+                PanSensitivityY = 1f / aspectRatio;
             }
             else if (aspectRatio < 1.0f)
             {
-                panSensitivityX = 1f / aspectRatio;
+                PanSensitivityX = 1f / aspectRatio;
             }
 
             switch (Application.platform)
             {
             case RuntimePlatform.IPhonePlayer:
             case RuntimePlatform.Android:
-                zoomSensitivity = zoomSensitivityTouchscreen;
+                _zoomSensitivity = ZoomSensitivityTouchscreen;
                 break;
             default:
-                zoomSensitivity = zoomSensitivityMouse;
+                _zoomSensitivity = ZoomSensitivityMouse;
                 break;
             }
 
@@ -768,17 +787,35 @@ namespace Transidious
                 UpdatePosition();
             }
 
+            PointerOverUIObject = CheckPointerOverUIObject();
+            Debug.Log($"Frame #{Time.frameCount}: {PointerOverUIObject}");
+
             CheckKeyboardEvents();
 
-            if (controller.mainUI != null)
+            var mainUI = controller.mainUI;
+            if (mainUI != null)
             {
-                if (controller.mainUI.fadeScaleBarTime > 0f)
+                if (mainUI.fadeScaleBarTime > 0f)
                 {
-                    controller.mainUI.fadeScaleBarTime -= Time.deltaTime;
-                    if (controller.mainUI.fadeScaleBarTime <= 0f)
+                    mainUI.fadeScaleBarTime -= Time.deltaTime;
+                    if (mainUI.fadeScaleBarTime <= 0f)
                     {
-                        controller.mainUI.fadeScaleBarTime = 0f;
-                        controller.mainUI.FadeScaleBar();
+                        mainUI.fadeScaleBarTime = 0f;
+                        mainUI.FadeScaleBar();
+                    }
+                }
+
+                var missionProgress = mainUI.missionProgress;
+                if (missionProgress.shouldFade && !missionProgress.hovered)
+                {
+                    if (missionProgress.fadeTime > 0f)
+                    {
+                        missionProgress.fadeTime -= Time.deltaTime;
+                        if (missionProgress.fadeTime <= 0f)
+                        {
+                            missionProgress.fadeTime = 0f;
+                            missionProgress.Fade();
+                        }
                     }
                 }
             }
@@ -819,7 +856,7 @@ namespace Transidious
                 }
             }
 
-            if (!_firedMouseDown && Input.GetMouseButtonDown(0) && !IsPointerOverUIElement())
+            if (!_firedMouseDown && Input.GetMouseButtonDown(0) && !PointerOverUIObject)
             {
                 FireEvent(InputEvent.MouseDown);
             }
@@ -949,32 +986,15 @@ namespace Transidious
                     Utility.DrawCircle(pos.pos, 3f, 3f, Color.red);
                 }
             }
-            
+
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F7))
             {
-                var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                if (_fromPos == null)
-                {
-                    Debug.Log("first point set");
-                    _fromPos = clickedPos;
-                }
-                else
-                {
-                    var from = _fromPos.Value;
-                    var to = clickedPos;
+                mainUI.missionProgress.SetProgress(0f, false, false);
 
-                    var hubs = controller.router.GetClosestHubs(from, to);
-                    Utility.DrawCircle(from, 3f, 3f, Color.red);
-                    Utility.DrawArrow(from, hubs.Item1.Location, 2f, Color.blue);
-                    Utility.DrawCircle(hubs.Item1.Location, 3f, 3f, Color.yellow);
-                    Utility.DrawCircle(hubs.Item2.Location, 3f, 3f, Color.yellow);
-                    Utility.DrawArrow(hubs.Item2.Location, to, 2f, Color.blue);
-                    Utility.DrawCircle(to, 3f, 3f, Color.red);
-                    
-                    _fromPos = null;
-                }
+                var value = RNG.Next(.30f, 1.00f);
+                mainUI.missionProgress.SetProgress(value);
             }
-            
+
             if (controlListenersEnabled && Input.GetKeyDown(KeyCode.F8))
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -1051,7 +1071,7 @@ namespace Transidious
                 }
             }
 
-            if (debugRouteTest && Input.GetMouseButtonDown(0) && !IsPointerOverUIElement())
+            if (debugRouteTest && Input.GetMouseButtonDown(0) && !PointerOverUIObject)
             {
                 var clickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 if (_fromPos == null)

@@ -13,6 +13,9 @@ namespace Transidious
         /// Buttons for the five transit systems.
         public GameObject[] transitSystemButtons;
 
+        /// The lock icons for the transit systems.
+        public Image[] transitSystemLocks;
+
         /// The currently selected transit system.
         public TransitType? selectedTransitSystem;
 
@@ -114,6 +117,28 @@ namespace Transidious
             });
         }
 
+        public void Activate()
+        {
+            for (var i = 0; i <= (int) TransitType.Ferry; ++i)
+            {
+                var type = (Progress.Unlockable) ((int) Progress.Unlockable.Bus + i);
+                if (game.Progress.IsUnlocked(type))
+                {
+                    transitSystemButtons[i].GetComponent<Image>().color = Colors.GetDefaultSystemColor((TransitType) i);
+                    transitSystemButtons[i].GetComponent<Button>().enabled = true;
+                    transitSystemButtons[i].transform.GetChild(0).gameObject.SetActive(true);
+                    transitSystemLocks[i].gameObject.SetActive(false);
+                }
+                else
+                {
+                    transitSystemButtons[i].GetComponent<Image>().color = new Color(43f / 255f, 43f / 255f, 43f / 255f);
+                    transitSystemButtons[i].GetComponent<Button>().enabled = false;
+                    transitSystemButtons[i].transform.GetChild(0).gameObject.SetActive(false);
+                    transitSystemLocks[i].gameObject.SetActive(true);
+                }
+            }
+        }
+
         void DrawLine(UILineListEntry entry)
         {
             var worldPath = new List<Vector2>();
@@ -200,12 +225,7 @@ namespace Transidious
                 var img = transitSystemButtons[k].GetComponent<Image>();
                 var txt = transitSystemButtons[k].transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
 
-                if (k == (int)type)
-                {
-                    img.color = Colors.GetDefaultSystemColor(type);
-                    txt.color = Color.white;
-                }
-                else
+                if (k != (int)type)
                 {
                     img.color = Math.ApplyTransparency(Color.black, 164f / 255f);
                     txt.color = Math.ApplyTransparency(Color.white, 164f / 255f);
@@ -273,15 +293,7 @@ namespace Transidious
         {
             if (resetButtons)
             {
-                for (var k = 0; k < transitSystemButtons.Length; ++k)
-                {
-                    var img = transitSystemButtons[k].GetComponent<Image>();
-                    var txt = transitSystemButtons[k].transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
-
-                    img.color = Colors.GetDefaultSystemColor((TransitType)k);
-                    txt.color = Color.white;
-                }
-
+                Activate();
                 this.selectedTransitSystem = null;
             }
 

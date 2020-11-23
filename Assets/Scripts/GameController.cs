@@ -281,7 +281,7 @@ namespace Transidious
             this.status = GameStatus.Playing;
             this.onLoad.Invoke();
             
-            Progress.UnlockAll();
+            // Progress.UnlockAll();
 
             loadingScreen.gameObject.SetActive(false);
             input.EnableControls();

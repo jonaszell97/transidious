@@ -3,8 +3,12 @@
 .history/
 iOS/
 Logs/
-Plugins/
 Assets/NuGet
+
+# Plugins
+Plugins/TriangleAPI/.idea
+Plugins/TriangleAPI/cmake-build-debug
+Plugins/TriangleAPI/cmake-build-release
 
 # ignore OSM files
 /Resources/OSM

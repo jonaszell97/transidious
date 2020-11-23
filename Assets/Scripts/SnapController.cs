@@ -94,7 +94,7 @@ namespace Transidious
 
         public void Update()
         {
-            if (_gridSnapSettings != null && !_game.input.IsPointerOverUIElement())
+            if (_gridSnapSettings != null && !InputController.PointerOverUIObject)
             {
                 var pos = Input.mousePosition;
                 SnapToGrid(Camera.main.ScreenToWorldPoint(pos));

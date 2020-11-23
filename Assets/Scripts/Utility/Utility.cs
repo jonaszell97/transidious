@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -47,6 +48,31 @@ namespace Transidious
                 && (pos.x <= bounds.center.x + bounds.extents.x)
                 && (pos.y >= bounds.center.y - bounds.extents.y)
                 && (pos.y <= bounds.center.y + bounds.extents.y);
+        }
+
+        public static IEnumerable<System.Tuple<Vector2, Vector2>> GetSides(this Rect rect)
+        {
+            yield return Tuple.Create(new Vector2(rect.xMin, rect.yMin), new Vector2(rect.xMin, rect.yMax));
+            yield return Tuple.Create(new Vector2(rect.xMin, rect.yMax), new Vector2(rect.xMax, rect.yMax));
+            yield return Tuple.Create(new Vector2(rect.xMax, rect.yMax), new Vector2(rect.xMax, rect.yMin));
+            yield return Tuple.Create(new Vector2(rect.xMax, rect.yMin), new Vector2(rect.xMin, rect.yMin));
+        }
+
+        public static float DistanceToPoint(this Rect rect, Vector2 pt, Vector2 direction)
+        {
+            var ray = new Ray2D(pt, direction);
+            foreach (var side in rect.GetSides())
+            {
+                var intersection = Math.GetIntersectionPoint(ray, side.Item1, side.Item2, out var found);
+                if (!found)
+                {
+                    continue;
+                }
+
+                return (intersection - pt).magnitude;
+            }
+
+            return -1f;
         }
 
         public static void Dump(object o)
@@ -193,7 +219,10 @@ namespace Transidious
             line.positionCount = points.Length;
             line.startColor = c;
             line.endColor = c;
-            line.material = GameController.instance.GetUnlitMaterial(c);
+            line.material = new Material(Shader.Find("Unlit/Color"))
+            {
+                color = c,
+            };
             line.loop = loop;
             line.SetPositions(points);
             
@@ -228,7 +257,10 @@ namespace Transidious
             line.positionCount = points.Length;
             line.startColor = c;
             line.endColor = c;
-            line.material = GameController.instance.GetUnlitMaterial(c);
+            line.material = new Material(Shader.Find("Unlit/Color"))
+            {
+                color = c,
+            };
             line.loop = loop;
             line.SetPositions(points.Select(v => v.WithZ(z)).ToArray());
 

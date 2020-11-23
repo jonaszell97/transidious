@@ -55,18 +55,21 @@ namespace Transidious
         /// The dialog panel.
         public UIDialogPanel dialogPanel;
 
+        /// The mission progress object.
+        public UIRadialProgressBar missionProgress;
+
         /**
          * Date & Time Tab
          */
 
         /// The play/pause button.
-        public Button playPauseButton;
+        public UIIcon playPauseButton;
 
         /// The game time text.
         public TMP_Text gameTimeText;
 
         /// The simulation speed button.
-        public Button simSpeedButton;
+        public UIIcon simSpeedButton;
 
         /// The expandable time panel.
         public UIExpandablePanel expandableTimePanel;
@@ -112,7 +115,7 @@ namespace Transidious
          * Right-hand side icons.
          */
 
-        public Button[] settingsIcons;
+        public UIIcon[] settingsIcons;
 
         /// <summary>
         ///  The transit editor panel, hidden by default.
@@ -170,9 +173,7 @@ namespace Transidious
         /// The scale text.
         public TMP_Text scaleText;
 
-        /// <summary>
         ///  Time after which the scale bar should fade.
-        /// </summary>
         public float fadeScaleBarTime = 0f;
         
         /**
@@ -219,8 +220,8 @@ namespace Transidious
         
         void RegisterUICallbacks()
         {
-            this.playPauseButton.onClick.AddListener(OnPlayPauseClick);
-            this.simSpeedButton.onClick.AddListener(OnSimSpeedClick);
+            this.playPauseButton.button.onClick.AddListener(OnPlayPauseClick);
+            this.simSpeedButton.button.onClick.AddListener(OnSimSpeedClick);
 
             // Finance panel
             financeOverview.Initialize();
@@ -230,7 +231,7 @@ namespace Transidious
             });
 
             // Transit panel
-            this.settingsIcons[0].onClick.AddListener(() =>
+            this.settingsIcons[0].button.onClick.AddListener(() =>
             {
                 switch (state)
                 {
@@ -246,7 +247,7 @@ namespace Transidious
             });
 
             // Data panel
-            this.settingsIcons[1].onClick.AddListener(() =>
+            this.settingsIcons[1].button.onClick.AddListener(() =>
             {
                 switch (state)
                 {
@@ -262,7 +263,7 @@ namespace Transidious
             });
 
             // Settings panel
-            this.settingsIcons[2].onClick.AddListener(() =>
+            this.settingsIcons[2].button.onClick.AddListener(() =>
             {
                 switch (state)
                 {
@@ -344,14 +345,43 @@ namespace Transidious
             highlightOverlay.Initialize();
         }
 
-        public void ShowUI()
+        public void DisableUI(bool disableTimePanel = true, bool disableFinancePanel = true, bool disablePopPanel = true)
         {
-            mainUIPanel.gameObject.SetActive(true);
+            if (disableTimePanel)
+            {
+                panels[0].GetComponent<Button>().enabled = false;
+            }
+            if (disableFinancePanel)
+            {
+                panels[1].GetComponent<Button>().enabled = false;
+            }
+            if (disablePopPanel)
+            {
+                panels[2].GetComponent<Button>().enabled = false;
+            }
+
+            playPauseButton.Disable();
+            simSpeedButton.Disable();
+
+            foreach (var icon in settingsIcons)
+            {
+                icon.Disable();
+            }
         }
-        
-        public void HideUI()
+
+        public void EnableUI()
         {
-            mainUIPanel.gameObject.SetActive(false);
+            panels[0].GetComponent<Button>().enabled = true;
+            panels[1].GetComponent<Button>().enabled = true;
+            panels[2].GetComponent<Button>().enabled = true;
+
+            playPauseButton.Enable();
+            simSpeedButton.Enable();
+
+            foreach (var icon in settingsIcons)
+            {
+                icon.Enable();
+            }
         }
 
         public void UpdateDayNightOverlay(DateTime gameTime)
@@ -704,6 +734,7 @@ namespace Transidious
 
         public void ShowTransitPanel()
         {
+            transitUI.Activate();
             this.transitEditorPanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
             this.transitEditorPanel.gameObject.SetActive(true);
 

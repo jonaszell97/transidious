@@ -34,6 +34,9 @@ namespace Transidious
         List<string> history;
         int currentHistoryEntry = -1;
 
+        /// Whether or not the game was paused when opening the console.
+        private bool _wasPaused;
+
         public void Initialize()
         {
             instance = this;
@@ -128,12 +131,20 @@ namespace Transidious
         public void Activate()
         {
             game.mainUI.developerConsole.SetActive(true);
+            
+            _wasPaused = GameController.instance.EnterPause(true);
             GameController.instance.input.DisableControls();
         }
 
         public void Deactivate()
         {
             game.mainUI.developerConsole.SetActive(false);
+
+            if (!_wasPaused)
+            {
+                GameController.instance.ExitPause(true);
+            }
+
             GameController.instance.input.EnableControls();
         }
 
@@ -344,6 +355,20 @@ namespace Transidious
 
         public void HandleUnlockCommand(string item)
         {
+            if (item == "all" || item == "everything")
+            {
+                GameController.instance.Progress.UnlockAll();
+                Log($"unlocked everything");
+                return;
+
+            }
+
+            // Auto-capitalize names.
+            if (char.IsLower(item[0]))
+            {
+                item = $"{char.ToUpper(item[0])}{item.Substring(1)}";
+            }
+            
             if (!Enum.TryParse(item, out Progress.Unlockable result))
             {
                 Log($"invalid unlockable: {item}");
@@ -354,7 +379,7 @@ namespace Transidious
             Log($"unlocked {item}");
         }
 
-        public void HandleAddStartupCommandCommand()
+        public void HandleAddStartupCommand()
         {
             if (history.Count < 2)
             {
@@ -400,6 +425,25 @@ namespace Transidious
             game.input.SetZoomLevel(50f);
             game.input.MoveTowards(citizen.CurrentPosition);
             citizen.ActivateModal();
+        }
+
+        public void HandleSetResolutionCommand(int width, int height, int refreshRate, int fullscreen)
+        {
+            Log($"setting resolution to {width}x{height}@{refreshRate}Hz {(fullscreen != 0 ? "fullscreen" : "windowed")}");
+            Screen.SetResolution(width, height, fullscreen != 0, refreshRate);
+        }
+
+        public void HandleSetCommand(string setting, string value)
+        {
+            if (setting == "pan_sensitivity")
+            {
+                if (float.TryParse(value, out var sensitivity))
+                {
+                    GameController.instance.input.SetPanSensitivity(sensitivity, sensitivity);
+                }
+            }
+
+            Log($"unknown setting {setting}");
         }
 
         public static void Log(string msg)

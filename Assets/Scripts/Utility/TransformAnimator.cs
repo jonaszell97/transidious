@@ -12,18 +12,19 @@ namespace Transidious
         [System.Flags]
         public enum TransformType
         {
-            None            = 0x0,
-            Position        = 0x1,
-            AnchoredPosition   = 0x2,
-            Rotation        = 0x4,
-            Scale           = 0x8,
-            SizeDelta       = 0x10,
+            None             = 0x0,
+            Position         = 0x1,
+            AnchoredPosition = 0x2,
+            Rotation         = 0x4,
+            Scale            = 0x8,
+            SizeDelta        = 0x10,
         }
 
         public enum AnimationType
         {
             Loop,
             Circular,
+            Single,
         }
 
         public enum ExecutionMode
@@ -186,6 +187,16 @@ namespace Transidious
             this._movementMultipliers = new [] { 1f, 1f, 1f };
         }
 
+        public void Clear()
+        {
+            onFinish = null;
+            this.duration = 1f;
+            this._movementMultipliers = new [] { 1f, 1f, 1f };
+            originalPosition = default;
+            originalScale = default;
+            originalRotation = default;
+        }
+
         public void Initialize()
         {
             this.duration = 1f;
@@ -204,33 +215,42 @@ namespace Transidious
 
             if (type.HasFlag(TransformType.Position))
             {
-                transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * _movementMultipliers[0]);
+                transform.position = Vector3.MoveTowards(
+                    transform.position, 
+                    targetPosition, Time.deltaTime * _movementMultipliers[0]);
                 allDone &= transform.position.Equals(targetPosition);
             }
 
             if (type.HasFlag(TransformType.AnchoredPosition))
             {
                 var rectTransform = this.rectTransform;
-                rectTransform.anchoredPosition = Vector3.MoveTowards(rectTransform.anchoredPosition, targetPosition, Time.deltaTime * _movementMultipliers[0]);
+                rectTransform.anchoredPosition = Vector3.MoveTowards(
+                    rectTransform.anchoredPosition,
+                    targetPosition, Time.deltaTime * _movementMultipliers[0]);
                 allDone &= rectTransform.anchoredPosition.Equals(targetPosition);
             }
 
             if (type.HasFlag(TransformType.Rotation))
             {
-                transform.rotation = Quaternion.Lerp(originalRotation, targetRotation, Time.deltaTime * _movementMultipliers[1]);
+                transform.rotation = Quaternion.Lerp(
+                    originalRotation,
+                    targetRotation, Time.deltaTime * _movementMultipliers[1]);
                 allDone &= transform.rotation.Equals(targetRotation);
             }
 
             if (type.HasFlag(TransformType.Scale))
             {
-                transform.localScale = Vector3.MoveTowards(transform.localScale, targetScale, Time.deltaTime * _movementMultipliers[2]);
+                transform.localScale = Vector3.MoveTowards(
+                    transform.localScale,
+                    targetScale, Time.deltaTime * _movementMultipliers[2]);
                 allDone &= transform.localScale.Equals(targetScale);
             }
 
             if (type.HasFlag(TransformType.SizeDelta))
             {
                 var rectTransform = this.rectTransform;
-                rectTransform.sizeDelta = Vector3.MoveTowards(rectTransform.sizeDelta, targetScale, Time.deltaTime * _movementMultipliers[2]);
+                rectTransform.sizeDelta = Vector3.MoveTowards(
+                    rectTransform.sizeDelta, targetScale, Time.deltaTime * _movementMultipliers[2]);
                 allDone &= rectTransform.sizeDelta.Equals(targetScale);
             }
 
@@ -240,6 +260,8 @@ namespace Transidious
 
                 switch (animationType)
                 {
+                    case AnimationType.Single:
+                        break;
                     case AnimationType.Loop:
                         if (executionMode == ExecutionMode.Manual)
                         {

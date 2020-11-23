@@ -163,8 +163,26 @@ def Unlock : Command<"unlock"> {
     help = "unlock an unlockable item"
 }
 
-def AddStartupCommand : Command<"add_startup_cmd"> {
+def AddStartup : Command<"add_startup_cmd"> {
     help = "add the most recent to be executed at program startup"
+}
+
+def SetResolution : Command<"set_resolution"> {
+    params = [
+        Parameter<"width", "int", "the width of the screen">,
+        Parameter<"height", "int", "the height of the screen">,
+        Parameter<"refresh_rate", "int", "the monitor refresh rate", "60">,
+        Parameter<"fullscreen", "int", "whether or not to enable fullscreen mode", "0">
+    ]
+    help = "set the render resolution"
+}
+
+def Set : Command<"set"> {
+    params = [
+        Parameter<"setting", "string", "the setting to set">,
+        Parameter<"value", "string", "the value to set">
+    ]
+    help = "update a setting"
 }
 
 /*
