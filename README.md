@@ -14,3 +14,21 @@ Transidious is an unfinished project. Many aspects of the simulation are working
 - Simulation of a **public transportation network** including buses, trams, subways, light rail, and ferries with customizable vehicles and schedules
 - **Multimodal pathfinding** for agents using A* search
 - Simulation of time with **adjustable simulation speeds**
+
+## Demos
+
+- Imported map of Charlottenburg with basic navigation
+
+![Charlottenburg](./Resources/Examples/MapNavigation.gif)
+
+- Traffic simulation at a simple intersection
+
+![Simple intersection](./Resources/Examples/BasicIntersection.gif)
+
+- Traffic simulation at a complex intersection
+
+![Complex intersection](./Resources/Examples/BusyIntersection.gif)
+
+- Agent simulation
+
+![Agent simulation](./Resources/Examples/AgentSimulation.gif)
