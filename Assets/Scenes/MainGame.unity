@@ -2031,14 +2031,43 @@ PrefabInstance:
       objectReference: {fileID: 1591282243}
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
+<<<<<<< Updated upstream
+=======
+      propertyPath: uiCanvas
+      value: 
+      objectReference: {fileID: 952445062}
+    - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
+        type: 3}
+      propertyPath: mapEditor
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
+        type: 3}
+      propertyPath: areaToLoad
+      value: 21
+      objectReference: {fileID: 0}
+    - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
+        type: 3}
+>>>>>>> Stashed changes
       propertyPath: loadingScreen
       value: 
       objectReference: {fileID: 1794135575}
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
+<<<<<<< Updated upstream
       propertyPath: uiCanvas
       value: 
       objectReference: {fileID: 952445062}
+=======
+      propertyPath: missionToLoad
+      value: Tutorial/Charlottenburg
+      objectReference: {fileID: 0}
+    - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
+        type: 3}
+      propertyPath: transitEditor
+      value: 
+      objectReference: {fileID: 64462248110923140}
+>>>>>>> Stashed changes
     - target: {fileID: 4230323441957945562, guid: 6300a6603d7b949afaf580bc4bac48f3,
         type: 3}
       propertyPath: numRandomLines

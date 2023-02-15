@@ -435,6 +435,7 @@ class DefaultArea : Area
 def Default : DefaultArea
 
 def Berlin : DefaultArea {
+    country = "Germany"
     boundary = BoundaryInfo<"Berlin", [
         Tag<"type", "boundary">,
         Tag<"admin_level", "4">

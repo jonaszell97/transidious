@@ -1,0 +1,6 @@
+/Users/jonaszell/transidious/Plugins/TriangleAPI/CMakeFiles/edit_cache.dir
+/Users/jonaszell/transidious/Plugins/TriangleAPI/CMakeFiles/acc_gen.dir
+/Users/jonaszell/transidious/Plugins/TriangleAPI/CMakeFiles/omp_gen.dir
+/Users/jonaszell/transidious/Plugins/TriangleAPI/CMakeFiles/TriangleAPI.dir
+/Users/jonaszell/transidious/Plugins/TriangleAPI/CMakeFiles/rebuild_cache.dir
+/Users/jonaszell/transidious/Plugins/TriangleAPI/CMakeFiles/intrinsics_gen.dir

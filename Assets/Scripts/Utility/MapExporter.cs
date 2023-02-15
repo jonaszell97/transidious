@@ -814,7 +814,13 @@ namespace Transidious
 
             g.FillPath(Brushes.Transparent, path);
 
+<<<<<<< Updated upstream
             using (var pen = new Pen(brush, width))
+=======
+            var pen = GetStrokePen(brush.Color, 3f);
+
+            for (var i = 0; i < boundary.Length; ++i)
+>>>>>>> Stashed changes
             {
                 for (var i = 0; i < boundary.Length; ++i)
                 {
@@ -824,11 +830,18 @@ namespace Transidious
                     var coord0 = GetGlobalCoordinate(map, p0, resolution, padding);
                     var coord1 = GetGlobalCoordinate(map, p1, resolution, padding);
 
+<<<<<<< Updated upstream
                     g.DrawLine(pen, coord0, coord1);
                     g.FillEllipse(brush, new RectangleF(coord0.X - (width * .5f),
                                                         coord0.Y - (width * .5f),
                                                         width, width));
                 }
+=======
+                canvas.DrawLine(coord0.X, coord0.Y, coord1.X, coord1.Y, pen);
+                //canvas.DrawOval(new SKRect(coord0.X - (width * .5f),
+                //                           coord0.Y - (width * .5f),
+                //                           width, width), brush);
+>>>>>>> Stashed changes
             }
         }
 
