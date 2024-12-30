@@ -289,7 +289,6 @@ namespace Transidious
             txt.textMesh.ForceMeshUpdate();
             txt.gameObject.SetActive(false);
 
-<<<<<<< Updated upstream
             var txt = map.CreateText(Vector3.zero, DisplayName, new Color(0.3f, 0.3f, 0.3f, 1f));
             txt.textMesh.autoSizeTextContainer = true;
             txt.textMesh.fontSize = segments.First().GetFontSize(InputController.MaxZoom);
@@ -336,47 +335,6 @@ namespace Transidious
                     txt.transform.SetParent(map.canvas.transform);
                 }
 
-=======
-            float neededWidth = txt.textMesh.preferredWidth * 1.1f;
-            float spaceBetweenLabels = 2f * neededWidth;
-            float spaceSinceLastLabel = 0f;
-
-            var placedText = false;
-            var first = true;
-
-            foreach (var seg in segments)
-            {
-                if (seg.length < neededWidth || (!first && spaceSinceLastLabel < spaceBetweenLabels))
-                {
-                    spaceSinceLastLabel += seg.length;
-                    first = false;
-                    GenerateDirectionalArrow(seg);
-
-                    continue;
-                }
-
-                first = false;
-
-                var posAndAngle = GetPositionAndAngle(seg, neededWidth);
-                if (posAndAngle == null)
-                {
-                    spaceSinceLastLabel += seg.length;
-                    continue;
-                }
-
-                placedText = true;
-                spaceSinceLastLabel = 0f;
-
-                if (seg.uniqueTile != null)
-                {
-                    txt.transform.SetParent(seg.uniqueTile.canvas.transform);
-                }
-                else
-                {
-                    txt.transform.SetParent(map.canvas.transform);
-                }
-
->>>>>>> Stashed changes
                 txt.transform.position = new Vector3(posAndAngle.pos.x,
                                                      posAndAngle.pos.y,
                                                      Map.Layer(MapLayer.StreetNames));
